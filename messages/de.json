@@ -22,6 +22,12 @@
     "touchUiTitle": "Touch-Bedienung",
     "customerNamePlaceholder": "Kundenname"
   },
+  "Login": {
+    "title": "Anmelden",
+    "emailPlaceholder": "E-Mail",
+    "codePlaceholder": "6-stelliger Code",
+    "submit": "Weiter"
+  },
   "Demo": {
     "rtlHint": "Icon links in LTR, rechts in RTL – ohne richtungsspezifische Klassen.",
     "spacingBadge": "ps-/pe- statt pl-/pr-"
