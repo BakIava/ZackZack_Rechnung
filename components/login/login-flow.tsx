@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import NextLink from "next/link";
-import { Link } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
 import { BrandPanel, type LoginScreen } from "./brand-panel";
 import { EmailScreen } from "./email-screen";
 import { CodeScreen } from "./code-screen";
@@ -13,7 +11,6 @@ import { SuccessScreen } from "./success-screen";
 import "./login.css";
 
 interface LoginFlowProps {
-  locale: string;
   dir: "ltr" | "rtl";
 }
 
@@ -23,16 +20,10 @@ const DEMO_NAME = "Mehmet";
 const EMPTY_CODE = ["", "", "", "", "", ""];
 const RESEND_SECONDS = 30;
 
-const LANGS: { code: string; native: string; short: string }[] = [
-  { code: "de", native: "Deutsch", short: "DE" },
-  { code: "tr", native: "Türkçe", short: "TR" },
-  { code: "ar", native: "العربية", short: "AR" },
-];
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Passwortloser Login: E-Mail → 6-stelliger Code → angemeldet (DE/TR/AR, RTL). */
-export function LoginFlow({ locale, dir }: LoginFlowProps) {
+export function LoginFlow({ dir }: LoginFlowProps) {
   const t = useTranslations("Login");
   const [screen, setScreen] = useState<LoginScreen>("email");
   const [email, setEmail] = useState(DEMO_EMAIL);
@@ -103,23 +94,6 @@ export function LoginFlow({ locale, dir }: LoginFlowProps) {
               </b>
             </span>
           </NextLink>
-
-          <div className="lg-langs">
-            {LANGS.map((l) => (
-              <Link
-                key={l.code}
-                href="/login"
-                locale={l.code as (typeof routing.locales)[number]}
-                className="lg-lang"
-                data-on={locale === l.code ? "1" : "0"}
-              >
-                <span className="lg-lang-dot" data-lang={l.code}>
-                  {l.short}
-                </span>
-                {l.native}
-              </Link>
-            ))}
-          </div>
         </div>
 
         {screen === "email" && (
