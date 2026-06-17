@@ -34,7 +34,7 @@ const NAV: NavEntry[] = [
   { id: "dashboard", href: "/dashboard", icon: Building2, labelKey: "navDashboard" },
   { id: "customers", href: "/customers", icon: Users, labelKey: "navCustomers", count: CUSTOMER_COUNT },
   { id: "catalog", href: "/catalog", icon: ClipboardList, labelKey: "navCatalog", count: CATALOG_COUNT },
-  { id: "history", href: "/documents", icon: History, labelKey: "navHistory", count: DOCS.length },
+  { id: "history", href: "/documents", icon: History, labelKey: "navDocuments", count: DOCS.length },
   { id: "settings", href: "/settings", icon: Settings, labelKey: "navSettings" },
 ];
 
