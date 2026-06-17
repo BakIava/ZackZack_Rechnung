@@ -1,0 +1,54 @@
+{
+  "Common": {
+    "appName": "Zack Zack Rechnung",
+    "loading": "Yükleniyor…",
+    "offline": "Çevrimdışı – veriler önbellekten yükleniyor.",
+    "back": "Geri",
+    "save": "Kaydet"
+  },
+  "Nav": {
+    "dashboard": "Panel",
+    "documents": "Belgeler",
+    "create": "Yeni oluştur",
+    "customers": "Müşteriler",
+    "catalog": "Katalog",
+    "settings": "Ayarlar"
+  },
+  "Home": {
+    "title": "Birkaç tıklamayla fatura",
+    "subtitle": "Yasal faturalar ve teklifler – Almanca bilmeden de.",
+    "demoPdf": "Örnek PDF göster",
+    "rtlDemoTitle": "RTL demosu (mantıksal boşluklar)",
+    "touchUiTitle": "Dokunmatik kullanım",
+    "customerNamePlaceholder": "Müşteri adı"
+  },
+  "Demo": {
+    "rtlHint": "Simge LTR'de solda, RTL'de sağda – yön sınıfları olmadan.",
+    "spacingBadge": "pl-/pr- yerine ps-/pe-"
+  },
+  "Create": {
+    "title": "Yeni fatura",
+    "step1": "Müşteri",
+    "step2": "Kalemler",
+    "step3": "Önizleme"
+  },
+  "StepHeader": {
+    "progress": "Adım {step} / {total}"
+  },
+  "Ampel": {
+    "title": "Zorunlu bilgiler",
+    "complete": "Tamamlandı – dışa aktarılabilir",
+    "incomplete": "Henüz tamamlanmadı",
+    "aussteller": "Düzenleyen",
+    "empfaenger": "Alıcı",
+    "steuernummer": "Vergi numarası",
+    "datum": "Tarih",
+    "leistung": "Hizmet",
+    "betrag": "Tutar",
+    "nummer": "Fatura numarası",
+    "kleinunternehmer": "§19 notu"
+  },
+  "Placeholder": {
+    "comingSoon": "Bu bölüm sırada."
+  }
+}

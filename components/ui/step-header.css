@@ -1,0 +1,17 @@
+.step-header__track {
+  block-size: 0.5rem;
+  inline-size: 100%;
+  border-radius: 9999px;
+  background-color: var(--muted);
+  overflow: hidden;
+}
+
+.step-header__fill {
+  block-size: 100%;
+  border-radius: 9999px;
+  background-color: var(--primary);
+  /* RTL-fest: füllt vom Zeilenanfang, in [dir="rtl"] automatisch von rechts */
+  margin-inline-start: 0;
+  inline-size: calc(var(--step-progress, 0) * 100%);
+  transition: inline-size 200ms ease-out;
+}

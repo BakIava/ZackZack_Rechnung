@@ -1,0 +1,54 @@
+{
+  "Common": {
+    "appName": "Zack Zack Rechnung",
+    "loading": "Laden…",
+    "offline": "Offline – Daten werden aus dem Cache geladen.",
+    "back": "Zurück",
+    "save": "Speichern"
+  },
+  "Nav": {
+    "dashboard": "Übersicht",
+    "documents": "Dokumente",
+    "create": "Neu erstellen",
+    "customers": "Kunden",
+    "catalog": "Katalog",
+    "settings": "Einstellungen"
+  },
+  "Home": {
+    "title": "Rechnungen in wenigen Klicks",
+    "subtitle": "Rechtssichere Rechnungen und Angebote – auch ohne Deutsch.",
+    "demoPdf": "Beispiel-PDF anzeigen",
+    "rtlDemoTitle": "RTL-Demo (logische Abstände)",
+    "touchUiTitle": "Touch-Bedienung",
+    "customerNamePlaceholder": "Kundenname"
+  },
+  "Demo": {
+    "rtlHint": "Icon links in LTR, rechts in RTL – ohne richtungsspezifische Klassen.",
+    "spacingBadge": "ps-/pe- statt pl-/pr-"
+  },
+  "Create": {
+    "title": "Neue Rechnung",
+    "step1": "Kunde",
+    "step2": "Positionen",
+    "step3": "Vorschau"
+  },
+  "StepHeader": {
+    "progress": "Schritt {step} von {total}"
+  },
+  "Ampel": {
+    "title": "Pflichtangaben",
+    "complete": "Vollständig – Export möglich",
+    "incomplete": "Noch nicht vollständig",
+    "aussteller": "Aussteller",
+    "empfaenger": "Empfänger",
+    "steuernummer": "Steuernummer",
+    "datum": "Datum",
+    "leistung": "Leistung",
+    "betrag": "Betrag",
+    "nummer": "Rechnungsnummer",
+    "kleinunternehmer": "§19-Hinweis"
+  },
+  "Placeholder": {
+    "comingSoon": "Dieser Bereich wird als Nächstes gebaut."
+  }
+}

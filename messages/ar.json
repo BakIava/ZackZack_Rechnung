@@ -1,0 +1,54 @@
+{
+  "Common": {
+    "appName": "Zack Zack Rechnung",
+    "loading": "جاري التحميل…",
+    "offline": "غير متصل – يتم تحميل البيانات من الذاكرة المؤقتة.",
+    "back": "رجوع",
+    "save": "حفظ"
+  },
+  "Nav": {
+    "dashboard": "لوحة التحكم",
+    "documents": "المستندات",
+    "create": "إنشاء جديد",
+    "customers": "العملاء",
+    "catalog": "القائمة",
+    "settings": "الإعدادات"
+  },
+  "Home": {
+    "title": "فواتير ببضع نقرات",
+    "subtitle": "فواتير وعروض قانونية – حتى بدون معرفة الألمانية.",
+    "demoPdf": "عرض PDF نموذجي",
+    "rtlDemoTitle": "عرض RTL (مسافات منطقية)",
+    "touchUiTitle": "تشغيل باللمس",
+    "customerNamePlaceholder": "اسم العميل"
+  },
+  "Demo": {
+    "rtlHint": "الأيقونة على اليسار في LTR وعلى اليمين في RTL – دون فئات اتجاهية.",
+    "spacingBadge": "ps-/pe- بدلاً من pl-/pr-"
+  },
+  "Create": {
+    "title": "فاتورة جديدة",
+    "step1": "العميل",
+    "step2": "البنود",
+    "step3": "المعاينة"
+  },
+  "StepHeader": {
+    "progress": "الخطوة {step} من {total}"
+  },
+  "Ampel": {
+    "title": "البيانات الإلزامية",
+    "complete": "مكتمل – يمكن التصدير",
+    "incomplete": "غير مكتمل بعد",
+    "aussteller": "المُصدِر",
+    "empfaenger": "المستلم",
+    "steuernummer": "الرقم الضريبي",
+    "datum": "التاريخ",
+    "leistung": "الخدمة",
+    "betrag": "المبلغ",
+    "nummer": "رقم الفاتورة",
+    "kleinunternehmer": "ملاحظة §19"
+  },
+  "Placeholder": {
+    "comingSoon": "سيتم بناء هذا القسم لاحقاً."
+  }
+}
