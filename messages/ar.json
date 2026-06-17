@@ -26,7 +26,8 @@
     "title": "تسجيل الدخول",
     "emailPlaceholder": "البريد الإلكتروني",
     "codePlaceholder": "رمز من 6 أرقام",
-    "submit": "متابعة"
+    "submit": "متابعة",
+    "changeLanguage": "تغيير اللغة"
   },
   "Demo": {
     "rtlHint": "الأيقونة على اليسار في LTR وعلى اليمين في RTL – دون فئات اتجاهية.",

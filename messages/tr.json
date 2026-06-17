@@ -26,7 +26,8 @@
     "title": "Giriş yap",
     "emailPlaceholder": "E-posta",
     "codePlaceholder": "6 haneli kod",
-    "submit": "Devam"
+    "submit": "Devam",
+    "changeLanguage": "Dili değiştir"
   },
   "Demo": {
     "rtlHint": "Simge LTR'de solda, RTL'de sağda – yön sınıfları olmadan.",

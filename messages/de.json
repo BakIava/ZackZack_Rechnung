@@ -26,7 +26,8 @@
     "title": "Anmelden",
     "emailPlaceholder": "E-Mail",
     "codePlaceholder": "6-stelliger Code",
-    "submit": "Weiter"
+    "submit": "Weiter",
+    "changeLanguage": "Sprache ändern"
   },
   "Demo": {
     "rtlHint": "Icon links in LTR, rechts in RTL – ohne richtungsspezifische Klassen.",
