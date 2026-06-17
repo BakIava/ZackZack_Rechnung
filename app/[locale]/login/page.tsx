@@ -19,6 +19,7 @@ export default async function LoginPage({ params }: Props) {
         <Link href={`/${locale}/dashboard`}>
           <button type="button">{t("submit")}</button>
         </Link>
+        <Link href="/language">{t("changeLanguage")}</Link>
       </form>
     </div>
   );
