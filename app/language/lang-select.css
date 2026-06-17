@@ -1,0 +1,365 @@
+/* lang-select.css — Sprachauswahl (allererster App-Start, vor dem Login).
+   Übernommen aus dem Claude-Design „Handwerk Rechnung".
+   Logische Properties → RTL automatisch. Keine Inline-Styles. */
+
+.ls-root {
+  /* Design-Tokens (zuvor inline im Prototyp gesetzt) */
+  --primary: #02335c;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eff2f6;
+  --r: 14px;
+  --ui-font: var(--font-hanken), var(--font-ibm-arabic), system-ui, sans-serif;
+
+  --r-sm: calc(var(--r) * 0.55);
+  --r-lg: min(calc(var(--r) * 1.5), 24px);
+  --ink: #1a2430;
+  --muted: #6a7682;
+  --line: #e2e7ec;
+  --primary-ink: #fff;
+  --accent: #fb6202;
+  --accent-deep: #d85402;
+
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--ui-font);
+}
+.ls-root * {
+  font-family: var(--ui-font);
+  box-sizing: border-box;
+}
+
+.ls-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(18px, 5vw, 30px) clamp(20px, 6vw, 30px) 22px;
+  scrollbar-width: none;
+}
+.ls-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Markenkopf ───────────────────────────────────────────────────────────── */
+.ls-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: clamp(10px, 3vw, 22px) 0 clamp(18px, 4vw, 26px);
+}
+.ls-mark {
+  height: 84px;
+  width: auto;
+}
+.ls-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  box-shadow: 0 1px 2px rgba(15, 42, 63, 0.04);
+}
+.ls-prompt .ls-globe {
+  color: var(--primary);
+  display: flex;
+  flex-shrink: 0;
+}
+.ls-prompt .ls-seg {
+  white-space: nowrap;
+}
+.ls-prompt .ls-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: #cbd4dc;
+  flex-shrink: 0;
+}
+
+/* ── Kachel-Container ─────────────────────────────────────────────────────── */
+.ls-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Kachel (mobil: horizontal) ───────────────────────────────────────────── */
+.ls-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  cursor: pointer;
+  text-align: start;
+  font-family: inherit;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  min-height: 84px;
+  transition:
+    border-color 0.14s,
+    box-shadow 0.15s,
+    transform 0.12s,
+    background 0.14s;
+}
+.ls-tile:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+  box-shadow: 0 10px 24px -16px rgba(15, 42, 63, 0.45);
+  transform: translateY(-1px);
+}
+.ls-tile:active {
+  transform: scale(0.992);
+}
+.ls-tile:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  outline-offset: 2px;
+}
+
+/* ausgewählter Zustand — farbiger Rand + getönter Grund + Häkchen */
+.ls-tile[data-sel="1"] {
+  border-color: var(--primary);
+  border-width: 2px;
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  box-shadow:
+    0 0 0 1px var(--primary),
+    0 14px 30px -16px rgba(15, 42, 63, 0.5);
+}
+/* nicht gewählte Kacheln treten beim Auswählen leicht zurück */
+.ls-tiles[data-haspick="1"] .ls-tile:not([data-sel="1"]) {
+  opacity: 0.62;
+}
+
+.ls-flag {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 42, 63, 0.1),
+    0 3px 8px -3px rgba(15, 42, 63, 0.3);
+  display: block;
+  overflow: hidden;
+}
+.ls-flag svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ls-tile-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ls-tile-name {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.ls-tile-hint {
+  display: block;
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+
+/* Affordanz rechts: Chevron (offen) bzw. Häkchen (gewählt) */
+.ls-tile-aff {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b6c0c9;
+  transition: 0.14s;
+}
+.ls-tile-aff .ls-aff-check {
+  display: none;
+}
+.ls-tile[data-sel="1"] .ls-tile-aff .ls-aff-chevron {
+  display: none;
+}
+.ls-tile[data-sel="1"] .ls-tile-aff .ls-aff-check {
+  display: flex;
+}
+[dir="rtl"] .ls-tile-aff .ls-aff-chevron svg {
+  transform: scaleX(-1);
+}
+.ls-tile:hover .ls-tile-aff {
+  color: var(--primary);
+}
+.ls-tile[data-sel="1"] .ls-tile-aff {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 14px -6px rgba(15, 42, 63, 0.6);
+}
+
+/* ── Dokumentsprache-Hinweis ──────────────────────────────────────────────── */
+.ls-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-top: auto;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  text-align: start;
+}
+.ls-note-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.ls-note-body {
+  min-width: 0;
+  flex: 1;
+}
+.ls-note-head {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.ls-note-lines {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ls-note-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.ls-note-line .ls-fd {
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 0.5px rgba(15, 42, 63, 0.15);
+}
+.ls-fd--de {
+  background: linear-gradient(
+    #1a1a1a 0 33.3%,
+    #d7141a 33.3% 66.6%,
+    #f4c500 66.6% 100%
+  );
+}
+.ls-fd--tr {
+  background: #e30a17;
+}
+.ls-fd--ar {
+  background: #1f6b4c;
+}
+
+/* Mini-Fußnote (vertrauensbildend, sprachneutral) */
+.ls-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.ls-foot svg {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* ── Desktop-Layout: zentriert, drei vertikale Kacheln, max ~600px ─────────── */
+@media (min-width: 720px) {
+  .ls-body {
+    justify-content: center;
+    align-items: center;
+    padding: clamp(28px, 4vw, 44px);
+  }
+  .ls-brand {
+    padding: 0 0 30px;
+  }
+  .ls-mark {
+    height: 92px;
+  }
+
+  .ls-tiles {
+    flex-direction: row;
+    gap: 16px;
+    justify-content: center;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .ls-tiles > .ls-tile {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+    padding: 26px 18px 22px;
+    min-height: 0;
+  }
+  .ls-tile .ls-tile-hint {
+    margin-top: 2px;
+  }
+  .ls-tile .ls-flag {
+    width: 60px;
+    height: 60px;
+  }
+  .ls-tile .ls-tile-name {
+    font-size: 19px;
+  }
+  /* Häkchen oben in die Ecke der vertikalen Kachel */
+  .ls-tile .ls-tile-aff {
+    position: absolute;
+    top: 12px;
+    inset-inline-end: 12px;
+    width: 26px;
+    height: 26px;
+  }
+  .ls-tile:not([data-sel="1"]) .ls-tile-aff {
+    display: none;
+  }
+
+  .ls-note {
+    margin-top: 24px;
+    max-width: 600px;
+    width: 100%;
+  }
+  .ls-foot {
+    margin-top: 16px;
+  }
+}
