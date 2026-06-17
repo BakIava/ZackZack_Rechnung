@@ -99,22 +99,6 @@
 .lg-back-langs b { font-weight: 600; }
 .lg-back-langs i { font-style: normal; color: var(--line); }
 
-/* Sprachumschalter */
-.lg-langs { display: flex; gap: 7px; }
-.lg-lang {
-  display: inline-flex; align-items: center; gap: 7px;
-  border: 1.5px solid var(--line); background: var(--surface);
-  border-radius: 999px; padding: 7px 13px 7px 9px;
-  font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted);
-  text-decoration: none; cursor: pointer; transition: .12s;
-}
-.lg-lang:hover { border-color: #c7d0d8; }
-.lg-lang[data-on="1"] { border-color: var(--primary); color: var(--ink); background: color-mix(in srgb, var(--primary) 6%, #fff); }
-.lg-lang-dot { width: 22px; height: 22px; border-radius: 999px; color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.lg-lang-dot[data-lang="de"] { background: #1b1b1b; }
-.lg-lang-dot[data-lang="tr"] { background: #c8102e; }
-.lg-lang-dot[data-lang="ar"] { background: #1f6b4c; }
-
 /* Kopf der Karte */
 .lg-icon-badge {
   width: 60px; height: 60px; border-radius: 18px; margin-bottom: 22px;
