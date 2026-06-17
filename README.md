@@ -167,10 +167,3 @@ Immer aus dem Barrel importieren: `import { Button, Input, LangSwitch, StepHeade
 - `LangSwitch` – Sprachumschalter DE/TR/AR
 
 UI-Text in Primitives kommt ausschließlich aus `messages/*.json`, nie hartkodiert.
-
-## Nächste Schritte (Screen-für-Screen)
-
-1. Auth-Flow (E-Mail OTP) in `lib/auth/actions.ts`
-2. Supabase-Tabellen aus `lib/db/schema.ts`
-3. MVP-Screens unter `app/[locale]/…` befüllen
-4. PDF an echte Dokumentdaten anbinden
