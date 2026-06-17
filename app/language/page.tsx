@@ -134,10 +134,15 @@ export default function LanguagePage() {
   function pick(code: LangCode) {
     if (selected) return;
     setSelected(code);
-    // Bediensprache merken und nach kurzer Bestätigung weiter zum Login.
+    // Bediensprache merken und nach kurzer Bestätigung weiter.
     document.cookie = `NEXT_LOCALE=${code}; path=/; max-age=31536000`;
+    // Kam man von einer Seite (?return=/pfad), dorthin in der neuen Sprache
+    // zurückkehren — sonst (erster App-Start) weiter zum Login.
+    const ret = new URLSearchParams(window.location.search).get("return");
+    const isSafe = ret != null && ret.startsWith("/") && !ret.startsWith("//");
+    const dest = isSafe ? `/${code}${ret}` : `/${code}/login`;
     setTimeout(() => {
-      router.push(`/${code}/login`);
+      router.push(dest);
     }, 320);
   }
 
