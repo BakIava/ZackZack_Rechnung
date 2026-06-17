@@ -1,0 +1,602 @@
+/* dashboard.css — Desktop-Dashboard (Sidebar + Hauptbereich).
+   Tokens sind auf .zz-dash gekapselt, damit der Screen unabhängig vom globalen
+   Theme stabil rendert. Logische Properties → RTL automatisch. */
+
+.zz-dash {
+  /* Marken-/Flächentokens (aus dem Design-Handoff) */
+  --primary: #02335c;
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #eff2f6;
+  --r: 13px;
+  --ui-font: var(--font-hanken), var(--font-plex-arabic), system-ui, sans-serif;
+
+  /* abgeleitete Tokens */
+  --r-sm: calc(var(--r) * 0.55);
+  --r-lg: min(calc(var(--r) * 1.4), 22px);
+  --primary-2: color-mix(in srgb, var(--primary) 82%, #6f8ba0);
+  --primary-ink: #ffffff;
+  --accent: #fb6202;
+  --accent-deep: #d85402;
+  --accent-ink: #ffffff;
+  --ink: #1a2430;
+  --muted: #6a7682;
+  --line: #e2e7ec;
+
+  /* Statusfarben */
+  --ok: #1f8a5b;   --ok-bg: #e5f3ec;
+  --warn: #b7791f; --warn-bg: #fbefd7;
+  --info: #2e5c92; --info-bg: #e7eef6;
+  --draft: #6b7682; --draft-bg: #edf0f3;
+
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  font-family: var(--ui-font);
+  color: var(--ink);
+}
+
+.dapp {
+  display: flex;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--ui-font);
+}
+.dapp * {
+  font-family: var(--ui-font);
+  box-sizing: border-box;
+}
+
+/* Auf schmalen Screens nicht horizontal stauchen — Sidebar bleibt nutzbar. */
+@media (max-width: 880px) {
+  .zz-dash {
+    overflow: auto;
+  }
+  .dapp {
+    min-width: 880px;
+  }
+}
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+.dside {
+  width: 250px;
+  flex-shrink: 0;
+  background: linear-gradient(190deg, var(--primary-2), var(--primary));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 16px 16px;
+  border-inline-end: 1px solid rgba(0, 0, 0, 0.1);
+}
+.dside-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 22px;
+}
+.dside-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 17px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.dside-name {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.dside-trade {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 1px;
+  white-space: nowrap;
+}
+.dnav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dnav-lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  padding: 8px 12px 6px;
+}
+.dnav-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 13px;
+  border-radius: var(--r-sm);
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: 0.14s;
+  width: 100%;
+  text-align: start;
+  position: relative;
+  text-decoration: none;
+}
+.dnav-item > span:not(.dnav-count) {
+  white-space: nowrap;
+}
+.dnav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.dnav-item[data-on="1"] {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  font-weight: 600;
+}
+.dnav-item[data-on="1"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+.dapp[dir="rtl"] .dnav-item[data-on="1"]::before {
+  border-radius: 3px 0 0 3px;
+}
+.dnav-count {
+  margin-inline-start: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.dside-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dside-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.dside-lang:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.dside-lang-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  direction: ltr;
+}
+.dside-lang-txt b {
+  font-weight: 600;
+}
+.dside-lang-txt i {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.4);
+}
+.dside-user {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px 8px;
+}
+.dside-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.dside-uname {
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dside-urole {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Hauptbereich ─────────────────────────────────────────────────────────── */
+.dmain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dtopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 34px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.dtopbar > div:first-child {
+  flex-shrink: 0;
+}
+.greet-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+.greet-main {
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.dtools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dsearch {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 280px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 10px 13px;
+  color: var(--muted);
+}
+.dsearch input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.dsearch input::placeholder {
+  color: var(--muted);
+}
+.iconbtn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: 0.15s;
+  position: relative;
+}
+.iconbtn:hover {
+  border-color: #c3ccd4;
+}
+.iconbtn .dot {
+  position: absolute;
+  top: 9px;
+  inset-inline-end: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.dscroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px 34px 40px;
+}
+.dscroll::-webkit-scrollbar {
+  width: 10px;
+}
+.dscroll::-webkit-scrollbar-thumb {
+  background: rgba(15, 42, 63, 0.16);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* Hero-Reihe */
+.dhero {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.dcta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  border-radius: var(--r-lg);
+  padding: 26px 28px;
+  text-align: start;
+  text-decoration: none;
+  transition: transform 0.12s, box-shadow 0.15s;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 16px 34px -14px rgba(251, 98, 2, 0.55);
+}
+.dcta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 44px -16px rgba(251, 98, 2, 0.65);
+}
+.dcta > span:not(.dcta-ic):not(.dcta-chev) {
+  min-width: 0;
+}
+.dcta-ic {
+  width: 60px;
+  height: 60px;
+  border-radius: calc(var(--r) * 0.9);
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dcta-main {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.dcta-sub {
+  font-size: 14px;
+  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+}
+.dcta-chev {
+  margin-inline-start: auto;
+  color: rgba(26, 20, 7, 0.55);
+  display: flex;
+}
+.dhighlight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px 26px;
+}
+.dhl-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dhl-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--warn-bg);
+  color: var(--warn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dhl-lbl {
+  font-size: 13.5px;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dhl-val {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.dhl-meta {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.dhl-meta b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+/* Tabelle */
+.dsec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.dsec-t {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.dsec-a {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.dtable {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.dtr {
+  display: grid;
+  grid-template-columns: 116px 1.3fr 1.6fr 110px 120px 120px;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px;
+}
+.dthead {
+  height: 44px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.dth {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dth.num {
+  text-align: end;
+  justify-self: end;
+}
+.drow {
+  height: 66px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: 0.12s;
+}
+.drow:last-child {
+  border-bottom: none;
+}
+.drow:hover {
+  background: color-mix(in srgb, var(--primary) 3%, var(--surface));
+}
+.dtd-doc {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.dtd-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dtd-ic--rechnung {
+  background: var(--primary);
+  color: #fff;
+}
+.dtd-ic--angebot {
+  background: var(--info-bg);
+  color: var(--info);
+}
+.dtype-chip {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dtd-cust {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dtd-serv,
+.dtd-date {
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dtd-amount {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.dtd-amount.num,
+.dtd-status.num {
+  text-align: end;
+  justify-self: end;
+}
+
+/* Statusplakette */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.pill--bezahlt {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.pill--offen {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.pill--versendet {
+  background: var(--info-bg);
+  color: var(--info);
+}
+.pill--entwurf {
+  background: var(--draft-bg);
+  color: var(--draft);
+}
