@@ -1,0 +1,255 @@
+/* login.css — Passwortloser Login (E-Mail → 6-stelliger Code).
+   Tokens sind auf .lg-root gekapselt, damit der Screen unabhängig vom globalen
+   Theme stabil rendert. Logische Properties → RTL automatisch. */
+
+.lg-root {
+  /* Marken-/Flächentokens (aus dem Design-Handoff) */
+  --primary: #02335c;
+  --surface: #ffffff;
+  --surface-2: #eff2f6;
+  --r: 14px;
+  --ui-font: var(--font-hanken), var(--font-plex-arabic), system-ui, sans-serif;
+
+  --danger: #c0362c; --danger-bg: #fbeae6; --danger-line: #ebb9b2;
+  --ok: #1f8a5b; --ok-bg: #e5f3ec;
+  --r-lg: min(calc(var(--r) * 1.5), 24px);
+  --ink: #1a2430; --muted: #6a7682; --line: #e2e7ec;
+  --primary-ink: #fff;
+  --accent: #fb6202; --accent-deep: #d85402; --accent-ink: #ffffff;
+
+  position: fixed; inset: 0;
+  display: grid; grid-template-columns: 1.04fr 1fr;
+  font-family: var(--ui-font); color: var(--ink);
+  background: var(--surface);
+  overflow: auto;
+}
+
+/* ── Marken-Panel (links / RTL: rechts) ─────────────────────────────────── */
+.lg-brand {
+  position: relative; overflow: hidden;
+  background: var(--primary); color: #fff;
+  padding: clamp(40px, 5vw, 64px);
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.lg-brand::after {
+  content: ""; position: absolute; inset-inline-end: -160px; bottom: -160px;
+  width: 420px; height: 420px; border-radius: 999px;
+  background: rgba(255,255,255,.04); pointer-events: none;
+}
+.lg-brand::before {
+  content: ""; position: absolute; inset-inline-start: -120px; top: -120px;
+  width: 300px; height: 300px; border-radius: 999px;
+  background: rgba(0,0,0,.10); pointer-events: none;
+}
+.lg-brand-head { display: flex; align-items: center; gap: 15px; position: relative; z-index: 1; }
+.zz-mark { height: 46px; width: auto; flex-shrink: 0; filter: drop-shadow(0 4px 12px rgba(0,0,0,.28)); }
+.zz-word { display: flex; flex-direction: column; line-height: 1; }
+.zz-word b { font-size: 22px; font-weight: 700; letter-spacing: .01em; color: #fff; }
+.zz-word span { font-size: 12px; font-weight: 700; letter-spacing: .36em; color: rgba(255,255,255,.66); margin-top: 5px; }
+.lg-root[dir="rtl"] .zz-word { direction: ltr; text-align: start; }
+
+.lg-brand-mid { position: relative; z-index: 1; }
+.lg-brand-h {
+  font-size: clamp(28px, 3vw, 38px); font-weight: 600; line-height: 1.14;
+  letter-spacing: -.025em; margin: 0 0 12px; max-width: 13ch; text-wrap: balance;
+}
+.lg-brand-p { font-size: 15.5px; line-height: 1.55; color: rgba(255,255,255,.74); max-width: 34ch; margin: 0; }
+
+/* 3-Schritt-Illustration (icon-stark, wenig Text) */
+.lg-steps { margin-top: 34px; display: flex; flex-direction: column; gap: 4px; }
+.lg-step { display: flex; align-items: center; gap: 16px; padding: 4px 0; }
+.lg-step-ic {
+  width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.10); color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
+}
+.lg-step--now .lg-step-ic { background: var(--accent); color: var(--accent-ink); box-shadow: 0 8px 20px -8px rgba(251,98,2,.7); }
+.lg-step-tx { font-size: 15px; font-weight: 500; color: rgba(255,255,255,.92); }
+.lg-step--now .lg-step-tx { color: #fff; font-weight: 600; }
+.lg-step-conn { width: 2px; height: 16px; margin-inline-start: 22px; background: rgba(255,255,255,.18); border-radius: 2px; }
+
+.lg-brand-foot { display: flex; align-items: center; gap: 8px; position: relative; z-index: 1; font-size: 13px; color: rgba(255,255,255,.6); }
+
+/* ── Formular-Panel ─────────────────────────────────────────────────────── */
+.lg-form {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  padding: clamp(28px, 4vw, 56px); background: var(--surface);
+}
+.lg-card { width: 100%; max-width: 462px; }
+
+/* Kopfzeile der Form: Zurück-Button + Sprachumschalter in einer Reihe */
+.lg-form-head {
+  position: absolute; top: 26px; inset-inline: 30px; z-index: 5;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+
+/* Zurück zur Sprachauswahl — sprachneutral (Globus + alle Sprachen) */
+.lg-back {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1.5px solid var(--line); background: var(--surface);
+  border-radius: 999px; padding: 7px 14px 7px 10px;
+  font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted);
+  text-decoration: none; cursor: pointer; transition: .12s;
+}
+.lg-back:hover { border-color: #c7d0d8; color: var(--ink); }
+.lg-back svg { flex: none; }
+.lg-back-langs { display: inline-flex; align-items: center; gap: 5px; direction: ltr; }
+.lg-back-langs b { font-weight: 600; }
+.lg-back-langs i { font-style: normal; color: var(--line); }
+
+/* Kopf der Karte */
+.lg-icon-badge {
+  width: 60px; height: 60px; border-radius: 18px; margin-bottom: 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--primary) 10%, #fff); color: var(--primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 16%, #fff);
+}
+.lg-title { font-size: clamp(26px, 2.6vw, 31px); font-weight: 600; letter-spacing: -.025em; margin: 0 0 10px; line-height: 1.1; }
+.lg-sub { font-size: 15.5px; line-height: 1.55; color: var(--muted); margin: 0 0 26px; }
+.lg-sub b { color: var(--ink); font-weight: 600; }
+
+/* E-Mail-Feld */
+.lg-field-lbl { display: block; font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 9px; }
+.lg-input {
+  display: flex; align-items: center; gap: 12px;
+  border: 2px solid var(--line); border-radius: var(--r); background: var(--surface);
+  padding: 0 16px; height: 62px; transition: .12s;
+}
+.lg-input:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
+.lg-input.is-error { border-color: var(--danger); box-shadow: 0 0 0 4px var(--danger-bg); }
+.lg-input > svg { color: var(--muted); flex-shrink: 0; }
+.lg-input input {
+  flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+  font-family: inherit; font-size: 18px; font-weight: 500; color: var(--ink);
+}
+.lg-input input::placeholder { color: #9aa4ad; font-weight: 400; }
+
+/* OTP-Zellen — bleibt unverändert für SMS-Codes nutzbar */
+.lg-otp { display: flex; gap: clamp(8px, 1.4vw, 13px); direction: ltr; margin: 4px 0 0; }
+.lg-cell {
+  width: clamp(48px, 7vw, 64px); height: clamp(60px, 9vw, 76px);
+  border: 2px solid var(--line); border-radius: var(--r); background: var(--surface);
+  text-align: center; font-family: inherit; font-size: clamp(26px, 3.4vw, 34px);
+  font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;
+  outline: none; transition: .1s; -moz-appearance: textfield;
+}
+.lg-cell::-webkit-outer-spin-button, .lg-cell::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.lg-cell[data-filled="1"] { border-color: color-mix(in srgb, var(--primary) 55%, var(--line)); }
+.lg-cell:focus { border-color: var(--primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent); }
+.lg-otp.is-error .lg-cell { border-color: var(--danger); background: color-mix(in srgb, var(--danger-bg) 60%, #fff); }
+.lg-otp.is-error.shake { animation: lgShake .42s cubic-bezier(.36,.07,.19,.97); }
+@keyframes lgShake {
+  10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-5px); } 40%, 60% { transform: translateX(5px); }
+}
+
+/* Statuszeile (Fehler / Bestätigung) */
+.lg-note { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 500; margin-top: 16px; min-height: 22px; }
+.lg-note--err { color: var(--danger); }
+.lg-note--ok { color: var(--ok); }
+.lg-note--muted { color: var(--muted); font-weight: 500; }
+.lg-note-ic { width: 22px; height: 22px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; }
+.lg-note--err .lg-note-ic { background: var(--danger); }
+.lg-note--ok .lg-note-ic { background: var(--ok); }
+
+/* Großer Button */
+.lg-btn {
+  display: flex; align-items: center; justify-content: center; gap: 11px; width: 100%;
+  height: 64px; margin-top: 24px; border: none; border-radius: var(--r-lg);
+  font-family: inherit; font-size: 18px; font-weight: 650; cursor: pointer;
+  text-decoration: none;
+  background: var(--primary); color: var(--primary-ink);
+  box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--primary) 90%, #000); transition: .14s;
+}
+.lg-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 20px 38px -16px color-mix(in srgb, var(--primary) 90%, #000); }
+.lg-btn:not(:disabled):active { transform: translateY(0); }
+.lg-btn:disabled { background: var(--surface-2); color: var(--muted); box-shadow: none; cursor: not-allowed; }
+.lg-root[dir="rtl"] .lg-btn svg { transform: scaleX(-1); }
+
+/* Sekundär-Aktionen unter dem Code */
+.lg-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+.lg-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: none; background: transparent; padding: 8px 2px;
+  font-family: inherit; font-size: 14.5px; font-weight: 600; color: var(--primary); cursor: pointer;
+}
+.lg-link:disabled { color: var(--muted); cursor: default; }
+.lg-link:not(:disabled):hover { text-decoration: underline; text-underline-offset: 3px; }
+.lg-link--muted { color: var(--muted); }
+.lg-link--muted:hover { color: var(--ink); }
+
+/* Reassurance-Fußzeile */
+.lg-reassure {
+  display: flex; align-items: center; gap: 10px; margin-top: 28px;
+  padding: 14px 16px; border-radius: var(--r); background: var(--surface-2);
+  font-size: 13.5px; color: var(--muted); line-height: 1.4;
+}
+.lg-reassure svg { color: var(--primary); flex-shrink: 0; }
+.lg-reassure b { color: var(--ink); font-weight: 600; }
+
+/* Mini-Schritte unter dem E-Mail-Button (sprachfrei: Icons) */
+.lg-mini { display: flex; align-items: center; gap: 10px; margin-top: 26px; }
+.lg-mini-step { display: flex; align-items: center; gap: 9px; flex: 1; min-width: 0; }
+.lg-mini-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--surface-2); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.lg-mini-tx { font-size: 12.5px; color: var(--muted); line-height: 1.25; }
+.lg-mini-arrow { color: #c2cbd3; flex-shrink: 0; }
+.lg-root[dir="rtl"] .lg-mini-arrow { transform: scaleX(-1); }
+
+/* Demo-Code Hinweis (nur Prototyp – kein Backend) */
+.lg-demo {
+  display: inline-flex; align-items: center; gap: 8px; margin-top: 22px;
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--surface));
+  border-radius: 10px; padding: 8px 13px; font-size: 12.5px; color: #7a6a2e;
+}
+.lg-demo b { color: var(--primary); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .12em; font-size: 14px; }
+.lg-demo .lg-demo-lbl { text-transform: uppercase; letter-spacing: .04em; font-weight: 700; font-size: 10.5px; color: var(--accent-deep); }
+
+/* Hilfe-Panel (keine E-Mail bekommen) */
+.lg-help { margin-top: 18px; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.lg-help-row { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; }
+.lg-help-row + .lg-help-row { border-top: 1px solid var(--line); }
+.lg-help-ic { width: 30px; height: 30px; border-radius: 9px; background: var(--surface-2); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.lg-help-tx { font-size: 14px; color: var(--ink); line-height: 1.4; padding-top: 4px; }
+.lg-help-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* Erfolg / Übergang */
+.lg-success { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.lg-check {
+  width: 96px; height: 96px; border-radius: 999px; margin-bottom: 26px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ok-bg); color: var(--ok);
+}
+@keyframes lgPop { 0% { transform: scale(.4); } 100% { transform: scale(1); } }
+.lg-success .lg-title { margin-bottom: 8px; }
+.lg-success-greet { margin: 0; }
+.lg-success-btn { max-width: 280px; }
+.lg-success-prep { margin: 2px 0 0; font-size: 14px; }
+.lg-success-note { margin-top: 22px; }
+.lg-progress { width: 220px; height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin: 22px 0 6px; }
+.lg-progress i { display: block; height: 100%; border-radius: 999px; background: var(--primary); width: 0; animation: lgFill 1.8s ease-out forwards; }
+@keyframes lgFill { to { width: 100%; } }
+
+/* Übergang zwischen Screens — Ruhezustand ist sichtbar; Animation nur als Zugabe. */
+@keyframes lgFade { from { transform: translateY(9px); } to { transform: translateY(0); } }
+@media (prefers-reduced-motion: no-preference) {
+  .lg-fade { animation: lgFade .3s ease backwards; }
+  .lg-check { animation: lgPop .5s cubic-bezier(.2,.9,.3,1.3) backwards; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-progress i { animation: none; width: 100%; }
+}
+
+/* ── Responsiv: schmale Fenster → Marken-Panel als ruhiger Kopfstreifen ──── */
+@media (max-width: 900px) {
+  .lg-root { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .lg-brand { padding: 26px 28px; flex-direction: row; align-items: center; justify-content: space-between; }
+  .lg-brand-mid, .lg-brand-foot { display: none; }
+  .lg-form-head { inset-inline: 20px; top: 18px; }
+}
+@media (max-width: 560px) {
+  .lg-form { padding: 24px 20px 36px; align-items: flex-start; }
+  .lg-form-head { position: static; inset: auto; margin-bottom: 18px; }
+}

@@ -1,26 +1,32 @@
-import Link from "next/link";
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { routing } from "@/i18n/routing";
+import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { setRequestLocale } from "next-intl/server";
+import { LoginFlow } from "@/components/login/login-flow";
+import { routing, isRtlLocale } from "@/i18n/routing";
 
-type Props = { params: Promise<{ locale: string }> };
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
-export default async function LoginPage({ params }: Props) {
+const plexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-plex-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+});
+
+interface LoginPageProps {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function LoginPage({ params }: LoginPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-
-  const t = await getTranslations("Login");
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr";
 
   return (
-    <div>
-      <h1>{t("title")}</h1>
-      <form>
-        <input type="email" placeholder={t("emailPlaceholder")} />
-        <input type="text" placeholder={t("codePlaceholder")} />
-        <Link href={`/${locale}/dashboard`}>
-          <button type="button">{t("submit")}</button>
-        </Link>
-        <Link href="/language">{t("changeLanguage")}</Link>
-      </form>
+    <div className={`${hanken.variable} ${plexArabic.variable}`}>
+      <LoginFlow dir={dir} />
     </div>
   );
 }
