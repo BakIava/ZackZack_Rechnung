@@ -1,7 +1,6 @@
 import {
   Building2,
   ClipboardList,
-  Globe,
   History,
   Settings,
   Users,
@@ -15,6 +14,7 @@ import {
   CUSTOMER_COUNT,
   DOCS,
 } from "@/lib/demo/dashboard-data";
+import { SidebarLangLink } from "./sidebar-lang-link";
 
 type NavId = "dashboard" | "customers" | "catalog" | "history" | "settings";
 
@@ -72,23 +72,7 @@ export async function Sidebar({ active }: SidebarProps) {
       </nav>
 
       <div className="dside-foot">
-        <Link
-          href="/language"
-          className="dside-lang"
-          title="Sprache wählen · Dil seç · اختر اللغة"
-          aria-label="Sprache wählen · Dil seç · اختر اللغة"
-        >
-          <Globe size={18} strokeWidth={STROKE} aria-hidden />
-          <span className="dside-lang-txt">
-            <b>Sprache</b>
-            <i>·</i>
-            <b>Dil</b>
-            <i>·</i>
-            <b lang="ar" dir="rtl">
-              اللغة
-            </b>
-          </span>
-        </Link>
+        <SidebarLangLink />
         <div className="dside-user">
           <span className="dside-av">{COMPANY.initials}</span>
           <div>
