@@ -4,7 +4,8 @@ import { Step3Screen } from "@/components/create/step3-screen";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { CreatePlaceholder } from "@/components/flow/CreatePlaceholder";
 import { KundeStep } from "@/components/flow/KundeStep";
-import { isRtlLocale, routing } from "@/i18n/routing";
+import { Step2Screen } from "@/components/flow/step2-screen";
+import { isRtlLocale, routing, type Locale } from "@/i18n/routing";
 import "@/components/dashboard/dashboard.css";
 
 const TOTAL_STEPS = 3;
@@ -30,6 +31,15 @@ export default async function CreateStepPage({ params }: CreateStepPageProps) {
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
   const current = Math.min(Math.max(Number(step) || 1, 1), TOTAL_STEPS);
+
+  // Schritt 2 (Positionen) ist als vollflächiger Desktop-Screen umgesetzt.
+  if (current === 2) {
+    return (
+      <div className={`${hanken.variable} ${plexArabic.variable}`}>
+        <Step2Screen dir={dir} locale={locale as Locale} />
+      </div>
+    );
+  }
 
   // Schritt 3 (Vorschau & Versand) ist als eigener vollflächiger Screen umgesetzt.
   if (current === 3) {
