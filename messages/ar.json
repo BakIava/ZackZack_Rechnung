@@ -97,7 +97,19 @@
     "title": "فاتورة جديدة",
     "step1": "العميل",
     "step2": "البنود",
-    "step3": "المعاينة"
+    "step3": "المعاينة",
+    "createTitle": "إنشاء {type}",
+    "docType": "نوع المستند",
+    "rechnung": "فاتورة",
+    "angebot": "عرض سعر",
+    "chooseCustomer": "اختر العميل",
+    "searchCustomer": "ابحث عن عميل …",
+    "clearSearch": "مسح البحث",
+    "newCustomer": "عميل جديد",
+    "newCustomerSub": "إضافة سريعة",
+    "selected": "محدد",
+    "next": "التالي",
+    "back": "رجوع"
   },
   "StepHeader": {
     "progress": "الخطوة {step} من {total}"
