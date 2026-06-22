@@ -27,7 +27,8 @@ interface NavEntry {
 }
 
 interface SidebarProps {
-  active: NavId;
+  /** Aktiver Navigationspunkt — entfällt z. B. im Erstellen-Flow. */
+  active?: NavId;
 }
 
 const NAV: NavEntry[] = [
