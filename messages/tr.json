@@ -97,7 +97,19 @@
     "title": "Yeni fatura",
     "step1": "Müşteri",
     "step2": "Kalemler",
-    "step3": "Önizleme"
+    "step3": "Önizleme",
+    "createTitle": "{type} oluştur",
+    "docType": "Belge türü",
+    "rechnung": "Fatura",
+    "angebot": "Teklif",
+    "chooseCustomer": "Müşteri seç",
+    "searchCustomer": "Müşteri ara …",
+    "clearSearch": "Aramayı temizle",
+    "newCustomer": "Yeni müşteri",
+    "newCustomerSub": "Hızlı ekle",
+    "selected": "seçildi",
+    "next": "Devam",
+    "back": "Geri"
   },
   "StepHeader": {
     "progress": "Adım {step} / {total}"

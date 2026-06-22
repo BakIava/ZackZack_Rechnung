@@ -97,7 +97,19 @@
     "title": "Neue Rechnung",
     "step1": "Kunde",
     "step2": "Positionen",
-    "step3": "Vorschau"
+    "step3": "Vorschau",
+    "createTitle": "{type} erstellen",
+    "docType": "Dokumenttyp",
+    "rechnung": "Rechnung",
+    "angebot": "Angebot",
+    "chooseCustomer": "Kunde auswählen",
+    "searchCustomer": "Kunde suchen …",
+    "clearSearch": "Suche löschen",
+    "newCustomer": "Neuer Kunde",
+    "newCustomerSub": "Schnell anlegen",
+    "selected": "ausgewählt",
+    "next": "Weiter",
+    "back": "Zurück"
   },
   "StepHeader": {
     "progress": "Schritt {step} von {total}"
