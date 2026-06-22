@@ -1,10 +1,11 @@
 import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { AppNav } from "@/components/layout/app-nav";
-import { PlaceholderScreen } from "@/components/layout/placeholder-screen";
+import { setRequestLocale } from "next-intl/server";
 import { Step3Screen } from "@/components/create/step3-screen";
-import { StepHeader } from "@/components/ui";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { CreatePlaceholder } from "@/components/flow/CreatePlaceholder";
+import { KundeStep } from "@/components/flow/KundeStep";
 import { isRtlLocale, routing } from "@/i18n/routing";
+import "@/components/dashboard/dashboard.css";
 
 const TOTAL_STEPS = 3;
 
@@ -27,12 +28,11 @@ interface CreateStepPageProps {
 export default async function CreateStepPage({ params }: CreateStepPageProps) {
   const { locale, step } = await params;
   setRequestLocale(locale);
-
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr";
   const current = Math.min(Math.max(Number(step) || 1, 1), TOTAL_STEPS);
 
-  // Schritt 3 (Vorschau & Versand) ist als vollflächiger Screen umgesetzt.
+  // Schritt 3 (Vorschau & Versand) ist als eigener vollflächiger Screen umgesetzt.
   if (current === 3) {
-    const dir = isRtlLocale(locale) ? "rtl" : "ltr";
     return (
       <div className={`${hanken.variable} ${plexArabic.variable}`}>
         <Step3Screen dir={dir} />
@@ -40,13 +40,18 @@ export default async function CreateStepPage({ params }: CreateStepPageProps) {
     );
   }
 
-  const t = await getTranslations("Create");
-
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <AppNav />
-      <StepHeader step={current} total={TOTAL_STEPS} title={t("title")} />
-      <PlaceholderScreen titleKey="create" />
+    <div className={`${hanken.variable} ${plexArabic.variable}`}>
+      <div className="zz-dash">
+        <div className="dapp" dir={dir}>
+          <Sidebar active={null} />
+          {current === 1 ? (
+            <KundeStep dir={dir} />
+          ) : (
+            <CreatePlaceholder step={current} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
