@@ -1,9 +1,10 @@
 import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
+import { Step3Screen } from "@/components/create/step3-screen";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { CreatePlaceholder } from "@/components/flow/CreatePlaceholder";
 import { KundeStep } from "@/components/flow/KundeStep";
-import { routing, isRtlLocale } from "@/i18n/routing";
+import { isRtlLocale, routing } from "@/i18n/routing";
 import "@/components/dashboard/dashboard.css";
 
 const TOTAL_STEPS = 3;
@@ -29,6 +30,15 @@ export default async function CreateStepPage({ params }: CreateStepPageProps) {
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
   const current = Math.min(Math.max(Number(step) || 1, 1), TOTAL_STEPS);
+
+  // Schritt 3 (Vorschau & Versand) ist als eigener vollflächiger Screen umgesetzt.
+  if (current === 3) {
+    return (
+      <div className={`${hanken.variable} ${plexArabic.variable}`}>
+        <Step3Screen dir={dir} />
+      </div>
+    );
+  }
 
   return (
     <div className={`${hanken.variable} ${plexArabic.variable}`}>
