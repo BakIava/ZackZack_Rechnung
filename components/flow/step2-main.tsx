@@ -11,6 +11,7 @@ import { formatMoney } from "@/lib/format";
 import type { DocType } from "@/lib/demo/dashboard-data";
 import { CatalogPicker } from "./catalog-picker";
 import { PositionRow } from "./position-row";
+import "./step2.css";
 
 const STROKE = 1.75;
 
