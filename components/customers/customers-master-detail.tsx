@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import {
   Building2,
+  Check,
   FileText,
   IdCard,
   Mail,
@@ -19,40 +20,61 @@ import {
 import { useTranslations } from "next-intl";
 import {
   CUSTOMERS,
+  customerFromFlow,
   lastDoc,
+  recentKey,
   type Customer,
   type CustomerDoc,
   type CustomerDocStatus,
 } from "@/lib/demo/customers-data";
+import { NewCustomerModal, type FlowCustomer } from "@/components/flow/NewCustomerModal";
 import { formatDateDE, formatDateShort, formatMoney } from "@/lib/format";
+
+interface CustomersMasterDetailProps {
+  dir: "ltr" | "rtl";
+}
 
 type SortKey = "recent" | "az" | "open";
 const STROKE = 1.75;
 
 /** Desktop-Master-Detail für den Kunden-Bereich: Liste (links) + Detail (rechts).
  *  Suche, Sortierung und Auswahl laufen clientseitig; Beträge/Daten bleiben deutsch.
+ *  „Neuer Kunde" nutzt das wiederverwendete Modal aus dem Flow (/create).
  *  RTL wird über logische CSS-Properties am `dir`-Wrapper der Shell gelöst. */
-export function CustomersMasterDetail() {
+export function CustomersMasterDetail({ dir }: CustomersMasterDetailProps) {
   const t = useTranslations("Customers");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("recent");
+  const [created, setCreated] = useState<Customer[]>([]);
+  const [showNew, setShowNew] = useState(false);
   const [selId, setSelId] = useState(CUSTOMERS[0].id);
+
+  // Neu angelegte Kunden stehen vorn, gefolgt vom Demostamm.
+  const all = useMemo(() => [...created, ...CUSTOMERS], [created]);
 
   const list = useMemo(() => {
     const q = query.toLowerCase();
-    const filtered = CUSTOMERS.filter((x) =>
+    const filtered = all.filter((x) =>
       (x.name + " " + x.city).toLowerCase().includes(q),
     );
     if (sort === "az") return [...filtered].sort((a, b) => a.name.localeCompare(b.name, "de"));
     if (sort === "open") {
       return [...filtered].sort(
-        (a, b) => b.open - a.open || lastDoc(b).date.localeCompare(lastDoc(a).date),
+        (a, b) => b.open - a.open || recentKey(b).localeCompare(recentKey(a)),
       );
     }
-    return [...filtered].sort((a, b) => lastDoc(b).date.localeCompare(lastDoc(a).date));
-  }, [query, sort]);
+    return [...filtered].sort((a, b) => recentKey(b).localeCompare(recentKey(a)));
+  }, [all, query, sort]);
 
-  const selected = CUSTOMERS.find((x) => x.id === selId) ?? CUSTOMERS[0];
+  const selected = all.find((x) => x.id === selId) ?? all[0];
+
+  function handleCreate(flow: FlowCustomer) {
+    const full = customerFromFlow(flow, created.length);
+    setCreated((prev) => [full, ...prev]);
+    setSelId(full.id);
+    setQuery("");
+    setShowNew(false);
+  }
 
   const sortOptions: [SortKey, string][] = [
     ["recent", t("sortRecent")],
@@ -69,9 +91,9 @@ export function CustomersMasterDetail() {
             <div className="cdm-mtitle">
               <div className="cdm-mtitle-t">
                 {t("customers")}
-                <span className="c">{CUSTOMERS.length}</span>
+                <span className="c">{all.length}</span>
               </div>
-              <button type="button" className="cdm-new">
+              <button type="button" className="cdm-new" onClick={() => setShowNew(true)}>
                 <Plus size={16} strokeWidth={2.4} color="#fff" aria-hidden />
                 {t("newCust")}
               </button>
@@ -117,6 +139,10 @@ export function CustomersMasterDetail() {
         {/* Detail */}
         <CustomerDetail customer={selected} />
       </div>
+
+      {showNew && (
+        <NewCustomerModal dir={dir} onClose={() => setShowNew(false)} onCreate={handleCreate} />
+      )}
     </main>
   );
 }
@@ -130,17 +156,26 @@ interface MasterRowProps {
 function MasterRow({ customer, selected, onSelect }: MasterRowProps) {
   const t = useTranslations("Customers");
   const ld = lastDoc(customer);
-  const typeLabel = ld.type === "rechnung" ? t("rechnung") : t("angebot");
+  const docLabel = ld ? `${ld.type === "rechnung" ? t("rechnung") : t("angebot")} ${formatDateShort(ld.date)}` : "";
   return (
     <button type="button" className="cdmrow" data-sel={selected ? "1" : "0"} onClick={onSelect}>
       <span className={"cdm-av" + (customer.firma ? " cdm-av--firma" : "")}>
         {customer.firma ? <Building2 size={20} strokeWidth={STROKE} aria-hidden /> : customer.initials}
       </span>
       <span className="cdm-body">
-        <span className="cdm-name">{customer.name}</span>
+        <span className="cdm-name">
+          {customer.name}
+          {customer.isNew && (
+            <span className="cdm-badge">
+              <Check size={11} strokeWidth={2.4} aria-hidden />
+              {t("created")}
+            </span>
+          )}
+        </span>
         <span className="cdm-sub">
           <MapPin size={12} strokeWidth={STROKE} aria-hidden />
-          {customer.ort} · {typeLabel} {formatDateShort(ld.date)}
+          {customer.ort}
+          {docLabel && ` · ${docLabel}`}
         </span>
       </span>
       {customer.open > 0 && <span className="cdm-open">{formatMoney(customer.open)}</span>}
@@ -190,8 +225,8 @@ function CustomerDetail({ customer }: CustomerDetailProps) {
         <div className="cdm-fields">
           <Field icon={MapPin} label={t("address")} value={`${k.street}, ${k.zip} ${k.city}`} />
           <Field icon={IdCard} label={t("custNo")} value={k.kundennr} />
-          <Field icon={Phone} label={t("phone")} value={k.phone} />
-          <Field icon={Mail} label={t("email")} value={k.email} />
+          {k.phone && <Field icon={Phone} label={t("phone")} value={k.phone} />}
+          {k.email && <Field icon={Mail} label={t("email")} value={k.email} />}
           {k.note && (
             <div className="cdm-note">
               <span className="cdm-field-ic">
@@ -218,6 +253,7 @@ function CustomerDetail({ customer }: CustomerDetailProps) {
           {k.docs.map((d) => (
             <DocRow key={d.id} doc={d} />
           ))}
+          {k.docs.length === 0 && <div className="cdm-nodocs">{t("noDocs")}</div>}
         </div>
       </div>
     </div>

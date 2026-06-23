@@ -14,7 +14,7 @@ export function CustomersScreen({ dir }: CustomersScreenProps) {
     <div className="zz-cust">
       <div className="dapp" dir={dir}>
         <Sidebar active="customers" />
-        <CustomersMasterDetail />
+        <CustomersMasterDetail dir={dir} />
       </div>
     </div>
   );

@@ -4,6 +4,7 @@
    Cents; Einkaufspreis/Marge erscheinen hier bewusst nicht. */
 
 import type { DocType } from "./dashboard-data";
+import type { FlowCustomer } from "@/components/flow/NewCustomerModal";
 
 export type CustomerDocStatus =
   | "bezahlt"
@@ -37,6 +38,8 @@ export interface Customer {
   note: string;
   open: number; // offener Betrag in Cent
   docs: CustomerDoc[];
+  /** Frisch über das „Neuer Kunde"-Modal angelegt → „neu angelegt"-Badge. */
+  isNew?: boolean;
 }
 
 export const CUSTOMERS: Customer[] = [
@@ -104,9 +107,38 @@ export const CUSTOMERS: Customer[] = [
   },
 ];
 
-/** Jüngstes Dokument eines Kunden (nach Datum). */
-export function lastDoc(customer: Customer): CustomerDoc {
+/** Jüngstes Dokument eines Kunden (nach Datum) – `undefined`, wenn (noch) keins. */
+export function lastDoc(customer: Customer): CustomerDoc | undefined {
   return [...customer.docs].sort((a, b) => b.date.localeCompare(a.date))[0];
+}
+
+/** Sortierschlüssel „Zuletzt": jüngstes Dokumentdatum; neue Kunden ohne
+ *  Dokument wandern nach ganz oben, der Rest ganz nach unten. */
+export function recentKey(customer: Customer): string {
+  return lastDoc(customer)?.date ?? (customer.isNew ? "9999-99-99" : "0");
+}
+
+/** Wandelt einen im Modal angelegten Kunden in einen vollständigen Kunden um.
+ *  Kundennummer wird fortlaufend ab KD-1043 vergeben; noch keine Dokumente. */
+export function customerFromFlow(flow: FlowCustomer, seq: number): Customer {
+  const cityName = flow.cityName ?? flow.city;
+  return {
+    id: flow.id,
+    name: flow.name,
+    firma: Boolean(flow.firma),
+    initials: flow.initials,
+    street: flow.street,
+    zip: flow.zip ?? "",
+    city: cityName,
+    ort: cityName,
+    phone: flow.phone ?? "",
+    email: flow.email ?? "",
+    kundennr: `KD-${1043 + seq}`,
+    note: flow.note ?? "",
+    open: 0,
+    docs: [],
+    isNew: true,
+  };
 }
 
 /** Statusfarbe als CSS-Token (für den Punkt in der Liste). */

@@ -7,10 +7,18 @@ import type { DemoCustomer } from "@/lib/demo/dashboard-data";
 import "./NewCustomerModal.css";
 
 /** Im Flow neu angelegter Kunde. Superset der Demodaten:
- *  `firma` steuert das Icon, `isNew` das „neu angelegt“-Badge in der Auswahl. */
+ *  `firma` steuert das Icon, `isNew` das „neu angelegt“-Badge in der Auswahl.
+ *  Die separaten Adress-/Kontaktfelder sind optional und werden von
+ *  Detailansichten (z. B. /customers) genutzt – im Flow bleiben sie ungenutzt. */
 export type FlowCustomer = DemoCustomer & {
   firma?: boolean;
   isNew?: boolean;
+  zip?: string;
+  cityName?: string;
+  contact?: string;
+  phone?: string;
+  email?: string;
+  note?: string;
 };
 
 type CustomerType = "private" | "company";
@@ -72,6 +80,13 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
       street: street.trim() || "—",
       // Demodaten halten PLZ + Ort gemeinsam im Feld `city` (z. B. „60385 Frankfurt“).
       city: [trimmedZip, trimmedCity].filter(Boolean).join(" "),
+      // Einzelfelder für Detailansichten (Adresse/Kontakt).
+      zip: trimmedZip,
+      cityName: trimmedCity,
+      contact: contact.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      note: note.trim(),
       isNew: true,
     });
   }
