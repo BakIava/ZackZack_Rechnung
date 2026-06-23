@@ -226,6 +226,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.dcust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 13%, var(--surface));
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-inline-start: 8px;
+}
 .dcust-addr {
   font-size: 13px;
   color: var(--muted);
