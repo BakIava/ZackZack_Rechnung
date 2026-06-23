@@ -16,7 +16,8 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { CUSTOMERS } from "@/lib/demo/dashboard-data";
-import { type FlowCustomer, NewCustomerModal } from "./NewCustomerModal";
+import type { NewCustomerInput } from "@/lib/demo/customers-data";
+import { NewCustomerModal } from "@/components/customers/NewCustomerModal";
 import "./KundeStep.css";
 
 type DocType = "rechnung" | "angebot";
@@ -37,14 +38,14 @@ export function KundeStep({ dir }: KundeStepProps) {
   const [docType, setDocType] = useState<DocType>("rechnung");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
-  const [created, setCreated] = useState<FlowCustomer[]>([]);
+  const [created, setCreated] = useState<NewCustomerInput[]>([]);
   const [showNew, setShowNew] = useState(false);
 
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
   // Neu angelegte Kunden stehen oben, gefolgt vom Demostamm.
-  const allCustomers: FlowCustomer[] = [...created, ...CUSTOMERS];
+  const allCustomers: NewCustomerInput[] = [...created, ...CUSTOMERS];
   const needle = query.trim().toLowerCase();
   const filtered = allCustomers.filter(
     (c) =>

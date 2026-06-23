@@ -3,8 +3,21 @@
    bleiben deutsch — sie stehen so auf dem Dokument. Beträge als ganzzahlige
    Cents; Einkaufspreis/Marge erscheinen hier bewusst nicht. */
 
-import type { DocType } from "./dashboard-data";
-import type { FlowCustomer } from "@/components/flow/NewCustomerModal";
+import type { DemoCustomer, DocType } from "./dashboard-data";
+
+/** Eingabedaten eines im „Neuer Kunde"-Modal angelegten Kunden. Superset der
+ *  Demodaten: `firma` steuert das Icon, `isNew` das „neu angelegt"-Badge; die
+ *  Einzelfelder (PLZ, Ort, Kontakt …) sind optional und füllen Detailansichten. */
+export type NewCustomerInput = DemoCustomer & {
+  firma?: boolean;
+  isNew?: boolean;
+  zip?: string;
+  cityName?: string;
+  contact?: string;
+  phone?: string;
+  email?: string;
+  note?: string;
+};
 
 export type CustomerDocStatus =
   | "bezahlt"
@@ -120,7 +133,7 @@ export function recentKey(customer: Customer): string {
 
 /** Wandelt einen im Modal angelegten Kunden in einen vollständigen Kunden um.
  *  Kundennummer wird fortlaufend ab KD-1043 vergeben; noch keine Dokumente. */
-export function customerFromFlow(flow: FlowCustomer, seq: number): Customer {
+export function customerFromFlow(flow: NewCustomerInput, seq: number): Customer {
   const cityName = flow.cityName ?? flow.city;
   return {
     id: flow.id,

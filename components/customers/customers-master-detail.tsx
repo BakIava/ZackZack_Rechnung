@@ -26,8 +26,9 @@ import {
   type Customer,
   type CustomerDoc,
   type CustomerDocStatus,
+  type NewCustomerInput,
 } from "@/lib/demo/customers-data";
-import { NewCustomerModal, type FlowCustomer } from "@/components/flow/NewCustomerModal";
+import { NewCustomerModal } from "./NewCustomerModal";
 import { formatDateDE, formatDateShort, formatMoney } from "@/lib/format";
 
 interface CustomersMasterDetailProps {
@@ -68,7 +69,7 @@ export function CustomersMasterDetail({ dir }: CustomersMasterDetailProps) {
 
   const selected = all.find((x) => x.id === selId) ?? all[0];
 
-  function handleCreate(flow: FlowCustomer) {
+  function handleCreate(flow: NewCustomerInput) {
     const full = customerFromFlow(flow, created.length);
     setCreated((prev) => [full, ...prev]);
     setSelId(full.id);

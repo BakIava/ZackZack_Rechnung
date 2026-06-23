@@ -3,30 +3,15 @@
 import { Building2, Check, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import type { DemoCustomer } from "@/lib/demo/dashboard-data";
+import type { NewCustomerInput } from "@/lib/demo/customers-data";
 import "./NewCustomerModal.css";
-
-/** Im Flow neu angelegter Kunde. Superset der Demodaten:
- *  `firma` steuert das Icon, `isNew` das „neu angelegt“-Badge in der Auswahl.
- *  Die separaten Adress-/Kontaktfelder sind optional und werden von
- *  Detailansichten (z. B. /customers) genutzt – im Flow bleiben sie ungenutzt. */
-export type FlowCustomer = DemoCustomer & {
-  firma?: boolean;
-  isNew?: boolean;
-  zip?: string;
-  cityName?: string;
-  contact?: string;
-  phone?: string;
-  email?: string;
-  note?: string;
-};
 
 type CustomerType = "private" | "company";
 
 interface NewCustomerModalProps {
   dir: "ltr" | "rtl";
   onClose: () => void;
-  onCreate: (customer: FlowCustomer) => void;
+  onCreate: (customer: NewCustomerInput) => void;
 }
 
 const STROKE = 1.75;
@@ -41,9 +26,10 @@ function deriveInitials(name: string): string {
   return raw.toUpperCase();
 }
 
-/** „Neuer Kunde“-Modal aus Schritt 1. Legt einen Kunden mit wenigen Feldern an
- *  und gibt ihn an die Auswahl zurück. UI folgt der Bediensprache (inkl. RTL);
- *  Eigennamen bleiben deutsch, da sie so auf dem Dokument erscheinen. */
+/** Wiederverwendbares „Neuer Kunde“-Modal. Legt einen Kunden mit wenigen
+ *  Feldern an und gibt ihn per `onCreate` zurück – genutzt im Flow (Schritt 1)
+ *  und im Kunden-Bereich. UI folgt der Bediensprache (inkl. RTL); Eigennamen
+ *  bleiben deutsch, da sie so auf dem Dokument erscheinen. */
 export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalProps) {
   const t = useTranslations("Create");
   const [type, setType] = useState<CustomerType>("private");
