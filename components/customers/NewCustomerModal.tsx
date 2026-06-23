@@ -137,6 +137,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
               </span>
               <input
                 className="f-input"
+                autoComplete={isCompany ? "organization" : "name"}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={isCompany ? t("ncCompanyPh") : t("ncNamePh")}
@@ -152,6 +153,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 </span>
                 <input
                   className="f-input"
+                  autoComplete="name"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   placeholder={t("ncContactPh")}
@@ -163,6 +165,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
               <span className="f-lbl">{t("ncStreet")}</span>
               <input
                 className="f-input"
+                autoComplete="street-address"
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
                 placeholder={t("ncStreetPh")}
@@ -175,6 +178,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <input
                   className="f-input"
                   inputMode="numeric"
+                  autoComplete="postal-code"
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
                   placeholder={t("ncZipPh")}
@@ -184,6 +188,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <span className="f-lbl">{t("ncCity")}</span>
                 <input
                   className="f-input"
+                  autoComplete="address-level2"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder={t("ncCityPh")}
@@ -200,6 +205,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <input
                   className="f-input"
                   type="tel"
+                  autoComplete="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={t("ncPhonePh")}
@@ -213,6 +219,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <input
                   className="f-input"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("ncEmailPh")}

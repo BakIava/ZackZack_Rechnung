@@ -117,6 +117,8 @@ export function KundeStep({ dir }: KundeStepProps) {
         <div className="dsearch2">
           <Search size={20} strokeWidth={STROKE} color="var(--muted)" aria-hidden />
           <input
+            type="search"
+            autoComplete="off"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("searchCustomer")}

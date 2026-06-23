@@ -102,6 +102,8 @@ export function CustomersMasterDetail({ dir }: CustomersMasterDetailProps) {
             <div className="cdm-search">
               <Search size={18} strokeWidth={STROKE} aria-hidden />
               <input
+                type="search"
+                autoComplete="off"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t("search")}
