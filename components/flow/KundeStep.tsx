@@ -57,7 +57,7 @@ export function KundeStep({ dir }: KundeStepProps) {
 
   return (
     <main className="dmain">
-      <div className="dscroll">
+      <div className="dscroll" inert={showNew}>
         <div className="dflow-head">
           <button
             type="button"
@@ -208,7 +208,7 @@ export function KundeStep({ dir }: KundeStepProps) {
         />
       )}
 
-      <div className="dflow-foot">
+      <div className="dflow-foot" inert={showNew}>
         <div className="dflow-foot-sel">
           {selectedCustomer ? (
             <>

@@ -85,7 +85,7 @@ export function CustomersMasterDetail({ dir }: CustomersMasterDetailProps) {
 
   return (
     <main className="dmain">
-      <div className="cdm">
+      <div className="cdm" inert={showNew}>
         {/* Master */}
         <div className="cdm-master">
           <div className="cdm-mhead">
