@@ -18,3 +18,11 @@ export function formatDateDE(iso: string): string {
     year: "numeric",
   });
 }
+
+/** Formatiert ein ISO-Datum kurz als „TT. Mon." (de-DE) – für dichte Listen. */
+export function formatDateShort(iso: string): string {
+  return new Date(iso).toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "short",
+  });
+}
