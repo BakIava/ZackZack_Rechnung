@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Building2,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -15,6 +16,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { CUSTOMERS } from "@/lib/demo/dashboard-data";
+import { type FlowCustomer, NewCustomerModal } from "./NewCustomerModal";
 import "./KundeStep.css";
 
 type DocType = "rechnung" | "angebot";
@@ -35,17 +37,21 @@ export function KundeStep({ dir }: KundeStepProps) {
   const [docType, setDocType] = useState<DocType>("rechnung");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
+  const [created, setCreated] = useState<FlowCustomer[]>([]);
+  const [showNew, setShowNew] = useState(false);
 
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
+  // Neu angelegte Kunden stehen oben, gefolgt vom Demostamm.
+  const allCustomers: FlowCustomer[] = [...created, ...CUSTOMERS];
   const needle = query.trim().toLowerCase();
-  const filtered = CUSTOMERS.filter(
+  const filtered = allCustomers.filter(
     (c) =>
       c.name.toLowerCase().includes(needle) ||
       c.city.toLowerCase().includes(needle),
   );
-  const selectedCustomer = CUSTOMERS.find((c) => c.id === selected) ?? null;
+  const selectedCustomer = allCustomers.find((c) => c.id === selected) ?? null;
   const docLabel = docType === "rechnung" ? t("rechnung") : t("angebot");
 
   return (
@@ -129,7 +135,11 @@ export function KundeStep({ dir }: KundeStepProps) {
 
         <div className="dgrid">
           {!query && (
-            <button type="button" className="dcust dcust--new">
+            <button
+              type="button"
+              className="dcust dcust--new"
+              onClick={() => setShowNew(true)}
+            >
               <span className="dcust-av">
                 <Plus size={22} strokeWidth={STROKE_BOLD} color="#fff" aria-hidden />
               </span>
@@ -149,12 +159,27 @@ export function KundeStep({ dir }: KundeStepProps) {
               aria-pressed={selected === c.id}
               onClick={() => setSelected(c.id)}
             >
-              <span className="dcust-av">{c.initials}</span>
+              <span className="dcust-av">
+                {c.firma ? (
+                  <Building2 size={20} strokeWidth={STROKE} aria-hidden />
+                ) : (
+                  c.initials
+                )}
+              </span>
               <span className="dcust-body">
-                <span className="dcust-name">{c.name}</span>
+                <span className="dcust-name">
+                  {c.name}
+                  {c.isNew && (
+                    <span className="dcust-badge">
+                      <Check size={11} strokeWidth={STROKE_BOLD} aria-hidden />
+                      {t("ncCreated")}
+                    </span>
+                  )}
+                </span>
                 <span className="dcust-addr">
                   <MapPin size={13} strokeWidth={STROKE} aria-hidden />
-                  {c.street}, {c.city}
+                  {c.street}
+                  {c.city ? `, ${c.city}` : ""}
                 </span>
               </span>
               {selected === c.id && (
@@ -166,6 +191,19 @@ export function KundeStep({ dir }: KundeStepProps) {
           ))}
         </div>
       </div>
+
+      {showNew && (
+        <NewCustomerModal
+          dir={dir}
+          onClose={() => setShowNew(false)}
+          onCreate={(c) => {
+            setCreated((prev) => [c, ...prev]);
+            setSelected(c.id);
+            setQuery("");
+            setShowNew(false);
+          }}
+        />
+      )}
 
       <div className="dflow-foot">
         <div className="dflow-foot-sel">
