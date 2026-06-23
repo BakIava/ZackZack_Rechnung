@@ -87,6 +87,7 @@
 .cdmrow[data-sel="1"] .cdm-av { background: var(--primary); color: #fff; }
 .cdm-body { flex: 1; min-width: 0; }
 .cdm-name { font-size: 15px; font-weight: 650; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cdm-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, var(--surface)); border-radius: 999px; padding: 2px 8px; margin-inline-start: 8px; vertical-align: middle; }
 .cdm-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cdm-open { font-size: 12px; font-weight: 700; color: var(--warn); background: var(--warn-bg); padding: 4px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
@@ -141,3 +142,4 @@
 .cdm-tdate { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cdm-tamount { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .cdm-tamount.num, .cdm-tstatus.num { text-align: end; justify-self: end; }
+.cdm-nodocs { display: flex; justify-content: center; color: var(--muted); padding: 26px 14px; font-size: 14px; }
