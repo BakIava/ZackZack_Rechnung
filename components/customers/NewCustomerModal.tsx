@@ -3,22 +3,15 @@
 import { Building2, Check, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import type { DemoCustomer } from "@/lib/demo/dashboard-data";
+import type { NewCustomerInput } from "@/lib/demo/customers-data";
 import "./NewCustomerModal.css";
-
-/** Im Flow neu angelegter Kunde. Superset der Demodaten:
- *  `firma` steuert das Icon, `isNew` das „neu angelegt“-Badge in der Auswahl. */
-export type FlowCustomer = DemoCustomer & {
-  firma?: boolean;
-  isNew?: boolean;
-};
 
 type CustomerType = "private" | "company";
 
 interface NewCustomerModalProps {
   dir: "ltr" | "rtl";
   onClose: () => void;
-  onCreate: (customer: FlowCustomer) => void;
+  onCreate: (customer: NewCustomerInput) => void;
 }
 
 const STROKE = 1.75;
@@ -33,9 +26,10 @@ function deriveInitials(name: string): string {
   return raw.toUpperCase();
 }
 
-/** „Neuer Kunde“-Modal aus Schritt 1. Legt einen Kunden mit wenigen Feldern an
- *  und gibt ihn an die Auswahl zurück. UI folgt der Bediensprache (inkl. RTL);
- *  Eigennamen bleiben deutsch, da sie so auf dem Dokument erscheinen. */
+/** Wiederverwendbares „Neuer Kunde“-Modal. Legt einen Kunden mit wenigen
+ *  Feldern an und gibt ihn per `onCreate` zurück – genutzt im Flow (Schritt 1)
+ *  und im Kunden-Bereich. UI folgt der Bediensprache (inkl. RTL); Eigennamen
+ *  bleiben deutsch, da sie so auf dem Dokument erscheinen. */
 export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalProps) {
   const t = useTranslations("Create");
   const [type, setType] = useState<CustomerType>("private");
@@ -72,6 +66,13 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
       street: street.trim() || "—",
       // Demodaten halten PLZ + Ort gemeinsam im Feld `city` (z. B. „60385 Frankfurt“).
       city: [trimmedZip, trimmedCity].filter(Boolean).join(" "),
+      // Einzelfelder für Detailansichten (Adresse/Kontakt).
+      zip: trimmedZip,
+      cityName: trimmedCity,
+      contact: contact.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      note: note.trim(),
       isNew: true,
     });
   }
@@ -136,6 +137,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
               </span>
               <input
                 className="f-input"
+                autoComplete={isCompany ? "organization" : "name"}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={isCompany ? t("ncCompanyPh") : t("ncNamePh")}
@@ -151,6 +153,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 </span>
                 <input
                   className="f-input"
+                  autoComplete="name"
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   placeholder={t("ncContactPh")}
@@ -162,6 +165,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
               <span className="f-lbl">{t("ncStreet")}</span>
               <input
                 className="f-input"
+                autoComplete="street-address"
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
                 placeholder={t("ncStreetPh")}
@@ -174,6 +178,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <input
                   className="f-input"
                   inputMode="numeric"
+                  autoComplete="postal-code"
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
                   placeholder={t("ncZipPh")}
@@ -183,6 +188,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <span className="f-lbl">{t("ncCity")}</span>
                 <input
                   className="f-input"
+                  autoComplete="address-level2"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder={t("ncCityPh")}
@@ -199,6 +205,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <input
                   className="f-input"
                   type="tel"
+                  autoComplete="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={t("ncPhonePh")}
@@ -212,6 +219,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 <input
                   className="f-input"
                   type="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("ncEmailPh")}

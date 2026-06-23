@@ -155,6 +155,12 @@
 .dsearch2 input::placeholder {
   color: var(--muted);
 }
+/* eigener Clear-Button → native Such-Buttons ausblenden */
+.dsearch2 input::-webkit-search-cancel-button,
+.dsearch2 input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
 .dsearch2-clear {
   display: flex;
   align-items: center;
