@@ -232,7 +232,6 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
   return (
     <div className="cat-detail">
       <div className="cat-detail-hdr">
-        <div className="cat-detail-cat">{svc.kategorie}</div>
         <div className="cat-detail-name">{name}</div>
         {locale !== "de" && (
           <div className="cat-detail-de">
