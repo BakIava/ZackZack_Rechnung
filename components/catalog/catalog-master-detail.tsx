@@ -246,7 +246,7 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
         <div>
           <div className="cat-block-lbl">{t("translations")}</div>
           <div className="cat-trans">
-            {(["de", "tr", "ar"] as Locale[]).map((lang) => (
+            {(locale === "de" ? (["de"] as Locale[]) : (["de", locale] as Locale[])).map((lang) => (
               <div
                 key={lang}
                 className={"cat-trans-pill" + (locale === lang ? " is-cur" : "")}
