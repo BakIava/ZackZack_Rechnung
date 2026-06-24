@@ -65,8 +65,6 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
 
   const selected = items.find((s) => s.id === selId) ?? null;
 
-  const maxPrice = items.length ? Math.max(...items.map((s) => s.preisCents)) : 0;
-  const avgPrice = items.length ? Math.round(items.reduce((a, s) => a + s.preisCents, 0) / items.length) : 0;
 
   function handleSave(updated: KatalogEintrag) {
     setItems((prev) =>
@@ -210,7 +208,6 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
             <ServiceDetail
               svc={selected}
               locale={locale}
-              dir={dir}
               t={t}
               onEdit={() => { setEditItem(selected); setShowModal(true); }}
               onDelete={() => setShowDel(true)}
@@ -244,13 +241,12 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
 interface ServiceDetailProps {
   svc: KatalogEintrag | null;
   locale: Locale;
-  dir: "ltr" | "rtl";
   t: ReturnType<typeof useTranslations<"Catalog">>;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function ServiceDetail({ svc, locale, dir, t, onEdit, onDelete }: ServiceDetailProps) {
+function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps) {
   const STROKE = 1.75;
 
   if (!svc) {
