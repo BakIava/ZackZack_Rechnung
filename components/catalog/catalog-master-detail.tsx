@@ -37,31 +37,19 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
 
   const [items, setItems] = useState<KatalogEintrag[]>(sampleKatalog);
   const [query, setQuery] = useState("");
-  const [activeCat, setActiveCat] = useState<string | null>(null);
   const [selId, setSelId] = useState<string | null>(sampleKatalog[0]?.id ?? null);
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<KatalogEintrag | null>(null);
   const [showDel, setShowDel] = useState(false);
 
-  const cats = useMemo(() => {
-    const seen = new Set<string>();
-    const result: string[] = [];
-    for (const s of items) {
-      if (!seen.has(s.kategorie)) { seen.add(s.kategorie); result.push(s.kategorie); }
-    }
-    return result;
-  }, [items]);
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((s) => {
-      const matchCat = !activeCat || s.kategorie === activeCat;
-      const matchQ = !q
-        || s.de.toLowerCase().includes(q)
-        || Object.values(s.uebersetzungen).some((v) => v.toLowerCase().includes(q));
-      return matchCat && matchQ;
-    });
-  }, [items, query, activeCat]);
+    return items.filter((s) =>
+      !q
+      || s.de.toLowerCase().includes(q)
+      || Object.values(s.uebersetzungen).some((v) => v.toLowerCase().includes(q)),
+    );
+  }, [items, query]);
 
   const selected = items.find((s) => s.id === selId) ?? null;
 
@@ -127,33 +115,6 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
         </div>
 
         <div className="dscroll">
-          {/* ── Kategorie-Filter ── */}
-          <div className="cat-filters">
-            <button
-              type="button"
-              className="sortchip"
-              data-on={activeCat === null ? "1" : "0"}
-              onClick={() => setActiveCat(null)}
-            >
-              {t("allCats")}
-              <span className="cat-chip-n">{items.length}</span>
-            </button>
-            {cats.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                className="sortchip"
-                data-on={activeCat === cat ? "1" : "0"}
-                onClick={() => setActiveCat(cat)}
-              >
-                {cat}
-                <span className="cat-chip-n">
-                  {items.filter((s) => s.kategorie === cat).length}
-                </span>
-              </button>
-            ))}
-          </div>
-
           {/* ── Master + Detail ── */}
           <div className="cat-body">
             {/* Master */}
