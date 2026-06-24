@@ -114,18 +114,18 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
           </div>
         </div>
 
-        <div className="dscroll">
-          {/* ── Master + Detail ── */}
-          <div className="cat-body">
-            {/* Master */}
-            <div className="cat-master">
-              <div className="cat-list-head">
-                <span className="cat-list-lbl">{t("listHead")}</span>
-                <span className="cat-list-count">
-                  {filtered.length} / {items.length}
-                </span>
-              </div>
+        {/* ── Master + Detail ── */}
+        <div className="cat-body">
+          {/* Master */}
+          <div className="cat-master">
+            <div className="cat-master-head">
+              <span className="cat-list-lbl">{t("listHead")}</span>
+              <span className="cat-list-count">
+                {filtered.length} / {items.length}
+              </span>
+            </div>
 
+            <div className="cat-master-scroll">
               {filtered.length === 0 ? (
                 <div className="cat-empty-list">
                   <div className="cat-empty-list-t">{t("noResults")}</div>
@@ -164,8 +164,10 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Detail */}
+          {/* Detail */}
+          <div className="cat-detail-scroll">
             <ServiceDetail
               svc={selected}
               locale={locale}
