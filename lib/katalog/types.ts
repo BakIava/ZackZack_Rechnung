@@ -14,6 +14,9 @@ export interface KatalogEintrag {
   uebersetzungen: Record<Locale, string>;
   einheit: string;
   preisCents: number;
+  kategorie: string;
+  /** Anzahl der Dokumente, in denen diese Leistung verwendet wurde (Demo-Wert). */
+  verwendungen: number;
 }
 
 /** UI-Anzeige in der Bediensprache (Fallback: deutscher Begriff). */
