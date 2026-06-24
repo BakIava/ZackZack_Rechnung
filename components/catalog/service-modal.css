@@ -1,0 +1,218 @@
+/* service-modal.css — Add / Edit-Modal für eine Katalogleistung. */
+
+.smod-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.smod-bd {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 24, 32, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: smod-fade 0.2s ease;
+}
+
+.smod {
+  position: relative;
+  width: 520px;
+  max-width: 92%;
+  max-height: 88dvh;
+  background: var(--bg);
+  border-radius: 18px;
+  box-shadow: 0 30px 70px rgba(12, 24, 32, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: smod-pop 0.22s cubic-bezier(0.3, 0.8, 0.4, 1);
+}
+
+.smod-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px 0;
+}
+
+.smod-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.smod-x {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: 0.14s;
+}
+
+.smod-x:hover { border-color: #c3ccd4; }
+
+.smod-sub {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 22px 0;
+  line-height: 1.5;
+}
+
+.smod-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 22px;
+}
+
+.smod-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Formular-Primitives (geteilt mit NewCustomerModal) ─────────────────── */
+.f-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.f-row-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.f-lbl {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.f-input {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+
+.f-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15, 42, 63, 0.07);
+}
+
+.f-input::placeholder { color: var(--muted); }
+
+.f-select {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--ink);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+
+.f-select:focus { border-color: var(--primary); }
+
+.f-affix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.f-affix .f-input { padding-inline-end: 34px; }
+
+.f-unit {
+  position: absolute;
+  inset-inline-end: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+/* Badge-Chips */
+.smod-on-doc {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface));
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.smod-opt {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.smod-foot {
+  display: flex;
+  gap: 10px;
+  padding: 16px 22px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.smod-save {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--r);
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.14s;
+}
+
+.smod-save:hover { background: color-mix(in srgb, var(--primary) 86%, #000); }
+.smod-save:disabled { opacity: 0.38; cursor: default; }
+
+/* ── Animationen ─────────────────────────────────────────────────────────── */
+@keyframes smod-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes smod-pop {
+  from { transform: scale(0.96); opacity: 0.4; }
+  to   { transform: scale(1);    opacity: 1; }
+}
