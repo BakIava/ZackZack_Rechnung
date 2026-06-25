@@ -628,4 +628,27 @@
   align-items: start;
 }
 
-/* dbtn — "Neues Dokument"-Button in der TopBar — geerbt aus dashboard.css */
+/* ── "Neues Dokument"-Button in der TopBar ────────────────────────────────── */
+.dbtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-radius: var(--r-lg);
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.15s;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 12px 26px -12px rgba(15, 42, 63, 0.7);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.dbtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px -12px rgba(15, 42, 63, 0.75);
+}
