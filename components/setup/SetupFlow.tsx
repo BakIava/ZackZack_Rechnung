@@ -442,7 +442,7 @@ function Step2Fields({ t }: { t: typeof T.de }) {
 function Step3Fields({ t }: { t: typeof T.de }) {
   return (
     <div className="ob-form">
-      <Field label={t.iban} valid>
+      <Field label={t.iban}>
         <TextInput value="DE89 3704 0044 0532 0130 00" valid mono dir="ltr" />
       </Field>
       <Field label={t.inhaber}>
