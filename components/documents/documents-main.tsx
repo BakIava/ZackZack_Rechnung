@@ -470,7 +470,7 @@ export function DocumentsMain({ dir }: DocumentsMainProps) {
                         </span>
                         <span className="hrow-name">{d.customer}</span>
                         <span className="hrow-meta">
-                          {d.service} · {formatDateDE(d.date)}
+                          {formatDateDE(d.date)}
                         </span>
                       </span>
                       <span className="hrow-right">
