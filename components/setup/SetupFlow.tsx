@@ -10,7 +10,7 @@ import { SetupIcon } from "./SetupIcon";
 
 type Lang = "de" | "tr" | "ar";
 type Translations = typeof T[Lang];
-type Phase = "entry" | "upload" | "scanning" | "review" | "wizard" | "done";
+type Phase = "welcome" | "entry" | "upload" | "scanning" | "review" | "wizard" | "done";
 
 interface SetupFlowProps {
   lang?: Lang;
@@ -88,6 +88,7 @@ const T = {
     tileFast: "Schnell",
     tileUploadS: "Foto, Galerie oder PDF — wir lesen Firmenname, Adresse, Steuernummer & IBAN aus.",
     tileManualT: "Manuell eingeben",
+    loslegen: "Loslegen",
     tileManualS: "Schritt für Schritt selbst eintragen — dauert keine 2 Minuten.",
     privacyA: "Die hochgeladene Rechnung nutzen wir nur zur Datenerkennung —",
     privacyB: "sie wird nicht gespeichert.",
@@ -182,6 +183,7 @@ const T = {
     tileFast: "Hızlı",
     tileUploadS: "Fotoğraf, galeri veya PDF — firma adı, adres, vergi no & IBAN okuruz.",
     tileManualT: "Manuel gir",
+    loslegen: "Başla",
     tileManualS: "Adım adım kendin gir — 2 dakika sürmez.",
     privacyA: "Yüklenen faturayı yalnızca veri tanıma için kullanıyoruz —",
     privacyB: "kaydedilmez.",
@@ -276,6 +278,7 @@ const T = {
     tileFast: "سريع",
     tileUploadS: "صورة أو PDF — نستخرج اسم الشركة والعنوان والرقم الضريبي وIBAN.",
     tileManualT: "إدخال يدوي",
+    loslegen: "ابدأ الآن",
     tileManualS: "أدخل البيانات خطوة بخطوة — لن يستغرق أكثر من دقيقتين.",
     privacyA: "نستخدم الفاتورة المرفوعة فقط لاستخراج البيانات —",
     privacyB: "ولا يتم حفظها.",
@@ -712,7 +715,7 @@ function UpProgress({ t, upIndex }: { t: Translations; upIndex: number }) {
 export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }: SetupFlowProps) {
   const t = T[lang];
   const TOTAL = 4;
-  const [phase, setPhase] = useState<Phase>("entry");
+  const [phase, setPhase] = useState<Phase>("welcome");
   const [step, setStep] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -735,8 +738,54 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
   const goComplete = onComplete ?? (() => {});
   const goDash = onDashboard ?? (() => {});
 
+  const WELCOME_ITEMS: { ic: string; lbl: string }[] = [
+    { ic: "building", lbl: t.progNames[0] },
+    { ic: "idcard", lbl: t.progNames[1] },
+    { ic: "bank", lbl: t.progNames[2] },
+    { ic: "brush", lbl: t.progNames[3] },
+  ];
+
   // ── MOBILE ──────────────────────────────────────────────────────────────────
   if (isMobile) {
+    if (phase === "welcome") {
+      return (
+        <div className="ob-root" dir={dir}>
+          <div className="ob-top">
+            <button className="ob-back" disabled>
+              <SetupIcon name="chevronLeft" size={20} />
+            </button>
+            <div className="ob-top-mid">
+              <div className="ob-top-brand">
+                <Image src="/assets/zackzack-mark.png" alt="" width={18} height={18} style={{ height: 18, width: "auto" }} />
+                {t.setup}
+              </div>
+              <div className="ob-top-sub">{t.setupSub}</div>
+            </div>
+            <div className="ob-top-spacer" />
+          </div>
+          <div className="ob-welcome">
+            <div className="ob-welcome-logo">
+              <Image src="/assets/zackzack-logo.png" alt="ZACK ZACK RECHNUNG" width={160} height={34} style={{ height: 34, width: "auto" }} />
+            </div>
+            <div className="ob-welcome-title">{t.setup}</div>
+            <div className="ob-welcome-sub">{t.dSub}</div>
+            <div className="ob-welcome-pills">
+              {WELCOME_ITEMS.map((item) => (
+                <span key={item.ic} className="ob-welcome-pill">
+                  <SetupIcon name={item.ic} size={15} />
+                  {item.lbl}
+                </span>
+              ))}
+            </div>
+            <button type="button" className="ob-next ob-next--welcome" onClick={() => setPhase("entry")}>
+              {t.loslegen}<SetupIcon name="arrowRight" size={20} weight="bold" />
+            </button>
+            <LangLink lang={lang} />
+          </div>
+        </div>
+      );
+    }
+
     if (phase === "entry") {
       return (
         <div className="ob-root" dir={dir}>
@@ -755,7 +804,6 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
           </div>
           <div className="ob-entry">
             <div className="ob-entry-head">
-              <div className="ob-entry-greet">{t.entryGreet}</div>
               <div className="ob-entry-title">{t.entryTitle}</div>
               <div className="ob-entry-sub">{t.entrySub}</div>
             </div>
@@ -999,6 +1047,33 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
 
   // ── DESKTOP ─────────────────────────────────────────────────────────────────
 
+  if (phase === "welcome") {
+    return (
+      <div className="ob-d" dir={dir}>
+        <DesktopBar t={t} />
+        <div className="ob-d-scroll" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="ob-d-welcome">
+            <Image src="/assets/zackzack-logo.png" alt="ZACK ZACK RECHNUNG" width={180} height={38} style={{ height: 38, width: "auto", marginBottom: 32 }} />
+            <div className="ob-d-title" style={{ marginBottom: 12 }}>{t.setup}</div>
+            <div className="ob-d-sub" style={{ marginBottom: 28 }}>{t.dSub}</div>
+            <div className="ob-welcome-pills ob-welcome-pills--d">
+              {WELCOME_ITEMS.map((item) => (
+                <span key={item.ic} className="ob-welcome-pill">
+                  <SetupIcon name={item.ic} size={15} />
+                  {item.lbl}
+                </span>
+              ))}
+            </div>
+            <button className="ob-d-btn ob-d-btn--lg" onClick={() => setPhase("entry")}>
+              {t.loslegen}<SetupIcon name="arrowRight" size={20} weight="bold" />
+            </button>
+            <LangLink lang={lang} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === "entry") {
     return (
       <div className="ob-d" dir={dir}>
@@ -1006,7 +1081,6 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
         <div className="ob-d-scroll" style={{ display: "flex", flexDirection: "column" }}>
           <div className="ob-entry-d">
             <div className="ob-d-head">
-              <div className="ob-d-kicker">{t.entryGreet}</div>
               <div className="ob-d-title">{t.entryTitle}</div>
               <div className="ob-d-sub">{t.entrySub}</div>
             </div>

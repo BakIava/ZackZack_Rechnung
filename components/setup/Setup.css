@@ -1063,6 +1063,70 @@
 .ob-d-wrap .ob-lang-link,
 .ob-d-done .ob-lang-link { margin-top: 18px; }
 
+/* ── Welcome screen ────────────────────────────────────────────────────────── */
+.ob-welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px 24px 24px;
+  gap: 0;
+}
+.ob-welcome-logo { margin-bottom: 28px; }
+.ob-welcome-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 12px;
+}
+.ob-welcome-sub {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.55;
+  max-width: 340px;
+  margin-bottom: 24px;
+}
+.ob-welcome-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+.ob-welcome-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ob-next--welcome {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 20px;
+}
+/* Desktop welcome */
+.ob-d-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 40px;
+  max-width: 480px;
+  width: 100%;
+}
+.ob-welcome-pills--d { margin-bottom: 36px; }
+.ob-d-btn--lg {
+  padding: 14px 32px;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
 /* RTL: Pfeile spiegeln */
 [dir="rtl"] .ob-back svg,
 [dir="rtl"] .ob-next svg,
