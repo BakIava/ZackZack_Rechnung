@@ -8,6 +8,7 @@ import { SetupIcon } from "./SetupIcon";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Lang = "de" | "tr" | "ar";
+type Translations = typeof T[Lang];
 type Phase = "entry" | "upload" | "scanning" | "review" | "wizard" | "done";
 
 interface SetupFlowProps {
@@ -386,7 +387,7 @@ function Seg3({ options, value }: { options: [string, string][]; value: string |
   );
 }
 
-function Toggle19({ t }: { t: typeof T.de }) {
+function Toggle19({ t }: { t: Translations }) {
   const [on, setOn] = useState(true);
   return (
     <button
@@ -407,7 +408,7 @@ function Toggle19({ t }: { t: typeof T.de }) {
   );
 }
 
-function Step1Fields({ t }: { t: typeof T.de }) {
+function Step1Fields({ t }: { t: Translations }) {
   return (
     <div className="ob-form">
       <Field label={t.firma} req><TextInput value="Yılmaz Malerbetrieb" valid /></Field>
@@ -424,7 +425,7 @@ function Step1Fields({ t }: { t: typeof T.de }) {
   );
 }
 
-function Step2Fields({ t }: { t: typeof T.de }) {
+function Step2Fields({ t }: { t: Translations }) {
   return (
     <div className="ob-form">
       <Field
@@ -439,7 +440,7 @@ function Step2Fields({ t }: { t: typeof T.de }) {
   );
 }
 
-function Step3Fields({ t }: { t: typeof T.de }) {
+function Step3Fields({ t }: { t: Translations }) {
   return (
     <div className="ob-form">
       <Field label={t.iban}>
@@ -456,7 +457,7 @@ function Step3Fields({ t }: { t: typeof T.de }) {
   );
 }
 
-function LogoEmpty({ t }: { t: typeof T.de }) {
+function LogoEmpty({ t }: { t: Translations }) {
   return (
     <div className="ob-form">
       <button type="button" className="ob-upload">
@@ -476,7 +477,7 @@ function LogoEmpty({ t }: { t: typeof T.de }) {
   );
 }
 
-function LogoPreview({ t }: { t: typeof T.de }) {
+function LogoPreview({ t }: { t: Translations }) {
   return (
     <div className="ob-form">
       <div className="ob-logo-pre">
@@ -521,7 +522,7 @@ function ScanDoc() {
   );
 }
 
-function Privacy({ t, flow }: { t: typeof T.de; flow?: boolean }) {
+function Privacy({ t, flow }: { t: Translations; flow?: boolean }) {
   return (
     <div className={"ob-privacy" + (flow ? " ob-privacy--flow" : "")}>
       <div className="ob-privacy-ic"><SetupIcon name="lock" size={17} /></div>
@@ -538,7 +539,7 @@ function EntryTiles({
   onUpload,
   onManual,
 }: {
-  t: typeof T.de;
+  t: Translations;
   row?: boolean;
   onUpload?: () => void;
   onManual?: () => void;
@@ -572,7 +573,7 @@ function UploadOpts({
   t,
   onChoose,
 }: {
-  t: typeof T.de;
+  t: Translations;
   onChoose?: () => void;
 }) {
   const opts = [
@@ -596,7 +597,7 @@ function UploadOpts({
   );
 }
 
-function ReviewFields({ t }: { t: typeof T.de }) {
+function ReviewFields({ t }: { t: Translations }) {
   const Detected = () => (
     <span className="ob-detected">
       <SetupIcon name="check" size={11} weight="bold" />{t.detected}
@@ -653,7 +654,7 @@ function ReviewFields({ t }: { t: typeof T.de }) {
 
 // ── Desktop ──────────────────────────────────────────────────────────────────
 
-function DesktopBar({ t }: { t: typeof T.de }) {
+function DesktopBar({ t }: { t: Translations }) {
   return (
     <div className="ob-d-bar">
       <div className="ob-d-brand">
@@ -664,7 +665,7 @@ function DesktopBar({ t }: { t: typeof T.de }) {
   );
 }
 
-function UpProgress({ t, upIndex }: { t: typeof T.de; upIndex: number }) {
+function UpProgress({ t, upIndex }: { t: Translations; upIndex: number }) {
   const names = [t.upStep1, t.upStep2, t.upStep3];
   return (
     <div className="ob-d-steps">
