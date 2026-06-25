@@ -1039,6 +1039,30 @@
 }
 .ob-detected--todo { background: var(--warn-bg); color: var(--warn); padding-inline: 8px; }
 
+/* ── Sprach-Link ───────────────────────────────────────────────────────────── */
+.ob-lang-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  align-self: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition: color 0.14s, border-color 0.14s;
+}
+.ob-lang-link:hover {
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--line));
+}
+.ob-d-wrap .ob-lang-link,
+.ob-d-done .ob-lang-link { margin-top: 18px; }
+
 /* RTL: Pfeile spiegeln */
 [dir="rtl"] .ob-back svg,
 [dir="rtl"] .ob-next svg,

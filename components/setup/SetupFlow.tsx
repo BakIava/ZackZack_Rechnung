@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import "./Setup.css";
 import { SetupIcon } from "./SetupIcon";
 
@@ -304,6 +305,23 @@ const T = {
     upStep3: "مراجعة",
   },
 } as const;
+
+// ── Sprach-Link (persistiert auf allen Screens) ───────────────────────────────
+
+const LANG_LABEL: Record<Lang, string> = {
+  de: "Sprache ändern · Dil · اللغة",
+  tr: "Dil · Sprache · اللغة",
+  ar: "اللغة · Sprache · Dil",
+};
+
+function LangLink({ lang }: { lang: Lang }) {
+  return (
+    <Link href={`/language?return=/setup`} className="ob-lang-link">
+      <SetupIcon name="globe" size={15} />
+      {LANG_LABEL[lang]}
+    </Link>
+  );
+}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -743,6 +761,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
             </div>
             <EntryTiles t={t} onUpload={() => setPhase("upload")} onManual={goManual} />
             <Privacy t={t} />
+            <LangLink lang={lang} />
           </div>
         </div>
       );
@@ -774,6 +793,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
             </div>
             <UploadOpts t={t} onChoose={() => setPhase("scanning")} />
             <Privacy t={t} flow />
+            <LangLink lang={lang} />
           </div>
         </div>
       );
@@ -801,6 +821,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
             <div className="ob-scan-s">{t.scanS}</div>
             <div className="ob-scan-file"><SetupIcon name="file" size={15} />{t.scanFile}</div>
             <div className="ob-scan-dots"><i /><i /><i /></div>
+            <LangLink lang={lang} />
           </div>
         </div>
       );
@@ -836,6 +857,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
             <button className="ob-next" onClick={() => setPhase("done")}>
               <SetupIcon name="check" size={20} weight="bold" />{t.revApply}
             </button>
+            <LangLink lang={lang} />
           </div>
         </div>
       );
@@ -877,6 +899,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
               <SetupIcon name="plus" size={20} weight="bold" />{t.firstInvoice}
             </button>
             <button className="ob-skip" onClick={goDash}><b>{t.toDash}</b></button>
+            <LangLink lang={lang} />
           </div>
         </div>
       );
@@ -968,6 +991,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
               {t.skip} — <b>{t.skipB}</b>
             </button>
           )}
+          <LangLink lang={lang} />
         </div>
       </div>
     );
@@ -988,6 +1012,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
             </div>
             <EntryTiles t={t} row onUpload={() => setPhase("upload")} onManual={goManual} />
             <Privacy t={t} flow />
+            <LangLink lang={lang} />
           </div>
         </div>
       </div>
@@ -1018,6 +1043,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
                 <button className="ob-d-skip" onClick={goManual}>{t.tileManualT}</button>
               </div>
             </div>
+            <LangLink lang={lang} />
           </div>
         </div>
       </div>
@@ -1080,6 +1106,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
                 </button>
               </div>
             </div>
+            <LangLink lang={lang} />
           </div>
         </div>
       </div>
@@ -1124,6 +1151,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
                 </button>
                 <button className="ob-d-back" onClick={goDash}>{t.toDash}</button>
               </div>
+              <LangLink lang={lang} />
             </div>
           </div>
         </div>
@@ -1216,6 +1244,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
               </button>
             </div>
           </div>
+          <LangLink lang={lang} />
         </div>
       </div>
     </div>
