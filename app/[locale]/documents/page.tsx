@@ -1,18 +1,30 @@
+import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
-import { PlaceholderScreen } from "@/components/layout/placeholder-screen";
-import { AppNav } from "@/components/layout/app-nav";
-import { routing } from "@/i18n/routing";
+import { DocumentsScreen } from "@/components/documents/documents-screen";
+import { routing, isRtlLocale } from "@/i18n/routing";
+
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const plexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-plex-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+});
 
 type Props = { params: Promise<{ locale: string }> };
 
 export default async function DocumentsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr";
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <AppNav className="mb-6" />
-      <PlaceholderScreen titleKey="documents" />
+    <div className={`${hanken.variable} ${plexArabic.variable}`}>
+      <DocumentsScreen dir={dir} />
     </div>
   );
 }
