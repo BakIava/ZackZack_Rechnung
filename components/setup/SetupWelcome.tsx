@@ -1,5 +1,6 @@
 "use client";
 
+import "./SetupWelcome.css";
 import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang } from "./translations";

@@ -1,5 +1,6 @@
 "use client";
 
+import "./SetupDone.css";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang } from "./translations";
 import { LangLink, DesktopBar } from "./SetupPrimitives";

@@ -1,5 +1,6 @@
 "use client";
 
+import "./SetupPrimitives.css";
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";

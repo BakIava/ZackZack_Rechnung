@@ -1,0 +1,35 @@
+/* SetupReview — Review-Banner, Gruppen-Labels */
+
+.ob-review-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--line));
+  margin: 8px 0 16px;
+}
+.ob-review-banner-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+}
+.ob-review-banner-t { font-size: 13.5px; font-weight: 700; letter-spacing: -0.01em; }
+.ob-review-banner-s { font-size: 12.5px; color: var(--muted); line-height: 1.45; margin-top: 3px; }
+
+.ob-group-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 8px 0 -3px;
+}
+.ob-group-lbl:first-child { margin-top: 0; }

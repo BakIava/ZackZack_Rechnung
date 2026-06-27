@@ -1,5 +1,6 @@
 "use client";
 
+import "./SetupStepFields.css";
 import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations } from "./translations";
