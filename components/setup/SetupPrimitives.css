@@ -310,6 +310,12 @@
 .ob-skip b { color: var(--primary); font-weight: 650; }
 
 /* ── Sprach-Link ───────────────────────────────────────────────────────────── */
+.ob-lang-link-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .ob-lang-link {
   display: inline-flex;
   align-items: center;

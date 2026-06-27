@@ -173,6 +173,11 @@
   flex-direction: column;
   gap: 12px;
 }
+.dside-lang-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .dside-lang {
   display: inline-flex;
   align-items: center;

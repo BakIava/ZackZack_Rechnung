@@ -63,7 +63,7 @@ export function SetupWelcome({ t, lang, dir, isMobile, onNext }: WelcomeProps) {
       <DesktopBar t={t} />
       <div className="ob-d-scroll" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div className="ob-d-welcome">
-          <Image src="/assets/zackzack-logo.png" alt="ZACK ZACK RECHNUNG" width={180} height={38} style={{ height: 38, width: "auto", marginBottom: 32 }} />
+          <Image src="/assets/zackzack-logo.png" alt="ZACK ZACK RECHNUNG" width={180} height={128} style={{ height: 128, width: "auto", marginBottom: 32 }} />
           <div className="ob-d-title" style={{ marginBottom: 12 }}>{t.setup}</div>
           <div className="ob-d-sub" style={{ marginBottom: 28 }}>{t.dSub}</div>
           <div className="ob-welcome-pills ob-welcome-pills--d">

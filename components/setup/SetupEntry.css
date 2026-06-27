@@ -76,7 +76,7 @@
 /* ── Datenschutz-Hinweis ───────────────────────────────────────────────────── */
 .ob-privacy {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   margin-top: auto;
   padding: 13px 15px;

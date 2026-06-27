@@ -14,22 +14,24 @@ export function SidebarLangLink() {
   const href = `/language?return=${encodeURIComponent(pathname)}`;
 
   return (
-    <NextLink
-      href={href}
-      className="dside-lang"
-      title="Sprache wählen · Dil seç · اختر اللغة"
-      aria-label="Sprache wählen · Dil seç · اختر اللغة"
-    >
-      <Globe size={18} strokeWidth={1.75} aria-hidden />
-      <span className="dside-lang-txt">
-        <b>Sprache</b>
-        <i>·</i>
-        <b>Dil</b>
-        <i>·</i>
-        <b lang="ar" dir="rtl">
-          اللغة
-        </b>
-      </span>
-    </NextLink>
+    <div className="dside-lang-container">
+      <NextLink
+        href={href}
+        className="dside-lang"
+        title="Sprache wählen · Dil seç · اختر اللغة"
+        aria-label="Sprache wählen · Dil seç · اختر اللغة"
+      >
+        <Globe size={18} strokeWidth={1.75} aria-hidden />
+        <span className="dside-lang-txt">
+          <b>Sprache</b>
+          <i>·</i>
+          <b>Dil</b>
+          <i>·</i>
+          <b lang="ar" dir="rtl">
+            اللغة
+          </b>
+        </span>
+      </NextLink>
+    </div>
   );
 }

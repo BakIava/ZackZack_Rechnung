@@ -15,10 +15,12 @@ interface LangLinkProps {
 
 export function LangLink({ lang }: LangLinkProps) {
   return (
-    <Link href={`/language?return=/setup`} className="ob-lang-link">
-      <SetupIcon name="globe" size={15} />
-      {LANG_LABEL[lang]}
-    </Link>
+    <div className="ob-lang-link-container">
+      <Link href={`/language?return=/setup`} className="ob-lang-link">
+        <SetupIcon name="globe" size={15} />
+        {LANG_LABEL[lang]}
+      </Link>
+    </div>
   );
 }
 
