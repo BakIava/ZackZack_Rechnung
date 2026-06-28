@@ -1,0 +1,130 @@
+/* SetupUpload — Upload-Optionen, Scan-Dokument, Scan-Animation */
+
+/* ── Upload Optionen ───────────────────────────────────────────────────────── */
+.ob-up-opts { display: flex; flex-direction: column; gap: 11px; }
+.ob-up-opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: start;
+  font-family: inherit;
+  cursor: pointer;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  padding: 15px 16px;
+  transition: 0.14s;
+}
+.ob-up-opt:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -14px rgba(2, 51, 92, 0.4);
+}
+.ob-up-opt-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 14%, transparent);
+}
+.ob-up-opt-tx { flex: 1; min-width: 0; }
+.ob-up-opt-t { font-size: 15.5px; font-weight: 650; letter-spacing: -0.01em; }
+.ob-up-opt-s { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.ob-up-opt-aff { color: #b6c0c9; flex-shrink: 0; display: flex; }
+.ob-up-opt:hover .ob-up-opt-aff { color: var(--primary); }
+
+/* ── Scan-Zustand ──────────────────────────────────────────────────────────── */
+.ob-scan {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px var(--pad) 28px;
+}
+.ob-scan-doc {
+  width: 138px;
+  height: 184px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 38px -16px rgba(2, 51, 92, 0.45);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 26px;
+}
+.sd-logo {
+  position: absolute;
+  top: 14px;
+  inset-inline-start: 14px;
+  width: 30px;
+  height: 12px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 70%, #fff);
+}
+.sd-line {
+  position: absolute;
+  inset-inline: 14px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+.sd-line.w { background: color-mix(in srgb, var(--primary) 12%, var(--surface-2)); }
+.ob-scan-beam {
+  position: absolute;
+  inset-inline: 0;
+  height: 40px;
+  top: -40px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--primary) 26%, transparent) 55%,
+    transparent
+  );
+  animation: ob-scanbeam 1.7s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+@keyframes ob-scanbeam {
+  0% { top: -40px; }
+  100% { top: 184px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ob-scan-beam { animation: none; top: 72px; }
+  .ob-scan-dots i { animation: none; opacity: 0.7; }
+}
+.ob-scan-t { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+.ob-scan-s { font-size: 13px; color: var(--muted); margin-top: 7px; line-height: 1.45; max-width: 250px; }
+.ob-scan-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--line));
+  padding: 8px 13px;
+  border-radius: 999px;
+}
+.ob-scan-dots { display: flex; gap: 7px; margin-top: 20px; }
+.ob-scan-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--primary);
+  opacity: 0.3;
+  animation: ob-scandot 1.2s ease-in-out infinite;
+}
+.ob-scan-dots i:nth-child(2) { animation-delay: 0.18s; }
+.ob-scan-dots i:nth-child(3) { animation-delay: 0.36s; }
+@keyframes ob-scandot {
+  0%, 100% { opacity: 0.3; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}

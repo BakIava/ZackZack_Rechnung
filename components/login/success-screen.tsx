@@ -22,7 +22,7 @@ export function SuccessScreen({ name }: SuccessScreenProps) {
           <i />
         </div>
         <p className="lg-sub lg-success-prep">{t("preparing")}</p>
-        <Link href="/dashboard" className="lg-btn lg-success-btn">
+        <Link href="/setup" className="lg-btn lg-success-btn">
           {t("toDashboard")}
           <ArrowRight size={22} aria-hidden />
         </Link>
