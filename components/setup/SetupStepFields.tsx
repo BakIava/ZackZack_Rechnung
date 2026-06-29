@@ -24,9 +24,11 @@ export function Step1Fields({ t }: Step1FieldsProps) {
         <Seg3 options={t.rf} value={rf} onChange={setRf} wrap />
       </Field>
       {HR_FORMS.has(rf) && (
-        <div className="ob-row2">
-          <div className="ob-grow"><Field label={t.hrNr}><TextInput value="" /></Field></div>
-          <div className="ob-grow"><Field label={t.hrGericht}><TextInput value="" /></Field></div>
+        <div className="ob-hr-fields">
+          <div className="ob-row2">
+            <div className="ob-grow"><Field label={t.hrNr}><TextInput placeholder={t.hrNrPh} mono /></Field></div>
+            <div className="ob-grow"><Field label={t.hrGericht}><TextInput placeholder={t.hrGerichtPh} /></Field></div>
+          </div>
         </div>
       )}
       <div className="ob-row2">
