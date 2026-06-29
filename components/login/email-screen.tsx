@@ -5,12 +5,14 @@ import { useTranslations } from "next-intl";
 interface EmailScreenProps {
   email: string;
   emailErr: boolean;
+  serverErrMsg?: string;
+  loading?: boolean;
   onEmailChange: (value: string) => void;
   onSubmit: () => void;
 }
 
 /** Schritt 1: E-Mail-Adresse erfassen, Code anfordern. */
-export function EmailScreen({ email, emailErr, onEmailChange, onSubmit }: EmailScreenProps) {
+export function EmailScreen({ email, emailErr, serverErrMsg, loading, onEmailChange, onSubmit }: EmailScreenProps) {
   const t = useTranslations("Login");
   const mini = [
     { Icon: Mail, label: t("mini1") },
@@ -48,11 +50,11 @@ export function EmailScreen({ email, emailErr, onEmailChange, onSubmit }: EmailS
           <span className="lg-note-ic">
             <AlertTriangle size={14} aria-hidden />
           </span>
-          {t("emailBad")}
+          {serverErrMsg || t("emailBad")}
         </div>
       )}
 
-      <button type="button" className="lg-btn" onClick={onSubmit}>
+      <button type="button" className="lg-btn" disabled={loading} onClick={onSubmit}>
         {t("sendCode")}
         <ArrowRight size={22} aria-hidden />
       </button>

@@ -6,10 +6,12 @@ interface CodeScreenProps {
   email: string;
   code: string[];
   codeErr: boolean;
+  serverErrMsg?: string;
   okNote: boolean;
   help: boolean;
   resendLeft: number;
   demoCode: string;
+  loading?: boolean;
   onCodeChange: (next: string[]) => void;
   onComplete: (joined: string) => void;
   onVerify: () => void;
@@ -22,7 +24,7 @@ interface CodeScreenProps {
 /** Schritt 2 (Herzstück): 6-stelligen Code eintippen und anmelden. */
 export function CodeScreen(props: CodeScreenProps) {
   const t = useTranslations("Login");
-  const { email, code, codeErr, okNote, help, resendLeft, demoCode } = props;
+  const { email, code, codeErr, serverErrMsg, okNote, help, resendLeft, demoCode, loading } = props;
   const filled = code.every((d) => d !== "");
   const helpRows = [
     { Icon: Mail, label: t("help1") },
@@ -47,7 +49,7 @@ export function CodeScreen(props: CodeScreenProps) {
           <span className="lg-note-ic">
             <AlertTriangle size={14} aria-hidden />
           </span>
-          {t("wrongCode")}
+          {serverErrMsg || t("wrongCode")}
         </div>
       ) : okNote ? (
         <div className="lg-note lg-note--ok">
@@ -60,7 +62,7 @@ export function CodeScreen(props: CodeScreenProps) {
         <div className="lg-note lg-note--muted">{t("enterHint")}</div>
       )}
 
-      <button type="button" className="lg-btn" disabled={!filled} onClick={props.onVerify}>
+      <button type="button" className="lg-btn" disabled={!filled || loading} onClick={props.onVerify}>
         <Check size={22} aria-hidden />
         {t("login")}
       </button>
