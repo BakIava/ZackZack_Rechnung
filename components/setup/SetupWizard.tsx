@@ -4,7 +4,7 @@ import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang, type Phase } from "./translations";
 import { LangLink, DesktopBar } from "./SetupPrimitives";
-import { Step1Fields, Step2Fields, Step3Fields, LogoEmpty, LogoPreview } from "./SetupStepFields";
+import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoEmpty, LogoPreview } from "./SetupStepFields";
 
 interface WizardProps {
   t: Translations;
@@ -19,23 +19,25 @@ interface WizardProps {
 }
 
 export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPhase, onComplete }: WizardProps) {
-  const optional = step === 3 || step === 4;
+  const optional = step === 4 || step === 5;
 
   if (isMobile) {
-    const stepMeta: Record<number, { ic: string; key: "s1" | "s2" | "s3" | "s4" }> = {
+    const stepMeta: Record<number, { ic: string; key: "s1" | "sc" | "s2" | "s3" | "s4" }> = {
       1: { ic: "building", key: "s1" },
-      2: { ic: "idcard", key: "s2" },
-      3: { ic: "bank", key: "s3" },
-      4: { ic: "brush", key: "s4" },
+      2: { ic: "phone", key: "sc" },
+      3: { ic: "idcard", key: "s2" },
+      4: { ic: "bank", key: "s3" },
+      5: { ic: "brush", key: "s4" },
     };
     const meta = stepMeta[step];
-    const titleKey = `${meta.key}_t` as "s1_t" | "s2_t" | "s3_t" | "s4_t";
-    const subKey = `${meta.key}_s` as "s1_s" | "s2_s" | "s3_s" | "s4_s";
+    const titleKey = `${meta.key}_t` as "s1_t" | "sc_t" | "s2_t" | "s3_t" | "s4_t";
+    const subKey = `${meta.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
     const StepBodyMobile = () => {
       if (step === 1) return <Step1Fields t={t} />;
       if (step === 2) return <Step2Fields t={t} />;
       if (step === 3) return <Step3Fields t={t} />;
+      if (step === 4) return <Step4Fields t={t} />;
       return <LogoEmpty t={t} />;
     };
 
@@ -112,20 +114,22 @@ export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPh
   }
 
   // Desktop wizard
-  const sections: Record<number, { key: "s1" | "s2" | "s3" | "s4"; req: boolean }> = {
+  const sections: Record<number, { key: "s1" | "sc" | "s2" | "s3" | "s4"; req: boolean }> = {
     1: { key: "s1", req: true },
-    2: { key: "s2", req: true },
-    3: { key: "s3", req: false },
-    4: { key: "s4", req: false },
+    2: { key: "sc", req: true },
+    3: { key: "s2", req: true },
+    4: { key: "s3", req: false },
+    5: { key: "s4", req: false },
   };
   const cur = sections[step];
-  const titleKey = `${cur.key}_t` as "s1_t" | "s2_t" | "s3_t" | "s4_t";
-  const subKey = `${cur.key}_s` as "s1_s" | "s2_s" | "s3_s" | "s4_s";
+  const titleKey = `${cur.key}_t` as "s1_t" | "sc_t" | "s2_t" | "s3_t" | "s4_t";
+  const subKey = `${cur.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
   const StepBodyDesktop = () => {
     if (step === 1) return <Step1Fields t={t} />;
     if (step === 2) return <Step2Fields t={t} />;
     if (step === 3) return <Step3Fields t={t} />;
+    if (step === 4) return <Step4Fields t={t} />;
     return <LogoPreview t={t} />;
   };
 
@@ -159,7 +163,7 @@ export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPh
                     </div>
                     <div className="ob-d-step-lbl">{nm}</div>
                   </div>
-                  {i < 3 && <div className="ob-d-step-line" data-state={isDone ? "done" : "off"} />}
+                  {i < 4 && <div className="ob-d-step-line" data-state={isDone ? "done" : "off"} />}
                 </span>
               );
             })}

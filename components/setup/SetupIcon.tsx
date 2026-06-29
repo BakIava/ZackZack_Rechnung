@@ -31,6 +31,7 @@ const PATHS: Record<string, React.ReactNode> = {
   lock: <><rect x="5" y="11" width="14" height="9.5" rx="2.2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>,
   globe: <><circle cx="12" cy="12" r="8.2" /><path d="M3.8 12h16.4M12 3.8c2.3 2.2 3.4 5.1 3.4 8.2S14.3 18 12 20.2C9.7 18 8.6 15.1 8.6 12S9.7 6 12 3.8z" /></>,
   sparkle: <><path d="M12 4l1.6 4.4L18 10l-4.4 1.6L12 16l-1.6-4.4L6 10l4.4-1.6z" /></>,
+  phone: <><path d="M6.5 4.5h4l1.5 3.5-2 1.8a9.5 9.5 0 0 0 4.2 4.2l1.8-2 3.5 1.5v4c0 1-1 2-2 1.5C7 16.5 4 9.5 5 5.5c-.5-1 .5-2 1.5-2z" /></>,
 };
 
 export function SetupIcon({ name, size = 24, weight = "line", color = "currentColor", className }: SetupIconProps) {

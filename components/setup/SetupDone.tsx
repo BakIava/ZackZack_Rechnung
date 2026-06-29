@@ -18,6 +18,7 @@ export function SetupDone({ t, lang, dir, isMobile, onComplete, onDashboard }: D
   if (isMobile) {
     const sumRows = [
       { ic: "building", lbl: t.sumBetrieb, val: "Yılmaz Malerbetrieb" },
+      { ic: "phone", lbl: t.sumKontakt, val: "mehmet.yilmaz@example.de" },
       { ic: "idcard", lbl: t.sumSteuer, val: "047/815/08150" },
       { ic: "shieldCheck", lbl: t.sumKu, val: t.kuShort },
       { ic: "bank", lbl: t.sumBank, val: "DE89 3704 … 0130 00" },
@@ -59,6 +60,7 @@ export function SetupDone({ t, lang, dir, isMobile, onComplete, onDashboard }: D
 
   const sumRows = [
     { lbl: t.sumBetrieb, val: "Yılmaz Malerbetrieb" },
+    { lbl: t.sumKontakt, val: "mehmet.yilmaz@example.de" },
     { lbl: t.sumSteuer, val: "047/815/08150" },
     { lbl: t.sumKu, val: t.kuShort },
     { lbl: t.sumBank, val: "DE89 3704 … 0130 00" },
