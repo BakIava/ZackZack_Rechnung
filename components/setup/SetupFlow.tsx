@@ -9,13 +9,19 @@ import { SetupUpload } from "./SetupUpload";
 import { SetupReview } from "./SetupReview";
 import { SetupDone } from "./SetupDone";
 import { SetupWizard } from "./SetupWizard";
+import { INITIAL_FORM_DATA, type SetupFormData, type SetupFormErrors } from "./types";
+import { completeOnboarding } from "@/lib/onboarding/actions";
 
-export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }: SetupFlowProps) {
+export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDashboard }: SetupFlowProps) {
   const t = T[lang];
   const TOTAL = 5;
   const [phase, setPhase] = useState<Phase>("welcome");
   const [step, setStep] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
+  const [formData, setFormData] = useState<SetupFormData>(INITIAL_FORM_DATA);
+  const [errors, setErrors] = useState<SetupFormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -30,6 +36,29 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
     const id = setTimeout(() => setPhase("review"), 2400);
     return () => clearTimeout(id);
   }, [phase]);
+
+  const handleFormChange = (key: keyof SetupFormData, value: string | boolean) => {
+    setFormData((prev: SetupFormData) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev: SetupFormErrors) => ({ ...prev, [key]: undefined }));
+  };
+
+  const handlePhase = async (p: Phase) => {
+    if (p === "done") {
+      setSubmitting(true);
+      setSubmitError(null);
+      const result = await completeOnboarding(locale, formData);
+      setSubmitting(false);
+      if (result?.error) {
+        setSubmitError(result.error);
+        if (result.errors) setErrors(result.errors);
+        return;
+      }
+      // redirect already happened server-side; show done as fallback
+      setPhase("done");
+      return;
+    }
+    setPhase(p);
+  };
 
   const shared = { t, lang: lang as Lang, dir: dir as "ltr" | "rtl", isMobile };
   const goComplete = onComplete ?? (() => {});
@@ -62,22 +91,35 @@ export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }:
     return (
       <SetupReview
         {...shared}
-        onApply={() => setPhase("done")}
+        onApply={() => handlePhase("done")}
         onBack={() => setPhase("upload")}
+        submitting={submitting}
       />
     );
   }
   if (phase === "done") {
     return <SetupDone {...shared} onComplete={goComplete} onDashboard={goDash} />;
   }
+
   return (
-    <SetupWizard
-      {...shared}
-      step={step}
-      setStep={setStep}
-      TOTAL={TOTAL}
-      onPhase={setPhase}
-      onComplete={goComplete}
-    />
+    <>
+      {submitError && (
+        <div className="ob-submit-error" role="alert">
+          {submitError}
+        </div>
+      )}
+      <SetupWizard
+        {...shared}
+        step={step}
+        setStep={setStep}
+        TOTAL={TOTAL}
+        onPhase={handlePhase}
+        onComplete={goComplete}
+        formData={formData}
+        errors={errors}
+        onFormChange={handleFormChange}
+        submitting={submitting}
+      />
+    </>
   );
 }

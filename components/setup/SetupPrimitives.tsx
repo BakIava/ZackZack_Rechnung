@@ -1,7 +1,7 @@
 "use client";
 
 import "./SetupPrimitives.css";
-import { useState, type ReactNode } from "react";
+import React, { useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { SetupIcon } from "./SetupIcon";
@@ -83,17 +83,23 @@ interface TextInputProps {
   error?: boolean;
   mono?: boolean;
   dir?: "ltr" | "rtl";
+  name?: string;
+  onChange?: (val: string) => void;
 }
 
-export function TextInput({ value, placeholder, valid, error, mono, dir }: TextInputProps) {
+export function TextInput({ value, placeholder, valid, error, mono, dir, name, onChange }: TextInputProps) {
+  const isControlled = onChange !== undefined;
   const cls = "ob-inp-wrap" + (valid ? " is-valid" : error ? " is-error" : "");
   return (
     <div className={cls}>
       <input
         className={"ob-inp" + (mono ? " ob-inp--mono" : "")}
-        defaultValue={value}
+        {...(isControlled
+          ? { value: value ?? "", onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value) }
+          : { defaultValue: value })}
         placeholder={placeholder}
         dir={dir}
+        name={name}
       />
       {valid && (
         <span className="ob-inp-aff ob-inp-aff--ok">
@@ -143,16 +149,24 @@ export function Seg3({ options, value, onChange, wrap }: Seg3Props) {
 
 interface Toggle19Props {
   t: Translations;
+  checked?: boolean;
+  onChange?: (val: boolean) => void;
 }
 
-export function Toggle19({ t }: Toggle19Props) {
-  const [on, setOn] = useState(true);
+export function Toggle19({ t, checked, onChange }: Toggle19Props) {
+  const [localOn, setLocalOn] = useState(true);
+  const isControlled = onChange !== undefined;
+  const on = isControlled ? (checked ?? true) : localOn;
+  const toggle = () => {
+    if (isControlled) onChange(!on);
+    else setLocalOn((v: boolean) => !v);
+  };
   return (
     <button
       type="button"
       className="ob-toggle"
       data-active={on ? "true" : "false"}
-      onClick={() => setOn(!on)}
+      onClick={toggle}
     >
       <div className="ob-toggle-ic">
         <SetupIcon name="shieldCheck" size={22} />

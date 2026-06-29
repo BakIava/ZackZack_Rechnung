@@ -360,6 +360,7 @@ export const LANG_LABEL: Record<Lang, string> = {
 export interface SetupFlowProps {
   lang?: Lang;
   dir?: "ltr" | "rtl";
+  locale: string;
   onComplete?: () => void;
   onDashboard?: () => void;
 }

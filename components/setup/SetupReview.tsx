@@ -5,7 +5,7 @@ import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang } from "./translations";
 import { LangLink, DesktopBar, UpProgress } from "./SetupPrimitives";
-import { ReviewFields } from "./SetupStepFields";
+import { ReviewFields } from "./SetupOtherFields";
 
 interface ReviewProps {
   t: Translations;
@@ -14,9 +14,10 @@ interface ReviewProps {
   isMobile: boolean;
   onApply: () => void;
   onBack: () => void;
+  submitting?: boolean;
 }
 
-export function SetupReview({ t, lang, dir, isMobile, onApply, onBack }: ReviewProps) {
+export function SetupReview({ t, lang, dir, isMobile, onApply, onBack, submitting }: ReviewProps) {
   if (isMobile) {
     return (
       <div className="ob-root" dir={dir}>
@@ -44,8 +45,11 @@ export function SetupReview({ t, lang, dir, isMobile, onApply, onBack }: ReviewP
           <ReviewFields t={t} />
         </div>
         <div className="ob-foot">
-          <button className="ob-next" onClick={onApply}>
-            <SetupIcon name="check" size={20} weight="bold" />{t.revApply}
+          <button className="ob-next" onClick={onApply} disabled={submitting}>
+            {submitting
+              ? <span className="ob-icon-spin"><SetupIcon name="spinner" size={20} /></span>
+              : <SetupIcon name="check" size={20} weight="bold" />}
+            {t.revApply}
           </button>
           <LangLink lang={lang} />
         </div>
@@ -78,8 +82,11 @@ export function SetupReview({ t, lang, dir, isMobile, onApply, onBack }: ReviewP
               <SetupIcon name="chevronLeft" size={19} />{t.back}
             </button>
             <div className="ob-d-wfoot-r">
-              <button className="ob-d-btn" onClick={onApply}>
-                <SetupIcon name="check" size={19} weight="bold" />{t.revApply}
+              <button className="ob-d-btn" onClick={onApply} disabled={submitting}>
+                {submitting
+                  ? <span className="ob-icon-spin"><SetupIcon name="spinner" size={19} /></span>
+                  : <SetupIcon name="check" size={19} weight="bold" />}
+                {t.revApply}
               </button>
             </div>
           </div>

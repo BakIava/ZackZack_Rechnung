@@ -245,3 +245,22 @@
 [dir="rtl"] .ob-inp-aff svg,
 [dir="rtl"] .ob-detected svg,
 [dir="rtl"] .ob-review-banner-ic svg { transform: none; }
+
+/* spinner animation for loading state */
+@keyframes ob-spin { to { transform: rotate(360deg); } }
+.ob-icon-spin { animation: ob-spin 0.8s linear infinite; display: inline-flex; }
+
+
+/* submit error banner */
+.ob-submit-error {
+  position: fixed;
+  top: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 13px;
+  text-align: center;
+  padding: 10px 16px;
+  z-index: 100;
+}

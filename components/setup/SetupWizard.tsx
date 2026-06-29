@@ -5,6 +5,7 @@ import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang, type Phase } from "./translations";
 import { LangLink, DesktopBar } from "./SetupPrimitives";
 import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoEmpty, LogoPreview } from "./SetupStepFields";
+import type { SetupFormData, SetupFormErrors } from "./types";
 
 interface WizardProps {
   t: Translations;
@@ -16,10 +17,20 @@ interface WizardProps {
   TOTAL: number;
   onPhase: (p: Phase) => void;
   onComplete: () => void;
+  formData: SetupFormData;
+  errors: SetupFormErrors;
+  onFormChange: (key: keyof SetupFormData, value: string | boolean) => void;
+  submitting: boolean;
 }
 
-export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPhase, onComplete }: WizardProps) {
+export function SetupWizard({
+  t, lang, dir, isMobile, step, setStep, TOTAL, onPhase, onComplete,
+  formData, errors, onFormChange, submitting,
+}: WizardProps) {
   const optional = step === 4 || step === 5;
+  const isLastStep = step === TOTAL;
+
+  const stepProps = { t, formData, errors, onChange: onFormChange };
 
   if (isMobile) {
     const stepMeta: Record<number, { ic: string; key: "s1" | "sc" | "s2" | "s3" | "s4" }> = {
@@ -34,14 +45,14 @@ export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPh
     const subKey = `${meta.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
     const StepBodyMobile = () => {
-      if (step === 1) return <Step1Fields t={t} />;
-      if (step === 2) return <Step2Fields t={t} />;
-      if (step === 3) return <Step3Fields t={t} />;
-      if (step === 4) return <Step4Fields t={t} />;
+      if (step === 1) return <Step1Fields {...stepProps} />;
+      if (step === 2) return <Step2Fields {...stepProps} />;
+      if (step === 3) return <Step3Fields {...stepProps} />;
+      if (step === 4) return <Step4Fields {...stepProps} />;
       return <LogoEmpty t={t} />;
     };
 
-    const advance = () => (step === TOTAL ? onPhase("done") : setStep(step + 1));
+    const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
 
     return (
       <div className="ob-root" dir={dir}>
@@ -99,11 +110,15 @@ export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPh
         </div>
 
         <div className="ob-foot">
-          <button className="ob-next" onClick={advance}>
-            {t.next}<SetupIcon name="arrowRight" size={20} weight="bold" />
+          <button className="ob-next" onClick={advance} disabled={isLastStep && submitting}>
+            {isLastStep && submitting
+              ? <span className="ob-icon-spin"><SetupIcon name="spinner" size={20} /></span>
+              : null}
+            {t.next}
+            {!(isLastStep && submitting) && <SetupIcon name="arrowRight" size={20} weight="bold" />}
           </button>
           {optional && (
-            <button className="ob-skip" onClick={advance}>
+            <button className="ob-skip" onClick={advance} disabled={submitting}>
               {t.skip} — <b>{t.skipB}</b>
             </button>
           )}
@@ -126,14 +141,14 @@ export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPh
   const subKey = `${cur.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
   const StepBodyDesktop = () => {
-    if (step === 1) return <Step1Fields t={t} />;
-    if (step === 2) return <Step2Fields t={t} />;
-    if (step === 3) return <Step3Fields t={t} />;
-    if (step === 4) return <Step4Fields t={t} />;
+    if (step === 1) return <Step1Fields {...stepProps} />;
+    if (step === 2) return <Step2Fields {...stepProps} />;
+    if (step === 3) return <Step3Fields {...stepProps} />;
+    if (step === 4) return <Step4Fields {...stepProps} />;
     return <LogoPreview t={t} />;
   };
 
-  const advance = () => (step === TOTAL ? onPhase("done") : setStep(step + 1));
+  const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
 
   return (
     <div className="ob-d" dir={dir}>
@@ -191,13 +206,16 @@ export function SetupWizard({ t, lang, dir, isMobile, step, setStep, TOTAL, onPh
             </button>
             <div className="ob-d-wfoot-r">
               {optional && (
-                <button className="ob-d-skip" onClick={advance}>
+                <button className="ob-d-skip" onClick={advance} disabled={submitting}>
                   {t.skip}
                 </button>
               )}
-              <button className="ob-d-btn" onClick={advance}>
+              <button className="ob-d-btn" onClick={advance} disabled={isLastStep && submitting}>
+                {isLastStep && submitting
+                  ? <span className="ob-icon-spin"><SetupIcon name="spinner" size={20} /></span>
+                  : null}
                 {step === TOTAL ? t.finish : t.next}
-                <SetupIcon name="arrowRight" size={20} weight="bold" />
+                {!(isLastStep && submitting) && <SetupIcon name="arrowRight" size={20} weight="bold" />}
               </button>
             </div>
           </div>
