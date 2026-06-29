@@ -114,18 +114,24 @@ export function TextInput({ value, placeholder, valid, error, mono, dir }: TextI
 interface Seg3Props {
   options: [string, string][];
   value: string | null;
+  onChange?: (val: string) => void;
+  wrap?: boolean;
 }
 
-export function Seg3({ options, value }: Seg3Props) {
+export function Seg3({ options, value, onChange, wrap }: Seg3Props) {
   const [sel, setSel] = useState<string | null>(value);
+  const handleClick = (id: string) => {
+    setSel(id);
+    onChange?.(id);
+  };
   return (
-    <div className="ob-seg3">
+    <div className={"ob-seg3" + (wrap ? " ob-seg3--wrap" : "")}>
       {options.map(([id, label]) => (
         <button
           key={id}
           type="button"
           data-active={sel === id ? "true" : "false"}
-          onClick={() => setSel(id)}
+          onClick={() => handleClick(id)}
           dangerouslySetInnerHTML={{ __html: label }}
         />
       ))}

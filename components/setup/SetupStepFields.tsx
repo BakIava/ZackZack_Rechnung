@@ -1,6 +1,7 @@
 "use client";
 
 import "./SetupStepFields.css";
+import { useState } from "react";
 import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations } from "./translations";
@@ -12,11 +13,22 @@ interface Step1FieldsProps {
   t: Translations;
 }
 
+const HR_FORMS = new Set(["ek", "gmbh", "ug"]);
+
 export function Step1Fields({ t }: Step1FieldsProps) {
+  const [rf, setRf] = useState("einzel");
   return (
     <div className="ob-form">
       <Field label={t.firma} req><TextInput value="Yılmaz Malerbetrieb" valid /></Field>
-      <Field label={t.rechtsform} req><Seg3 options={t.rf} value="einzel" /></Field>
+      <Field label={t.rechtsform} req>
+        <Seg3 options={t.rf} value={rf} onChange={setRf} wrap />
+      </Field>
+      {HR_FORMS.has(rf) && (
+        <div className="ob-row2">
+          <div className="ob-grow"><Field label={t.hrNr}><TextInput value="" /></Field></div>
+          <div className="ob-grow"><Field label={t.hrGericht}><TextInput value="" /></Field></div>
+        </div>
+      )}
       <div className="ob-row2">
         <div className="ob-grow"><Field label={t.strasse} req><TextInput value="Hansastraße" /></Field></div>
         <div className="ob-hnr"><Field label={t.hausnr} req><TextInput value="22" /></Field></div>
@@ -73,6 +85,9 @@ export function Step3Fields({ t }: Step3FieldsProps) {
         hint={<><span>{t.steuernrHint}</span><span className="mono">123/456/78901</span></>}
       >
         <TextInput value="047/815/08150" valid mono />
+      </Field>
+      <Field label={t.ustidnr}>
+        <TextInput value="" mono dir="ltr" />
       </Field>
       <Toggle19 t={t} />
     </div>

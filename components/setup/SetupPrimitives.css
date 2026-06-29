@@ -158,6 +158,10 @@
 
 /* ── Segment (Rechtsform) ──────────────────────────────────────────────────── */
 .ob-seg3 { display: flex; gap: 8px; }
+.ob-seg3--wrap { flex-wrap: wrap; }
+.ob-seg3--wrap button { flex-basis: calc(33.333% - 6px); flex-grow: 1; }
+.ob-seg3--wrap button:nth-last-child(2):nth-child(3n+1),
+.ob-seg3--wrap button:last-child:nth-child(3n+2) { flex-basis: calc(50% - 4px); }
 .ob-seg3 button {
   flex: 1;
   padding: 13px 8px;
