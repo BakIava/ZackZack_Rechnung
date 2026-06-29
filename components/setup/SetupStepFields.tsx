@@ -38,14 +38,22 @@ interface Step2FieldsProps {
 export function Step2Fields({ t }: Step2FieldsProps) {
   return (
     <div className="ob-form">
-      <Field
-        label={t.steuernr}
-        req
-        hint={<><span>{t.steuernrHint}</span><span className="mono">123/456/78901</span></>}
-      >
-        <TextInput value="047/815/08150" valid mono />
+      <Field label={t.email} req>
+        <TextInput value="info@yilmaz-maler.de" valid />
       </Field>
-      <Toggle19 t={t} />
+      <Field label={t.telefon}>
+        <TextInput value="" />
+      </Field>
+      <Field label={t.mobil}>
+        <TextInput value="0151 23456789" />
+      </Field>
+      <Field label={t.fax}>
+        <TextInput value="" />
+      </Field>
+      <div className="ob-note">
+        <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
+        <div className="ob-note-tx">{t.kontaktNote}</div>
+      </div>
     </div>
   );
 }
@@ -59,12 +67,37 @@ interface Step3FieldsProps {
 export function Step3Fields({ t }: Step3FieldsProps) {
   return (
     <div className="ob-form">
+      <Field
+        label={t.steuernr}
+        req
+        hint={<><span>{t.steuernrHint}</span><span className="mono">123/456/78901</span></>}
+      >
+        <TextInput value="047/815/08150" valid mono />
+      </Field>
+      <Toggle19 t={t} />
+    </div>
+  );
+}
+
+// ── Step4Fields ───────────────────────────────────────────────────────────────
+
+interface Step4FieldsProps {
+  t: Translations;
+}
+
+export function Step4Fields({ t }: Step4FieldsProps) {
+  return (
+    <div className="ob-form">
       <Field label={t.iban}>
         <TextInput value="DE89 3704 0044 0532 0130 00" valid mono dir="ltr" />
       </Field>
       <Field label={t.inhaber}>
         <TextInput value="Mehmet Yılmaz" />
       </Field>
+      <div className="ob-row2">
+        <div className="ob-grow"><Field label={t.bic}><TextInput value="COBADEFFXXX" mono dir="ltr" /></Field></div>
+        <div className="ob-grow"><Field label={t.bankname}><TextInput value="Commerzbank" /></Field></div>
+      </div>
       <div className="ob-note">
         <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
         <div className="ob-note-tx">{t.bankNote}</div>

@@ -12,7 +12,7 @@ import { SetupWizard } from "./SetupWizard";
 
 export function SetupFlow({ lang = "de", dir = "ltr", onComplete, onDashboard }: SetupFlowProps) {
   const t = T[lang];
-  const TOTAL = 4;
+  const TOTAL = 5;
   const [phase, setPhase] = useState<Phase>("welcome");
   const [step, setStep] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
