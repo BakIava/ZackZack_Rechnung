@@ -119,7 +119,9 @@
     "toDashboard": "Panele git",
     "demoLabel": "Demo kodu",
     "digitAria": "{n}. rakam",
-    "changeLanguage": "Dil seç"
+    "changeLanguage": "Dil seç",
+    "rateLimitExceeded": "Çok fazla istek gönderildi. Lütfen birkaç dakika bekle ve tekrar dene.",
+    "codeExpiredOrInvalid": "Kod süresi dolmuş veya geçersiz. Lütfen yeni bir kod iste."
   },
   "Demo": {
     "rtlHint": "Simge LTR'de solda, RTL'de sağda – yön sınıfları olmadan.",

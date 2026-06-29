@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import NextLink from "next/link";
@@ -8,31 +8,33 @@ import { BrandPanel, type LoginScreen } from "./brand-panel";
 import { EmailScreen } from "./email-screen";
 import { CodeScreen } from "./code-screen";
 import { SuccessScreen } from "./success-screen";
+import { sendLoginCode, verifyLoginCode } from "@/lib/auth/actions";
 import "./login.css";
 
 interface LoginFlowProps {
   dir: "ltr" | "rtl";
+  locale: string;
 }
 
-const DEMO_EMAIL = "mehmet@yilmaz-malerbetrieb.de";
-const DEMO_CODE = "729104";
-const DEMO_NAME = "Mehmet";
 const EMPTY_CODE = ["", "", "", "", "", ""];
-const RESEND_SECONDS = 30;
+const RESEND_SECONDS = 60;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Passwortloser Login: E-Mail → 6-stelliger Code → angemeldet (DE/TR/AR, RTL). */
-export function LoginFlow({ dir }: LoginFlowProps) {
+export function LoginFlow({ dir, locale }: LoginFlowProps) {
   const t = useTranslations("Login");
   const [screen, setScreen] = useState<LoginScreen>("email");
-  const [email, setEmail] = useState(DEMO_EMAIL);
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState<string[]>(EMPTY_CODE);
   const [codeErr, setCodeErr] = useState(false);
+  const [codeErrMsg, setCodeErrMsg] = useState("");
   const [emailErr, setEmailErr] = useState(false);
+  const [emailErrMsg, setEmailErrMsg] = useState("");
   const [okNote, setOkNote] = useState(false);
   const [help, setHelp] = useState(false);
   const [resendLeft, setResendLeft] = useState(0);
+  const [isPending, startTransition] = useTransition();
 
   // Resend-Countdown
   useEffect(() => {
@@ -44,31 +46,55 @@ export function LoginFlow({ dir }: LoginFlowProps) {
   const goCode = () => {
     if (!EMAIL_RE.test(email.trim())) {
       setEmailErr(true);
+      setEmailErrMsg(t("emailBad"));
       return;
     }
     setEmailErr(false);
-    setHelp(false);
-    setCode(EMPTY_CODE);
-    setCodeErr(false);
-    setResendLeft(RESEND_SECONDS);
-    setScreen("code");
+    startTransition(async () => {
+      const result = await sendLoginCode(email.trim());
+      if (result.error) {
+        setEmailErr(true);
+        setEmailErrMsg(
+          result.errorKey === "rateLimitExceeded"
+            ? t("rateLimitExceeded")
+            : t("emailBad"),
+        );
+        return;
+      }
+      setHelp(false);
+      setCode(EMPTY_CODE);
+      setCodeErr(false);
+      setResendLeft(RESEND_SECONDS);
+      setScreen("code");
+    });
   };
 
   const verify = (joined: string) => {
-    if (joined === DEMO_CODE) {
-      setCodeErr(false);
-      setScreen("success");
-    } else {
-      setCodeErr(true);
-    }
+    if (joined.length < 6) return;
+    startTransition(async () => {
+      const result = await verifyLoginCode(email.trim(), joined, locale);
+      if (result?.error) {
+        setCodeErr(true);
+        setCodeErrMsg(
+          result.errorKey === "codeExpiredOrInvalid"
+            ? t("codeExpiredOrInvalid")
+            : t("wrongCode"),
+        );
+        setCode(EMPTY_CODE);
+      }
+    });
   };
 
   const resend = () => {
     if (resendLeft > 0) return;
-    setOkNote(true);
-    setCodeErr(false);
-    setCode(EMPTY_CODE);
-    setResendLeft(RESEND_SECONDS);
+    startTransition(async () => {
+      const result = await sendLoginCode(email.trim());
+      if (result.error) return;
+      setOkNote(true);
+      setCodeErr(false);
+      setCode(EMPTY_CODE);
+      setResendLeft(RESEND_SECONDS);
+    });
   };
 
   const changeEmail = () => {
@@ -100,6 +126,8 @@ export function LoginFlow({ dir }: LoginFlowProps) {
           <EmailScreen
             email={email}
             emailErr={emailErr}
+            serverErrMsg={emailErrMsg}
+            loading={isPending}
             onEmailChange={(v) => {
               setEmail(v);
               setEmailErr(false);
@@ -113,10 +141,12 @@ export function LoginFlow({ dir }: LoginFlowProps) {
             email={email}
             code={code}
             codeErr={codeErr}
+            serverErrMsg={codeErrMsg}
             okNote={okNote}
             help={help}
             resendLeft={resendLeft}
-            demoCode={DEMO_CODE}
+            demoCode=""
+            loading={isPending}
             onCodeChange={(next) => {
               setCode(next);
               if (codeErr) setCodeErr(false);
@@ -131,7 +161,7 @@ export function LoginFlow({ dir }: LoginFlowProps) {
           />
         )}
 
-        {screen === "success" && <SuccessScreen name={DEMO_NAME} />}
+        {screen === "success" && <SuccessScreen name="" />}
       </div>
     </div>
   );

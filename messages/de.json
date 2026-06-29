@@ -119,7 +119,9 @@
     "toDashboard": "Zum Dashboard",
     "demoLabel": "Demo-Code",
     "digitAria": "Ziffer {n}",
-    "changeLanguage": "Sprache wählen"
+    "changeLanguage": "Sprache wählen",
+    "rateLimitExceeded": "Zu viele Anfragen. Bitte warte einige Minuten und versuche es erneut.",
+    "codeExpiredOrInvalid": "Der Code ist abgelaufen oder ungültig. Bitte einen neuen Code anfordern."
   },
   "Demo": {
     "rtlHint": "Icon links in LTR, rechts in RTL – ohne richtungsspezifische Klassen.",

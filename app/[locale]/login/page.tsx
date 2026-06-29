@@ -26,7 +26,7 @@ export default async function LoginPage({ params }: LoginPageProps) {
 
   return (
     <div className={`${hanken.variable} ${plexArabic.variable}`}>
-      <LoginFlow dir={dir} />
+      <LoginFlow dir={dir} locale={locale} />
     </div>
   );
 }
