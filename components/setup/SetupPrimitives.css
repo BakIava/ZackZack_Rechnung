@@ -156,11 +156,24 @@
 .ob-err { font-size: 12.5px; color: #cf4b3c; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 .ob-hint--todo { color: var(--warn); font-weight: 600; }
 
+/* ── Optionaler Feld-Badge ──────────────────────────────────────────────────── */
+.ob-opt {
+  margin-inline-start: 7px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  vertical-align: middle;
+}
+
 /* ── Segment (Rechtsform) ──────────────────────────────────────────────────── */
 .ob-seg3 { display: flex; gap: 8px; }
-.ob-seg3--wrap { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.ob-seg3--wrap button:nth-child(4) { grid-column: 1 / 2; }
-.ob-seg3--wrap button:nth-child(5) { grid-column: 2 / 3; }
+.ob-seg3--wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.ob-seg3--wrap button { flex: 1 1 calc(33.333% - 6px); min-width: calc(33.333% - 6px); }
 .ob-seg3 button {
   flex: 1;
   padding: 11px 8px;

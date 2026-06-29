@@ -26,8 +26,8 @@ export function Step1Fields({ t }: Step1FieldsProps) {
       {HR_FORMS.has(rf) && (
         <div className="ob-hr-fields">
           <div className="ob-row2">
-            <div className="ob-grow"><Field label={t.hrNr}><TextInput placeholder={t.hrNrPh} mono /></Field></div>
-            <div className="ob-grow"><Field label={t.hrGericht}><TextInput placeholder={t.hrGerichtPh} /></Field></div>
+            <div className="ob-grow"><Field label={t.hrNr} req><TextInput placeholder={t.hrNrPh} mono /></Field></div>
+            <div className="ob-grow"><Field label={t.hrGericht} req><TextInput placeholder={t.hrGerichtPh} /></Field></div>
           </div>
         </div>
       )}
@@ -50,23 +50,20 @@ interface Step2FieldsProps {
 }
 
 export function Step2Fields({ t }: Step2FieldsProps) {
+  const optBadge = <span className="ob-opt">{t.opt}</span>;
   return (
     <div className="ob-form">
-      <Field label={t.email} req>
-        <TextInput value="info@yilmaz-maler.de" valid />
+      <Field label={t.email} req hint={t.emailHint}>
+        <TextInput value="mehmet.yilmaz@example.de" valid dir="ltr" />
       </Field>
-      <Field label={t.telefon}>
-        <TextInput value="" />
-      </Field>
-      <Field label={t.mobil}>
-        <TextInput value="0151 23456789" />
-      </Field>
-      <Field label={t.fax}>
-        <TextInput value="" />
-      </Field>
+      <div className="ob-row2">
+        <div className="ob-grow"><Field label={t.telefon} badge={optBadge}><TextInput value="069 1234567" dir="ltr" /></Field></div>
+        <div className="ob-grow"><Field label={t.mobil} badge={optBadge}><TextInput value="0151 23456789" dir="ltr" /></Field></div>
+      </div>
+      <Field label={t.fax} badge={optBadge}><TextInput value="" placeholder={t.faxPh} dir="ltr" /></Field>
       <div className="ob-note">
         <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
-        <div className="ob-note-tx">{t.kontaktNote}</div>
+        <div className="ob-note-tx">{t.contactNote}</div>
       </div>
     </div>
   );
@@ -79,6 +76,7 @@ interface Step3FieldsProps {
 }
 
 export function Step3Fields({ t }: Step3FieldsProps) {
+  const optBadge = <span className="ob-opt">{t.opt}</span>;
   return (
     <div className="ob-form">
       <Field
@@ -88,8 +86,8 @@ export function Step3Fields({ t }: Step3FieldsProps) {
       >
         <TextInput value="047/815/08150" valid mono />
       </Field>
-      <Field label={t.ustidnr}>
-        <TextInput value="" mono dir="ltr" />
+      <Field label={t.ustidnr} badge={optBadge}>
+        <TextInput value="" placeholder="DE123456789" mono dir="ltr" />
       </Field>
       <Toggle19 t={t} />
     </div>
@@ -108,13 +106,13 @@ export function Step4Fields({ t }: Step4FieldsProps) {
       <Field label={t.iban}>
         <TextInput value="DE89 3704 0044 0532 0130 00" valid mono dir="ltr" />
       </Field>
+      <div className="ob-row2">
+        <div className="ob-grow"><Field label={t.bic}><TextInput value="COBADEFFXXX" valid mono dir="ltr" /></Field></div>
+        <div className="ob-grow"><Field label={t.bankName}><TextInput value="Commerzbank" valid /></Field></div>
+      </div>
       <Field label={t.inhaber}>
         <TextInput value="Mehmet Yılmaz" />
       </Field>
-      <div className="ob-row2">
-        <div className="ob-grow"><Field label={t.bic}><TextInput value="COBADEFFXXX" mono dir="ltr" /></Field></div>
-        <div className="ob-grow"><Field label={t.bankname}><TextInput value="Commerzbank" /></Field></div>
-      </div>
       <div className="ob-note">
         <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
         <div className="ob-note-tx">{t.bankNote}</div>
