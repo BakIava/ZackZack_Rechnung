@@ -42,7 +42,8 @@
     "statusBezahlt": "Bezahlt",
     "statusOffen": "Offen",
     "statusVersendet": "Versendet",
-    "statusEntwurf": "Entwurf"
+    "statusEntwurf": "Entwurf",
+    "noDocs": "Noch keine Dokumente"
   },
   "Customers": {
     "customers": "Kunden",

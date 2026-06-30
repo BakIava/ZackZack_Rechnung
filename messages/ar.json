@@ -42,7 +42,8 @@
     "statusBezahlt": "مدفوعة",
     "statusOffen": "غير مدفوعة",
     "statusVersendet": "تم الإرسال",
-    "statusEntwurf": "مسودة"
+    "statusEntwurf": "مسودة",
+    "noDocs": "لا توجد مستندات بعد"
   },
   "Customers": {
     "customers": "العملاء",

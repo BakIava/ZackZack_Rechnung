@@ -42,7 +42,8 @@
     "statusBezahlt": "Ödendi",
     "statusOffen": "Açık",
     "statusVersendet": "Gönderildi",
-    "statusEntwurf": "Taslak"
+    "statusEntwurf": "Taslak",
+    "noDocs": "Henüz belge yok"
   },
   "Customers": {
     "customers": "Müşteriler",
