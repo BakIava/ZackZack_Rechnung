@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Check, Lock } from "lucide-react";
 import type { CompanySettings } from "@/lib/settings/types";
-import { saveKleinunternehmer, savePaymentDays, saveInvoiceFooter } from "@/lib/settings/actions";
+import { saveKleinunternehmer, savePaymentDays } from "@/lib/settings/actions";
 
 const STROKE = 1.75;
 const ZIEL_OPTIONS = ["7", "14", "21", "30"] as const;
@@ -60,7 +60,6 @@ export function SettingsRechnung({ company, currentInvoiceNumber }: SettingsRech
   const t = useTranslations("Settings");
   const [klein, setKlein] = useState(company.kleinunternehmer);
   const [ziel, setZiel] = useState(String(company.payment_days));
-  const [fuss, setFuss] = useState(company.invoice_footer ?? "");
 
   return (
     <>
@@ -144,14 +143,7 @@ export function SettingsRechnung({ company, currentInvoiceNumber }: SettingsRech
           <div className="set-card-s" style={{ marginTop: 4 }}>{t("fussHint")}</div>
         </div>
         <div className="set-card-b">
-          <textarea
-            className="set-input"
-            rows={2}
-            value={fuss}
-            onChange={(e) => setFuss(e.target.value)}
-          />
         </div>
-        <SaveBar onSave={() => saveInvoiceFooter(fuss)} />
       </section>
     </>
   );

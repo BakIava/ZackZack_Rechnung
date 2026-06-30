@@ -22,7 +22,6 @@ export interface CompanySettings {
   account_holder: string | null;
   logo_url: string | null;
   payment_days: number;
-  invoice_footer: string | null;
 }
 
 export interface SettingsData {

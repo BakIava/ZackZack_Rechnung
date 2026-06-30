@@ -8,7 +8,7 @@ export type GetSettingsResult =
 const COMPANY_COLUMNS =
   "id, name, legal_form, street, street_no, postcode, city, phone, mobile, fax, " +
   "email, director, steuernummer, ust_id, registergericht, handelsregister_nr, " +
-  "kleinunternehmer, bank_name, iban, bic, account_holder, logo_url, payment_days, invoice_footer";
+  "kleinunternehmer, bank_name, iban, bic, account_holder, logo_url, payment_days";
 
 const COMPANY_COLUMNS_FALLBACK =
   "id, name, legal_form, street, street_no, postcode, city, phone, " +
@@ -19,8 +19,7 @@ const COMPANY_DEFAULTS: Partial<CompanySettings> = {
   fax: null,
   registergericht: null,
   handelsregister_nr: null,
-  payment_days: 14,
-  invoice_footer: null,
+  payment_days: 14
 };
 
 export async function getSettingsData(): Promise<GetSettingsResult> {
@@ -49,7 +48,7 @@ export async function getSettingsData(): Promise<GetSettingsResult> {
   if (full && !fullError) {
     company = full as unknown as Record<string, unknown>;
   } else {
-    // Fallback: some columns (payment_days, invoice_footer, mobile, fax…) may not
+    // Fallback: some columns (payment_days, mobile, fax…) may not
     // exist yet in the DB. Retry with the minimal set that's guaranteed to be there.
     const { data: minimal, error: minError } = await supabase
       .from("companies")

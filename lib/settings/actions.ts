@@ -146,13 +146,6 @@ export async function savePaymentDays(paymentDays: number): Promise<SettingsActi
   return updateCompany(ctx.companyId, { payment_days: paymentDays });
 }
 
-export async function saveInvoiceFooter(invoiceFooter: string): Promise<SettingsActionResult> {
-  const ctx = await getCompanyId();
-  if ("error" in ctx) return ctx;
-
-  return updateCompany(ctx.companyId, { invoice_footer: invoiceFooter.trim() || null });
-}
-
 export async function uploadLogo(formData: FormData): Promise<SettingsActionResult & { logoUrl?: string }> {
   const file = formData.get("file");
   if (!(file instanceof File)) return { error: "logoFileMissing" };
