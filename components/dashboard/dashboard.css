@@ -607,3 +607,178 @@
   background: var(--draft-bg);
   color: var(--draft);
 }
+
+/* ── Highlight-Kachel: Leerzustand ───────────────────────────────────────── */
+.dhighlight.is-empty {
+  box-shadow: none;
+}
+.dhighlight.is-empty .dhl-lbl {
+  color: var(--muted);
+}
+.dhighlight.is-empty .dhl-val {
+  color: color-mix(in srgb, var(--ink) 38%, var(--surface));
+}
+.dhl-ic.muted {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+/* ── Leerzustand · Variante "Vorschau" (Ghost-Zeilen + Overlay-Karte) ─────── */
+.le-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.le-h {
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+.le-sub {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+/* Gestapeltes Beleg-Emblem */
+.le-emblem {
+  position: relative;
+  width: 78px;
+  height: 70px;
+  flex-shrink: 0;
+}
+.le-emblem i {
+  position: absolute;
+  border-radius: calc(var(--r) * 0.9);
+  display: block;
+}
+.le-emblem .e-back {
+  inset: 10px 6px 0 22px;
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, var(--line));
+  transform: rotate(7deg);
+}
+.le-emblem .e-mid {
+  inset: 6px 16px 4px 10px;
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--line));
+  transform: rotate(-5deg);
+}
+.le-emblem .e-front {
+  inset: 9px 24px 2px 18px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 30px -16px rgba(2, 51, 92, 0.6);
+}
+
+/* Ghost-Skeleton */
+.le-ghost {
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+}
+.le-ghost-rows {
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 26%, rgba(0, 0, 0, 0.12) 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 26%, rgba(0, 0, 0, 0.12) 88%, transparent 100%);
+}
+.le-grow {
+  display: grid;
+  grid-template-columns: 116px 1.3fr 1.6fr 110px 120px 120px;
+  align-items: center;
+  gap: 14px;
+  padding: 0 22px;
+  height: 66px;
+  border-bottom: 1px solid var(--line);
+}
+.le-grow--head {
+  height: 44px;
+  background: var(--bg);
+}
+.le-gcell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.le-gic {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  flex-shrink: 0;
+}
+.le-bar {
+  height: 11px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+.le-bar--head {
+  height: 9px;
+  opacity: 0.55;
+}
+.le-bar--end {
+  justify-self: end;
+}
+.le-epill {
+  height: 22px;
+  width: 70px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  justify-self: end;
+}
+
+/* Overlay-Karte */
+.le-ghost-over {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.le-ghost-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: 0 26px 60px -26px rgba(2, 51, 92, 0.5);
+  padding: 28px 30px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  max-width: 420px;
+}
+.le-ghost-card .le-sub {
+  max-width: 340px;
+}
+
+/* CTA-Button im Leerzustand */
+.le-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 22px;
+  border-radius: var(--r);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+.le-btn:hover {
+  transform: translateY(-1px);
+}
+.le-btn--navy {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 14px 28px -16px rgba(2, 51, 92, 0.7);
+}
