@@ -286,6 +286,20 @@
   animation: setfade 0.2s ease;
 }
 
+.set-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.set-error {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger, #d4393c);
+  animation: setfade 0.2s ease;
+}
+
 @keyframes setfade {
   from { opacity: 0; transform: translateY(3px); }
   to   { opacity: 1; transform: none; }
