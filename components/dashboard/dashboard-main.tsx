@@ -31,7 +31,7 @@ const STATUS_KEY: Record<DocStatus, string> = {
 export async function DashboardMain({ dir, data }: DashboardMainProps) {
   const t = await getTranslations("Dashboard");
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
-  const firstName = data.ownerName.split(/\s+/)[0] || data.companyName.split(/\s+/)[0];
+  const firstName = data.director.split(/\s+/)[0] || data.companyName.split(/\s+/)[0];
   const isEmpty = data.docs.length === 0;
 
   return (

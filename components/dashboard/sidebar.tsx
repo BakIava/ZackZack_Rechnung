@@ -43,7 +43,7 @@ export async function Sidebar({ active, data }: SidebarProps) {
 
   const initials = data?.companyInitials ?? "";
   const companyName = data?.companyName ?? "";
-  const ownerName = data?.ownerName ?? "";
+  const ownerName = data?.director ?? "";
 
   return (
     <aside className="dside">

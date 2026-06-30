@@ -4,7 +4,7 @@ import type { DocStatus, DocType, DashboardDoc } from "@/lib/demo/dashboard-data
 export interface DashboardData {
   companyName: string;
   companyInitials: string;
-  ownerName: string;
+  director: string;
   customerCount: number;
   catalogCount: number;
   docs: DashboardDoc[];
@@ -43,7 +43,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
 
   const [companyRes, docsRes, customersRes, catalogRes, userRes, openRes, paidRes] =
     await Promise.all([
-      supabase.from("companies").select("name").single(),
+      supabase.from("companies").select("name, director").single(),
       supabase
         .from("documents")
         .select(
@@ -65,10 +65,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     ]);
 
   const companyName = companyRes.data?.name ?? "";
-  const ownerName =
-    userRes.data.user?.user_metadata?.full_name ??
-    userRes.data.user?.email ??
-    "";
+  const director = companyRes.data?.director ?? "";
 
   const docs: DashboardDoc[] = (docsRes.data ?? []).map((doc) => {
     const snapshot = doc.customer_snapshot as { name?: string } | null;
@@ -89,7 +86,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   return {
     companyName,
     companyInitials: toInitials(companyName),
-    ownerName,
+    director,
     customerCount: customersRes.count ?? 0,
     catalogCount: catalogRes.count ?? 0,
     docs,
