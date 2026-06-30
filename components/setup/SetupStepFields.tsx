@@ -18,9 +18,7 @@ interface StepProps {
 
 export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
   const HR_FORMS = new Set(["ek", "gmbh", "ug"]);
-  const DIRECTOR_REQ_FORMS = new Set(["gmbh", "ug"]);
   const showHr = HR_FORMS.has(formData.legal_form);
-  const directorRequired = DIRECTOR_REQ_FORMS.has(formData.legal_form);
   return (
     <div className="ob-form">
       <Field label={t.firma} req error={errors.name}>
@@ -31,7 +29,7 @@ export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
           placeholder="z. B. Yılmaz Malerbetrieb"
         />
       </Field>
-      <Field label={t.director} req={directorRequired} error={errors.director}>
+      <Field label={t.director} req error={errors.director}>
         <TextInput
           value={formData.director}
           onChange={(v) => onChange("director", v)}

@@ -17,8 +17,7 @@ export async function completeOnboarding(
   const errors: SetupFormErrors = {};
 
   if (!data.name.trim()) errors.name = "Firmenname ist erforderlich";
-  if (["gmbh", "ug"].includes(data.legal_form) && !data.director.trim())
-    errors.director = "Geschäftsführer ist bei GmbH/UG Pflicht";
+  if (!data.director.trim()) errors.director = "Geschäftsführer ist erforderlich";
   if (!data.steuernummer.trim()) errors.steuernummer = "Steuernummer ist erforderlich";
   if (!data.iban.trim()) errors.iban = "IBAN ist erforderlich";
 
