@@ -42,7 +42,11 @@
     "statusBezahlt": "Ödendi",
     "statusOffen": "Açık",
     "statusVersendet": "Gönderildi",
-    "statusEntwurf": "Taslak"
+    "statusEntwurf": "Taslak",
+    "noDocs": "Henüz belge yok",
+    "ghostTitle": "Belgelerin burada görünür",
+    "ghostSub": "Bir fatura veya teklif oluşturduğunda, hepsini düzenli olarak burada bulursun.",
+    "hlEmptySub": "Fatura kestiğinde burada görünür."
   },
   "Customers": {
     "customers": "Müşteriler",

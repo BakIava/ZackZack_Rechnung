@@ -42,7 +42,11 @@
     "statusBezahlt": "مدفوعة",
     "statusOffen": "غير مدفوعة",
     "statusVersendet": "تم الإرسال",
-    "statusEntwurf": "مسودة"
+    "statusEntwurf": "مسودة",
+    "noDocs": "لا توجد مستندات بعد",
+    "ghostTitle": "ستظهر مستنداتك هنا",
+    "ghostSub": "بمجرد إنشاء فاتورة أو عرض سعر، ستجد كل شيء منظّماً في هذا المكان.",
+    "hlEmptySub": "بمجرد إصدار الفواتير، ستظهر هنا."
   },
   "Customers": {
     "customers": "العملاء",

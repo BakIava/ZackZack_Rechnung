@@ -42,7 +42,11 @@
     "statusBezahlt": "Bezahlt",
     "statusOffen": "Offen",
     "statusVersendet": "Versendet",
-    "statusEntwurf": "Entwurf"
+    "statusEntwurf": "Entwurf",
+    "noDocs": "Noch keine Dokumente",
+    "ghostTitle": "Hier erscheinen deine Dokumente",
+    "ghostSub": "Sobald du eine Rechnung oder ein Angebot erstellst, findest du alles übersichtlich an dieser Stelle.",
+    "hlEmptySub": "Sobald du Rechnungen stellst, siehst du sie hier."
   },
   "Customers": {
     "customers": "Kunden",

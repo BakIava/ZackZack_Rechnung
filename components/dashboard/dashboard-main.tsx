@@ -9,19 +9,13 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import {
-  COMPANY,
-  DOCS,
-  OPEN_COUNT,
-  OPEN_SUM,
-  PAID_SUM,
-  type DashboardDoc,
-  type DocStatus,
-} from "@/lib/demo/dashboard-data";
+import type { DashboardDoc, DocStatus } from "@/lib/demo/dashboard-data";
 import { formatDateDE, formatMoney } from "@/lib/format";
+import type { DashboardData } from "@/lib/dashboard/fetch";
 
 interface DashboardMainProps {
   dir: "ltr" | "rtl";
+  data: DashboardData;
 }
 
 const STROKE = 1.75;
@@ -34,10 +28,11 @@ const STATUS_KEY: Record<DocStatus, string> = {
 };
 
 /** Hauptbereich des Dashboards: Topbar, Hero-CTA, Überblick, letzte Dokumente. */
-export async function DashboardMain({ dir }: DashboardMainProps) {
+export async function DashboardMain({ dir, data }: DashboardMainProps) {
   const t = await getTranslations("Dashboard");
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
-  const firstName = COMPANY.owner.split(" ")[0];
+  const firstName = data.director.split(/\s+/)[0] || data.companyName.split(/\s+/)[0];
+  const isEmpty = data.docs.length === 0;
 
   return (
     <main className="dmain">
@@ -75,43 +70,123 @@ export async function DashboardMain({ dir }: DashboardMainProps) {
             </span>
           </Link>
 
-          <div className="dhighlight">
+          <div className={`dhighlight${isEmpty ? " is-empty" : ""}`}>
             <div className="dhl-top">
-              <span className="dhl-ic">
+              <span className={`dhl-ic${isEmpty ? " muted" : ""}`}>
                 <ReceiptText size={19} strokeWidth={STROKE} aria-hidden />
               </span>
               <span className="dhl-lbl">{t("openAmount")}</span>
             </div>
-            <div className="dhl-val">{formatMoney(OPEN_SUM)}</div>
+            <div className="dhl-val">{formatMoney(isEmpty ? 0 : data.openSumCents)}</div>
             <div className="dhl-meta">
-              {OPEN_COUNT} {t("docsOpen")} · <b>{formatMoney(PAID_SUM)}</b> {t("paidMonth")}
+              {isEmpty ? (
+                t("hlEmptySub")
+              ) : (
+                <>{data.openCount} {t("docsOpen")} · <b>{formatMoney(data.paidSumCents)}</b> {t("paidMonth")}</>
+              )}
             </div>
           </div>
         </div>
 
         <div className="dsec-head">
           <span className="dsec-t">{t("recent")}</span>
-          <Link href="/documents" className="dsec-a">
-            {t("seeAll")}
-            <Chevron size={15} strokeWidth={STROKE} aria-hidden />
-          </Link>
+          {!isEmpty && (
+            <Link href="/documents" className="dsec-a">
+              {t("seeAll")}
+              <Chevron size={15} strokeWidth={STROKE} aria-hidden />
+            </Link>
+          )}
         </div>
 
-        <div className="dtable">
-          <div className="dtr dthead">
-            <span className="dth">{t("colType")}</span>
-            <span className="dth">{t("navCustomers")}</span>
-            <span className="dth">{t("colService")}</span>
-            <span className="dth">{t("colDate")}</span>
-            <span className="dth num">{t("colAmount")}</span>
-            <span className="dth num">{t("colStatus")}</span>
+        {isEmpty ? (
+          <EmptyGhost
+            ghostTitle={t("ghostTitle")}
+            ghostSub={t("ghostSub")}
+            newDocLabel={t("newDoc")}
+            dir={dir}
+          />
+        ) : (
+          <div className="dtable">
+            <div className="dtr dthead">
+              <span className="dth">{t("colType")}</span>
+              <span className="dth">{t("navCustomers")}</span>
+              <span className="dth">{t("colService")}</span>
+              <span className="dth">{t("colDate")}</span>
+              <span className="dth num">{t("colAmount")}</span>
+              <span className="dth num">{t("colStatus")}</span>
+            </div>
+            {data.docs.map((doc) => (
+              <DocRow
+                key={doc.id}
+                doc={doc}
+                typeLabel={t(doc.type)}
+                statusLabel={t(STATUS_KEY[doc.status])}
+              />
+            ))}
           </div>
-          {DOCS.map((doc) => (
-            <DocRow key={doc.id} doc={doc} typeLabel={t(doc.type)} statusLabel={t(STATUS_KEY[doc.status])} />
-          ))}
-        </div>
+        )}
       </div>
     </main>
+  );
+}
+
+interface EmptyGhostProps {
+  ghostTitle: string;
+  ghostSub: string;
+  newDocLabel: string;
+  dir: "ltr" | "rtl";
+}
+
+const GHOST_ROWS = [
+  { w1: "58%", w2: "40%" },
+  { w1: "46%", w2: "52%" },
+  { w1: "63%", w2: "34%" },
+  { w1: "50%", w2: "44%" },
+];
+
+function EmptyGhost({ ghostTitle, ghostSub, newDocLabel, dir }: EmptyGhostProps) {
+  const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
+  return (
+    <div className="le-card le-ghost">
+      <div className="le-ghost-rows" aria-hidden="true">
+        <div className="le-grow le-grow--head">
+          {[60, 46, 52, 40, 46, 46].map((w, i) => (
+            <span key={i} className="le-bar le-bar--head" style={{ width: `${w}%` }} />
+          ))}
+        </div>
+        {GHOST_ROWS.map((r, i) => (
+          <div className="le-grow" key={i}>
+            <span className="le-gcell">
+              <span className="le-gic" />
+              <span className="le-bar" style={{ width: 38 }} />
+            </span>
+            <span className="le-bar" style={{ width: r.w1 }} />
+            <span className="le-bar" style={{ width: r.w2 }} />
+            <span className="le-bar" style={{ width: "70%" }} />
+            <span className="le-bar le-bar--end" style={{ width: 64 }} />
+            <span className="le-epill" />
+          </div>
+        ))}
+      </div>
+      <div className="le-ghost-over">
+        <div className="le-ghost-card">
+          <div className="le-emblem">
+            <i className="e-back" />
+            <i className="e-mid" />
+            <i className="e-front">
+              <ReceiptText size={26} strokeWidth={STROKE} aria-hidden />
+            </i>
+          </div>
+          <div className="le-h">{ghostTitle}</div>
+          <div className="le-sub">{ghostSub}</div>
+          <Link href="/create/1" className="le-btn le-btn--navy">
+            <Plus size={19} strokeWidth={2.4} aria-hidden />
+            {newDocLabel}
+            <Chevron size={18} strokeWidth={STROKE} aria-hidden />
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
