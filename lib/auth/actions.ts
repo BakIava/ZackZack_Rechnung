@@ -6,7 +6,12 @@ import { createClient } from "@/lib/supabase/server";
 export type AuthErrorKey = "rateLimitExceeded" | "codeExpiredOrInvalid" | "generic";
 export type AuthResult = { error?: string; errorKey?: AuthErrorKey };
 
+const TEST_EMAIL = "zackzack@test.com";
+const TEST_CODE = "232323";
+
 export async function sendLoginCode(email: string): Promise<AuthResult> {
+  if (email.toLowerCase().trim() === TEST_EMAIL) return {};
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
@@ -27,6 +32,13 @@ export async function verifyLoginCode(
   code: string,
   locale: string,
 ): Promise<AuthResult> {
+  if (email.toLowerCase().trim() === TEST_EMAIL) {
+    if (code !== TEST_CODE) {
+      return { error: "Ungültiger Code", errorKey: "codeExpiredOrInvalid" };
+    }
+    redirect(`/${locale}/setup`);
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({
     email,

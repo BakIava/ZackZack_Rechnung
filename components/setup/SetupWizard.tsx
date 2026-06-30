@@ -44,13 +44,12 @@ export function SetupWizard({
     const titleKey = `${meta.key}_t` as "s1_t" | "sc_t" | "s2_t" | "s3_t" | "s4_t";
     const subKey = `${meta.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
-    const StepBodyMobile = () => {
-      if (step === 1) return <Step1Fields {...stepProps} />;
-      if (step === 2) return <Step2Fields {...stepProps} />;
-      if (step === 3) return <Step3Fields {...stepProps} />;
-      if (step === 4) return <Step4Fields {...stepProps} />;
-      return <LogoEmpty t={t} />;
-    };
+    const stepBody =
+      step === 1 ? <Step1Fields {...stepProps} /> :
+      step === 2 ? <Step2Fields {...stepProps} /> :
+      step === 3 ? <Step3Fields {...stepProps} /> :
+      step === 4 ? <Step4Fields {...stepProps} /> :
+      <LogoEmpty t={t} />;
 
     const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
 
@@ -106,7 +105,7 @@ export function SetupWizard({
               <div className="ob-intro-s">{t[subKey]}</div>
             </div>
           </div>
-          <StepBodyMobile />
+          {stepBody}
         </div>
 
         <div className="ob-foot">
@@ -140,13 +139,12 @@ export function SetupWizard({
   const titleKey = `${cur.key}_t` as "s1_t" | "sc_t" | "s2_t" | "s3_t" | "s4_t";
   const subKey = `${cur.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
-  const StepBodyDesktop = () => {
-    if (step === 1) return <Step1Fields {...stepProps} />;
-    if (step === 2) return <Step2Fields {...stepProps} />;
-    if (step === 3) return <Step3Fields {...stepProps} />;
-    if (step === 4) return <Step4Fields {...stepProps} />;
-    return <LogoPreview t={t} />;
-  };
+  const stepBodyDesktop =
+    step === 1 ? <Step1Fields {...stepProps} /> :
+    step === 2 ? <Step2Fields {...stepProps} /> :
+    step === 3 ? <Step3Fields {...stepProps} /> :
+    step === 4 ? <Step4Fields {...stepProps} /> :
+    <LogoPreview t={t} />;
 
   const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
 
@@ -197,7 +195,7 @@ export function SetupWizard({
                 <div className="ob-d-secs">{t[subKey]}</div>
               </div>
             </div>
-            <StepBodyDesktop />
+            {stepBodyDesktop}
           </div>
 
           <div className="ob-d-wfoot">
