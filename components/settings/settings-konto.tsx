@@ -1,14 +1,28 @@
 "use client";
 
+import { useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { LogOut } from "lucide-react";
-import { COMPANY } from "@/lib/demo/dashboard-data";
+import { signOutAndRedirect } from "@/lib/settings/actions";
 
 const STROKE = 1.75;
-const DEMO_LOGIN_EMAIL = "ahmet.yilmaz@gmail.com";
 
-export function SettingsKonto() {
+interface SettingsKontoProps {
+  email: string | null;
+  locale: string;
+}
+
+export function SettingsKonto({ email, locale }: SettingsKontoProps) {
   const t = useTranslations("Settings");
+  const [pending, startTransition] = useTransition();
+
+  function handleLogout() {
+    startTransition(async () => {
+      await signOutAndRedirect(locale);
+    });
+  }
+
+  const initials = (email ?? "?").slice(0, 2).toUpperCase();
 
   return (
     <section className="set-card">
@@ -19,9 +33,9 @@ export function SettingsKonto() {
       </div>
       <div className="set-card-b">
         <div className="set-acct-row">
-          <span className="set-acct-av">{COMPANY.initials}</span>
+          <span className="set-acct-av">{initials}</span>
           <div>
-            <div className="set-acct-mail">{DEMO_LOGIN_EMAIL}</div>
+            <div className="set-acct-mail">{email}</div>
             <div className="set-acct-sub">
               <i />
               {t("signedIn")}
@@ -30,9 +44,9 @@ export function SettingsKonto() {
         </div>
       </div>
       <div className="set-card-f" style={{ justifyContent: "flex-start" }}>
-        <button className="set-ghost">
+        <button className="set-ghost" onClick={handleLogout} disabled={pending}>
           <LogOut size={17} strokeWidth={STROKE} aria-hidden />
-          {t("logout")}
+          {pending ? t("saving") : t("logout")}
         </button>
       </div>
     </section>

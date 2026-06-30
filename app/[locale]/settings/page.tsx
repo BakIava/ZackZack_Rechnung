@@ -1,7 +1,9 @@
+import { redirect } from "next/navigation";
 import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { SettingsScreen } from "@/components/settings/settings-screen";
 import { routing, isRtlLocale } from "@/i18n/routing";
+import { getSettingsData } from "@/lib/settings/queries";
 
 const hanken = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -22,9 +24,12 @@ export default async function SettingsPage({ params }: Props) {
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
 
+  const settingsData = await getSettingsData();
+  if (!settingsData) redirect(`/${locale}/login`);
+
   return (
     <div className={`${hanken.variable} ${plexArabic.variable}`}>
-      <SettingsScreen dir={dir} locale={locale} />
+      <SettingsScreen dir={dir} locale={locale} data={settingsData} />
     </div>
   );
 }

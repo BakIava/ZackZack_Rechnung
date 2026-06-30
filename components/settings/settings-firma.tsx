@@ -1,33 +1,59 @@
 "use client";
 
-import { useState, useCallback, type ReactNode, type HTMLAttributes } from "react";
+import { useState, useCallback, useRef, useTransition, type ReactNode, type HTMLAttributes } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Check, Pencil } from "lucide-react";
-import { COMPANY } from "@/lib/demo/dashboard-data";
+import type { CompanySettings } from "@/lib/settings/types";
+import {
+  saveFirmaInhaber,
+  saveAdresse,
+  saveSteuer,
+  saveKontakt,
+  saveBankverbindung,
+  uploadLogo,
+} from "@/lib/settings/actions";
 
 const STROKE = 1.75;
 
-function SaveBar() {
+interface SaveBarProps {
+  onSave: () => Promise<{ error?: string } | void>;
+}
+
+function SaveBar({ onSave }: SaveBarProps) {
   const t = useTranslations("Settings");
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    setError(null);
+    startTransition(async () => {
+      const result = await onSave();
+      if (result?.error) {
+        setError(t.has(result.error) ? t(result.error) : t("saveError"));
+        return;
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    });
   }
 
   return (
-    <div className="set-card-f">
-      {saved && (
-        <span className="set-saved">
-          <Check size={16} strokeWidth={2.5} aria-hidden />
-          {t("saved")}
-        </span>
-      )}
-      <button className="set-save" onClick={handleSave}>
-        <Check size={17} strokeWidth={2.5} aria-hidden />
-        {t("save")}
-      </button>
+    <div className="set-card-f" style={{ flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {saved && (
+          <span className="set-saved">
+            <Check size={16} strokeWidth={2.5} aria-hidden />
+            {t("saved")}
+          </span>
+        )}
+        <button className="set-save" onClick={handleSave} disabled={pending}>
+          <Check size={17} strokeWidth={2.5} aria-hidden />
+          {pending ? t("saving") : t("save")}
+        </button>
+      </div>
+      {error && <span className="set-error">{error}</span>}
     </div>
   );
 }
@@ -88,67 +114,159 @@ function Card({ title, desc, headRight, foot, children }: CardProps) {
   );
 }
 
-export function SettingsFirma() {
+interface SettingsFirmaProps {
+  company: CompanySettings;
+}
+
+export function SettingsFirma({ company }: SettingsFirmaProps) {
   const t = useTranslations("Settings");
 
-  const [firma, setFirma] = useState({
-    name: COMPANY.name,
-    owner: COMPANY.owner,
-    street: "Hauptstraße 12",
-    plz: "55411",
-    ort: "Bingen am Rhein",
-    steuerNr: "08/152/12345",
-    ustId: "",
-    tel: "06721 123456",
-    email: "info@yilmaz-maler.de",
-    bankOwner: COMPANY.owner,
-    iban: "DE89 3704 0044 0532 0130 00",
-    bic: "COBADEFFXXX",
+  const [firmaInhaber, setFirmaInhaber] = useState({
+    name: company.name,
+    legal_form: company.legal_form,
+    director: company.director ?? "",
+  });
+  const [adresse, setAdresse] = useState({
+    street: company.street,
+    street_no: company.street_no,
+    postcode: company.postcode,
+    city: company.city,
+  });
+  const [steuer, setSteuer] = useState({
+    steuernummer: company.steuernummer,
+    ust_id: company.ust_id ?? "",
+    registergericht: company.registergericht ?? "",
+    handelsregister_nr: company.handelsregister_nr ?? "",
+  });
+  const [kontakt, setKontakt] = useState({
+    phone: company.phone ?? "",
+    mobile: company.mobile ?? "",
+    fax: company.fax ?? "",
+    email: company.email ?? "",
+  });
+  const [bank, setBank] = useState({
+    bank_name: company.bank_name ?? "",
+    iban: company.iban ?? "",
+    bic: company.bic ?? "",
+    account_holder: company.account_holder ?? "",
   });
 
-  const up = useCallback((k: keyof typeof firma) => (v: string) =>
-    setFirma((s) => ({ ...s, [k]: v })), []);
+  const upInhaber = useCallback((k: keyof typeof firmaInhaber) => (v: string) =>
+    setFirmaInhaber((s) => ({ ...s, [k]: v })), []);
+  const upAdresse = useCallback((k: keyof typeof adresse) => (v: string) =>
+    setAdresse((s) => ({ ...s, [k]: v })), []);
+  const upSteuer = useCallback((k: keyof typeof steuer) => (v: string) =>
+    setSteuer((s) => ({ ...s, [k]: v })), []);
+  const upKontakt = useCallback((k: keyof typeof kontakt) => (v: string) =>
+    setKontakt((s) => ({ ...s, [k]: v })), []);
+  const upBank = useCallback((k: keyof typeof bank) => (v: string) =>
+    setBank((s) => ({ ...s, [k]: v })), []);
 
   return (
     <>
-      <Card title={t("cFirma")} foot={<SaveBar />}>
-        <Field label={t("lFirma")}   value={firma.name}   onChange={up("name")} />
-        <Field label={t("lInhaber")} value={firma.owner}  onChange={up("owner")} />
-        <Field label={t("lStrasse")} value={firma.street} onChange={up("street")} />
+      <Card title={t("cFirma")} foot={<SaveBar onSave={() => saveFirmaInhaber(firmaInhaber)} />}>
+        <Field label={t("lFirma")} value={firmaInhaber.name} onChange={upInhaber("name")} />
+        <Field label={t("lInhaber")} value={firmaInhaber.director} onChange={upInhaber("director")} />
+        <Field label={t("lRechtsform")} value={firmaInhaber.legal_form} onChange={upInhaber("legal_form")} />
+      </Card>
+
+      <Card title={t("cAdresse")} foot={<SaveBar onSave={() => saveAdresse(adresse)} />}>
         <div className="set-f-row-two">
-          <Field label={t("lPlz")} value={firma.plz} onChange={up("plz")} inputMode="numeric" />
-          <Field label={t("lOrt")} value={firma.ort} onChange={up("ort")} />
+          <Field label={t("lStrasse")} value={adresse.street} onChange={upAdresse("street")} />
+          <Field label={t("lHausnr")} value={adresse.street_no} onChange={upAdresse("street_no")} />
+        </div>
+        <div className="set-f-row-two">
+          <Field label={t("lPlz")} value={adresse.postcode} onChange={upAdresse("postcode")} inputMode="numeric" />
+          <Field label={t("lOrt")} value={adresse.city} onChange={upAdresse("city")} />
         </div>
       </Card>
 
-      <Card title={t("cSteuer")} foot={<SaveBar />}>
-        <Field label={t("lSteuerNr")} value={firma.steuerNr} onChange={up("steuerNr")} />
-        <Field label={t("lUstId")} value={firma.ustId} onChange={up("ustId")} placeholder={t("phUstId")} optional />
+      <Card title={t("cSteuer")} foot={<SaveBar onSave={() => saveSteuer(steuer)} />}>
+        <Field label={t("lSteuerNr")} value={steuer.steuernummer} onChange={upSteuer("steuernummer")} />
+        <Field label={t("lUstId")} value={steuer.ust_id} onChange={upSteuer("ust_id")} placeholder={t("phUstId")} optional />
+        <Field label={t("lRegistergericht")} value={steuer.registergericht} onChange={upSteuer("registergericht")} optional />
+        <Field label={t("lHandelsregisterNr")} value={steuer.handelsregister_nr} onChange={upSteuer("handelsregister_nr")} optional />
       </Card>
 
-      <Card title={t("cKontakt")} foot={<SaveBar />}>
-        <Field label={t("lTel")}  value={firma.tel}   onChange={up("tel")}   type="tel" />
-        <Field label={t("lMail")} value={firma.email} onChange={up("email")} type="email" />
+      <Card title={t("cKontakt")} foot={<SaveBar onSave={() => saveKontakt(kontakt)} />}>
+        <Field label={t("lTel")} value={kontakt.phone} onChange={upKontakt("phone")} type="tel" optional />
+        <Field label={t("lMobil")} value={kontakt.mobile} onChange={upKontakt("mobile")} type="tel" optional />
+        <Field label={t("lFax")} value={kontakt.fax} onChange={upKontakt("fax")} optional />
+        <Field label={t("lMail")} value={kontakt.email} onChange={upKontakt("email")} type="email" optional />
       </Card>
 
-      <Card title={t("cLogo")}>
-        <div className="set-logo-row">
-          <div className="set-logo-prev">{COMPANY.initials}</div>
-          <div className="set-logo-info">
-            <button className="set-ghost">
-              <Pencil size={17} strokeWidth={STROKE} aria-hidden />
-              {t("replace")}
-            </button>
-            <div className="set-logo-hint">{t("logoHint")}</div>
-          </div>
-        </div>
-      </Card>
+      <LogoCard logoUrl={company.logo_url} />
 
-      <Card title={t("cBank")} foot={<SaveBar />}>
-        <Field label={t("lKontoinhaber")} value={firma.bankOwner} onChange={up("bankOwner")} />
-        <Field label={t("lIban")}         value={firma.iban}      onChange={up("iban")} />
-        <Field label={t("lBic")}          value={firma.bic}       onChange={up("bic")} />
+      <Card title={t("cBank")} foot={<SaveBar onSave={() => saveBankverbindung(bank)} />}>
+        <Field label={t("lKontoinhaber")} value={bank.account_holder} onChange={upBank("account_holder")} />
+        <Field label={t("lIban")} value={bank.iban} onChange={upBank("iban")} />
+        <Field label={t("lBic")} value={bank.bic} onChange={upBank("bic")} />
+        <Field label={t("lBankName")} value={bank.bank_name} onChange={upBank("bank_name")} optional />
       </Card>
     </>
+  );
+}
+
+interface LogoCardProps {
+  logoUrl: string | null;
+}
+
+function LogoCard({ logoUrl: initialLogoUrl }: LogoCardProps) {
+  const t = useTranslations("Settings");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function handlePick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    setError(null);
+    const formData = new FormData();
+    formData.set("file", file);
+
+    startTransition(async () => {
+      const result = await uploadLogo(formData);
+      if (result.error) {
+        setError(t.has(result.error) ? t(result.error) : t("saveError"));
+        return;
+      }
+      if (result.logoUrl) setLogoUrl(result.logoUrl);
+    });
+  }
+
+  return (
+    <Card title={t("cLogo")}>
+      <div className="set-logo-row">
+        {logoUrl ? (
+          <div className="set-logo-prev">
+            <Image src={logoUrl} alt="" width={56} height={56} unoptimized />
+          </div>
+        ) : (
+          <div className="set-logo-prev" />
+        )}
+        <div className="set-logo-info">
+          <button className="set-ghost" onClick={handlePick} disabled={pending}>
+            <Pencil size={17} strokeWidth={STROKE} aria-hidden />
+            {pending ? t("saving") : t("replace")}
+          </button>
+          <div className="set-logo-hint">{t("logoHint")}</div>
+          {error && <div className="set-error">{error}</div>}
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/svg+xml"
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        />
+      </div>
+    </Card>
   );
 }

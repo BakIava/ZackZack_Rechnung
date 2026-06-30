@@ -8,10 +8,12 @@ import { SettingsRechnung } from "./settings-rechnung";
 import { SettingsBedienung } from "./settings-bedienung";
 import { SettingsKonto } from "./settings-konto";
 import { SettingsRecht } from "./settings-recht";
+import type { SettingsData } from "@/lib/settings/types";
 
 interface SettingsMainProps {
   dir: "ltr" | "rtl";
   locale: string;
+  data: SettingsData;
 }
 
 type Section = "firma" | "rechnung" | "bedienung" | "konto" | "recht";
@@ -26,7 +28,7 @@ const SECTION_ICONS: Record<Section, ReactNode> = {
   recht:     <ShieldCheck size={19} strokeWidth={STROKE} aria-hidden />,
 };
 
-export function SettingsMain({ dir, locale }: SettingsMainProps) {
+export function SettingsMain({ dir, locale, data }: SettingsMainProps) {
   const t = useTranslations("Settings");
   const [section, setSection] = useState<Section>("firma");
 
@@ -81,10 +83,12 @@ export function SettingsMain({ dir, locale }: SettingsMainProps) {
               <div className="set-sec-s">{secSub}</div>
             </div>
 
-            {section === "firma"     && <SettingsFirma />}
-            {section === "rechnung"  && <SettingsRechnung />}
+            {section === "firma"     && <SettingsFirma company={data.company} />}
+            {section === "rechnung"  && (
+              <SettingsRechnung company={data.company} currentInvoiceNumber={data.currentInvoiceNumber} />
+            )}
             {section === "bedienung" && <SettingsBedienung locale={locale} dir={dir} />}
-            {section === "konto"     && <SettingsKonto />}
+            {section === "konto"     && <SettingsKonto email={data.authEmail} locale={locale} />}
             {section === "recht"     && <SettingsRecht dir={dir} />}
           </div>
         </div>
