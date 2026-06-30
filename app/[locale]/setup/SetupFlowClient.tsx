@@ -17,6 +17,7 @@ export function SetupFlowClient({ lang, dir }: Props) {
     <SetupFlow
       lang={lang}
       dir={dir}
+      locale={locale}
       onComplete={() => router.push(`/${locale}/create/1`)}
       onDashboard={() => router.push(`/${locale}/dashboard`)}
     />

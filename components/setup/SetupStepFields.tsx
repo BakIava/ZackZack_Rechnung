@@ -1,43 +1,114 @@
 "use client";
 
 import "./SetupStepFields.css";
-import { useState } from "react";
 import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations } from "./translations";
 import { Field, TextInput, Seg3, Toggle19 } from "./SetupPrimitives";
+import type { SetupFormData, SetupFormErrors } from "./types";
+
+interface StepProps {
+  t: Translations;
+  formData: SetupFormData;
+  errors: SetupFormErrors;
+  onChange: (key: keyof SetupFormData, value: string | boolean) => void;
+}
 
 // ── Step1Fields ───────────────────────────────────────────────────────────────
 
-interface Step1FieldsProps {
-  t: Translations;
-}
-
-const HR_FORMS = new Set(["ek", "gmbh", "ug"]);
-
-export function Step1Fields({ t }: Step1FieldsProps) {
-  const [rf, setRf] = useState("einzel");
+export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
+  const HR_FORMS = new Set(["ek", "gmbh", "ug"]);
+  const showHr = HR_FORMS.has(formData.legal_form);
   return (
     <div className="ob-form">
-      <Field label={t.firma} req><TextInput value="Yılmaz Malerbetrieb" valid /></Field>
-      <Field label={t.rechtsform} req>
-        <Seg3 options={t.rf} value={rf} onChange={setRf} wrap />
+      <Field label={t.firma} req error={errors.name}>
+        <TextInput
+          value={formData.name}
+          onChange={(v) => onChange("name", v)}
+          error={!!errors.name}
+          placeholder="z. B. Yılmaz Malerbetrieb"
+        />
       </Field>
-      {HR_FORMS.has(rf) && (
+      <Field label={t.director} req error={errors.director}>
+        <TextInput
+          value={formData.director}
+          onChange={(v) => onChange("director", v)}
+          placeholder="z. B. Mehmet Yılmaz"
+          error={!!errors.director}
+        />
+      </Field>
+      <Field label={t.rechtsform} req>
+        <Seg3
+          options={t.rf}
+          value={formData.legal_form}
+          onChange={(v) => onChange("legal_form", v)}
+          wrap
+        />
+      </Field>
+      {showHr && (
         <div className="ob-hr-fields">
           <div className="ob-row2">
-            <div className="ob-grow"><Field label={t.hrNr} req><TextInput placeholder={t.hrNrPh} mono /></Field></div>
-            <div className="ob-grow"><Field label={t.hrGericht} req><TextInput placeholder={t.hrGerichtPh} /></Field></div>
+            <div className="ob-grow">
+              <Field label={t.hrNr} req>
+                <TextInput
+                  value={formData.handelsregister_nr}
+                  onChange={(v) => onChange("handelsregister_nr", v)}
+                  placeholder={t.hrNrPh}
+                  mono
+                />
+              </Field>
+            </div>
+            <div className="ob-grow">
+              <Field label={t.hrGericht} req>
+                <TextInput
+                  value={formData.registergericht}
+                  onChange={(v) => onChange("registergericht", v)}
+                  placeholder={t.hrGerichtPh}
+                />
+              </Field>
+            </div>
           </div>
         </div>
       )}
       <div className="ob-row2">
-        <div className="ob-grow"><Field label={t.strasse} req><TextInput value="Hansastraße" /></Field></div>
-        <div className="ob-hnr"><Field label={t.hausnr} req><TextInput value="22" /></Field></div>
+        <div className="ob-grow">
+          <Field label={t.strasse} req>
+            <TextInput
+              value={formData.street}
+              onChange={(v) => onChange("street", v)}
+              placeholder="Hansastraße"
+            />
+          </Field>
+        </div>
+        <div className="ob-hnr">
+          <Field label={t.hausnr} req>
+            <TextInput
+              value={formData.street_no}
+              onChange={(v) => onChange("street_no", v)}
+              placeholder="22"
+            />
+          </Field>
+        </div>
       </div>
       <div className="ob-row2">
-        <div className="ob-plz"><Field label={t.plz} req><TextInput value="60314" /></Field></div>
-        <div className="ob-grow"><Field label={t.ort} req><TextInput value="Frankfurt am Main" /></Field></div>
+        <div className="ob-plz">
+          <Field label={t.plz} req>
+            <TextInput
+              value={formData.postcode}
+              onChange={(v) => onChange("postcode", v)}
+              placeholder="60314"
+            />
+          </Field>
+        </div>
+        <div className="ob-grow">
+          <Field label={t.ort} req>
+            <TextInput
+              value={formData.city}
+              onChange={(v) => onChange("city", v)}
+              placeholder="Frankfurt am Main"
+            />
+          </Field>
+        </div>
       </div>
     </div>
   );
@@ -45,22 +116,49 @@ export function Step1Fields({ t }: Step1FieldsProps) {
 
 // ── Step2Fields ───────────────────────────────────────────────────────────────
 
-interface Step2FieldsProps {
-  t: Translations;
-}
-
-export function Step2Fields({ t }: Step2FieldsProps) {
+export function Step2Fields({ t, formData, errors, onChange }: StepProps) {
   const optBadge = <span className="ob-opt">{t.opt}</span>;
   return (
     <div className="ob-form">
-      <Field label={t.email} req hint={t.emailHint}>
-        <TextInput value="mehmet.yilmaz@example.de" valid dir="ltr" />
+      <Field label={t.email} req hint={t.emailHint} error={errors.email}>
+        <TextInput
+          value={formData.email}
+          onChange={(v) => onChange("email", v)}
+          placeholder="mehmet@example.de"
+          dir="ltr"
+          error={!!errors.email}
+        />
       </Field>
       <div className="ob-row2">
-        <div className="ob-grow"><Field label={t.telefon} badge={optBadge}><TextInput value="069 1234567" dir="ltr" /></Field></div>
-        <div className="ob-grow"><Field label={t.mobil} badge={optBadge}><TextInput value="0151 23456789" dir="ltr" /></Field></div>
+        <div className="ob-grow">
+          <Field label={t.telefon} badge={optBadge}>
+            <TextInput
+              value={formData.phone}
+              onChange={(v) => onChange("phone", v)}
+              placeholder="069 1234567"
+              dir="ltr"
+            />
+          </Field>
+        </div>
+        <div className="ob-grow">
+          <Field label={t.mobil} badge={optBadge}>
+            <TextInput
+              value={formData.mobile}
+              onChange={(v) => onChange("mobile", v)}
+              placeholder="0151 23456789"
+              dir="ltr"
+            />
+          </Field>
+        </div>
       </div>
-      <Field label={t.fax} badge={optBadge}><TextInput value="" placeholder={t.faxPh} dir="ltr" /></Field>
+      <Field label={t.fax} badge={optBadge}>
+        <TextInput
+          value={formData.fax}
+          onChange={(v) => onChange("fax", v)}
+          placeholder={t.faxPh}
+          dir="ltr"
+        />
+      </Field>
       <div className="ob-note">
         <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
         <div className="ob-note-tx">{t.contactNote}</div>
@@ -69,13 +167,16 @@ export function Step2Fields({ t }: Step2FieldsProps) {
   );
 }
 
-// ── Step3Fields ───────────────────────────────────────────────────────────────
-
-interface Step3FieldsProps {
-  t: Translations;
+function formatSteuernummer(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}/${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}/${digits.slice(3, 6)}/${digits.slice(6)}`;
 }
 
-export function Step3Fields({ t }: Step3FieldsProps) {
+// ── Step3Fields ───────────────────────────────────────────────────────────────
+
+export function Step3Fields({ t, formData, errors, onChange }: StepProps) {
   const optBadge = <span className="ob-opt">{t.opt}</span>;
   return (
     <div className="ob-form">
@@ -83,35 +184,78 @@ export function Step3Fields({ t }: Step3FieldsProps) {
         label={t.steuernr}
         req
         hint={<><span>{t.steuernrHint}</span><span className="mono">123/456/78901</span></>}
+        error={errors.steuernummer}
       >
-        <TextInput value="047/815/08150" valid mono />
+        <TextInput
+          value={formData.steuernummer}
+          onChange={(v) => onChange("steuernummer", formatSteuernummer(v))}
+          placeholder="047/815/08150"
+          mono
+          dir="ltr"
+          error={!!errors.steuernummer}
+        />
       </Field>
       <Field label={t.ustidnr} badge={optBadge}>
-        <TextInput value="" placeholder="DE123456789" mono dir="ltr" />
+        <TextInput
+          value={formData.ust_id}
+          onChange={(v) => onChange("ust_id", v)}
+          placeholder="DE123456789"
+          mono
+          dir="ltr"
+        />
       </Field>
-      <Toggle19 t={t} />
+      <Toggle19
+        t={t}
+        checked={formData.kleinunternehmer}
+        onChange={(v) => onChange("kleinunternehmer", v)}
+      />
     </div>
   );
 }
 
 // ── Step4Fields ───────────────────────────────────────────────────────────────
 
-interface Step4FieldsProps {
-  t: Translations;
-}
-
-export function Step4Fields({ t }: Step4FieldsProps) {
+export function Step4Fields({ t, formData, errors, onChange }: StepProps) {
   return (
     <div className="ob-form">
-      <Field label={t.iban}>
-        <TextInput value="DE89 3704 0044 0532 0130 00" valid mono dir="ltr" />
+      <Field label={t.iban} error={errors.iban}>
+        <TextInput
+          value={formData.iban}
+          onChange={(v) => onChange("iban", v)}
+          placeholder="DE89 3704 0044 0532 0130 00"
+          mono
+          dir="ltr"
+          error={!!errors.iban}
+        />
       </Field>
       <div className="ob-row2">
-        <div className="ob-grow"><Field label={t.bic}><TextInput value="COBADEFFXXX" valid mono dir="ltr" /></Field></div>
-        <div className="ob-grow"><Field label={t.bankName}><TextInput value="Commerzbank" valid /></Field></div>
+        <div className="ob-grow">
+          <Field label={t.bic}>
+            <TextInput
+              value={formData.bic}
+              onChange={(v) => onChange("bic", v)}
+              placeholder="COBADEFFXXX"
+              mono
+              dir="ltr"
+            />
+          </Field>
+        </div>
+        <div className="ob-grow">
+          <Field label={t.bankName}>
+            <TextInput
+              value={formData.bank_name}
+              onChange={(v) => onChange("bank_name", v)}
+              placeholder="Commerzbank"
+            />
+          </Field>
+        </div>
       </div>
       <Field label={t.inhaber}>
-        <TextInput value="Mehmet Yılmaz" />
+        <TextInput
+          value={formData.account_holder}
+          onChange={(v) => onChange("account_holder", v)}
+          placeholder="Mehmet Yılmaz"
+        />
       </Field>
       <div className="ob-note">
         <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
@@ -179,131 +323,6 @@ export function LogoPreview({ t }: LogoPreviewProps) {
         <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
         <div className="ob-note-tx">{t.logoNote}</div>
       </div>
-    </div>
-  );
-}
-
-// ── EntryTiles ────────────────────────────────────────────────────────────────
-
-interface EntryTilesProps {
-  t: Translations;
-  row?: boolean;
-  onUpload?: () => void;
-  onManual?: () => void;
-}
-
-export function EntryTiles({ t, row, onUpload, onManual }: EntryTilesProps) {
-  return (
-    <div className={"ob-entry-tiles" + (row ? " ob-entry-tiles--row" : "")}>
-      <button type="button" className="ob-entry-tile ob-entry-tile--up" onClick={onUpload}>
-        <div className="ob-entry-tile-ic"><SetupIcon name="scan" size={28} /></div>
-        <div className="ob-entry-tile-tx">
-          <div className="ob-entry-tile-t">
-            {t.tileUploadT}
-            <span className="ob-tile-fast">{t.tileFast}</span>
-          </div>
-          <div className="ob-entry-tile-s">{t.tileUploadS}</div>
-        </div>
-        <div className="ob-entry-tile-aff"><SetupIcon name="chevronRight" size={20} /></div>
-      </button>
-      <button type="button" className="ob-entry-tile ob-entry-tile--man" onClick={onManual}>
-        <div className="ob-entry-tile-ic"><SetupIcon name="pencil" size={26} /></div>
-        <div className="ob-entry-tile-tx">
-          <div className="ob-entry-tile-t">{t.tileManualT}</div>
-          <div className="ob-entry-tile-s">{t.tileManualS}</div>
-        </div>
-        <div className="ob-entry-tile-aff"><SetupIcon name="chevronRight" size={20} /></div>
-      </button>
-    </div>
-  );
-}
-
-// ── UploadOpts ────────────────────────────────────────────────────────────────
-
-interface UploadOptsProps {
-  t: Translations;
-  onChoose?: () => void;
-}
-
-export function UploadOpts({ t, onChoose }: UploadOptsProps) {
-  const opts = [
-    ["camera", t.upCam, t.upCamS],
-    ["image", t.upGal, t.upGalS],
-    ["file", t.upPdf, t.upPdfS],
-  ] as const;
-  return (
-    <div className="ob-up-opts">
-      {opts.map(([ic, title, sub]) => (
-        <button type="button" className="ob-up-opt" key={ic} onClick={onChoose}>
-          <div className="ob-up-opt-ic"><SetupIcon name={ic} size={22} /></div>
-          <div className="ob-up-opt-tx">
-            <div className="ob-up-opt-t">{title}</div>
-            <div className="ob-up-opt-s">{sub}</div>
-          </div>
-          <div className="ob-up-opt-aff"><SetupIcon name="chevronRight" size={20} /></div>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ── ReviewFields ──────────────────────────────────────────────────────────────
-
-interface ReviewFieldsProps {
-  t: Translations;
-}
-
-export function ReviewFields({ t }: ReviewFieldsProps) {
-  const Detected = () => (
-    <span className="ob-detected">
-      <SetupIcon name="check" size={11} weight="bold" />{t.detected}
-    </span>
-  );
-  const TodoBadge = () => (
-    <span className="ob-detected ob-detected--todo">{t.todo}</span>
-  );
-
-  return (
-    <div className="ob-form">
-      <div className="ob-group-lbl">{t.grpBetrieb}</div>
-      <Field label={t.firma} req badge={<Detected />}>
-        <TextInput value="Yılmaz Malerbetrieb" valid />
-      </Field>
-      <Field label={t.rechtsform} req badge={<TodoBadge />} todo={t.rfTodo}>
-        <Seg3 options={t.rf} value={null} />
-      </Field>
-      <div className="ob-row2">
-        <div className="ob-grow">
-          <Field label={t.strasse} req badge={<Detected />}>
-            <TextInput value="Hansastraße" valid />
-          </Field>
-        </div>
-        <div className="ob-hnr">
-          <Field label={t.hausnr} req>
-            <TextInput value="22" valid />
-          </Field>
-        </div>
-      </div>
-      <div className="ob-row2">
-        <div className="ob-plz">
-          <Field label={t.plz} req>
-            <TextInput value="60314" valid />
-          </Field>
-        </div>
-        <div className="ob-grow">
-          <Field label={t.ort} req badge={<Detected />}>
-            <TextInput value="Frankfurt am Main" valid />
-          </Field>
-        </div>
-      </div>
-      <div className="ob-group-lbl">{t.grpSteuer}</div>
-      <Field label={t.steuernr} req badge={<Detected />}>
-        <TextInput value="047/815/08150" valid mono />
-      </Field>
-      <div className="ob-group-lbl">{t.grpBank}</div>
-      <Field label={t.iban} badge={<Detected />}>
-        <TextInput value="DE89 3704 0044 0532 0130 00" valid mono dir="ltr" />
-      </Field>
     </div>
   );
 }

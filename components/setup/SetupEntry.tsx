@@ -5,7 +5,7 @@ import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang } from "./translations";
 import { LangLink, Privacy, DesktopBar } from "./SetupPrimitives";
-import { EntryTiles } from "./SetupStepFields";
+import { EntryTiles } from "./SetupOtherFields";
 
 interface EntryProps {
   t: Translations;

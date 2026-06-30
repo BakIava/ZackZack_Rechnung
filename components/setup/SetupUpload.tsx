@@ -5,7 +5,7 @@ import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang } from "./translations";
 import { LangLink, Privacy, ScanDoc, DesktopBar, UpProgress } from "./SetupPrimitives";
-import { UploadOpts } from "./SetupStepFields";
+import { UploadOpts } from "./SetupOtherFields";
 
 interface UploadProps {
   t: Translations;
