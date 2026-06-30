@@ -159,6 +159,13 @@ export function Step2Fields({ t, formData, errors, onChange }: StepProps) {
   );
 }
 
+function formatSteuernummer(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}/${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}/${digits.slice(3, 6)}/${digits.slice(6)}`;
+}
+
 // ── Step3Fields ───────────────────────────────────────────────────────────────
 
 export function Step3Fields({ t, formData, errors, onChange }: StepProps) {
@@ -173,9 +180,10 @@ export function Step3Fields({ t, formData, errors, onChange }: StepProps) {
       >
         <TextInput
           value={formData.steuernummer}
-          onChange={(v) => onChange("steuernummer", v)}
+          onChange={(v) => onChange("steuernummer", formatSteuernummer(v))}
           placeholder="047/815/08150"
           mono
+          dir="ltr"
           error={!!errors.steuernummer}
         />
       </Field>
