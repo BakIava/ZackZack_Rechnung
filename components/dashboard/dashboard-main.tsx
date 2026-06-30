@@ -9,19 +9,13 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import {
-  COMPANY,
-  DOCS,
-  OPEN_COUNT,
-  OPEN_SUM,
-  PAID_SUM,
-  type DashboardDoc,
-  type DocStatus,
-} from "@/lib/demo/dashboard-data";
+import type { DashboardDoc, DocStatus } from "@/lib/demo/dashboard-data";
 import { formatDateDE, formatMoney } from "@/lib/format";
+import type { DashboardData } from "@/lib/dashboard/fetch";
 
 interface DashboardMainProps {
   dir: "ltr" | "rtl";
+  data: DashboardData;
 }
 
 const STROKE = 1.75;
@@ -34,10 +28,10 @@ const STATUS_KEY: Record<DocStatus, string> = {
 };
 
 /** Hauptbereich des Dashboards: Topbar, Hero-CTA, Überblick, letzte Dokumente. */
-export async function DashboardMain({ dir }: DashboardMainProps) {
+export async function DashboardMain({ dir, data }: DashboardMainProps) {
   const t = await getTranslations("Dashboard");
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
-  const firstName = COMPANY.owner.split(" ")[0];
+  const firstName = data.ownerName.split(/\s+/)[0] || data.companyName.split(/\s+/)[0];
 
   return (
     <main className="dmain">
@@ -82,9 +76,9 @@ export async function DashboardMain({ dir }: DashboardMainProps) {
               </span>
               <span className="dhl-lbl">{t("openAmount")}</span>
             </div>
-            <div className="dhl-val">{formatMoney(OPEN_SUM)}</div>
+            <div className="dhl-val">{formatMoney(data.openSumCents)}</div>
             <div className="dhl-meta">
-              {OPEN_COUNT} {t("docsOpen")} · <b>{formatMoney(PAID_SUM)}</b> {t("paidMonth")}
+              {data.openCount} {t("docsOpen")} · <b>{formatMoney(data.paidSumCents)}</b> {t("paidMonth")}
             </div>
           </div>
         </div>
@@ -106,9 +100,13 @@ export async function DashboardMain({ dir }: DashboardMainProps) {
             <span className="dth num">{t("colAmount")}</span>
             <span className="dth num">{t("colStatus")}</span>
           </div>
-          {DOCS.map((doc) => (
-            <DocRow key={doc.id} doc={doc} typeLabel={t(doc.type)} statusLabel={t(STATUS_KEY[doc.status])} />
-          ))}
+          {data.docs.length === 0 ? (
+            <div className="dempty">{t("noDocs")}</div>
+          ) : (
+            data.docs.map((doc) => (
+              <DocRow key={doc.id} doc={doc} typeLabel={t(doc.type)} statusLabel={t(STATUS_KEY[doc.status])} />
+            ))
+          )}
         </div>
       </div>
     </main>
