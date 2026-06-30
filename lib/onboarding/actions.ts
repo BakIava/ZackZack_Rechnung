@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { SetupFormData, SetupFormErrors } from "@/components/setup/types";
 
 export interface OnboardingResult {
@@ -23,45 +24,58 @@ export async function completeOnboarding(
     return { error: "Bitte alle Pflichtfelder ausfüllen.", errors };
   }
 
+  // Verify the caller is authenticated
   const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Nicht angemeldet. Bitte neu einloggen." };
 
-  const company_data = {
-    name: data.name.trim(),
-    legal_form: data.legal_form,
-    street: data.street.trim(),
-    street_no: data.street_no.trim(),
-    postcode: data.postcode.trim(),
-    city: data.city.trim(),
-    phone: data.phone.trim(),
-    mobile: data.mobile.trim(),
-    fax: data.fax.trim(),
-    email: data.email.trim(),
-    steuernummer: data.steuernummer.trim(),
-    ust_id: data.ust_id.trim(),
-    registergericht: data.registergericht.trim(),
-    handelsregister_nr: data.handelsregister_nr.trim(),
-    kleinunternehmer: data.kleinunternehmer,
-    bank_name: data.bank_name.trim(),
-    iban: data.iban.trim(),
-    bic: data.bic.trim(),
-    account_holder: data.account_holder.trim(),
-    logo_url: "",
-  };
+  // Check if already onboarded → just redirect
+  const admin = createAdminClient();
+  const { data: existing } = await admin
+    .from("users")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (existing) redirect(`/${locale}/dashboard`);
 
-  const { error } = await supabase.rpc("complete_onboarding", { company_data });
+  // INSERT company
+  const { data: company, error: companyErr } = await admin
+    .from("companies")
+    .insert({
+      name: data.name.trim(),
+      legal_form: data.legal_form,
+      street: data.street.trim(),
+      street_no: data.street_no.trim(),
+      postcode: data.postcode.trim(),
+      city: data.city.trim(),
+      phone: data.phone.trim() || null,
+      mobile: data.mobile.trim() || null,
+      fax: data.fax.trim() || null,
+      email: data.email.trim() || null,
+      steuernummer: data.steuernummer.trim(),
+      ust_id: data.ust_id.trim() || null,
+      registergericht: data.registergericht.trim() || null,
+      handelsregister_nr: data.handelsregister_nr.trim() || null,
+      kleinunternehmer: data.kleinunternehmer,
+      bank_name: data.bank_name.trim() || null,
+      iban: data.iban.trim(),
+      bic: data.bic.trim() || null,
+      account_holder: data.account_holder.trim() || null,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
-    // PK conflict on public.users → user already onboarded
-    if (error.code === "23505" || error.message.includes("duplicate key")) {
-      redirect(`/${locale}/dashboard`);
-    }
-    return { error: error.message };
+  if (companyErr) return { error: companyErr.message };
+
+  // INSERT public.users — if this fails, roll back the company row
+  const { error: userErr } = await admin
+    .from("users")
+    .insert({ id: user.id, company_id: company.id, email: user.email });
+
+  if (userErr) {
+    await admin.from("companies").delete().eq("id", company.id);
+    if (userErr.code === "23505") redirect(`/${locale}/dashboard`);
+    return { error: userErr.message };
   }
 
   redirect(`/${locale}/dashboard`);
