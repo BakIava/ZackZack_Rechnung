@@ -29,6 +29,13 @@ export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
           placeholder="z. B. Yılmaz Malerbetrieb"
         />
       </Field>
+      <Field label={t.director}>
+        <TextInput
+          value={formData.director}
+          onChange={(v) => onChange("director", v)}
+          placeholder="z. B. Mehmet Yılmaz"
+        />
+      </Field>
       <Field label={t.rechtsform} req>
         <Seg3
           options={t.rf}

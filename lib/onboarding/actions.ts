@@ -44,6 +44,7 @@ export async function completeOnboarding(
     .insert({
       name: data.name.trim(),
       legal_form: data.legal_form,
+      director: data.director.trim() || null,
       street: data.street.trim(),
       street_no: data.street_no.trim(),
       postcode: data.postcode.trim(),

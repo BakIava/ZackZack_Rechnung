@@ -2,6 +2,7 @@ export interface SetupFormData {
   // Step 1: Betrieb
   name: string;
   legal_form: string;
+  director: string;
   street: string;
   street_no: string;
   postcode: string;
@@ -29,6 +30,7 @@ export type SetupFormErrors = Partial<Record<keyof SetupFormData, string>>;
 export const INITIAL_FORM_DATA: SetupFormData = {
   name: "",
   legal_form: "einzel",
+  director: "",
   street: "",
   street_no: "",
   postcode: "",
