@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { SetupFormData, SetupFormErrors } from "@/components/setup/types";
@@ -24,13 +23,6 @@ export async function completeOnboarding(
 
   if (Object.keys(errors).length > 0) {
     return { error: "Bitte alle Pflichtfelder ausfüllen.", errors };
-  }
-
-  // Test user: skip DB entirely
-  const cookieStore = await cookies();
-  if (cookieStore.get("zz-test-user")?.value === "1") {
-    cookieStore.delete("zz-test-user");
-    redirect(`/${locale}/dashboard`);
   }
 
   // Verify the caller is authenticated
