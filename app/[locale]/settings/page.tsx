@@ -24,12 +24,24 @@ export default async function SettingsPage({ params }: Props) {
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
 
-  const settingsData = await getSettingsData();
-  if (!settingsData) redirect(`/${locale}/login`);
+  const result = await getSettingsData();
+
+  if (!result.ok) {
+    if (result.reason === "unauthenticated") redirect(`/${locale}/login`);
+    // no_profile or db_error: show error in settings shell instead of login loop
+    return (
+      <div className={`${hanken.variable} ${plexArabic.variable}`}>
+        <p style={{ padding: "2rem", color: "red" }}>
+          Einstellungen konnten nicht geladen werden ({result.reason}
+          {result.detail ? `: ${result.detail}` : ""}).
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={`${hanken.variable} ${plexArabic.variable}`}>
-      <SettingsScreen dir={dir} locale={locale} data={settingsData} />
+      <SettingsScreen dir={dir} locale={locale} data={result.data} />
     </div>
   );
 }
