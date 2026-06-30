@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthErrorKey = "rateLimitExceeded" | "codeExpiredOrInvalid" | "generic";
@@ -36,6 +37,8 @@ export async function verifyLoginCode(
     if (code !== TEST_CODE) {
       return { error: "Ungültiger Code", errorKey: "codeExpiredOrInvalid" };
     }
+    const cookieStore = await cookies();
+    cookieStore.set("zz-test-user", "1", { httpOnly: true, path: "/", sameSite: "lax" });
     redirect(`/${locale}/setup`);
   }
 
