@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useTransition, type ReactNode, type HTMLAttributes } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Pencil } from "lucide-react";
 import type { CompanySettings } from "@/lib/settings/types";
@@ -21,6 +22,7 @@ interface SaveBarProps {
 
 function SaveBar({ onSave }: SaveBarProps) {
   const t = useTranslations("Settings");
+  const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -33,6 +35,7 @@ function SaveBar({ onSave }: SaveBarProps) {
         setError(t.has(result.error) ? t(result.error) : t("saveError"));
         return;
       }
+      router.refresh();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     });
