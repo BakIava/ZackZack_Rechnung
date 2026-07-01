@@ -13,7 +13,6 @@ import {
   saveBankverbindung,
   uploadLogo,
 } from "@/lib/settings/actions";
-
 const STROKE = 1.75;
 
 interface SaveBarProps {
@@ -88,6 +87,31 @@ function Field({ label, value, onChange, placeholder, optional, type, inputMode 
   );
 }
 
+interface SelectFieldProps {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: readonly (readonly [string, string])[];
+  optional?: boolean;
+}
+
+function SelectField({ label, value, onChange, options, optional }: SelectFieldProps) {
+  const t = useTranslations("Settings");
+  return (
+    <div className="set-f-row">
+      <label className="set-f-lbl">
+        {label}
+        {optional && <span className="set-opt">{t("optional")}</span>}
+      </label>
+      <select className="set-select" value={value} onChange={(e) => onChange(e.target.value)}>
+        {options.map(([optValue, optLabel]) => (
+          <option key={optValue} value={optValue}>{optLabel}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 interface CardProps {
   title: string;
   desc?: string;
@@ -125,6 +149,8 @@ export function SettingsFirma({ company }: SettingsFirmaProps) {
     name: company.name,
     legal_form: company.legal_form,
     director: company.director ?? "",
+    registergericht: company.registergericht ?? "",
+    handelsregister_nr: company.handelsregister_nr ?? "",
   });
   const [adresse, setAdresse] = useState({
     street: company.street,
@@ -135,8 +161,6 @@ export function SettingsFirma({ company }: SettingsFirmaProps) {
   const [steuer, setSteuer] = useState({
     steuernummer: company.steuernummer,
     ust_id: company.ust_id ?? "",
-    registergericht: company.registergericht ?? "",
-    handelsregister_nr: company.handelsregister_nr ?? "",
   });
   const [kontakt, setKontakt] = useState({
     phone: company.phone ?? "",
@@ -162,16 +186,20 @@ export function SettingsFirma({ company }: SettingsFirmaProps) {
   const upBank = useCallback((k: keyof typeof bank) => (v: string) =>
     setBank((s) => ({ ...s, [k]: v })), []);
 
+  const rf = [["einzel", "Einzel­unternehmen"], ["ek", "e.K."], ["gbr", "GbR"], ["gmbh", "GmbH"], ["ug", "UG"]] as [string, string][];
+
   return (
     <>
       <Card title={t("cFirma")} foot={<SaveBar onSave={() => saveFirmaInhaber(firmaInhaber)} />}>
         <Field label={t("lFirma")} value={firmaInhaber.name} onChange={upInhaber("name")} />
         <Field label={t("lInhaber")} value={firmaInhaber.director} onChange={upInhaber("director")} />
-        <Field label={t("lRechtsform")} value={firmaInhaber.legal_form} onChange={upInhaber("legal_form")} />
+        <SelectField label={t("lRechtsform")} value={firmaInhaber.legal_form} onChange={upInhaber("legal_form")} options={rf} />
+        <Field label={t("lRegistergericht")} value={firmaInhaber.registergericht} onChange={upInhaber("registergericht")} optional />
+        <Field label={t("lHandelsregisterNr")} value={firmaInhaber.handelsregister_nr} onChange={upInhaber("handelsregister_nr")} optional />
       </Card>
 
       <Card title={t("cAdresse")} foot={<SaveBar onSave={() => saveAdresse(adresse)} />}>
-        <div className="set-f-row-two">
+        <div className="set-f-row-two set-f-row-two-street">
           <Field label={t("lStrasse")} value={adresse.street} onChange={upAdresse("street")} />
           <Field label={t("lHausnr")} value={adresse.street_no} onChange={upAdresse("street_no")} />
         </div>
@@ -184,8 +212,6 @@ export function SettingsFirma({ company }: SettingsFirmaProps) {
       <Card title={t("cSteuer")} foot={<SaveBar onSave={() => saveSteuer(steuer)} />}>
         <Field label={t("lSteuerNr")} value={steuer.steuernummer} onChange={upSteuer("steuernummer")} />
         <Field label={t("lUstId")} value={steuer.ust_id} onChange={upSteuer("ust_id")} placeholder={t("phUstId")} optional />
-        <Field label={t("lRegistergericht")} value={steuer.registergericht} onChange={upSteuer("registergericht")} optional />
-        <Field label={t("lHandelsregisterNr")} value={steuer.handelsregister_nr} onChange={upSteuer("handelsregister_nr")} optional />
       </Card>
 
       <Card title={t("cKontakt")} foot={<SaveBar onSave={() => saveKontakt(kontakt)} />}>

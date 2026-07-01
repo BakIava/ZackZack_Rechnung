@@ -78,8 +78,6 @@ export async function saveAdresse(data: {
 export async function saveSteuer(data: {
   steuernummer: string;
   ust_id: string;
-  registergericht: string;
-  handelsregister_nr: string;
 }): Promise<SettingsActionResult> {
   if (!data.steuernummer.trim()) return { error: "steuernummerRequired" };
 
@@ -89,8 +87,6 @@ export async function saveSteuer(data: {
   return updateCompany(ctx.companyId, {
     steuernummer: data.steuernummer.trim(),
     ust_id: data.ust_id.trim() || null,
-    registergericht: data.registergericht.trim() || null,
-    handelsregister_nr: data.handelsregister_nr.trim() || null,
   });
 }
 
