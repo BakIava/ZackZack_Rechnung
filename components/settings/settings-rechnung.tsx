@@ -136,18 +136,6 @@ export function SettingsRechnung({ company, currentInvoiceNumber }: SettingsRech
           </div>
         </div>
       </section>
-
-      <section className="set-card">
-        <div className="set-card-h">
-          <div className="set-card-htop">
-            <div className="set-card-t">{t("cFuss")}</div>
-            <span className="set-opt">{t("optional")}</span>
-          </div>
-          <div className="set-card-s" style={{ marginTop: 4 }}>{t("fussHint")}</div>
-        </div>
-        <div className="set-card-b">
-        </div>
-      </section>
     </>
   );
 }
