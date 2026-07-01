@@ -387,7 +387,8 @@
     "terms": "AGB",
     "cDanger": "Konto löschen",
     "dangerDesc": "Alle Daten werden unwiderruflich gelöscht. Dies kann nicht rückgängig gemacht werden.",
-    "deleteBtn": "Konto löschen"
+    "deleteBtn": "Konto löschen",
+    "deleteHint": "Ihr Konto wird nach Prüfung deaktiviert. Rechnungen bleiben aus steuerrechtlichen Gründen 10 Jahre gespeichert."
   },
   "Documents": {
     "title": "Dokumente",

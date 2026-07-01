@@ -708,8 +708,8 @@
   gap: 8px;
   padding: 11px 18px;
   border-radius: var(--r-sm);
-  border: 1.5px solid #e3b5ae;
-  background: #fbeeec;
+  border: 1.5px solid #c0392b;
+  background: transparent;
   color: #c0392b;
   font-family: inherit;
   font-size: 14px;
@@ -717,11 +717,20 @@
   cursor: pointer;
   transition: 0.14s;
   flex-shrink: 0;
+  text-decoration: none;
 }
 
 .set-danger-btn:hover {
-  background: #f8e1dd;
-  border-color: #d89c90;
+  background: #fbeeec;
+  border-color: #a5331f;
+  color: #a5331f;
+}
+
+.set-delete-hint {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 10px;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */

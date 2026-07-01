@@ -387,7 +387,8 @@
     "terms": "Şartlar ve koşullar",
     "cDanger": "Hesabı sil",
     "dangerDesc": "Tüm veriler kalıcı olarak silinir. Bu işlem geri alınamaz.",
-    "deleteBtn": "Hesabı sil"
+    "deleteBtn": "Hesabı sil",
+    "deleteHint": "Hesabınız incelendikten sonra devre dışı bırakılacaktır. Faturalar vergi hukuku gereğince 10 yıl saklanır."
   },
   "Documents": {
     "title": "Belgeler",
