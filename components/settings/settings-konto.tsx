@@ -77,7 +77,13 @@ export function SettingsKonto({ email, locale }: SettingsKontoProps) {
           </div>
         </div>
         <div className="set-card-b">
-          <a href={mailtoHref} className="set-danger-btn">
+          <a
+            href={mailtoHref}
+            className="set-danger-btn"
+            onClick={(e) => {
+              if (!window.confirm(t("deleteConfirm"))) e.preventDefault();
+            }}
+          >
             <Trash2 size={17} strokeWidth={STROKE} aria-hidden />
             {t("deleteBtn")}
           </a>
