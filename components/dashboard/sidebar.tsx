@@ -99,10 +99,7 @@ export async function Sidebar({ active, data }: SidebarProps) {
         <SidebarLangLink />
         <div className="dside-user">
           <span className="dside-av">{initials}</span>
-          <div>
-            <div className="dside-uname">{ownerName}</div>
-            <div className="dside-urole">{t("kleinunternehmer")}</div>
-          </div>
+          <div className="dside-uname">{ownerName}</div>
         </div>
       </div>
     </aside>
