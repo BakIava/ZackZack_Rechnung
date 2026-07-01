@@ -10,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { SidebarLangLink } from "./sidebar-lang-link";
 import type { DashboardData } from "@/lib/dashboard/fetch";
+import { createClient } from "@/lib/supabase/server";
 
 type NavId = "dashboard" | "customers" | "catalog" | "history" | "settings";
 
@@ -29,9 +30,36 @@ interface SidebarProps {
 
 const STROKE = 1.75;
 
+function toInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 /** Linke Navigationsleiste des Desktop-Dashboards (RTL-fest). */
 export async function Sidebar({ active, data }: SidebarProps) {
   const t = await getTranslations("Dashboard");
+
+  // Wenn kein data übergeben wurde (customers, catalog, documents, settings),
+  // minimal-Fetch direkt hier – RLS liefert automatisch die richtige Firma.
+  let companyName = data?.companyName ?? "";
+  let initials = data?.companyInitials ?? "";
+  let ownerName = data?.director ?? "";
+
+  if (!data) {
+    const supabase = await createClient();
+    const { data: co } = await supabase
+      .from("companies")
+      .select("name, director")
+      .single();
+    if (co) {
+      companyName = co.name ?? "";
+      initials = toInitials(companyName);
+      ownerName = co.director ?? "";
+    }
+  }
 
   const nav: NavEntry[] = [
     { id: "dashboard", href: "/dashboard", icon: Building2, labelKey: "navDashboard" },
@@ -40,10 +68,6 @@ export async function Sidebar({ active, data }: SidebarProps) {
     { id: "history", href: "/documents", icon: History, labelKey: "navDocuments" },
     { id: "settings", href: "/settings", icon: Settings, labelKey: "navSettings" },
   ];
-
-  const initials = data?.companyInitials ?? "";
-  const companyName = data?.companyName ?? "";
-  const ownerName = data?.director ?? "";
 
   return (
     <aside className="dside">
@@ -75,10 +99,7 @@ export async function Sidebar({ active, data }: SidebarProps) {
         <SidebarLangLink />
         <div className="dside-user">
           <span className="dside-av">{initials}</span>
-          <div>
-            <div className="dside-uname">{ownerName}</div>
-            <div className="dside-urole">{t("kleinunternehmer")}</div>
-          </div>
+          <div className="dside-uname">{ownerName}</div>
         </div>
       </div>
     </aside>

@@ -1,38 +1,68 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Lock } from "lucide-react";
+import type { CompanySettings } from "@/lib/settings/types";
+import { saveKleinunternehmer, savePaymentDays } from "@/lib/settings/actions";
 
 const STROKE = 1.75;
-const DEMO_INVOICE_NO = "2026-0042";
 const ZIEL_OPTIONS = ["7", "14", "21", "30"] as const;
 
-function SaveBar() {
+interface SaveBarProps {
+  onSave: () => Promise<{ error?: string } | void>;
+}
+
+function SaveBar({ onSave }: SaveBarProps) {
   const t = useTranslations("Settings");
+  const router = useRouter();
   const [saved, setSaved] = useState(false);
-  function handleSave() { setSaved(true); setTimeout(() => setSaved(false), 2200); }
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function handleSave() {
+    setError(null);
+    startTransition(async () => {
+      const result = await onSave();
+      if (result?.error) {
+        setError(t.has(result.error) ? t(result.error) : t("saveError"));
+        return;
+      }
+      router.refresh();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    });
+  }
+
   return (
-    <div className="set-card-f">
-      {saved && (
-        <span className="set-saved">
-          <Check size={16} strokeWidth={2.5} aria-hidden />
-          {t("saved")}
-        </span>
-      )}
-      <button className="set-save" onClick={handleSave}>
-        <Check size={17} strokeWidth={2.5} aria-hidden />
-        {t("save")}
-      </button>
+    <div className="set-card-f" style={{ flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {saved && (
+          <span className="set-saved">
+            <Check size={16} strokeWidth={2.5} aria-hidden />
+            {t("saved")}
+          </span>
+        )}
+        <button className="set-save" onClick={handleSave} disabled={pending}>
+          <Check size={17} strokeWidth={2.5} aria-hidden />
+          {pending ? t("saving") : t("save")}
+        </button>
+      </div>
+      {error && <span className="set-error">{error}</span>}
     </div>
   );
 }
 
-export function SettingsRechnung() {
+interface SettingsRechnungProps {
+  company: CompanySettings;
+  currentInvoiceNumber: string | null;
+}
+
+export function SettingsRechnung({ company, currentInvoiceNumber }: SettingsRechnungProps) {
   const t = useTranslations("Settings");
-  const [klein, setKlein] = useState(true);
-  const [ziel, setZiel] = useState("14");
-  const [fuss, setFuss] = useState("Vielen Dank für Ihren Auftrag.");
+  const [klein, setKlein] = useState(company.kleinunternehmer);
+  const [ziel, setZiel] = useState(String(company.payment_days));
 
   return (
     <>
@@ -58,7 +88,7 @@ export function SettingsRechnung() {
             </button>
           </div>
         </div>
-        <SaveBar />
+        <SaveBar onSave={() => saveKleinunternehmer(klein)} />
       </section>
 
       <section className="set-card">
@@ -78,7 +108,7 @@ export function SettingsRechnung() {
           </div>
           <div className="set-card-s" style={{ marginTop: -4 }}>{t("zielHint")}</div>
         </div>
-        <SaveBar />
+        <SaveBar onSave={() => savePaymentDays(Number(ziel))} />
       </section>
 
       <section className="set-card">
@@ -97,7 +127,7 @@ export function SettingsRechnung() {
             </span>
             <div className="set-locked-txt">
               <div className="set-locked-k">{t("lAktNr")}</div>
-              <div className="set-locked-v">{DEMO_INVOICE_NO}</div>
+              <div className="set-locked-v">{currentInvoiceNumber ?? t("keineRechnung")}</div>
             </div>
             <span className="set-locked-tag">
               <Lock size={12} strokeWidth={2.5} aria-hidden />
@@ -105,25 +135,6 @@ export function SettingsRechnung() {
             </span>
           </div>
         </div>
-      </section>
-
-      <section className="set-card">
-        <div className="set-card-h">
-          <div className="set-card-htop">
-            <div className="set-card-t">{t("cFuss")}</div>
-            <span className="set-opt">{t("optional")}</span>
-          </div>
-          <div className="set-card-s" style={{ marginTop: 4 }}>{t("fussHint")}</div>
-        </div>
-        <div className="set-card-b">
-          <textarea
-            className="set-input"
-            rows={2}
-            value={fuss}
-            onChange={(e) => setFuss(e.target.value)}
-          />
-        </div>
-        <SaveBar />
       </section>
     </>
   );

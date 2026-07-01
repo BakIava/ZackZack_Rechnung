@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, ShieldCheck, Building2, FileText, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShieldCheck, Building2, FileText } from "lucide-react";
 
 const STROKE = 1.75;
 
@@ -42,25 +42,6 @@ export function SettingsRecht({ dir }: SettingsRechtProps) {
         </div>
       </section>
 
-      <section className="set-card">
-        <div className="set-card-h">
-          <div className="set-card-htop">
-            <div className="set-card-t">{t("cDanger")}</div>
-          </div>
-        </div>
-        <div className="set-card-b">
-          <div className="set-danger">
-            <div className="set-danger-txt">
-              <div className="set-danger-t">{t("cDanger")}</div>
-              <div className="set-danger-s">{t("dangerDesc")}</div>
-            </div>
-            <button className="set-danger-btn">
-              <Trash2 size={17} strokeWidth={STROKE} aria-hidden />
-              {t("deleteBtn")}
-            </button>
-          </div>
-        </div>
-      </section>
     </>
   );
 }
