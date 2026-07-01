@@ -389,7 +389,9 @@
     "dangerDesc": "Alle Daten werden unwiderruflich gelöscht. Dies kann nicht rückgängig gemacht werden.",
     "deleteBtn": "Konto löschen",
     "deleteHint": "Ihr Konto wird nach Prüfung deaktiviert. Rechnungen bleiben aus steuerrechtlichen Gründen 10 Jahre gespeichert.",
-    "deleteConfirm": "Möchten Sie wirklich eine Löschanfrage senden? Ihr E-Mail-Programm wird geöffnet."
+    "deleteConfirm": "Ihr E-Mail-Programm wird geöffnet, damit Sie die Löschanfrage absenden können. Fortfahren?",
+    "deleteConfirmYes": "Ja, E-Mail öffnen",
+    "deleteConfirmNo": "Abbrechen"
   },
   "Documents": {
     "title": "Dokumente",

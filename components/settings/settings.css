@@ -733,6 +733,26 @@
   margin-top: 10px;
 }
 
+.set-delete-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.set-delete-confirm-txt {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.set-delete-confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 1000px) {
   .zz-settings .dside {

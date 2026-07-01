@@ -389,7 +389,9 @@
     "dangerDesc": "Tüm veriler kalıcı olarak silinir. Bu işlem geri alınamaz.",
     "deleteBtn": "Hesabı sil",
     "deleteHint": "Hesabınız incelendikten sonra devre dışı bırakılacaktır. Faturalar vergi hukuku gereğince 10 yıl saklanır.",
-    "deleteConfirm": "Gerçekten silme talebi göndermek istiyor musunuz? E-posta programınız açılacak."
+    "deleteConfirm": "Silme talebini göndermek için e-posta programınız açılacak. Devam edilsin mi?",
+    "deleteConfirmYes": "Evet, e-postayı aç",
+    "deleteConfirmNo": "Vazgeç"
   },
   "Documents": {
     "title": "Belgeler",
