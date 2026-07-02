@@ -3,13 +3,11 @@
 import { useMemo, useState } from "react";
 import {
   Brush,
-  Check,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   Pencil,
   Plus,
-  ReceiptText,
   Search,
   Trash2,
   X,
@@ -280,9 +278,6 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
   }
 
   const name = anzeigeName(svc, locale);
-  const n = svc.verwendungen;
-  const suffix = n === 1 ? t("usedInSuffix1") : t("usedInSuffix");
-  const usedLabel = t("usedIn", { n, suffix });
 
   return (
     <div className="cat-detail">
@@ -334,14 +329,6 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
           {svc.einheit && <div className="cat-price-unit">{svc.einheit}</div>}
         </div>
 
-        {/* Verwendungen */}
-        <div className="cat-usage">
-          <div className="cat-usage-ic">
-            <Check size={17} strokeWidth={2.4} color="#fff" aria-hidden />
-          </div>
-          <div className="cat-usage-t">{usedLabel}</div>
-        </div>
-
         {/* Aktionen */}
         <div className="cat-actions">
           <button type="button" className="cat-btn-edit" onClick={onEdit}>
@@ -358,10 +345,6 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
           </button>
         </div>
 
-        <button type="button" className="cat-btn-invoice">
-          <ReceiptText size={19} strokeWidth={STROKE} color="#fff" aria-hidden />
-          {t("useInInvoice")}
-        </button>
       </div>
     </div>
   );
