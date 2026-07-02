@@ -15,6 +15,20 @@ interface ServiceModalProps {
 }
 
 const STROKE = 1.75;
+const TEMP_ID_PREFIX = "tmp_";
+
+function parsePrice(raw: string): number {
+  const normalized = raw.trim().replace(",", ".");
+  if (normalized === "") return 0;
+  const parsed = parseFloat(normalized);
+  return isNaN(parsed) ? NaN : Math.round(parsed * 100);
+}
+
+function isPriceValid(raw: string): boolean {
+  if (raw.trim() === "") return true;
+  const cents = parsePrice(raw);
+  return !isNaN(cents) && cents > 0;
+}
 
 export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModalProps) {
   const t = useTranslations("Catalog");
@@ -23,24 +37,26 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
   const [de, setDe] = useState(item?.de ?? "");
   const [tr, setTr] = useState(item?.uebersetzungen.tr ?? "");
   const [ar, setAr] = useState(item?.uebersetzungen.ar ?? "");
-  const [einheit, setEinheit] = useState(item?.einheit ?? "m²");
+  const [einheit, setEinheit] = useState(item?.einheit || units[0]);
   const [preisStr, setPreisStr] = useState(
-    item ? String((item.preisCents / 100).toFixed(2)) : "",
+    item && item.preisCents > 0 ? (item.preisCents / 100).toFixed(2).replace(".", ",") : "",
   );
 
-  const preisCents = Math.round(parseFloat(preisStr) * 100);
-  const ok = de.trim().length > 0 && !isNaN(preisCents) && preisCents > 0;
+  const ok = de.trim().length > 0 && isPriceValid(preisStr);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
   function submit() {
     if (!ok) return;
+    const preisCents = parsePrice(preisStr);
     onSave({
-      id: item?.id ?? `u${Date.now()}`,
+      id: item?.id ?? `${TEMP_ID_PREFIX}${Date.now()}`,
       de: de.trim(),
       uebersetzungen: {
         de: de.trim(),
@@ -48,7 +64,7 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
         ar: ar.trim(),
       },
       einheit,
-      preisCents,
+      preisCents: isNaN(preisCents) ? 0 : preisCents,
       kategorie: item?.kategorie ?? "Sonstiges",
       verwendungen: item?.verwendungen ?? 0,
     });
@@ -76,6 +92,7 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
               </label>
               <input
                 className="f-input"
+                dir="ltr"
                 value={de}
                 onChange={(e) => setDe(e.target.value)}
                 placeholder="z. B. Malerarbeiten Wandfläche"
@@ -92,6 +109,7 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
                 </label>
                 <input
                   className="f-input"
+                  dir="ltr"
                   value={tr}
                   onChange={(e) => setTr(e.target.value)}
                   placeholder="Türkçe …"
@@ -104,10 +122,10 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
                 </label>
                 <input
                   className="f-input"
+                  dir="rtl"
                   value={ar}
                   onChange={(e) => setAr(e.target.value)}
                   placeholder="عربي …"
-                  dir="rtl"
                 />
               </div>
             </div>
@@ -122,18 +140,21 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
                   onChange={(e) => setEinheit(e.target.value)}
                 >
                   {units.map((u) => (
-                    <option key={u} value={u}>{u}</option>
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
                   ))}
                 </select>
               </div>
               <div className="f-row">
-                <label className="f-lbl">{t("priceLbl")}</label>
+                <label className="f-lbl">
+                  {t("priceLbl")}
+                  <span className="smod-opt">{t("optional")}</span>
+                </label>
                 <div className="f-affix">
                   <input
                     className="f-input"
-                    type="number"
-                    min="0"
-                    step="0.5"
+                    type="text"
                     inputMode="decimal"
                     value={preisStr}
                     onChange={(e) => setPreisStr(e.target.value)}

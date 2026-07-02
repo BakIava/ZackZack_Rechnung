@@ -3,21 +3,20 @@
 import { useMemo, useState } from "react";
 import {
   Brush,
-  Check,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   Pencil,
   Plus,
-  ReceiptText,
   Search,
   Trash2,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
-import { sampleKatalog } from "@/lib/katalog/sample";
 import { anzeigeName, type KatalogEintrag } from "@/lib/katalog/types";
+import { katalogToServiceInput } from "@/lib/services/types";
+import { createService, updateService, deleteService } from "@/lib/services/actions";
 import type { Locale } from "@/i18n/routing";
 import { formatMoney } from "@/lib/format";
 import { ServiceModal } from "./service-modal";
@@ -25,47 +24,74 @@ import "./catalog-master-detail.css";
 
 interface CatalogMasterDetailProps {
   dir: "ltr" | "rtl";
+  initialItems: KatalogEintrag[];
 }
 
 const STROKE = 1.75;
 const UNITS = ["m²", "Std.", "Stk.", "lfm", "Pauschal", "kg", "Liter"];
 
-export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
+export function CatalogMasterDetail({ dir, initialItems }: CatalogMasterDetailProps) {
   const t = useTranslations("Catalog");
   const locale = useLocale() as Locale;
   const isRtl = dir === "rtl";
 
-  const [items, setItems] = useState<KatalogEintrag[]>(sampleKatalog);
+  const [items, setItems] = useState<KatalogEintrag[]>(initialItems);
   const [query, setQuery] = useState("");
-  const [selId, setSelId] = useState<string | null>(sampleKatalog[0]?.id ?? null);
+  const [selId, setSelId] = useState<string | null>(initialItems[0]?.id ?? null);
   const [showModal, setShowModal] = useState(false);
   const [editItem, setEditItem] = useState<KatalogEintrag | null>(null);
   const [showDel, setShowDel] = useState(false);
+  const [mutError, setMutError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((s) =>
-      !q
-      || s.de.toLowerCase().includes(q)
-      || Object.values(s.uebersetzungen).some((v) => v.toLowerCase().includes(q)),
+    return items.filter(
+      (s) =>
+        !q ||
+        s.de.toLowerCase().includes(q) ||
+        Object.values(s.uebersetzungen).some((v) => v.toLowerCase().includes(q)),
     );
   }, [items, query]);
 
   const selected = items.find((s) => s.id === selId) ?? null;
 
+  async function handleSave(entry: KatalogEintrag) {
+    setMutError(null);
+    const isNew = !editItem;
+    const input = katalogToServiceInput(entry);
 
-  function handleSave(updated: KatalogEintrag) {
-    setItems((prev) =>
-      editItem
-        ? prev.map((s) => (s.id === updated.id ? updated : s))
-        : [updated, ...prev],
-    );
-    setSelId(updated.id);
+    if (isNew) {
+      const result = await createService(input);
+      if (result.error) {
+        setMutError(result.error);
+        return;
+      }
+      const savedEntry = { ...entry, id: result.id! };
+      setItems((prev) => [savedEntry, ...prev]);
+      setSelId(savedEntry.id);
+    } else {
+      const result = await updateService(entry.id, input);
+      if (result.error) {
+        setMutError(result.error);
+        return;
+      }
+      setItems((prev) => prev.map((s) => (s.id === entry.id ? entry : s)));
+      setSelId(entry.id);
+    }
+
     setShowModal(false);
     setEditItem(null);
   }
 
-  function handleDelete() {
+  async function handleDelete() {
+    if (!selId) return;
+    setMutError(null);
+    const result = await deleteService(selId);
+    if (result.error) {
+      setMutError(result.error);
+      setShowDel(false);
+      return;
+    }
     setItems((prev) => prev.filter((s) => s.id !== selId));
     setSelId(null);
     setShowDel(false);
@@ -106,13 +132,31 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
             <button
               type="button"
               className="dbtn"
-              onClick={() => { setEditItem(null); setShowModal(true); }}
+              onClick={() => {
+                setEditItem(null);
+                setShowModal(true);
+              }}
             >
               <Plus size={19} strokeWidth={2.4} color="#fff" aria-hidden />
               {t("newBtn")}
             </button>
           </div>
         </div>
+
+        {/* ── Error banner ── */}
+        {mutError && (
+          <div className="cat-error-banner">
+            <span>{t("saveError")}</span>
+            <button
+              type="button"
+              className="cat-error-dismiss"
+              onClick={() => setMutError(null)}
+              aria-label={t("cancel")}
+            >
+              <X size={15} strokeWidth={STROKE} aria-hidden />
+            </button>
+          </div>
+        )}
 
         {/* ── Master + Detail ── */}
         <div className="cat-body">
@@ -135,7 +179,6 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
                 <div className="cat-list">
                   {filtered.map((s) => {
                     const name = anzeigeName(s, locale);
-                    const sub = locale !== "de" ? s.de : s.uebersetzungen.tr;
                     return (
                       <button
                         key={s.id}
@@ -149,11 +192,15 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
                         </span>
                         <span className="cat-row-body">
                           <span className="cat-row-name">{name}</span>
-                          {sub && <span className="cat-row-sub">{sub}</span>}
+                          <span className="cat-row-sub">
+                            <span className="cat-row-sub-lbl">{t("onDoc")}:</span> {s.de}
+                          </span>
                         </span>
                         <span className="cat-row-right">
-                          <span className="cat-row-price">{formatMoney(s.preisCents)}</span>
-                          <span className="cat-row-unit">/ {s.einheit}</span>
+                          <span className="cat-row-price">
+                            {s.preisCents > 0 ? formatMoney(s.preisCents) : "—"}
+                          </span>
+                          {s.einheit && <span className="cat-row-unit">/ {s.einheit}</span>}
                         </span>
                         <span className="cat-row-chev">
                           <ChevronIcon size={17} strokeWidth={STROKE} aria-hidden />
@@ -172,7 +219,10 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
               svc={selected}
               locale={locale}
               t={t}
-              onEdit={() => { setEditItem(selected); setShowModal(true); }}
+              onEdit={() => {
+                setEditItem(selected);
+                setShowModal(true);
+              }}
               onDelete={() => setShowDel(true)}
             />
           </div>
@@ -184,7 +234,10 @@ export function CatalogMasterDetail({ dir }: CatalogMasterDetailProps) {
           dir={dir}
           item={editItem}
           units={UNITS}
-          onClose={() => { setShowModal(false); setEditItem(null); }}
+          onClose={() => {
+            setShowModal(false);
+            setEditItem(null);
+          }}
           onSave={handleSave}
         />
       )}
@@ -225,9 +278,6 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
   }
 
   const name = anzeigeName(svc, locale);
-  const n = svc.verwendungen;
-  const suffix = n === 1 ? t("usedInSuffix1") : t("usedInSuffix");
-  const usedLabel = t("usedIn", { n, suffix });
 
   return (
     <div className="cat-detail">
@@ -246,39 +296,37 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
         <div>
           <div className="cat-block-lbl">{t("translations")}</div>
           <div className="cat-trans">
-            {(locale === "de" ? (["de"] as Locale[]) : (["de", locale] as Locale[])).map((lang) => (
-              <div
-                key={lang}
-                className={"cat-trans-pill" + (locale === lang ? " is-cur" : "")}
-                dir={lang === "ar" ? "rtl" : "ltr"}
-              >
-                <div className="cat-trans-lang">{lang.toUpperCase()}</div>
-                {svc.uebersetzungen[lang] ? (
-                  <div className="cat-trans-text">{svc.uebersetzungen[lang]}</div>
-                ) : (
-                  <div className="cat-trans-empty">—</div>
-                )}
-              </div>
-            ))}
+            {(locale === "de" ? (["de"] as Locale[]) : (["de", locale] as Locale[])).map(
+              (lang) => (
+                <div
+                  key={lang}
+                  className={"cat-trans-pill" + (locale === lang ? " is-cur" : "")}
+                  dir={lang === "ar" ? "rtl" : "ltr"}
+                >
+                  <div className="cat-trans-lang">{lang.toUpperCase()}</div>
+                  {svc.uebersetzungen[lang] ? (
+                    <div className="cat-trans-text">{svc.uebersetzungen[lang]}</div>
+                  ) : (
+                    <div className="cat-trans-empty">—</div>
+                  )}
+                </div>
+              ),
+            )}
           </div>
         </div>
 
         {/* Preis */}
         <div className="cat-price">
           <div>
-            <div className="cat-block-lbl" style={{ marginBottom: 6 }}>{t("priceLbl")}</div>
-            <div className="cat-price-val">{formatMoney(svc.preisCents)}</div>
-            <div className="cat-price-per">/ {svc.einheit}</div>
+            <div className="cat-block-lbl" style={{ marginBottom: 6 }}>
+              {t("priceLbl")}
+            </div>
+            <div className="cat-price-val">
+              {svc.preisCents > 0 ? formatMoney(svc.preisCents) : "—"}
+            </div>
+            {svc.einheit && <div className="cat-price-per">/ {svc.einheit}</div>}
           </div>
-          <div className="cat-price-unit">{svc.einheit}</div>
-        </div>
-
-        {/* Verwendungen */}
-        <div className="cat-usage">
-          <div className="cat-usage-ic">
-            <Check size={17} strokeWidth={2.4} color="#fff" aria-hidden />
-          </div>
-          <div className="cat-usage-t">{usedLabel}</div>
+          {svc.einheit && <div className="cat-price-unit">{svc.einheit}</div>}
         </div>
 
         {/* Aktionen */}
@@ -287,15 +335,16 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
             <Pencil size={17} strokeWidth={STROKE} aria-hidden />
             {t("edit")}
           </button>
-          <button type="button" className="cat-btn-del" onClick={onDelete} aria-label={t("del")}>
+          <button
+            type="button"
+            className="cat-btn-del"
+            onClick={onDelete}
+            aria-label={t("del")}
+          >
             <Trash2 size={18} strokeWidth={STROKE} aria-hidden />
           </button>
         </div>
 
-        <button type="button" className="cat-btn-invoice">
-          <ReceiptText size={19} strokeWidth={STROKE} color="#fff" aria-hidden />
-          {t("useInInvoice")}
-        </button>
       </div>
     </div>
   );
@@ -321,6 +370,7 @@ function DeleteConfirm({ name, t, onClose, onConfirm }: DeleteConfirmProps) {
         <div className="cat-del-s">
           <b>{name}</b> — {t("delSub")}
         </div>
+        <div className="cat-del-note">{t("delDocNote")}</div>
         <div className="cat-del-act">
           <button type="button" className="nc-cancel" style={{ flex: 1 }} onClick={onClose}>
             {t("cancel")}
