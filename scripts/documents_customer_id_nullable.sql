@@ -7,9 +7,14 @@
 -- edited or deleted. A NOT NULL documents.customer_id therefore blocks draft
 -- creation and contradicts the snapshot design.
 
--- 1) Allow drafts without a customer yet.
+-- 1) Allow drafts without a customer yet. customer_id and customer_snapshot are
+--    both filled in Step 1 when the user picks a customer; an empty draft is
+--    defined by customer_snapshot IS NULL (see deleteDraftIfEmpty).
 ALTER TABLE public.documents
   ALTER COLUMN customer_id DROP NOT NULL;
+
+ALTER TABLE public.documents
+  ALTER COLUMN customer_snapshot DROP NOT NULL;
 
 -- 2) Keep documents when a customer is deleted ("Alle Dokumente bleiben
 --    erhalten"). Re-point the FK to ON DELETE SET NULL.
