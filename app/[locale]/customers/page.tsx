@@ -2,6 +2,7 @@ import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { CustomersScreen } from "@/components/customers/customers-screen";
 import { routing, isRtlLocale } from "@/i18n/routing";
+import { getCustomers } from "@/lib/customers/queries";
 
 const hanken = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -21,10 +22,11 @@ export default async function CustomersPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
+  const customers = await getCustomers();
 
   return (
     <div className={`${hanken.variable} ${plexArabic.variable}`}>
-      <CustomersScreen dir={dir} />
+      <CustomersScreen dir={dir} customers={customers} />
     </div>
   );
 }
