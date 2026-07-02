@@ -7,7 +7,7 @@ import "./step2.css";
 interface Step2ScreenProps {
   dir: "ltr" | "rtl";
   locale: Locale;
-  documentId?: string;
+  documentId: string;
 }
 
 /** Desktop-Schritt 2 (Positionen): Sidebar + Hauptbereich, vollflächig.

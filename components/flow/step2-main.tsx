@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ChevronLeft, ChevronRight, FileText, Lock, Plus, ReceiptText, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Lock, Plus, ReceiptText, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -10,6 +10,7 @@ import { summeCents, type Position } from "@/lib/flow/positionen";
 import { formatMoney } from "@/lib/format";
 import type { DocType } from "@/lib/demo/dashboard-data";
 import { CatalogPicker } from "./catalog-picker";
+import { FlowSteps } from "./FlowSteps";
 import { PositionRow } from "./position-row";
 
 const STROKE = 1.75;
@@ -18,7 +19,7 @@ interface Step2MainProps {
   dir: "ltr" | "rtl";
   locale: Locale;
   docType?: DocType;
-  documentId?: string;
+  documentId: string;
 }
 
 /** Desktop-Hauptbereich von Schritt 2: Tabelle + Zusammenfassung + Katalog-Modal. */
@@ -54,31 +55,14 @@ export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Ste
     <main className="dmain">
       <div className="dscroll">
         <div className="dflow-head">
-          <Link href={`/create/1${documentId ? `?document_id=${documentId}` : ""}`} className="dflow-back" aria-label={t("back")}>
+          <Link href={`/create/${documentId}/1`} className="dflow-back" aria-label={t("back")}>
             <Backward size={20} strokeWidth={STROKE} aria-hidden />
           </Link>
           <div className="dflow-headings">
             <div className="dflow-title">{t("createTitle", { type: docLabel })}</div>
             <div className="dflow-sub">{t("stepItems")}</div>
           </div>
-          <div className="dsteps2">
-            <div className="dstep2">
-              <span className="dstep2-dot dstep2-dot--done">
-                <Check size={15} strokeWidth={2.4} aria-hidden />
-              </span>
-              <span className="dstep2-lbl">{t("stepCustomer")}</span>
-            </div>
-            <span className="dstep2-line dstep2-line--done" />
-            <div className="dstep2 dstep2--active">
-              <span className="dstep2-dot">2</span>
-              <span className="dstep2-lbl">{t("stepItems")}</span>
-            </div>
-            <span className="dstep2-line" />
-            <div className="dstep2">
-              <span className="dstep2-dot">3</span>
-              <span className="dstep2-lbl">{t("stepPreview")}</span>
-            </div>
-          </div>
+          <FlowSteps current={2} />
         </div>
 
         <div className="d2-ctx">
@@ -152,11 +136,11 @@ export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Ste
               <Lock size={14} strokeWidth={STROKE} aria-hidden />
               {t("kuNote")}
             </div>
-            <button type="button" className="d2-sum-btn" disabled={positions.length === 0} onClick={() => router.push(`/create/3${documentId ? `?document_id=${documentId}` : ""}`)}>
+            <button type="button" className="d2-sum-btn" disabled={positions.length === 0} onClick={() => router.push(`/create/${documentId}/3`)}>
               {t("next")}
               <Forward size={20} strokeWidth={2.4} aria-hidden />
             </button>
-            <Link href={`/create/1${documentId ? `?document_id=${documentId}` : ""}`} className="d2-back">{t("back")}</Link>
+            <Link href={`/create/${documentId}/1`} className="d2-back">{t("back")}</Link>
           </div>
         </div>
       </div>

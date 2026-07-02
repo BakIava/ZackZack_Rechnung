@@ -6,7 +6,7 @@ import "./step3.css";
 
 interface Step3ScreenProps {
   dir: "ltr" | "rtl";
-  documentId?: string;
+  documentId: string;
 }
 
 /** Schritt 3 (Vorschau & Versand) — Desktop: Sidebar + Hauptbereich, vollflächig.

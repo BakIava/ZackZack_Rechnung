@@ -13,9 +13,10 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { markDocumentAsPaid } from "@/lib/documents/actions";
+import { startNewDocument } from "@/lib/documents/draft-actions";
 import type { DocumentListItem, DocumentItem } from "@/lib/documents/types";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocDetail } from "./doc-detail";
@@ -179,10 +180,12 @@ export function DocumentsMain({ dir, documents, paymentDays }: DocumentsMainProp
               </button>
             )}
           </div>
-          <Link className="dbtn" href="/create/1">
-            <Plus size={19} strokeWidth={2.5} />
-            {t("newBtn")}
-          </Link>
+          <form action={startNewDocument} className="contents">
+            <button type="submit" className="dbtn">
+              <Plus size={19} strokeWidth={2.5} />
+              {t("newBtn")}
+            </button>
+          </form>
         </div>
       </div>
 
@@ -287,7 +290,11 @@ export function DocumentsMain({ dir, documents, paymentDays }: DocumentsMainProp
                       key={d.id}
                       className="hrow"
                       data-sel={sel === d.id ? "1" : "0"}
-                      onClick={() => setSel(d.id)}
+                      onClick={() =>
+                        d.status === "draft"
+                          ? router.push(`/create/${d.id}/1`)
+                          : setSel(d.id)
+                      }
                     >
                       <span
                         className={`hrow-ic hrow-ic--${d.type === "invoice" ? "rechnung" : "angebot"}`}

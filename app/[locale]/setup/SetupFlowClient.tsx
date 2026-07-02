@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { SetupFlow } from "../../../components/setup/SetupFlow";
+import { startNewDocument } from "@/lib/documents/draft-actions";
 
 interface Props {
   lang: "de" | "tr" | "ar";
@@ -18,7 +19,8 @@ export function SetupFlowClient({ lang, dir }: Props) {
       lang={lang}
       dir={dir}
       locale={locale}
-      onComplete={() => router.push(`/${locale}/create/1`)}
+      // Nach dem Setup direkt einen Draft anlegen und in Schritt 1 starten.
+      onComplete={() => startNewDocument()}
       onDashboard={() => router.push(`/${locale}/dashboard`)}
     />
   );

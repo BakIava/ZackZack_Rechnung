@@ -19,8 +19,10 @@ import type { CustomerListItem } from "@/lib/customers/types";
 import {
   deleteDraftIfEmpty,
   updateDraftCustomer,
+  updateDraftDocumentType,
 } from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/NewCustomerModal";
+import { FlowSteps } from "./FlowSteps";
 import "./KundeStep.css";
 
 type DocType = "rechnung" | "angebot";
@@ -73,22 +75,28 @@ export function KundeStep({
     setShowNew(false);
   }
 
+  function handleDocType(next: DocType) {
+    setDocType(next);
+    // Dokumenttyp direkt in den Draft schreiben (optimistisch, fire-and-forget).
+    void updateDraftDocumentType(documentId, next);
+  }
+
   async function handleWeiter() {
     if (!selected || saving) return;
     setSaving(true);
     setSaveError(null);
-    const res = await updateDraftCustomer(documentId, selected, docType);
+    const res = await updateDraftCustomer(documentId, selected);
     if (res.error) {
       setSaving(false);
       setSaveError(t("draftError"));
       return;
     }
-    router.push(`/create/2?document_id=${documentId}`);
+    router.push(`/create/${documentId}/2`);
   }
 
   function handleBack() {
-    // Leere Drafts löschen (fire-and-forget — kein Ladeindikator nötig)
-    deleteDraftIfEmpty(documentId);
+    // Nur leere Drafts löschen (fire-and-forget — kein Ladeindikator nötig).
+    void deleteDraftIfEmpty(documentId);
     router.push("/documents");
   }
 
@@ -108,22 +116,7 @@ export function KundeStep({
             <div className="dflow-title">{t("createTitle", { type: docLabel })}</div>
             <div className="dflow-sub">{t("chooseCustomer")}</div>
           </div>
-          <div className="dsteps2">
-            <div className="dstep2 dstep2--active">
-              <span className="dstep2-dot">1</span>
-              <span className="dstep2-lbl">{t("step1")}</span>
-            </div>
-            <span className="dstep2-line" aria-hidden />
-            <div className="dstep2">
-              <span className="dstep2-dot">2</span>
-              <span className="dstep2-lbl">{t("step2")}</span>
-            </div>
-            <span className="dstep2-line" aria-hidden />
-            <div className="dstep2">
-              <span className="dstep2-dot">3</span>
-              <span className="dstep2-lbl">{t("step3")}</span>
-            </div>
-          </div>
+          <FlowSteps current={1} />
         </div>
 
         <div className="dflow-bar">
@@ -133,7 +126,7 @@ export function KundeStep({
               className="seg--gold"
               data-on={docType === "rechnung" ? "1" : "0"}
               aria-pressed={docType === "rechnung"}
-              onClick={() => setDocType("rechnung")}
+              onClick={() => handleDocType("rechnung")}
             >
               <ReceiptText size={20} strokeWidth={STROKE} aria-hidden />
               {t("rechnung")}
@@ -143,7 +136,7 @@ export function KundeStep({
               className="seg--gold"
               data-on={docType === "angebot" ? "1" : "0"}
               aria-pressed={docType === "angebot"}
-              onClick={() => setDocType("angebot")}
+              onClick={() => handleDocType("angebot")}
             >
               <FileText size={20} strokeWidth={STROKE} aria-hidden />
               {t("angebot")}

@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import type { DashboardDoc, DocStatus } from "@/lib/demo/dashboard-data";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import type { DashboardData } from "@/lib/dashboard/fetch";
+import { startNewDocument } from "@/lib/documents/draft-actions";
 
 interface DashboardMainProps {
   dir: "ltr" | "rtl";
@@ -57,18 +58,20 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
 
       <div className="dscroll">
         <div className="dhero">
-          <Link href="/create/1" className="dcta">
-            <span className="dcta-ic">
-              <Plus size={30} strokeWidth={2.4} color="#fff" aria-hidden />
-            </span>
-            <span>
-              <span className="dcta-main">{t("newDoc")}</span>
-              <span className="dcta-sub">{t("newDocSub")}</span>
-            </span>
-            <span className="dcta-chev">
-              <Chevron size={26} strokeWidth={STROKE} aria-hidden />
-            </span>
-          </Link>
+          <form action={startNewDocument} className="contents">
+            <button type="submit" className="dcta">
+              <span className="dcta-ic">
+                <Plus size={30} strokeWidth={2.4} color="#fff" aria-hidden />
+              </span>
+              <span>
+                <span className="dcta-main">{t("newDoc")}</span>
+                <span className="dcta-sub">{t("newDocSub")}</span>
+              </span>
+              <span className="dcta-chev">
+                <Chevron size={26} strokeWidth={STROKE} aria-hidden />
+              </span>
+            </button>
+          </form>
 
           <div className={`dhighlight${isEmpty ? " is-empty" : ""}`}>
             <div className="dhl-top">
@@ -179,11 +182,13 @@ function EmptyGhost({ ghostTitle, ghostSub, newDocLabel, dir }: EmptyGhostProps)
           </div>
           <div className="le-h">{ghostTitle}</div>
           <div className="le-sub">{ghostSub}</div>
-          <Link href="/create/1" className="le-btn le-btn--navy">
-            <Plus size={19} strokeWidth={2.4} aria-hidden />
-            {newDocLabel}
-            <Chevron size={18} strokeWidth={STROKE} aria-hidden />
-          </Link>
+          <form action={startNewDocument} className="contents">
+            <button type="submit" className="le-btn le-btn--navy">
+              <Plus size={19} strokeWidth={2.4} aria-hidden />
+              {newDocLabel}
+              <Chevron size={18} strokeWidth={STROKE} aria-hidden />
+            </button>
+          </form>
         </div>
       </div>
     </div>

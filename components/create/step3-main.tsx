@@ -20,6 +20,7 @@ import {
   istExportierbar,
   pruefePflichtangaben,
 } from "@/lib/legal/pflichtangaben";
+import { FlowSteps } from "@/components/flow/FlowSteps";
 import { CheckList, type CheckRow } from "./check-list";
 import { InvoiceA4 } from "./invoice-a4";
 import { ShareButtons } from "./share-buttons";
@@ -27,7 +28,7 @@ import { ZoomOverlay } from "./zoom-overlay";
 
 interface Step3MainProps {
   dir: "ltr" | "rtl";
-  documentId?: string;
+  documentId: string;
 }
 
 const STROKE = 1.75;
@@ -87,33 +88,14 @@ export function Step3Main({ dir, documentId }: Step3MainProps) {
     <main className="dmain">
       <div className="dscroll">
         <div className="dflow-head">
-          <Link href={`/create/2${documentId ? `?document_id=${documentId}` : ""}`} className="dflow-back" aria-label={t("back")}>
+          <Link href={`/create/${documentId}/2`} className="dflow-back" aria-label={t("back")}>
             <BackChevron size={20} strokeWidth={STROKE} aria-hidden />
           </Link>
           <div>
             <div className="dflow-title">{t("createInvoiceTitle")}</div>
             <div className="dflow-sub">{t("previewSend")}</div>
           </div>
-          <div className="dsteps2">
-            <div className="dstep2">
-              <span className="dstep2-dot dstep2-dot--done">
-                <Check size={15} strokeWidth={2.5} color="#fff" aria-hidden />
-              </span>
-              <span className="dstep2-lbl">{t("step1")}</span>
-            </div>
-            <span className="dstep2-line dstep2-line--done" />
-            <div className="dstep2">
-              <span className="dstep2-dot dstep2-dot--done">
-                <Check size={15} strokeWidth={2.5} color="#fff" aria-hidden />
-              </span>
-              <span className="dstep2-lbl">{t("step2")}</span>
-            </div>
-            <span className="dstep2-line dstep2-line--done" />
-            <div className="dstep2 dstep2--active">
-              <span className="dstep2-dot">3</span>
-              <span className="dstep2-lbl">{t("step3")}</span>
-            </div>
-          </div>
+          <FlowSteps current={3} />
         </div>
 
         <div className="d2-ctx">
@@ -176,7 +158,7 @@ export function Step3Main({ dir, documentId }: Step3MainProps) {
                     <FileText size={21} strokeWidth={2.4} aria-hidden />
                     {t("createPdf")}
                   </button>
-                  <Link href={`/create/2${documentId ? `?document_id=${documentId}` : ""}`} className="d3-back">
+                  <Link href={`/create/${documentId}/2`} className="d3-back">
                     {t("back")}
                   </Link>
                 </>
