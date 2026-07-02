@@ -15,7 +15,7 @@ export function Step2Screen({ dir, locale }: Step2ScreenProps) {
   return (
     <div className="zz-dash">
       <div className="dapp" dir={dir}>
-        <Sidebar active={null} />
+        <Sidebar />
         <Step2Main dir={dir} locale={locale} />
       </div>
     </div>

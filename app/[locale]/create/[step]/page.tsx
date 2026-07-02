@@ -54,7 +54,7 @@ export default async function CreateStepPage({ params }: CreateStepPageProps) {
     <div className={`${hanken.variable} ${plexArabic.variable}`}>
       <div className="zz-dash">
         <div className="dapp" dir={dir}>
-          <Sidebar active={null} />
+          <Sidebar />
           {current === 1 ? (
             <KundeStep dir={dir} />
           ) : (
