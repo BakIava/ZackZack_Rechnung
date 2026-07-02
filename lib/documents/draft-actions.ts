@@ -34,6 +34,15 @@ export async function createDraft(): Promise<{ id: string } | { error: string }>
   const ctx = await getCompanyCtx();
   if ("error" in ctx) return { error: "notAuthenticated" };
 
+  // §19-Default aus den Firmen-Einstellungen übernehmen (in Schritt 2 pro
+  // Rechnung überschreibbar). §19 (kein MwSt-Ausweis) ist der Default.
+  const { data: company } = await ctx.supabase
+    .from("companies")
+    .select("kleinunternehmer")
+    .eq("id", ctx.companyId)
+    .maybeSingle();
+  const isKleinunternehmer = company?.kleinunternehmer ?? true;
+
   const today = new Date().toISOString().split("T")[0];
   const { data, error } = await ctx.supabase
     .from("documents")
@@ -44,6 +53,7 @@ export async function createDraft(): Promise<{ id: string } | { error: string }>
       status: "draft",
       issue_date: today,
       total_amount: 0,
+      is_kleinunternehmer: isKleinunternehmer,
     })
     .select("id")
     .single();
