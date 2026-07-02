@@ -319,7 +319,10 @@
     "delSub": "Sie wird aus dem Katalog entfernt. Bereits erstellte Dokumente bleiben erhalten.",
     "useInInvoice": "In neue Rechnung übernehmen",
     "noResults": "Keine Leistungen gefunden",
-    "noResultsSub": "Ändere die Suche oder lege eine neue Leistung an."
+    "noResultsSub": "Ändere die Suche oder lege eine neue Leistung an.",
+    "saveError": "Fehler beim Speichern. Bitte erneut versuchen.",
+    "deleteError": "Fehler beim Löschen. Bitte erneut versuchen.",
+    "delDocNote": "Bestehende Dokumente sind nicht betroffen."
   },
   "Settings": {
     "title": "Einstellungen",

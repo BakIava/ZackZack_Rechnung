@@ -319,7 +319,10 @@
     "delSub": "Katalogdan kaldırılır. Mevcut belgeler korunur.",
     "useInInvoice": "Yeni faturaya ekle",
     "noResults": "Hizmet bulunamadı",
-    "noResultsSub": "Aramanı değiştir veya yeni bir hizmet ekle."
+    "noResultsSub": "Aramanı değiştir veya yeni bir hizmet ekle.",
+    "saveError": "Kaydetme başarısız oldu. Lütfen tekrar deneyin.",
+    "deleteError": "Silme başarısız oldu. Lütfen tekrar deneyin.",
+    "delDocNote": "Mevcut belgeler etkilenmez."
   },
   "Settings": {
     "title": "Ayarlar",

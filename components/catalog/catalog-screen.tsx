@@ -1,10 +1,12 @@
+import type { KatalogEintrag } from "@/lib/katalog/types";
 import { CatalogMasterDetail } from "./catalog-master-detail";
 import "./catalog-screen.css";
 
 interface CatalogScreenProps {
   dir: "ltr" | "rtl";
+  initialItems: KatalogEintrag[];
 }
 
-export function CatalogScreen({ dir }: CatalogScreenProps) {
-  return <CatalogMasterDetail dir={dir} />;
+export function CatalogScreen({ dir, initialItems }: CatalogScreenProps) {
+  return <CatalogMasterDetail dir={dir} initialItems={initialItems} />;
 }
