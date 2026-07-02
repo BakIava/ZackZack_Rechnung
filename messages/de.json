@@ -191,6 +191,7 @@
     "ncCreate": "Anlegen & auswählen",
     "ncSaving": "Anlegen…",
     "ncError": "Fehler beim Anlegen. Bitte erneut versuchen.",
+    "draftError": "Fehler beim Speichern. Bitte erneut versuchen.",
     "ncCreated": "neu angelegt",
     "ncClose": "Schließen",
     "cancel": "Abbrechen",

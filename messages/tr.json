@@ -191,6 +191,7 @@
     "ncCreate": "Ekle & seç",
     "ncSaving": "Ekleniyor…",
     "ncError": "Ekleme hatası. Lütfen tekrar deneyin.",
+    "draftError": "Kaydetme hatası. Lütfen tekrar deneyin.",
     "ncCreated": "yeni eklendi",
     "ncClose": "Kapat",
     "cancel": "İptal",

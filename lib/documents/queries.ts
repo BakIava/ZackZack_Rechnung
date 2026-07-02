@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DocumentListItem, DocumentsPageData } from "./types";
+import type { DocumentListItem, DocumentsPageData, DraftStep1Data } from "./types";
 
 function addDays(isoDate: string, days: number): string {
   const d = new Date(isoDate);
@@ -61,4 +61,38 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   });
 
   return { documents, paymentDays };
+}
+
+export async function getDraftForStep1(
+  documentId: string,
+): Promise<DraftStep1Data | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: userData } = await supabase
+    .from("users")
+    .select("company_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!userData?.company_id) return null;
+
+  const { data } = await supabase
+    .from("documents")
+    .select("id, document_type, customer_snapshot")
+    .eq("id", documentId)
+    .eq("company_id", userData.company_id)
+    .eq("status", "draft")
+    .maybeSingle();
+
+  if (!data) return null;
+
+  const snapshot = data.customer_snapshot as { id?: string } | null;
+  return {
+    id: data.id as string,
+    docType: data.document_type === "quote" ? "angebot" : "rechnung",
+    customerId: snapshot?.id ?? null,
+  };
 }

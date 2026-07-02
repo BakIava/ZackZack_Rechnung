@@ -325,3 +325,9 @@
 .dbtn:not(:disabled):hover {
   transform: translateY(-1px);
 }
+.dflow-error {
+  font-size: 13.5px;
+  color: var(--error, #c0392b);
+}
+@keyframes dbtn-spin { to { transform: rotate(360deg); } }
+.dbtn-spin { animation: dbtn-spin 0.8s linear infinite; }

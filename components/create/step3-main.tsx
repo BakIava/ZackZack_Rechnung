@@ -27,6 +27,7 @@ import { ZoomOverlay } from "./zoom-overlay";
 
 interface Step3MainProps {
   dir: "ltr" | "rtl";
+  documentId?: string;
 }
 
 const STROKE = 1.75;
@@ -42,7 +43,7 @@ function initialsOf(name: string): string {
 
 /** Schritt 3 (Vorschau & Versand) — Desktop-Hauptbereich: A4-Vorschau links,
  *  sticky Aktions-Sidebar rechts. Interaktiv (PDF-Phase, Zoom). */
-export function Step3Main({ dir }: Step3MainProps) {
+export function Step3Main({ dir, documentId }: Step3MainProps) {
   const t = useTranslations("Create");
   const [created, setCreated] = useState(false);
   const [zoom, setZoom] = useState(false);
@@ -86,7 +87,7 @@ export function Step3Main({ dir }: Step3MainProps) {
     <main className="dmain">
       <div className="dscroll">
         <div className="dflow-head">
-          <Link href="/create/2" className="dflow-back" aria-label={t("back")}>
+          <Link href={`/create/2${documentId ? `?document_id=${documentId}` : ""}`} className="dflow-back" aria-label={t("back")}>
             <BackChevron size={20} strokeWidth={STROKE} aria-hidden />
           </Link>
           <div>
@@ -175,7 +176,7 @@ export function Step3Main({ dir }: Step3MainProps) {
                     <FileText size={21} strokeWidth={2.4} aria-hidden />
                     {t("createPdf")}
                   </button>
-                  <Link href="/create/2" className="d3-back">
+                  <Link href={`/create/2${documentId ? `?document_id=${documentId}` : ""}`} className="d3-back">
                     {t("back")}
                   </Link>
                 </>

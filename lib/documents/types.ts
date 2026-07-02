@@ -27,3 +27,10 @@ export interface DocumentsPageData {
   documents: DocumentListItem[];
   paymentDays: number;
 }
+
+export interface DraftStep1Data {
+  id: string;
+  docType: "rechnung" | "angebot";
+  /** customer.id aus dem snapshot – null wenn noch kein Kunde gewählt */
+  customerId: string | null;
+}

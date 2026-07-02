@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Loader2,
   MapPin,
   Plus,
   ReceiptText,
@@ -15,6 +16,10 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import type { CustomerListItem } from "@/lib/customers/types";
+import {
+  deleteDraftIfEmpty,
+  updateDraftCustomer,
+} from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/NewCustomerModal";
 import "./KundeStep.css";
 
@@ -23,6 +28,7 @@ type DocType = "rechnung" | "angebot";
 interface KundeStepProps {
   dir: "ltr" | "rtl";
   customers: CustomerListItem[];
+  documentId: string;
   initialCustomerId?: string | null;
   initialDocType?: DocType;
 }
@@ -30,7 +36,13 @@ interface KundeStepProps {
 const STROKE = 1.75;
 const STROKE_BOLD = 2.4;
 
-export function KundeStep({ dir, customers, initialCustomerId = null, initialDocType = "rechnung" }: KundeStepProps) {
+export function KundeStep({
+  dir,
+  customers,
+  documentId,
+  initialCustomerId = null,
+  initialDocType = "rechnung",
+}: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
   const [docType, setDocType] = useState<DocType>(initialDocType);
@@ -38,6 +50,8 @@ export function KundeStep({ dir, customers, initialCustomerId = null, initialDoc
   const [selected, setSelected] = useState<string | null>(initialCustomerId);
   const [created, setCreated] = useState<CustomerListItem[]>([]);
   const [showNew, setShowNew] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
@@ -59,9 +73,23 @@ export function KundeStep({ dir, customers, initialCustomerId = null, initialDoc
     setShowNew(false);
   }
 
-  function handleWeiter() {
-    if (!selected) return;
-    router.push(`/create/2?customer_id=${encodeURIComponent(selected)}&document_type=${docType}`);
+  async function handleWeiter() {
+    if (!selected || saving) return;
+    setSaving(true);
+    setSaveError(null);
+    const res = await updateDraftCustomer(documentId, selected, docType);
+    if (res.error) {
+      setSaving(false);
+      setSaveError(t("draftError"));
+      return;
+    }
+    router.push(`/create/2?document_id=${documentId}`);
+  }
+
+  function handleBack() {
+    // Leere Drafts löschen (fire-and-forget — kein Ladeindikator nötig)
+    deleteDraftIfEmpty(documentId);
+    router.push("/documents");
   }
 
   return (
@@ -72,7 +100,7 @@ export function KundeStep({ dir, customers, initialCustomerId = null, initialDoc
             type="button"
             className="dflow-back"
             aria-label={t("back")}
-            onClick={() => router.push("/documents")}
+            onClick={handleBack}
           >
             <BackChevron size={20} strokeWidth={STROKE} aria-hidden />
           </button>
@@ -208,7 +236,9 @@ export function KundeStep({ dir, customers, initialCustomerId = null, initialDoc
 
       <div className="dflow-foot" inert={showNew}>
         <div className="dflow-foot-sel">
-          {selectedCustomer ? (
+          {saveError ? (
+            <span className="dflow-error">{saveError}</span>
+          ) : selectedCustomer ? (
             <>
               <Check size={16} strokeWidth={STROKE_BOLD} color="var(--ok)" aria-hidden />
               <span>
@@ -222,11 +252,15 @@ export function KundeStep({ dir, customers, initialCustomerId = null, initialDoc
         <button
           type="button"
           className="dbtn"
-          disabled={!selectedCustomer}
+          disabled={!selectedCustomer || saving}
           onClick={handleWeiter}
         >
+          {saving ? (
+            <Loader2 size={20} strokeWidth={STROKE_BOLD} className="dbtn-spin" aria-hidden />
+          ) : (
+            <Chevron size={20} strokeWidth={STROKE_BOLD} aria-hidden />
+          )}
           {t("next")}
-          <Chevron size={20} strokeWidth={STROKE_BOLD} aria-hidden />
         </button>
       </div>
     </main>

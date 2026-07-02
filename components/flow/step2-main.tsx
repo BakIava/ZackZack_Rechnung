@@ -18,10 +18,11 @@ interface Step2MainProps {
   dir: "ltr" | "rtl";
   locale: Locale;
   docType?: DocType;
+  documentId?: string;
 }
 
 /** Desktop-Hauptbereich von Schritt 2: Tabelle + Zusammenfassung + Katalog-Modal. */
-export function Step2Main({ dir, locale, docType = "rechnung" }: Step2MainProps) {
+export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Step2MainProps) {
   const t = useTranslations("Step2");
   const router = useRouter();
   const [positions, setPositions] = useState<Position[]>(defaultPositions);
@@ -53,7 +54,7 @@ export function Step2Main({ dir, locale, docType = "rechnung" }: Step2MainProps)
     <main className="dmain">
       <div className="dscroll">
         <div className="dflow-head">
-          <Link href="/create/1" className="dflow-back" aria-label={t("back")}>
+          <Link href={`/create/1${documentId ? `?document_id=${documentId}` : ""}`} className="dflow-back" aria-label={t("back")}>
             <Backward size={20} strokeWidth={STROKE} aria-hidden />
           </Link>
           <div className="dflow-headings">
@@ -151,11 +152,11 @@ export function Step2Main({ dir, locale, docType = "rechnung" }: Step2MainProps)
               <Lock size={14} strokeWidth={STROKE} aria-hidden />
               {t("kuNote")}
             </div>
-            <button type="button" className="d2-sum-btn" disabled={positions.length === 0} onClick={() => router.push("/create/3")}>
+            <button type="button" className="d2-sum-btn" disabled={positions.length === 0} onClick={() => router.push(`/create/3${documentId ? `?document_id=${documentId}` : ""}`)}>
               {t("next")}
               <Forward size={20} strokeWidth={2.4} aria-hidden />
             </button>
-            <Link href="/create/1" className="d2-back">{t("back")}</Link>
+            <Link href={`/create/1${documentId ? `?document_id=${documentId}` : ""}`} className="d2-back">{t("back")}</Link>
           </div>
         </div>
       </div>
