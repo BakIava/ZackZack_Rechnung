@@ -112,7 +112,11 @@ export function CustomerDetail({ customer, onMutated }: CustomerDetailProps) {
 
   return (
     <div className="cdm-detail">
-      <CustomerReadView customer={customer} onEdit={() => setIsEditing(true)} />
+      <CustomerReadView
+        customer={customer}
+        onEdit={() => setIsEditing(true)}
+        onMutated={onMutated}
+      />
     </div>
   );
 }
@@ -122,19 +126,69 @@ export function CustomerDetail({ customer, onMutated }: CustomerDetailProps) {
 interface CustomerReadViewProps {
   customer: CustomerRow;
   onEdit: () => void;
+  onMutated: (newSelId?: string) => void;
 }
 
-function CustomerReadView({ customer, onEdit }: CustomerReadViewProps) {
+function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps) {
   const t = useTranslations("Customers");
   const params = useParams();
   const locale = params.locale as string;
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [showDelConfirm, setShowDelConfirm] = useState(false);
   const firma = isFirma(customer.name);
   const initials = deriveInitials(customer.name);
   const addr = addressDisplay(customer);
   const docs = sortedDocs(customer.documents);
 
+  function handleDelete() {
+    startTransition(async () => {
+      const res = await deleteCustomer(customer.id);
+      if (res.error) { setShowDelConfirm(false); return; }
+      router.refresh();
+      onMutated(undefined);
+    });
+  }
+
   return (
     <>
+      {showDelConfirm && (
+        <div className="cdm-confirm-overlay">
+          <button
+            type="button"
+            className="cdm-confirm-bd"
+            aria-label={t("deleteNo")}
+            onClick={() => setShowDelConfirm(false)}
+          />
+          <div className="cdm-confirm-box" role="alertdialog" aria-modal="true">
+            <div className="cdm-confirm-icon">
+              <Trash2 size={24} strokeWidth={STROKE} aria-hidden />
+            </div>
+            <div>
+              <div className="cdm-confirm-title">{t("deleteCustomer")}</div>
+              <div className="cdm-confirm-msg">{t("deleteConfirm")}</div>
+            </div>
+            <div className="cdm-confirm-btns">
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => setShowDelConfirm(false)}
+              >
+                {t("deleteNo")}
+              </button>
+              <button
+                type="button"
+                className="btn-destroy"
+                disabled={isPending}
+                onClick={handleDelete}
+              >
+                {isPending ? t("saving") : t("deleteYes")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="cdm-dhead">
         <div className="cdm-dhead-top">
           <div className={"cdm-dav" + (firma ? " cdm-dav--firma" : "")}>
@@ -151,6 +205,14 @@ function CustomerReadView({ customer, onEdit }: CustomerReadViewProps) {
               {addr}
             </div>
           </div>
+          <button
+            type="button"
+            className="cdm-del-header-btn"
+            onClick={() => setShowDelConfirm(true)}
+          >
+            <Trash2 size={15} strokeWidth={STROKE} aria-hidden />
+            {t("deleteCustomer")}
+          </button>
           <button type="button" className="cdm-dicon" aria-label={t("edit")} onClick={onEdit}>
             <Pencil size={19} strokeWidth={STROKE} aria-hidden />
           </button>
