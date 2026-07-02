@@ -19,6 +19,7 @@ interface StepProps {
 export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
   const HR_FORMS = new Set(["ek", "gmbh", "ug"]);
   const showHr = HR_FORMS.has(formData.legal_form);
+  console.log(t.rf);
   return (
     <div className="ob-form">
       <Field label={t.firma} req error={errors.name}>

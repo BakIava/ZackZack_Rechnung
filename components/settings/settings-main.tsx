@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { IdCard, Receipt, Globe, User, ShieldCheck } from "lucide-react";
 import { SettingsFirma } from "./settings-firma";
@@ -8,10 +8,12 @@ import { SettingsRechnung } from "./settings-rechnung";
 import { SettingsBedienung } from "./settings-bedienung";
 import { SettingsKonto } from "./settings-konto";
 import { SettingsRecht } from "./settings-recht";
+import type { SettingsData } from "@/lib/settings/types";
 
 interface SettingsMainProps {
   dir: "ltr" | "rtl";
   locale: string;
+  data: SettingsData;
 }
 
 type Section = "firma" | "rechnung" | "bedienung" | "konto" | "recht";
@@ -26,9 +28,27 @@ const SECTION_ICONS: Record<Section, ReactNode> = {
   recht:     <ShieldCheck size={19} strokeWidth={STROKE} aria-hidden />,
 };
 
-export function SettingsMain({ dir, locale }: SettingsMainProps) {
+const ALL_SECTIONS: Section[] = ["firma", "rechnung", "bedienung", "konto", "recht"];
+
+function hashToSection(hash: string): Section {
+  const s = hash.replace("#", "") as Section;
+  return ALL_SECTIONS.includes(s) ? s : "firma";
+}
+
+export function SettingsMain({ dir, locale, data }: SettingsMainProps) {
   const t = useTranslations("Settings");
   const [section, setSection] = useState<Section>("firma");
+
+  useEffect(() => {
+    setSection(hashToSection(window.location.hash));
+    function onHash() { setSection(hashToSection(window.location.hash)); }
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  function navigate(s: Section) {
+    window.location.hash = s;
+  }
 
   const sections: { id: Section; label: string }[] = [
     { id: "firma",     label: t("navFirma") },
@@ -67,7 +87,7 @@ export function SettingsMain({ dir, locale }: SettingsMainProps) {
                 className="set-navitem"
                 data-on={section === s.id ? "1" : "0"}
                 aria-current={section === s.id ? "true" : undefined}
-                onClick={() => setSection(s.id)}
+                onClick={() => navigate(s.id)}
               >
                 {SECTION_ICONS[s.id]}
                 <span>{s.label}</span>
@@ -81,10 +101,12 @@ export function SettingsMain({ dir, locale }: SettingsMainProps) {
               <div className="set-sec-s">{secSub}</div>
             </div>
 
-            {section === "firma"     && <SettingsFirma />}
-            {section === "rechnung"  && <SettingsRechnung />}
+            {section === "firma"     && <SettingsFirma company={data.company} />}
+            {section === "rechnung"  && (
+              <SettingsRechnung company={data.company} currentInvoiceNumber={data.currentInvoiceNumber} />
+            )}
             {section === "bedienung" && <SettingsBedienung locale={locale} dir={dir} />}
-            {section === "konto"     && <SettingsKonto />}
+            {section === "konto"     && <SettingsKonto email={data.authEmail} locale={locale} />}
             {section === "recht"     && <SettingsRecht dir={dir} />}
           </div>
         </div>
