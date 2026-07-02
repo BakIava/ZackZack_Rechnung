@@ -24,20 +24,12 @@ export async function createDraftDocument(locale: string): Promise<void> {
   const ctx = await getCompanyCtx();
   if ("error" in ctx) redirect(`/${locale}/login`);
 
-  const { data: company } = await ctx.supabase
-    .from("companies")
-    .select("kleinunternehmer")
-    .eq("id", ctx.companyId)
-    .maybeSingle();
-
   const { data, error } = await ctx.supabase
     .from("documents")
     .insert({
       company_id: ctx.companyId,
-      created_by: ctx.userId,
       document_type: "invoice",
       status: "draft",
-      is_kleinunternehmer: company?.kleinunternehmer ?? true,
       customer_snapshot: {},
       total_amount: 0,
     })
