@@ -85,6 +85,10 @@ export async function updateDraftCustomer(
   const { error } = await ctx.supabase
     .from("documents")
     .update({
+      // customer_id verknüpft das Dokument mit dem Kunden (Kundendetail-Seite
+      // listet Dokumente über diese FK). customer_snapshot bleibt die
+      // eingefrorene Quelle der Wahrheit für den Dokumentinhalt.
+      customer_id: customerId,
       customer_snapshot: snapshot,
       document_type: docType === "rechnung" ? "invoice" : "quote",
     })
