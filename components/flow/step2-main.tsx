@@ -1,14 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, FileText, Lock, Plus, ReceiptText, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { Link, useRouter } from "@/i18n/navigation";
-import { SAMPLE_CUSTOMER, defaultPositions } from "@/lib/demo/flow-data";
-import { summeCents, type Position } from "@/lib/flow/positionen";
 import { formatMoney } from "@/lib/format";
-import type { DocType } from "@/lib/demo/dashboard-data";
+import type { KatalogEintrag } from "@/lib/katalog/types";
+import type {
+  DraftContext,
+  DraftItem,
+  FreeItemInput,
+  FremdItemInput,
+  ItemPatch,
+} from "@/lib/documents/item-types";
+import type { ItemsResult } from "@/lib/documents/item-actions";
+import {
+  addCatalogItem,
+  addFreeItem,
+  addFremdItem,
+  deleteItem,
+  moveItem,
+  updateItem,
+} from "@/lib/documents/item-actions";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "./FlowSteps";
 import { PositionRow } from "./position-row";
@@ -18,38 +32,68 @@ const STROKE = 1.75;
 interface Step2MainProps {
   dir: "ltr" | "rtl";
   locale: Locale;
-  docType?: DocType;
   documentId: string;
+  context: DraftContext;
+  initialItems: DraftItem[];
+  services: KatalogEintrag[];
 }
 
-/** Desktop-Hauptbereich von Schritt 2: Tabelle + Zusammenfassung + Katalog-Modal. */
-export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Step2MainProps) {
+/** Desktop-Hauptbereich von Schritt 2: Positionen aus dem Draft, live in der DB. */
+export function Step2Main({
+  dir,
+  locale,
+  documentId,
+  context,
+  initialItems,
+  services,
+}: Step2MainProps) {
   const t = useTranslations("Step2");
   const router = useRouter();
-  const [positions, setPositions] = useState<Position[]>(defaultPositions);
+  const [items, setItems] = useState<DraftItem[]>(initialItems);
   const [modalOpen, setModalOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
 
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
-  const total = summeCents(positions);
-  const docLabel = docType === "rechnung" ? t("rechnung") : t("angebot");
+  const total = items.reduce((sum, i) => sum + i.totalAmount, 0);
+  const docLabel = context.docType === "rechnung" ? t("rechnung") : t("angebot");
 
-  const changeQty = (id: string, delta: number) =>
-    setPositions((ps) => ps.map((p) => (p.id === id && p.kind === "normal" ? { ...p, qty: Math.max(1, p.qty + delta) } : p)));
-  const remove = (id: string) => setPositions((ps) => ps.filter((p) => p.id !== id));
-  const move = (index: number, delta: number) =>
-    setPositions((ps) => {
-      const target = index + delta;
-      if (target < 0 || target >= ps.length) return ps;
-      const next = ps.slice();
-      const [item] = next.splice(index, 1);
-      next.splice(target, 0, item);
-      return next;
+  function run(action: () => Promise<ItemsResult>) {
+    setError(null);
+    startTransition(async () => {
+      const res = await action();
+      if ("error" in res) {
+        setError(t("itemError"));
+        return;
+      }
+      setItems(res.items);
     });
-  const add = (position: Position) => {
-    setPositions((ps) => [...ps, position]);
+  }
+
+  const addCatalog = (serviceId: string) => {
     setModalOpen(false);
+    run(() => addCatalogItem(documentId, serviceId));
   };
+  const addFree = (input: FreeItemInput) => {
+    setModalOpen(false);
+    run(() => addFreeItem(documentId, input));
+  };
+  const addFremd = (input: FremdItemInput) => {
+    setModalOpen(false);
+    run(() => addFremdItem(documentId, input));
+  };
+  const changeQty = (id: string, delta: number) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    const next = Math.max(1, item.amount + delta);
+    if (next === item.amount) return;
+    run(() => updateItem(id, { amount: next }));
+  };
+  const edit = (id: string, patch: ItemPatch) => run(() => updateItem(id, patch));
+  const remove = (id: string) => run(() => deleteItem(id));
+  const move = (id: string, direction: "up" | "down") =>
+    run(() => moveItem(id, direction));
 
   return (
     <main className="dmain">
@@ -67,17 +111,19 @@ export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Ste
 
         <div className="d2-ctx">
           <span className="p2-chip p2-chip--mode">
-            {docType === "rechnung" ? (
+            {context.docType === "rechnung" ? (
               <ReceiptText size={15} strokeWidth={STROKE} aria-hidden />
             ) : (
               <FileText size={15} strokeWidth={STROKE} aria-hidden />
             )}
             {docLabel}
           </span>
-          <span className="p2-chip">
-            <span className="p2-av">{SAMPLE_CUSTOMER.initials}</span>
-            {SAMPLE_CUSTOMER.name}
-          </span>
+          {context.customerName && (
+            <span className="p2-chip">
+              <span className="p2-av">{context.customerInitials}</span>
+              {context.customerName}
+            </span>
+          )}
         </div>
 
         <div className="d2-wrap">
@@ -93,7 +139,9 @@ export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Ste
               <Forward size={22} strokeWidth={STROKE} aria-hidden />
             </button>
 
-            {positions.length === 0 ? (
+            {error && <div className="d2-error">{error}</div>}
+
+            {items.length === 0 ? (
               <div className="empty empty--boxed">
                 <div className="empty-t">{t("emptyPos")}</div>
                 {t("emptyPosHint")}
@@ -108,14 +156,15 @@ export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Ste
                   <span className="d2th d2th--num">{t("lineSum")}</span>
                   <span className="d2th" />
                 </div>
-                {positions.map((p, i) => (
+                {items.map((item, i) => (
                   <PositionRow
-                    key={p.id}
-                    position={p}
-                    locale={locale}
+                    key={item.id}
+                    item={item}
                     index={i}
-                    count={positions.length}
+                    count={items.length}
+                    disabled={pending}
                     onQty={changeQty}
+                    onEdit={edit}
                     onDelete={remove}
                     onMove={move}
                   />
@@ -127,16 +176,23 @@ export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Ste
           <div className="d2-sumpanel">
             <div className="d2-sum-t">{t("summary")}</div>
             <div className="d2-sum-lines">
-              <div className="d2-sum-line"><span>{t("positionsWord")}</span><b>{positions.length}</b></div>
+              <div className="d2-sum-line"><span>{t("positionsWord")}</span><b>{items.length}</b></div>
               <div className="d2-sum-line"><span>{t("total")} ({t("net")})</span><b>{formatMoney(total)}</b></div>
             </div>
             <div className="d2-sum-div" />
             <div className="d2-sum-total"><span className="d2-sum-total-l">{t("total")}</span><span className="d2-sum-total-v">{formatMoney(total)}</span></div>
-            <div className="d2-sum-ku">
-              <Lock size={14} strokeWidth={STROKE} aria-hidden />
-              {t("kuNote")}
-            </div>
-            <button type="button" className="d2-sum-btn" disabled={positions.length === 0} onClick={() => router.push(`/create/${documentId}/3`)}>
+            {context.isKleinunternehmer && (
+              <div className="d2-sum-ku">
+                <Lock size={14} strokeWidth={STROKE} aria-hidden />
+                {t("kuNote")}
+              </div>
+            )}
+            <button
+              type="button"
+              className="d2-sum-btn"
+              disabled={items.length === 0 || pending}
+              onClick={() => router.push(`/create/${documentId}/3`)}
+            >
               {t("next")}
               <Forward size={20} strokeWidth={2.4} aria-hidden />
             </button>
@@ -156,7 +212,13 @@ export function Step2Main({ dir, locale, docType = "rechnung", documentId }: Ste
               </button>
             </div>
             <div className="dmodal-body">
-              <CatalogPicker locale={locale} onAdd={add} />
+              <CatalogPicker
+                locale={locale}
+                services={services}
+                onAddCatalog={addCatalog}
+                onAddFree={addFree}
+                onAddFremd={addFremd}
+              />
             </div>
           </div>
         </div>

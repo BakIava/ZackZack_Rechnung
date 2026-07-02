@@ -4,21 +4,15 @@ import { useState } from "react";
 import { Lock, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FLOW_UNITS } from "@/lib/demo/flow-data";
-import { berechneVerkaufspreis } from "@/lib/legal/marge";
-import type { Position } from "@/lib/flow/positionen";
+import { computeUnitPrice } from "@/lib/documents/margin";
+import type { FreeItemInput, FremdItemInput } from "@/lib/documents/item-types";
 import { formatMoney } from "@/lib/format";
 import { eurosToCents } from "@/lib/money";
 
 const STROKE = 1.75;
 
-interface FormProps {
-  onAdd: (position: Position) => void;
-}
-
-const newId = () => `x-${crypto.randomUUID()}`;
-
 /** Freie Position: Bezeichnung, Menge, Einheit, Einzelpreis. */
-export function FreeForm({ onAdd }: FormProps) {
+export function FreeForm({ onAdd }: { onAdd: (input: FreeItemInput) => void }) {
   const t = useTranslations("Step2");
   const [label, setLabel] = useState("");
   const [qty, setQty] = useState("1");
@@ -56,13 +50,10 @@ export function FreeForm({ onAdd }: FormProps) {
         className="f-submit"
         disabled={!ok}
         onClick={() => onAdd({
-          id: newId(),
-          kind: "normal",
-          label: label.trim(),
-          uebersetzungen: null,
-          qty: parseFloat(qty) || 1,
+          descriptionDe: label.trim(),
+          amount: parseFloat(qty) || 1,
           unit,
-          preisCents: eurosToCents(parseFloat(price) || 0),
+          unitPrice: eurosToCents(parseFloat(price) || 0),
         })}
       >
         <Plus size={20} strokeWidth={2.4} aria-hidden />
@@ -73,15 +64,16 @@ export function FreeForm({ onAdd }: FormProps) {
 }
 
 /** Fremdleistung: Einkauf + Aufschlag → Verkaufspreis (Einkauf/Marge intern). */
-export function FremdForm({ onAdd }: FormProps) {
+export function FremdForm({ onAdd }: { onAdd: (input: FremdItemInput) => void }) {
   const t = useTranslations("Step2");
   const [label, setLabel] = useState("");
   const [purchase, setPurchase] = useState("");
   const [markup, setMarkup] = useState("25");
-  const einkaufCents = eurosToCents(parseFloat(purchase) || 0);
-  const aufschlagPct = parseFloat(markup) || 0;
-  const verkaufCents = berechneVerkaufspreis(einkaufCents, { typ: "prozent", wert: aufschlagPct });
-  const ok = label.trim().length > 0 && einkaufCents > 0;
+  const purchaseCents = eurosToCents(parseFloat(purchase) || 0);
+  // Aufschlag in Basispunkten (12,50 % = 1250) für die DB.
+  const surchargeBp = Math.round((parseFloat(markup) || 0) * 100);
+  const salePriceCents = computeUnitPrice(purchaseCents, surchargeBp, "percent");
+  const ok = label.trim().length > 0 && purchaseCents > 0;
 
   return (
     <div className="f-grid">
@@ -119,20 +111,19 @@ export function FremdForm({ onAdd }: FormProps) {
           <br />
           {t("salePrice")} ({t("onDocument")})
         </span>
-        <span className="f-compute-v">{formatMoney(verkaufCents)}</span>
+        <span className="f-compute-v">{formatMoney(salePriceCents)}</span>
       </div>
       <button
         type="button"
         className="f-submit"
         disabled={!ok}
         onClick={() => onAdd({
-          id: newId(),
-          kind: "fremd",
-          label: label.trim(),
+          descriptionDe: label.trim(),
           unit: "Pauschal",
-          einkaufCents,
-          aufschlagPct,
-          verkaufCents,
+          amount: 1,
+          purchasePrice: purchaseCents,
+          surcharge: surchargeBp,
+          surchargeType: "percent",
         })}
       >
         <Plus size={20} strokeWidth={2.4} aria-hidden />
