@@ -179,7 +179,7 @@ export function DocumentsMain({ dir, documents, paymentDays }: DocumentsMainProp
               </button>
             )}
           </div>
-          <Link className="dbtn" href="/create/1">
+          <Link className="dbtn" href="/flow/new">
             <Plus size={19} strokeWidth={2.5} />
             {t("newBtn")}
           </Link>

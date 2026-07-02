@@ -57,7 +57,7 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
 
       <div className="dscroll">
         <div className="dhero">
-          <Link href="/create/1" className="dcta">
+          <Link href="/flow/new" className="dcta">
             <span className="dcta-ic">
               <Plus size={30} strokeWidth={2.4} color="#fff" aria-hidden />
             </span>
@@ -179,7 +179,7 @@ function EmptyGhost({ ghostTitle, ghostSub, newDocLabel, dir }: EmptyGhostProps)
           </div>
           <div className="le-h">{ghostTitle}</div>
           <div className="le-sub">{ghostSub}</div>
-          <Link href="/create/1" className="le-btn le-btn--navy">
+          <Link href="/flow/new" className="le-btn le-btn--navy">
             <Plus size={19} strokeWidth={2.4} aria-hidden />
             {newDocLabel}
             <Chevron size={18} strokeWidth={STROKE} aria-hidden />
