@@ -189,6 +189,8 @@
     "ncNotePh": "z. B. Zahlungsweise, Anfahrt …",
     "ncOptional": "optional",
     "ncCreate": "Anlegen & auswählen",
+    "ncSaving": "Anlegen…",
+    "ncError": "Fehler beim Anlegen. Bitte erneut versuchen.",
     "ncCreated": "neu angelegt",
     "ncClose": "Schließen",
     "cancel": "Abbrechen",

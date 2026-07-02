@@ -2,9 +2,9 @@ import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { Step3Screen } from "@/components/create/step3-screen";
 import { Sidebar } from "@/components/dashboard/sidebar";
-import { CreatePlaceholder } from "@/components/flow/CreatePlaceholder";
 import { KundeStep } from "@/components/flow/KundeStep";
 import { Step2Screen } from "@/components/flow/step2-screen";
+import { getCustomerSummaries } from "@/lib/customers/queries";
 import { isRtlLocale, routing, type Locale } from "@/i18n/routing";
 import "@/components/dashboard/dashboard.css";
 
@@ -24,15 +24,15 @@ const plexArabic = IBM_Plex_Sans_Arabic({
 
 interface CreateStepPageProps {
   params: Promise<{ locale: string; step: string }>;
+  searchParams: Promise<{ customer_id?: string; document_type?: string }>;
 }
 
-export default async function CreateStepPage({ params }: CreateStepPageProps) {
+export default async function CreateStepPage({ params, searchParams }: CreateStepPageProps) {
   const { locale, step } = await params;
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
   const current = Math.min(Math.max(Number(step) || 1, 1), TOTAL_STEPS);
 
-  // Schritt 2 (Positionen) ist als vollflächiger Desktop-Screen umgesetzt.
   if (current === 2) {
     return (
       <div className={`${hanken.variable} ${plexArabic.variable}`}>
@@ -41,7 +41,6 @@ export default async function CreateStepPage({ params }: CreateStepPageProps) {
     );
   }
 
-  // Schritt 3 (Vorschau & Versand) ist als eigener vollflächiger Screen umgesetzt.
   if (current === 3) {
     return (
       <div className={`${hanken.variable} ${plexArabic.variable}`}>
@@ -50,16 +49,21 @@ export default async function CreateStepPage({ params }: CreateStepPageProps) {
     );
   }
 
+  const sp = await searchParams;
+  const customers = await getCustomerSummaries();
+  const initialDocType = sp.document_type === "angebot" ? "angebot" : "rechnung";
+
   return (
     <div className={`${hanken.variable} ${plexArabic.variable}`}>
       <div className="zz-dash">
         <div className="dapp" dir={dir}>
           <Sidebar />
-          {current === 1 ? (
-            <KundeStep dir={dir} />
-          ) : (
-            <CreatePlaceholder step={current} />
-          )}
+          <KundeStep
+            dir={dir}
+            customers={customers}
+            initialCustomerId={sp.customer_id ?? null}
+            initialDocType={initialDocType}
+          />
         </div>
       </div>
     </div>

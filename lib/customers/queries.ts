@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { CustomerRow } from "./types";
+import type { CustomerListItem, CustomerRow } from "./types";
 
 async function getCompanyId(): Promise<string | null> {
   const supabase = await createClient();
@@ -32,4 +32,34 @@ export async function getCustomers(): Promise<CustomerRow[]> {
 
   if (error || !data) return [];
   return data as CustomerRow[];
+}
+
+function deriveInitials(name: string): string {
+  const parts = name.split(/\s+/).filter(Boolean);
+  const raw =
+    parts.length > 1
+      ? parts[0][0] + parts[parts.length - 1][0]
+      : name.slice(0, 2);
+  return raw.toUpperCase();
+}
+
+export async function getCustomerSummaries(): Promise<CustomerListItem[]> {
+  const companyId = await getCompanyId();
+  if (!companyId) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id, name, street, street_no, city")
+    .eq("company_id", companyId)
+    .order("name", { ascending: true });
+
+  if (error || !data) return [];
+  return data.map((c) => ({
+    id: c.id as string,
+    name: c.name as string,
+    city: (c.city as string | null) ?? null,
+    street: [c.street, c.street_no].filter(Boolean).join(" ") || null,
+    initials: deriveInitials(c.name as string),
+  }));
 }

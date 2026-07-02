@@ -189,6 +189,8 @@
     "ncNotePh": "ör. ödeme şekli, ulaşım …",
     "ncOptional": "isteğe bağlı",
     "ncCreate": "Ekle & seç",
+    "ncSaving": "Ekleniyor…",
+    "ncError": "Ekleme hatası. Lütfen tekrar deneyin.",
     "ncCreated": "yeni eklendi",
     "ncClose": "Kapat",
     "cancel": "İptal",

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Building2,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -15,8 +14,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { CUSTOMERS } from "@/lib/demo/dashboard-data";
-import type { NewCustomerInput } from "@/lib/demo/customers-data";
+import type { CustomerListItem } from "@/lib/customers/types";
 import { NewCustomerModal } from "@/components/customers/NewCustomerModal";
 import "./KundeStep.css";
 
@@ -24,36 +22,47 @@ type DocType = "rechnung" | "angebot";
 
 interface KundeStepProps {
   dir: "ltr" | "rtl";
+  customers: CustomerListItem[];
+  initialCustomerId?: string | null;
+  initialDocType?: DocType;
 }
 
 const STROKE = 1.75;
 const STROKE_BOLD = 2.4;
 
-/** Schritt 1 des geführten Flows: Dokumenttyp wählen und Kunde auswählen.
- *  Bedienoberfläche folgt der Sprache (inkl. RTL); Eigennamen bleiben deutsch,
- *  da sie so auf dem Dokument erscheinen. */
-export function KundeStep({ dir }: KundeStepProps) {
+export function KundeStep({ dir, customers, initialCustomerId = null, initialDocType = "rechnung" }: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
-  const [docType, setDocType] = useState<DocType>("rechnung");
+  const [docType, setDocType] = useState<DocType>(initialDocType);
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
-  const [created, setCreated] = useState<NewCustomerInput[]>([]);
+  const [selected, setSelected] = useState<string | null>(initialCustomerId);
+  const [created, setCreated] = useState<CustomerListItem[]>([]);
   const [showNew, setShowNew] = useState(false);
 
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
-  // Neu angelegte Kunden stehen oben, gefolgt vom Demostamm.
-  const allCustomers: NewCustomerInput[] = [...created, ...CUSTOMERS];
+  const allCustomers: CustomerListItem[] = [...created, ...customers];
   const needle = query.trim().toLowerCase();
   const filtered = allCustomers.filter(
     (c) =>
       c.name.toLowerCase().includes(needle) ||
-      c.city.toLowerCase().includes(needle),
+      (c.city ?? "").toLowerCase().includes(needle),
   );
   const selectedCustomer = allCustomers.find((c) => c.id === selected) ?? null;
   const docLabel = docType === "rechnung" ? t("rechnung") : t("angebot");
+
+  function handleCreated(customer: CustomerListItem) {
+    setCreated((prev) => [customer, ...prev]);
+    setSelected(customer.id);
+    setQuery("");
+    setShowNew(false);
+  }
+
+  function handleWeiter() {
+    if (!selected) return;
+    router.push(`/create/2?customer_id=${encodeURIComponent(selected)}&document_type=${docType}`);
+  }
 
   return (
     <main className="dmain">
@@ -63,7 +72,7 @@ export function KundeStep({ dir }: KundeStepProps) {
             type="button"
             className="dflow-back"
             aria-label={t("back")}
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/documents")}
           >
             <BackChevron size={20} strokeWidth={STROKE} aria-hidden />
           </button>
@@ -162,13 +171,7 @@ export function KundeStep({ dir }: KundeStepProps) {
               aria-pressed={selected === c.id}
               onClick={() => setSelected(c.id)}
             >
-              <span className="dcust-av">
-                {c.firma ? (
-                  <Building2 size={20} strokeWidth={STROKE} aria-hidden />
-                ) : (
-                  c.initials
-                )}
-              </span>
+              <span className="dcust-av">{c.initials}</span>
               <span className="dcust-body">
                 <span className="dcust-name">
                   {c.name}
@@ -199,12 +202,7 @@ export function KundeStep({ dir }: KundeStepProps) {
         <NewCustomerModal
           dir={dir}
           onClose={() => setShowNew(false)}
-          onCreate={(c) => {
-            setCreated((prev) => [c, ...prev]);
-            setSelected(c.id);
-            setQuery("");
-            setShowNew(false);
-          }}
+          onCreate={handleCreated}
         />
       )}
 
@@ -225,7 +223,7 @@ export function KundeStep({ dir }: KundeStepProps) {
           type="button"
           className="dbtn"
           disabled={!selectedCustomer}
-          onClick={() => router.push("/create/2")}
+          onClick={handleWeiter}
         >
           {t("next")}
           <Chevron size={20} strokeWidth={STROKE_BOLD} aria-hidden />

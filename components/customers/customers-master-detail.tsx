@@ -4,9 +4,7 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { Building2, Check, MapPin, Plus, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { createCustomer } from "@/lib/customers/actions";
-import type { CustomerRow } from "@/lib/customers/types";
-import type { NewCustomerInput } from "@/lib/demo/customers-data";
+import type { CustomerListItem, CustomerRow } from "@/lib/customers/types";
 import { NewCustomerModal } from "./NewCustomerModal";
 import { CustomerDetail, CustomerDetailEmpty, isFirma, deriveInitials, sortedDocs, formatDateShort } from "./customer-detail";
 
@@ -61,21 +59,9 @@ export function CustomersMasterDetail({ dir, initialCustomers }: CustomersMaster
     ["recent", t("sortRecent")],
   ];
 
-  async function handleCreate(flow: NewCustomerInput) {
-    const res = await createCustomer({
-      name: flow.name,
-      street: flow.street !== "—" ? flow.street : undefined,
-      postcode: flow.zip,
-      city: flow.cityName ?? flow.city,
-      phone: flow.phone,
-      email: flow.email,
-      notes: flow.note,
-    });
-    if (res.error) return;
-    if (res.id) {
-      pendingSelId.current = res.id;
-      setNewIds((prev) => new Set(prev).add(res.id!));
-    }
+  function handleCreate(customer: CustomerListItem) {
+    pendingSelId.current = customer.id;
+    setNewIds((prev) => new Set(prev).add(customer.id));
     setShowNew(false);
     setQuery("");
     router.refresh();
