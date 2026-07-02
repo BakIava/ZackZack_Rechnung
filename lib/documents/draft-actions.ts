@@ -47,7 +47,10 @@ export async function createDraft(): Promise<{ id: string } | { error: string }>
     .select("id")
     .single();
 
-  if (error || !data) return { error: error?.message ?? "unknown" };
+  if (error || !data) {
+    console.error("[createDraft] insert failed:", error);
+    return { error: error?.message ?? "unknown" };
+  }
   return { id: data.id as string };
 }
 

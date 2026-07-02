@@ -60,7 +60,7 @@ export default async function CreateStepPage({ params, searchParams }: CreateSte
   if (!sp.document_id) {
     const draft = await createDraft();
     if ("error" in draft) {
-      redirect(`/${locale}/documents`);
+      return <DraftError message={draft.error} />;
     }
     redirect(`/${locale}/create/1?document_id=${draft.id}`);
   }
@@ -75,7 +75,7 @@ export default async function CreateStepPage({ params, searchParams }: CreateSte
   if (!draftData) {
     const draft = await createDraft();
     if ("error" in draft) {
-      redirect(`/${locale}/documents`);
+      return <DraftError message={draft.error} />;
     }
     redirect(`/${locale}/create/1?document_id=${draft.id}`);
   }
@@ -94,6 +94,32 @@ export default async function CreateStepPage({ params, searchParams }: CreateSte
           />
         </div>
       </div>
+    </div>
+  );
+}
+
+function DraftError({ message }: { message: string }) {
+  return (
+    <div style={{ padding: 40, fontFamily: "system-ui", maxWidth: 640 }}>
+      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>
+        Entwurf konnte nicht angelegt werden
+      </h1>
+      <p style={{ marginBottom: 8, color: "#444" }}>
+        Beim Anlegen des Rechnungs-Entwurfs ist ein Fehler aufgetreten:
+      </p>
+      <pre
+        style={{
+          background: "#fdf2f2",
+          border: "1px solid #f5c6cb",
+          borderRadius: 8,
+          padding: 12,
+          whiteSpace: "pre-wrap",
+          color: "#a12",
+          fontSize: 13,
+        }}
+      >
+        {message}
+      </pre>
     </div>
   );
 }
