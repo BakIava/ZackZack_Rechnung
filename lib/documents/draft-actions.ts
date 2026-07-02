@@ -27,7 +27,7 @@ async function getCompanyCtx() {
     .eq("id", user.id)
     .maybeSingle();
   if (!data?.company_id) return { error: "notAuthenticated" as const };
-  return { companyId: data.company_id as string, supabase };
+  return { companyId: data.company_id as string, userId: user.id, supabase };
 }
 
 export async function createDraft(): Promise<{ id: string } | { error: string }> {
@@ -39,6 +39,7 @@ export async function createDraft(): Promise<{ id: string } | { error: string }>
     .from("documents")
     .insert({
       company_id: ctx.companyId,
+      created_by: ctx.userId,
       document_type: "invoice",
       status: "draft",
       issue_date: today,
