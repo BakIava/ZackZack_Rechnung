@@ -629,6 +629,91 @@
   align-items: start;
 }
 
+/* ── Stat-Icon-Varianten ──────────────────────────────────────────────────── */
+.hstat-ic--warn { background: var(--warn-bg); color: var(--warn); }
+.hstat-ic--ok   { background: var(--ok-bg); color: var(--ok); }
+.hstat-ic--primary {
+  background: color-mix(in srgb, var(--primary) 11%, var(--surface));
+  color: var(--primary);
+}
+
+/* ── Filter-Dot-Varianten ─────────────────────────────────────────────────── */
+.hfbtn-dot--warn     { background: var(--warn); }
+.hfbtn-dot--ok       { background: var(--ok); }
+.hfbtn-dot--info     { background: var(--info); }
+.hfbtn-dot--draft    { background: var(--draft); }
+
+/* ── Pill-Dot im Detail-Header ────────────────────────────────────────────── */
+.hpill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.hpill-dot--ok      { background: #7be0ae; }
+.hpill-dot--warn    { background: var(--warn); }
+.hpill-dot--info    { background: var(--info); }
+.hpill-dot--draft   { background: var(--draft); }
+.hpill-dot--over    { background: #f2b8ae; }
+
+/* ── Listen-Count ─────────────────────────────────────────────────────────── */
+.hlist-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── Positions-Lade-Zustand ───────────────────────────────────────────────── */
+.hpos-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+@keyframes hpos-spin {
+  to { transform: rotate(360deg); }
+}
+.hpos-spinner {
+  animation: hpos-spin 0.75s linear infinite;
+  color: var(--muted);
+}
+
+/* ── Positions-Zeile Body ─────────────────────────────────────────────────── */
+.hpos-row-body {
+  min-width: 0;
+}
+
+/* ── Positions-Total Net-Label ────────────────────────────────────────────── */
+.hpos-total-net {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+/* ── Primärer Button disabled ─────────────────────────────────────────────── */
+.hbtn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Such-Löschen-Button ──────────────────────────────────────────────────── */
+.dsearch-clear {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--muted);
+}
+
 /* ── "Neues Dokument"-Button in der TopBar ────────────────────────────────── */
 .dbtn {
   display: flex;
