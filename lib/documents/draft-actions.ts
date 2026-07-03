@@ -34,16 +34,48 @@ async function getCompanyCtx() {
 }
 
 /**
- * Legt ein leeres Draft-Dokument an und gibt dessen id zurück.
- * §19-Status wird als Snapshot aus den Firmen-Einstellungen übernommen
- * (in Schritt 2 pro Rechnung überschreibbar). Keine Rechnungsnummer –
- * die wird erst bei der Finalisierung vergeben.
+ * Neuesten leeren Entwurf (ohne Positionen) der Firma finden – falls vorhanden.
+ * Verhindert, dass „Neue Rechnung" bei jedem Klick Duplikate anlegt.
+ */
+async function findReusableDraft(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string,
+): Promise<string | null> {
+  const { data: drafts } = await supabase
+    .from("documents")
+    .select("id")
+    .eq("company_id", companyId)
+    .eq("status", "draft")
+    .order("created_at", { ascending: false });
+  if (!drafts || drafts.length === 0) return null;
+
+  const ids = drafts.map((d) => d.id as string);
+  const { data: itemRows } = await supabase
+    .from("document_items")
+    .select("document_id")
+    .eq("company_id", companyId)
+    .in("document_id", ids);
+  const hasItems = new Set((itemRows ?? []).map((r) => r.document_id as string));
+
+  const reusable = drafts.find((d) => !hasItems.has(d.id as string));
+  return reusable ? (reusable.id as string) : null;
+}
+
+/**
+ * Öffnet einen bestehenden leeren Entwurf wieder oder legt einen neuen an und
+ * gibt dessen id zurück. §19-Status wird als Snapshot aus den Firmen-
+ * Einstellungen übernommen (in Schritt 2 pro Rechnung überschreibbar). Keine
+ * Rechnungsnummer – die wird erst bei der Finalisierung vergeben.
  */
 export async function createDraftDocument(): Promise<
   { id: string } | { error: string }
 > {
   const ctx = await getCompanyCtx();
   if ("error" in ctx) return { error: "notAuthenticated" };
+
+  // Bestehenden leeren Entwurf wiederverwenden statt Duplikate anzulegen.
+  const reusable = await findReusableDraft(ctx.supabase, ctx.companyId);
+  if (reusable) return { id: reusable };
 
   const { data: company } = await ctx.supabase
     .from("companies")
