@@ -162,19 +162,27 @@ export async function updateDraftCustomer(
 }
 
 /**
- * Löscht den Draft nur, wenn er wirklich leer ist (kein Kunde, kein Betrag).
- * Drafts mit Daten bleiben als Entwurf erhalten.
+ * Löscht den Draft nur, wenn er wirklich leer ist – d. h. keine Positionen hat.
+ * Der Kunde allein macht einen Entwurf nicht wertvoll (in Schritt 1 in Sekunden
+ * neu gewählt); der eigentliche Inhalt sind die Positionen. Sobald mindestens
+ * eine Position existiert, bleibt der Entwurf erhalten.
  */
 export async function deleteDraftIfEmpty(documentId: string): Promise<void> {
   const ctx = await getCompanyCtx();
   if ("error" in ctx) return;
+
+  const { count, error } = await ctx.supabase
+    .from("document_items")
+    .select("id", { count: "exact", head: true })
+    .eq("document_id", documentId)
+    .eq("company_id", ctx.companyId);
+  if (error) return; // im Zweifel behalten
+  if ((count ?? 0) > 0) return; // hat Positionen → behalten
 
   await ctx.supabase
     .from("documents")
     .delete()
     .eq("id", documentId)
     .eq("company_id", ctx.companyId)
-    .eq("status", "draft")
-    .is("customer_id", null)
-    .eq("total_amount", 0);
+    .eq("status", "draft");
 }

@@ -2,10 +2,54 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { DocumentListItem, DocumentsPageData, DraftDoc } from "./types";
 
+type DB = Awaited<ReturnType<typeof createClient>>;
+
+/**
+ * Alter, ab dem ein positionsloser Entwurf beim Laden der Liste automatisch
+ * aufgeräumt wird. Der Puffer schützt einen gerade angelegten Entwurf davor,
+ * bei einem kurzen Abstecher in die Dokumentenliste gelöscht zu werden.
+ */
+const EMPTY_DRAFT_MAX_AGE_MS = 30 * 60 * 1000;
+
 function addDays(isoDate: string, days: number): string {
   const d = new Date(isoDate);
   d.setDate(d.getDate() + days);
   return d.toISOString().split("T")[0];
+}
+
+/**
+ * Räumt verwaiste, positionslose Entwürfe der Firma auf: Ein Entwurf ohne
+ * document_items hat keinen Wert. Nur Entwürfe, die älter als der Puffer sind,
+ * werden gelöscht – aktive/gerade angelegte bleiben unangetastet.
+ */
+async function deleteEmptyDrafts(supabase: DB, companyId: string): Promise<void> {
+  const cutoff = new Date(Date.now() - EMPTY_DRAFT_MAX_AGE_MS).toISOString();
+
+  const { data: drafts, error } = await supabase
+    .from("documents")
+    .select("id")
+    .eq("company_id", companyId)
+    .eq("status", "draft")
+    .lt("created_at", cutoff);
+  if (error || !drafts || drafts.length === 0) return;
+
+  const draftIds = drafts.map((d) => d.id as string);
+  const { data: itemRows } = await supabase
+    .from("document_items")
+    .select("document_id")
+    .eq("company_id", companyId)
+    .in("document_id", draftIds);
+  const hasItems = new Set((itemRows ?? []).map((r) => r.document_id as string));
+
+  const emptyIds = draftIds.filter((id) => !hasItems.has(id));
+  if (emptyIds.length === 0) return;
+
+  await supabase
+    .from("documents")
+    .delete()
+    .eq("company_id", companyId)
+    .eq("status", "draft")
+    .in("id", emptyIds);
 }
 
 export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
@@ -23,6 +67,9 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   if (!userData?.company_id) return { documents: [], paymentDays: 14 };
 
   const companyId = userData.company_id;
+
+  // Verwaiste, positionslose Entwürfe aufräumen, bevor die Liste geladen wird.
+  await deleteEmptyDrafts(supabase, companyId);
 
   const [docsRes, companyRes] = await Promise.all([
     supabase
