@@ -16,6 +16,13 @@ export async function middleware(request: NextRequest) {
     return updateSession(request);
   }
 
+  // API-Routen sind sprachneutral. next-intl (localePrefix: "always") würde
+  // /api/... sonst auf /de/api/... umleiten → 404 (die Route liegt unter /api).
+  // Session trotzdem frisch halten, damit der Handler den Nutzer kennt.
+  if (pathname.startsWith("/api")) {
+    return updateSession(request);
+  }
+
   // Root-Gate: ohne gültige Sprache zur Sprachauswahl, sonst direkt zum Login.
   if (pathname === "/") {
     const locale = request.cookies.get("NEXT_LOCALE")?.value;
