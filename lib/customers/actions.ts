@@ -22,6 +22,7 @@ async function getCompanyId(): Promise<{ companyId: string } | { error: string }
 export interface CustomerInput {
   name: string;
   street?: string;
+  streetNo?: string;
   postcode?: string;
   city?: string;
   phone?: string;
@@ -44,6 +45,7 @@ export async function createCustomer(
       company_id: ctx.companyId,
       name: input.name.trim(),
       street: input.street?.trim() || null,
+      street_no: input.streetNo?.trim() || null,
       postcode: input.postcode?.trim() || null,
       city: input.city?.trim() || null,
       phone: input.phone?.trim() || null,
@@ -72,6 +74,7 @@ export async function updateCustomer(
     .update({
       name: input.name.trim(),
       street: input.street?.trim() || null,
+      street_no: input.streetNo?.trim() || null,
       postcode: input.postcode?.trim() || null,
       city: input.city?.trim() || null,
       phone: input.phone?.trim() || null,

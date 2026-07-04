@@ -21,6 +21,8 @@ export default async function Step3Page({ params }: Step3PageProps) {
   if (!preview) redirect(`/${locale}/documents`);
 
   // Pflichtangaben-Check serverseitig – blockt Finalisieren bis alles grün ist.
+  // Empfängerangaben sind betragsabhängig (Kleinbetragsrechnung bis 250 €).
+  const totalAmountCents = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
   const checks = pruefeDokumentPflicht({
     companyName: preview.company.name,
     companyStreet: preview.company.street,
@@ -28,9 +30,14 @@ export default async function Step3Page({ params }: Step3PageProps) {
     companyCity: preview.company.city,
     companySteuernummer: preview.company.steuernummer,
     companyUstId: preview.company.ustId,
-    customerName: preview.customer?.name ?? null,
     issueDate: preview.issueDate,
     itemCount: preview.items.length,
+    totalAmountCents,
+    customerName: preview.customer?.name ?? null,
+    customerStreet: preview.customer?.street ?? null,
+    customerStreetNo: preview.customer?.streetNo ?? null,
+    customerPostcode: preview.customer?.postcode ?? null,
+    customerCity: preview.customer?.city ?? null,
   });
 
   return <Step3Screen dir={dir} preview={preview} checks={checks} />;
