@@ -32,7 +32,7 @@ function addDays(isoDate: string, days: number): string {
 function getDisplayStatus(doc: DocumentListItem) {
   if (doc.paidAt) return "bezahlt" as const;
   if (doc.status === "sent") return "versendet" as const;
-  if (doc.status === "final") return "offen" as const;
+  if (doc.status === "finalized") return "offen" as const;
   return "entwurf" as const;
 }
 
@@ -105,7 +105,7 @@ export function DocDetail({
       title: t("bSentT"),
       sub: formatDateDE(doc.issueDate),
     };
-  } else if (doc.status === "final") {
+  } else if (doc.status === "finalized") {
     banner = {
       cls: "warn",
       Icon: ReceiptText,
@@ -124,7 +124,7 @@ export function DocDetail({
   }[displayStatus];
 
   const canMarkPaid =
-    doc.paidAt === null && (doc.status === "final" || doc.status === "sent");
+    doc.paidAt === null && (doc.status === "finalized" || doc.status === "sent");
 
   return (
     <div className="hdetail">

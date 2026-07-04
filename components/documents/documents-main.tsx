@@ -43,12 +43,12 @@ const STATUS_DOT_CLASS: Record<string, string> = {
 function getDisplayStatus(doc: DocumentListItem) {
   if (doc.paidAt) return "bezahlt" as const;
   if (doc.status === "sent") return "versendet" as const;
-  if (doc.status === "final") return "offen" as const;
+  if (doc.status === "finalized") return "offen" as const;
   return "entwurf" as const;
 }
 
 function matchesStatusFilter(doc: DocumentListItem, f: StatusFilter): boolean {
-  if (f === "offen") return doc.paidAt === null && (doc.status === "final" || doc.status === "sent");
+  if (f === "offen") return doc.paidAt === null && (doc.status === "finalized" || doc.status === "sent");
   if (f === "bezahlt") return doc.paidAt !== null;
   if (f === "versendet") return doc.status === "sent";
   if (f === "entwurf") return doc.status === "draft";
@@ -108,7 +108,7 @@ export function DocumentsMain({ dir, documents, paymentDays }: DocumentsMainProp
 
   // ── Stat cards (computed from loaded data, no extra DB calls) ───────────────
   const openDocs = documents.filter(
-    (d) => d.paidAt === null && (d.status === "final" || d.status === "sent"),
+    (d) => d.paidAt === null && (d.status === "finalized" || d.status === "sent"),
   );
   const openSum = openDocs.reduce((s, d) => s + d.totalAmount, 0);
 

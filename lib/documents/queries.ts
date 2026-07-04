@@ -92,7 +92,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
 
     const isOverdue =
       paidAt === null &&
-      (status === "final" || status === "sent") &&
+      (status === "finalized" || status === "sent") &&
       addDays(doc.issue_date, paymentDays) < today;
 
     return {

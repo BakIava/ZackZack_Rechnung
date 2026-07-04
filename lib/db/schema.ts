@@ -36,7 +36,7 @@ export type CatalogItem = {
 
 export type DocumentType = "invoice" | "quote";
 
-export type DocumentStatus = "draft" | "final" | "sent" | "paid" | "cancelled";
+export type DocumentStatus = "draft" | "finalized" | "sent" | "paid" | "cancelled";
 
 export type Document = {
   id: string;
