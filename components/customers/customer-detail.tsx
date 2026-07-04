@@ -302,12 +302,10 @@ function CustomerEditForm({ customer, onCancel, onSaved, onDeleted }: CustomerEd
   const [notes, setNotes] = useState(customer.notes ?? "");
 
   function handleSave() {
+    // Tolerant: nur der Name ist Pflicht. Eine unvollständige Anschrift darf
+    // gespeichert werden (später ergänzbar); auf > 250 €-Rechnungen weist der
+    // Pflichtangaben-Check in Schritt 3 darauf hin.
     if (!name.trim()) { setError(t("nameRequired")); return; }
-    // Rechtssichere Anschrift (§14 Abs. 4 Nr. 1 UStG): vollständig speichern.
-    if (!street.trim() || !houseNo.trim() || !postcode.trim() || !city.trim()) {
-      setError(t("addressRequired"));
-      return;
-    }
     setError(null);
     startTransition(async () => {
       const res = await updateCustomer(customer.id, {
@@ -337,19 +335,19 @@ function CustomerEditForm({ customer, onCancel, onSaved, onDeleted }: CustomerEd
             <input className="f-input" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
           </label>
           <label className="f-row">
-            <span className="f-lbl">{t("streetLbl")} *</span>
+            <span className="f-lbl">{t("streetLbl")}</span>
             <input className="f-input" value={street} onChange={(e) => setStreet(e.target.value)} />
           </label>
           <label className="f-row">
-            <span className="f-lbl">{t("streetNoLbl")} *</span>
+            <span className="f-lbl">{t("streetNoLbl")}</span>
             <input className="f-input" value={houseNo} onChange={(e) => setHouseNo(e.target.value)} />
           </label>
           <label className="f-row">
-            <span className="f-lbl">{t("postcodeLbl")} *</span>
+            <span className="f-lbl">{t("postcodeLbl")}</span>
             <input className="f-input" inputMode="numeric" value={postcode} onChange={(e) => setPostcode(e.target.value)} />
           </label>
           <label className="f-row">
-            <span className="f-lbl">{t("cityLbl")} *</span>
+            <span className="f-lbl">{t("cityLbl")}</span>
             <input className="f-input" value={city} onChange={(e) => setCity(e.target.value)} />
           </label>
           <label className="f-row">

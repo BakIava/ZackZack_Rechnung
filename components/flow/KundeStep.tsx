@@ -7,6 +7,7 @@ import {
   FileText,
   Loader2,
   MapPin,
+  Pencil,
   Plus,
   ReceiptText,
   Search,
@@ -15,7 +16,8 @@ import {
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
-import type { CustomerListItem } from "@/lib/customers/types";
+import { getCustomerForEdit } from "@/lib/customers/actions";
+import type { CustomerListItem, FlowCustomer } from "@/lib/customers/types";
 import {
   deleteDraftIfEmpty,
   updateDraftCustomer,
@@ -51,14 +53,21 @@ export function KundeStep({
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(initialCustomerId);
   const [created, setCreated] = useState<CustomerListItem[]>([]);
+  // Lokale Überschreibungen bearbeiteter Kunden (id → aktualisierte Listendaten),
+  // damit die Liste die Änderung sofort zeigt, ohne die Server-Daten neu zu laden.
+  const [edits, setEdits] = useState<Record<string, CustomerListItem>>({});
   const [showNew, setShowNew] = useState(false);
+  const [editing, setEditing] = useState<FlowCustomer | null>(null);
+  const [editLoadingId, setEditLoadingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
-  const allCustomers: CustomerListItem[] = [...created, ...customers];
+  const allCustomers: CustomerListItem[] = [...created, ...customers].map(
+    (c) => edits[c.id] ?? c,
+  );
   const needle = query.trim().toLowerCase();
   const filtered = allCustomers.filter(
     (c) =>
@@ -73,6 +82,22 @@ export function KundeStep({
     setSelected(customer.id);
     setQuery("");
     setShowNew(false);
+  }
+
+  async function handleEditClick(id: string) {
+    if (editLoadingId) return;
+    setEditLoadingId(id);
+    const full = await getCustomerForEdit(id);
+    setEditLoadingId(null);
+    if (full) setEditing(full);
+  }
+
+  function handleEdited(customer: CustomerListItem) {
+    setEdits((prev) => ({ ...prev, [customer.id]: customer }));
+    setEditing(null);
+    // Ist der bearbeitete Kunde der gewählte, den eingefrorenen Snapshot direkt
+    // aktualisieren (fire-and-forget), damit die Vorschau die neue Anschrift zeigt.
+    if (selected === customer.id) void updateDraftCustomer(documentId, customer.id);
   }
 
   function handleDocType(next: DocType) {
@@ -108,7 +133,7 @@ export function KundeStep({
 
   return (
     <main className="dmain">
-      <div className="dscroll" inert={showNew}>
+      <div className="dscroll" inert={showNew || editing !== null}>
         <div className="dflow-head">
           <button
             type="button"
@@ -233,7 +258,16 @@ export function KundeStep({
         />
       )}
 
-      <div className="dflow-foot" inert={showNew}>
+      {editing && (
+        <NewCustomerModal
+          dir={dir}
+          editCustomer={editing}
+          onClose={() => setEditing(null)}
+          onSaved={handleEdited}
+        />
+      )}
+
+      <div className="dflow-foot" inert={showNew || editing !== null}>
         <div className="dflow-foot-sel">
           {saveError ? (
             <span className="dflow-error">{saveError}</span>
@@ -243,6 +277,19 @@ export function KundeStep({
               <span>
                 <b>{selectedCustomer.name}</b> {t("selected")}
               </span>
+              <button
+                type="button"
+                className="dflow-edit"
+                onClick={() => handleEditClick(selectedCustomer.id)}
+                disabled={editLoadingId !== null}
+              >
+                {editLoadingId === selectedCustomer.id ? (
+                  <Loader2 size={15} strokeWidth={STROKE_BOLD} className="dbtn-spin" aria-hidden />
+                ) : (
+                  <Pencil size={15} strokeWidth={STROKE} aria-hidden />
+                )}
+                {t("editCustomer")}
+              </button>
             </>
           ) : (
             <span>{t("customerOptionalHint")}</span>

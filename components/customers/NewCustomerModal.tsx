@@ -3,8 +3,8 @@
 import { Building2, Check, Loader2, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { createCustomer } from "@/lib/customers/actions";
-import type { CustomerListItem } from "@/lib/customers/types";
+import { createCustomer, updateCustomer } from "@/lib/customers/actions";
+import type { CustomerListItem, FlowCustomer } from "@/lib/customers/types";
 import "./NewCustomerModal.css";
 
 type CustomerType = "private" | "company";
@@ -12,7 +12,12 @@ type CustomerType = "private" | "company";
 interface NewCustomerModalProps {
   dir: "ltr" | "rtl";
   onClose: () => void;
-  onCreate: (customer: CustomerListItem) => void;
+  /** Wird nach dem Anlegen aufgerufen (Create-Modus). */
+  onCreate?: (customer: CustomerListItem) => void;
+  /** Vorhandener Kunde → Edit-Modus (Prefill + updateCustomer). */
+  editCustomer?: FlowCustomer | null;
+  /** Wird nach dem Speichern einer Bearbeitung aufgerufen (Edit-Modus). */
+  onSaved?: (customer: CustomerListItem) => void;
 }
 
 const STROKE = 1.75;
@@ -26,31 +31,33 @@ function deriveInitials(name: string): string {
   return raw.toUpperCase();
 }
 
-export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalProps) {
+export function NewCustomerModal({
+  dir,
+  onClose,
+  onCreate,
+  editCustomer = null,
+  onSaved,
+}: NewCustomerModalProps) {
   const t = useTranslations("Create");
+  const isEdit = editCustomer !== null;
   const [type, setType] = useState<CustomerType>("private");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(editCustomer?.name ?? "");
   const [contact, setContact] = useState("");
-  const [street, setStreet] = useState("");
-  const [houseNo, setHouseNo] = useState("");
-  const [zip, setZip] = useState("");
-  const [city, setCity] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [note, setNote] = useState("");
+  const [street, setStreet] = useState(editCustomer?.street ?? "");
+  const [houseNo, setHouseNo] = useState(editCustomer?.streetNo ?? "");
+  const [zip, setZip] = useState(editCustomer?.postcode ?? "");
+  const [city, setCity] = useState(editCustomer?.city ?? "");
+  const [phone, setPhone] = useState(editCustomer?.phone ?? "");
+  const [email, setEmail] = useState(editCustomer?.email ?? "");
+  const [note, setNote] = useState(editCustomer?.notes ?? "");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const isCompany = type === "company";
-  // Rechtssichere Anschrift (§14 Abs. 4 Nr. 1 UStG): ein gespeicherter Kunde ist
-  // für Rechnungen über 250 € nutzbar, daher Name + vollständige Anschrift Pflicht.
-  // Für Kleinbeträge bis 250 € wird gar kein Kunde benötigt (Schritt 1 überspringbar).
-  const ok =
-    name.trim().length > 0 &&
-    street.trim().length > 0 &&
-    houseNo.trim().length > 0 &&
-    zip.trim().length > 0 &&
-    city.trim().length > 0;
+  // Bewusst tolerant: nur der Name ist Pflicht. Die Anschrift kann später ergänzt
+  // werden (Entwurf, Adresse noch nicht bekannt). Fehlt sie bei einer Rechnung
+  // über 250 €, weist der Pflichtangaben-Check in Schritt 3 darauf hin.
+  const ok = name.trim().length > 0;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -67,10 +74,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
     const trimmedStreet = street.trim();
     const trimmedHouseNo = houseNo.trim();
 
-    setSaving(true);
-    setSaveError(null);
-
-    const res = await createCustomer({
+    const input = {
       name: nm,
       street: trimmedStreet || undefined,
       streetNo: trimmedHouseNo || undefined,
@@ -79,23 +83,37 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
       phone: phone.trim() || undefined,
       email: email.trim() || undefined,
       notes: note.trim() || undefined,
-    });
+    };
 
-    setSaving(false);
+    setSaving(true);
+    setSaveError(null);
 
-    if (res.error || !res.id) {
-      setSaveError(t("ncError"));
-      return;
-    }
-
-    onCreate({
-      id: res.id,
+    const listItem: CustomerListItem = {
+      id: editCustomer?.id ?? "",
       name: nm,
       city: trimmedCity || null,
       street: [trimmedStreet, trimmedHouseNo].filter(Boolean).join(" ") || null,
       initials: deriveInitials(nm),
-      isNew: true,
-    });
+    };
+
+    if (isEdit && editCustomer) {
+      const res = await updateCustomer(editCustomer.id, input);
+      setSaving(false);
+      if (res.error) {
+        setSaveError(t("ncError"));
+        return;
+      }
+      onSaved?.(listItem);
+      return;
+    }
+
+    const res = await createCustomer(input);
+    setSaving(false);
+    if (res.error || !res.id) {
+      setSaveError(t("ncError"));
+      return;
+    }
+    onCreate?.({ ...listItem, id: res.id, isNew: true });
   }
 
   return (
@@ -103,7 +121,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
       className="dmodal-wrap"
       role="dialog"
       aria-modal="true"
-      aria-label={t("ncTitle")}
+      aria-label={isEdit ? t("editCustomer") : t("ncTitle")}
       dir={dir}
     >
       <button
@@ -114,7 +132,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
       />
       <div className="dmodal">
         <div className="dmodal-head">
-          <span className="dmodal-title">{t("ncTitle")}</span>
+          <span className="dmodal-title">{isEdit ? t("editCustomer") : t("ncTitle")}</span>
           <button
             type="button"
             className="sheet-x"
@@ -124,7 +142,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
             <X size={18} strokeWidth={STROKE} aria-hidden />
           </button>
         </div>
-        <div className="dmodal-sub">{t("ncSub")}</div>
+        <div className="dmodal-sub">{isEdit ? t("editCustomerSub") : t("ncSub")}</div>
 
         <div className="dmodal-body">
           <div className="f-grid">
@@ -184,7 +202,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
 
             <div className="f-row two">
               <label className="f-row">
-                <span className="f-lbl">{t("ncStreet")} *</span>
+                <span className="f-lbl">{t("ncStreet")}</span>
                 <input
                   className="f-input"
                   autoComplete="address-line1"
@@ -194,7 +212,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 />
               </label>
               <label className="f-row nc-zip">
-                <span className="f-lbl">{t("ncHouseNo")} *</span>
+                <span className="f-lbl">{t("ncHouseNo")}</span>
                 <input
                   className="f-input"
                   autoComplete="address-line2"
@@ -207,7 +225,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
 
             <div className="f-row two">
               <label className="f-row nc-zip">
-                <span className="f-lbl">{t("ncZip")} *</span>
+                <span className="f-lbl">{t("ncZip")}</span>
                 <input
                   className="f-input"
                   inputMode="numeric"
@@ -218,7 +236,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 />
               </label>
               <label className="f-row">
-                <span className="f-lbl">{t("ncCity")} *</span>
+                <span className="f-lbl">{t("ncCity")}</span>
                 <input
                   className="f-input"
                   autoComplete="address-level2"
@@ -292,7 +310,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
             ) : (
               <Check size={20} strokeWidth={2.4} aria-hidden />
             )}
-            {saving ? t("ncSaving") : t("ncCreate")}
+            {saving ? t("ncSaving") : isEdit ? t("editCustomerSave") : t("ncCreate")}
           </button>
         </div>
       </div>
