@@ -23,6 +23,7 @@ import { FlowSteps } from "@/components/flow/FlowSteps";
 import { DocumentA4 } from "./document-a4";
 import { FinalizeDialog } from "./finalize-dialog";
 import { PflichtList } from "./pflicht-list";
+import { ShareButtons } from "./share-buttons";
 import { ZoomOverlay } from "./zoom-overlay";
 
 interface Step3MainProps {
@@ -199,12 +200,10 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="d3-pdfnote">
-                    <FileText size={15} strokeWidth={STROKE} aria-hidden />
-                    {t("pdfComingSoon")}
-                  </div>
-                  <Link href="/documents" className="d3-pdfbtn d3-pdfbtn--done">
-                    <Check size={21} strokeWidth={2.4} aria-hidden />
+                  <div className="share-via">{t("shareVia")}</div>
+                  <ShareButtons preview={preview} />
+                  <Link href="/documents" className="d3-back d3-back--done">
+                    <Check size={18} strokeWidth={2.2} aria-hidden />
                     {t("done")}
                   </Link>
                 </>
