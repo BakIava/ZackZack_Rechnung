@@ -16,7 +16,6 @@ interface WizardProps {
   setStep: (n: number) => void;
   TOTAL: number;
   onPhase: (p: Phase) => void;
-  onComplete: () => void;
   formData: SetupFormData;
   errors: SetupFormErrors;
   onFormChange: (key: keyof SetupFormData, value: string | boolean) => void;
@@ -24,7 +23,7 @@ interface WizardProps {
 }
 
 export function SetupWizard({
-  t, lang, dir, isMobile, step, setStep, TOTAL, onPhase, onComplete,
+  t, lang, dir, isMobile, step, setStep, TOTAL, onPhase,
   formData, errors, onFormChange, submitting,
 }: WizardProps) {
   const optional = step === 4 || step === 5;

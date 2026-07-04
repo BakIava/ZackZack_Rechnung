@@ -114,7 +114,6 @@ export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDash
         setStep={setStep}
         TOTAL={TOTAL}
         onPhase={handlePhase}
-        onComplete={goComplete}
         formData={formData}
         errors={errors}
         onFormChange={handleFormChange}
