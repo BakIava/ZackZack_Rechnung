@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { deriveInitials } from "@/lib/initials";
 import type { DraftContext, DraftItem } from "./item-types";
 
 async function getCompanyId(): Promise<string | null> {
@@ -13,13 +14,6 @@ async function getCompanyId(): Promise<string | null> {
     .eq("id", user.id)
     .maybeSingle();
   return (data?.company_id as string | null) ?? null;
-}
-
-function deriveInitials(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  const raw =
-    parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2);
-  return raw.toUpperCase();
 }
 
 /** Positionen eines Drafts, sortiert nach position. */

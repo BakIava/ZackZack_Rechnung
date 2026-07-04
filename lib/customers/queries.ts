@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { deriveInitials } from "@/lib/initials";
 import type { CustomerListItem, CustomerRow } from "./types";
 
 async function getCompanyId(): Promise<string | null> {
@@ -32,15 +33,6 @@ export async function getCustomers(): Promise<CustomerRow[]> {
 
   if (error || !data) return [];
   return data as CustomerRow[];
-}
-
-function deriveInitials(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  const raw =
-    parts.length > 1
-      ? parts[0][0] + parts[parts.length - 1][0]
-      : name.slice(0, 2);
-  return raw.toUpperCase();
 }
 
 export async function getCustomerSummaries(): Promise<CustomerListItem[]> {

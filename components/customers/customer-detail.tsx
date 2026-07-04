@@ -20,6 +20,7 @@ import { useParams, useRouter } from "next/navigation";
 import { updateCustomer, deleteCustomer } from "@/lib/customers/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 import { formatDateDE, formatMoney, formatDateShort } from "@/lib/format";
+import { deriveInitials } from "@/lib/initials";
 import type { CustomerRow, CustomerDocRow } from "@/lib/customers/types";
 import "./customer-detail.css";
 
@@ -31,11 +32,6 @@ function isFirma(name: string): boolean {
   return FIRMA_RE.test(name);
 }
 
-function deriveInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length > 1) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
-}
 
 function docStatusToKey(status: string): string {
   switch (status) {
