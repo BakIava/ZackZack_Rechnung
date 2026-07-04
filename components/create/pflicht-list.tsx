@@ -37,7 +37,9 @@ function fixHref(location: PflichtLocation, documentId: string): string {
     case "settings":
       return "/settings";
     case "customer":
-      return `/create/${documentId}/1`;
+      // ?fix=customer signalisiert Schritt 1, einen Hinweis auf den
+      // „Kunde bearbeiten"-Button anzuzeigen.
+      return `/create/${documentId}/1?fix=customer`;
     case "positions":
       return `/create/${documentId}/2`;
   }

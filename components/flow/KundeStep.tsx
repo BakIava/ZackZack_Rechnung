@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { getCustomerForEdit } from "@/lib/customers/actions";
 import type { CustomerListItem, FlowCustomer } from "@/lib/customers/types";
@@ -49,6 +50,12 @@ export function KundeStep({
 }: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Hinweis anzeigen, wenn der Nutzer aus Schritt 3 („Beim Kunden ergänzen")
+  // kommt – damit er den „Kunde bearbeiten"-Button unten findet.
+  const [showFixHint, setShowFixHint] = useState(
+    () => searchParams.get("fix") === "customer",
+  );
   const [docType, setDocType] = useState<DocType>(initialDocType);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(initialCustomerId);
@@ -86,6 +93,7 @@ export function KundeStep({
 
   async function handleEditClick(id: string) {
     if (editLoadingId) return;
+    setShowFixHint(false);
     setEditLoadingId(id);
     const full = await getCustomerForEdit(id);
     setEditLoadingId(null);
@@ -267,6 +275,22 @@ export function KundeStep({
         />
       )}
 
+      {showFixHint && !showNew && editing === null && (
+        <div className="dflow-hint" role="status">
+          <span className="dflow-hint-txt">
+            {selectedCustomer ? t("fixCustomerHintEdit") : t("fixCustomerHintSelect")}
+          </span>
+          <button
+            type="button"
+            className="dflow-hint-x"
+            aria-label={t("ncClose")}
+            onClick={() => setShowFixHint(false)}
+          >
+            <X size={16} strokeWidth={STROKE} aria-hidden />
+          </button>
+        </div>
+      )}
+
       <div className="dflow-foot" inert={showNew || editing !== null}>
         <div className="dflow-foot-sel">
           {saveError ? (
@@ -279,7 +303,7 @@ export function KundeStep({
               </span>
               <button
                 type="button"
-                className="dflow-edit"
+                className={`dflow-edit${showFixHint ? " dflow-edit--pulse" : ""}`}
                 onClick={() => handleEditClick(selectedCustomer.id)}
                 disabled={editLoadingId !== null}
               >
