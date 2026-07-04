@@ -94,6 +94,10 @@ export async function createDraftDocument(): Promise<
       is_kleinunternehmer: isKleinunternehmer,
       customer_snapshot: {},
       total_amount: 0,
+      // issue_date direkt setzen: Schritt 1 (Kunde) ist überspringbar, das
+      // Ausstellungsdatum (§14-Pflichtangabe) darf dabei nicht fehlen. Die
+      // Kundenwahl überschreibt es nicht (updateDraftCustomer setzt nur, wenn leer).
+      issue_date: new Date().toISOString().split("T")[0],
     })
     .select("id")
     .single();

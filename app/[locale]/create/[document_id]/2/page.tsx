@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Step2Screen } from "@/components/flow/step2-screen";
 import { getDraftContext, getDraftItems } from "@/lib/documents/item-queries";
+import { getFlowDocMeta } from "@/lib/documents/queries";
 import { getServices } from "@/lib/services/queries";
 import { isRtlLocale, type Locale } from "@/i18n/routing";
 
@@ -15,6 +16,12 @@ export default async function Step2Page({ params }: Step2PageProps) {
   const { locale, document_id } = await params;
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
+
+  // Finalisierte Dokumente sind unveränderbar → in den Ansichtsmodus (Schritt 3).
+  const meta = await getFlowDocMeta(document_id);
+  if (meta && meta.status !== "draft") {
+    redirect(`/${locale}/create/${document_id}/3`);
+  }
 
   const [context, items, services] = await Promise.all([
     getDraftContext(document_id),

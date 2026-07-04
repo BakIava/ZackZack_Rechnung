@@ -444,6 +444,7 @@
   cursor: pointer;
   font-family: inherit;
   flex-shrink: 0;
+  text-decoration: none;
 }
 .check-fix:hover {
   background: color-mix(in srgb, var(--primary) 14%, var(--surface));
@@ -850,4 +851,120 @@
   .d3-side {
     position: static;
   }
+}
+
+/* ── Finalisierung (Vorschau echt: Logo, Entwurf-Platzhalter, Dialog) ───────── */
+.a4-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+/* Entwurf: Nummer noch nicht vergeben → gedämpft/kursiv statt harter Wert. */
+.a4-num--draft {
+  color: var(--accent-deep) !important;
+  font-weight: 600;
+  font-style: italic;
+  font-variant-numeric: normal;
+}
+
+/* Finalisiert: PDF/Versand folgt (Platzhalter) + „Fertig"-Aktion. */
+.d3-pdfnote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.d3-pdfbtn--done {
+  text-decoration: none;
+  background: var(--ok);
+  color: #fff;
+  box-shadow: 0 12px 26px -12px color-mix(in srgb, var(--ok) 60%, transparent);
+}
+
+/* Bestätigungs-Dialog vor der endgültigen Finalisierung. */
+.fin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 24, 32, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+.fin-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 26px 24px 20px;
+  box-shadow: 0 26px 60px -20px rgba(12, 24, 32, 0.55);
+  text-align: center;
+}
+.fin-card-ic {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent-deep);
+}
+.fin-card-t {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.fin-card-b {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.fin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+.fin-btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.fin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.fin-btn--cancel {
+  background: var(--surface);
+  color: var(--muted);
+}
+.fin-btn--cancel:not(:disabled):hover {
+  color: var(--ink);
+  border-color: #c3ccd4;
+}
+.fin-btn--go {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  box-shadow: 0 12px 26px -12px rgba(251, 98, 2, 0.6);
+}
+.fin-btn--go:not(:disabled):hover {
+  transform: translateY(-1px);
 }

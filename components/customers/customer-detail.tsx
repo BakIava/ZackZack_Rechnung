@@ -293,7 +293,8 @@ function CustomerEditForm({ customer, onCancel, onSaved, onDeleted }: CustomerEd
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState(customer.name);
-  const [street, setStreet] = useState([customer.street, customer.street_no].filter(Boolean).join(" "));
+  const [street, setStreet] = useState(customer.street ?? "");
+  const [houseNo, setHouseNo] = useState(customer.street_no ?? "");
   const [postcode, setPostcode] = useState(customer.postcode ?? "");
   const [city, setCity] = useState(customer.city ?? "");
   const [phone, setPhone] = useState(customer.phone ?? "");
@@ -301,10 +302,15 @@ function CustomerEditForm({ customer, onCancel, onSaved, onDeleted }: CustomerEd
   const [notes, setNotes] = useState(customer.notes ?? "");
 
   function handleSave() {
+    // Tolerant: nur der Name ist Pflicht. Eine unvollständige Anschrift darf
+    // gespeichert werden (später ergänzbar); auf > 250 €-Rechnungen weist der
+    // Pflichtangaben-Check in Schritt 3 darauf hin.
     if (!name.trim()) { setError(t("nameRequired")); return; }
     setError(null);
     startTransition(async () => {
-      const res = await updateCustomer(customer.id, { name, street, postcode, city, phone, email, notes });
+      const res = await updateCustomer(customer.id, {
+        name, street, streetNo: houseNo, postcode, city, phone, email, notes,
+      });
       if (res.error) { setError(t("saveError")); return; }
       router.refresh();
       onSaved();
@@ -328,9 +334,13 @@ function CustomerEditForm({ customer, onCancel, onSaved, onDeleted }: CustomerEd
             <span className="f-lbl">{t("nameLbl")} *</span>
             <input className="f-input" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
           </label>
-          <label className="f-row cdm-edit-full">
+          <label className="f-row">
             <span className="f-lbl">{t("streetLbl")}</span>
             <input className="f-input" value={street} onChange={(e) => setStreet(e.target.value)} />
+          </label>
+          <label className="f-row">
+            <span className="f-lbl">{t("streetNoLbl")}</span>
+            <input className="f-input" value={houseNo} onChange={(e) => setHouseNo(e.target.value)} />
           </label>
           <label className="f-row">
             <span className="f-lbl">{t("postcodeLbl")}</span>

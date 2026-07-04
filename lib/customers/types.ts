@@ -35,3 +35,16 @@ export interface CustomerListItem {
   initials: string;
   isNew?: boolean;
 }
+
+/** Vollständige, bearbeitbare Kundendaten (für den Edit-Modus im Flow-Modal). */
+export interface FlowCustomer {
+  id: string;
+  name: string;
+  street: string | null;
+  streetNo: string | null;
+  postcode: string | null;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+}
