@@ -51,7 +51,6 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
         <div className="a4-top">
           <div>
             <div className="a4-co-name">{co.name}</div>
-            {co.legalForm && <div className="a4-co-trade">{co.legalForm}</div>}
             <div className="a4-co-addr">
               {joinTrim([coStreet, coCity], " · ")}
               {(co.phone || co.email) && (
