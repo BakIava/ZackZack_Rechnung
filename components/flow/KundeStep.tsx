@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  Building2,
   Check,
   ChevronLeft,
   ChevronRight,
   FileText,
+  Loader2,
   MapPin,
   Plus,
   ReceiptText,
@@ -15,45 +15,90 @@ import {
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "@/i18n/navigation";
-import { CUSTOMERS } from "@/lib/demo/dashboard-data";
-import type { NewCustomerInput } from "@/lib/demo/customers-data";
+import type { CustomerListItem } from "@/lib/customers/types";
+import {
+  deleteDraftIfEmpty,
+  updateDraftCustomer,
+  updateDraftDocumentType,
+} from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/NewCustomerModal";
+import { FlowSteps } from "./FlowSteps";
 import "./KundeStep.css";
 
 type DocType = "rechnung" | "angebot";
 
 interface KundeStepProps {
   dir: "ltr" | "rtl";
+  customers: CustomerListItem[];
+  documentId: string;
+  initialCustomerId?: string | null;
+  initialDocType?: DocType;
 }
 
 const STROKE = 1.75;
 const STROKE_BOLD = 2.4;
 
-/** Schritt 1 des geführten Flows: Dokumenttyp wählen und Kunde auswählen.
- *  Bedienoberfläche folgt der Sprache (inkl. RTL); Eigennamen bleiben deutsch,
- *  da sie so auf dem Dokument erscheinen. */
-export function KundeStep({ dir }: KundeStepProps) {
+export function KundeStep({
+  dir,
+  customers,
+  documentId,
+  initialCustomerId = null,
+  initialDocType = "rechnung",
+}: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
-  const [docType, setDocType] = useState<DocType>("rechnung");
+  const [docType, setDocType] = useState<DocType>(initialDocType);
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
-  const [created, setCreated] = useState<NewCustomerInput[]>([]);
+  const [selected, setSelected] = useState<string | null>(initialCustomerId);
+  const [created, setCreated] = useState<CustomerListItem[]>([]);
   const [showNew, setShowNew] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
-  // Neu angelegte Kunden stehen oben, gefolgt vom Demostamm.
-  const allCustomers: NewCustomerInput[] = [...created, ...CUSTOMERS];
+  const allCustomers: CustomerListItem[] = [...created, ...customers];
   const needle = query.trim().toLowerCase();
   const filtered = allCustomers.filter(
     (c) =>
       c.name.toLowerCase().includes(needle) ||
-      c.city.toLowerCase().includes(needle),
+      (c.city ?? "").toLowerCase().includes(needle),
   );
   const selectedCustomer = allCustomers.find((c) => c.id === selected) ?? null;
   const docLabel = docType === "rechnung" ? t("rechnung") : t("angebot");
+
+  function handleCreated(customer: CustomerListItem) {
+    setCreated((prev) => [customer, ...prev]);
+    setSelected(customer.id);
+    setQuery("");
+    setShowNew(false);
+  }
+
+  function handleDocType(next: DocType) {
+    setDocType(next);
+    // Dokumenttyp direkt in den Draft schreiben (optimistisch, fire-and-forget).
+    void updateDraftDocumentType(documentId, next);
+  }
+
+  async function handleWeiter() {
+    if (!selected || saving) return;
+    setSaving(true);
+    setSaveError(null);
+    const res = await updateDraftCustomer(documentId, selected);
+    if (res.error) {
+      setSaving(false);
+      setSaveError(t("draftError"));
+      return;
+    }
+    router.push(`/create/${documentId}/2`);
+  }
+
+  function handleBack() {
+    // Nur leere Drafts löschen (fire-and-forget — kein Ladeindikator nötig).
+    void deleteDraftIfEmpty(documentId);
+    router.push("/documents");
+  }
 
   return (
     <main className="dmain">
@@ -63,7 +108,7 @@ export function KundeStep({ dir }: KundeStepProps) {
             type="button"
             className="dflow-back"
             aria-label={t("back")}
-            onClick={() => router.push("/dashboard")}
+            onClick={handleBack}
           >
             <BackChevron size={20} strokeWidth={STROKE} aria-hidden />
           </button>
@@ -71,22 +116,7 @@ export function KundeStep({ dir }: KundeStepProps) {
             <div className="dflow-title">{t("createTitle", { type: docLabel })}</div>
             <div className="dflow-sub">{t("chooseCustomer")}</div>
           </div>
-          <div className="dsteps2">
-            <div className="dstep2 dstep2--active">
-              <span className="dstep2-dot">1</span>
-              <span className="dstep2-lbl">{t("step1")}</span>
-            </div>
-            <span className="dstep2-line" aria-hidden />
-            <div className="dstep2">
-              <span className="dstep2-dot">2</span>
-              <span className="dstep2-lbl">{t("step2")}</span>
-            </div>
-            <span className="dstep2-line" aria-hidden />
-            <div className="dstep2">
-              <span className="dstep2-dot">3</span>
-              <span className="dstep2-lbl">{t("step3")}</span>
-            </div>
-          </div>
+          <FlowSteps current={1} />
         </div>
 
         <div className="dflow-bar">
@@ -96,7 +126,7 @@ export function KundeStep({ dir }: KundeStepProps) {
               className="seg--gold"
               data-on={docType === "rechnung" ? "1" : "0"}
               aria-pressed={docType === "rechnung"}
-              onClick={() => setDocType("rechnung")}
+              onClick={() => handleDocType("rechnung")}
             >
               <ReceiptText size={20} strokeWidth={STROKE} aria-hidden />
               {t("rechnung")}
@@ -106,7 +136,7 @@ export function KundeStep({ dir }: KundeStepProps) {
               className="seg--gold"
               data-on={docType === "angebot" ? "1" : "0"}
               aria-pressed={docType === "angebot"}
-              onClick={() => setDocType("angebot")}
+              onClick={() => handleDocType("angebot")}
             >
               <FileText size={20} strokeWidth={STROKE} aria-hidden />
               {t("angebot")}
@@ -162,13 +192,7 @@ export function KundeStep({ dir }: KundeStepProps) {
               aria-pressed={selected === c.id}
               onClick={() => setSelected(c.id)}
             >
-              <span className="dcust-av">
-                {c.firma ? (
-                  <Building2 size={20} strokeWidth={STROKE} aria-hidden />
-                ) : (
-                  c.initials
-                )}
-              </span>
+              <span className="dcust-av">{c.initials}</span>
               <span className="dcust-body">
                 <span className="dcust-name">
                   {c.name}
@@ -199,18 +223,15 @@ export function KundeStep({ dir }: KundeStepProps) {
         <NewCustomerModal
           dir={dir}
           onClose={() => setShowNew(false)}
-          onCreate={(c) => {
-            setCreated((prev) => [c, ...prev]);
-            setSelected(c.id);
-            setQuery("");
-            setShowNew(false);
-          }}
+          onCreate={handleCreated}
         />
       )}
 
       <div className="dflow-foot" inert={showNew}>
         <div className="dflow-foot-sel">
-          {selectedCustomer ? (
+          {saveError ? (
+            <span className="dflow-error">{saveError}</span>
+          ) : selectedCustomer ? (
             <>
               <Check size={16} strokeWidth={STROKE_BOLD} color="var(--ok)" aria-hidden />
               <span>
@@ -224,11 +245,15 @@ export function KundeStep({ dir }: KundeStepProps) {
         <button
           type="button"
           className="dbtn"
-          disabled={!selectedCustomer}
-          onClick={() => router.push("/create/2")}
+          disabled={!selectedCustomer || saving}
+          onClick={handleWeiter}
         >
+          {saving ? (
+            <Loader2 size={20} strokeWidth={STROKE_BOLD} className="dbtn-spin" aria-hidden />
+          ) : (
+            <Chevron size={20} strokeWidth={STROKE_BOLD} aria-hidden />
+          )}
           {t("next")}
-          <Chevron size={20} strokeWidth={STROKE_BOLD} aria-hidden />
         </button>
       </div>
     </main>

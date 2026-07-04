@@ -27,3 +27,10 @@ export interface DocumentsPageData {
   documents: DocumentListItem[];
   paymentDays: number;
 }
+
+export interface DraftDoc {
+  id: string;
+  docType: "rechnung" | "angebot";
+  /** documents.customer_id – null, solange noch kein Kunde gewählt ist */
+  customerId: string | null;
+}

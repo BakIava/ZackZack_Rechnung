@@ -338,6 +338,85 @@
   background: #fbeeec;
 }
 
+/* Fehlermeldung bei fehlgeschlagener Positions-Aktion */
+.d2-error {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: #fbeeec;
+  border: 1px solid #e3b5ae;
+  color: #a1180f;
+  font-size: 13.5px;
+}
+
+/* Inline-Editor einer Position (Bearbeiten + Fremdleistung umschalten) */
+.d2-editor {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+}
+.d2-fremd-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  align-self: flex-start;
+}
+.d2-fremd-toggle[data-on="1"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+  color: var(--ink);
+}
+.d2-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.d2-editor-cancel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+.d2-editor-cancel:hover {
+  color: var(--ink);
+  border-color: #c3ccd4;
+}
+.d2-editor-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: var(--primary);
+  color: var(--primary-ink, #fff);
+  font-family: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.d2-editor-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Fremdleistung: interne Zusatzzeile (Einkauf/Marge — nie aufs Dokument) */
 .d2-internrow {
   grid-column: 2 / -1;

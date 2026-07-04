@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Brush, ClipboardList, FileText, Languages, Pencil, Plus, Search, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
-import { FLOW_CATALOG } from "@/lib/demo/flow-data";
 import { anzeigeName } from "@/lib/katalog/types";
-import type { Position } from "@/lib/flow/positionen";
+import type { KatalogEintrag } from "@/lib/katalog/types";
+import type { FreeItemInput, FremdItemInput } from "@/lib/documents/item-types";
 import { formatMoney } from "@/lib/format";
 import { FreeForm, FremdForm } from "./position-forms";
 
@@ -16,13 +16,20 @@ type Tab = "katalog" | "frei" | "fremd";
 
 interface CatalogPickerProps {
   locale: Locale;
-  onAdd: (position: Position) => void;
+  services: KatalogEintrag[];
+  onAddCatalog: (serviceId: string) => void;
+  onAddFree: (input: FreeItemInput) => void;
+  onAddFremd: (input: FremdItemInput) => void;
 }
 
-const newId = () => `c-${crypto.randomUUID()}`;
-
 /** Gemeinsamer Picker: Aus Katalog · Freie Position · Fremdleistung. */
-export function CatalogPicker({ locale, onAdd }: CatalogPickerProps) {
+export function CatalogPicker({
+  locale,
+  services,
+  onAddCatalog,
+  onAddFree,
+  onAddFremd,
+}: CatalogPickerProps) {
   const t = useTranslations("Step2");
   const [tab, setTab] = useState<Tab>("katalog");
   const [query, setQuery] = useState("");
@@ -34,7 +41,7 @@ export function CatalogPicker({ locale, onAdd }: CatalogPickerProps) {
   ];
 
   const q = query.toLowerCase();
-  const items = FLOW_CATALOG.filter(
+  const items = services.filter(
     (c) => anzeigeName(c, locale).toLowerCase().includes(q) || c.de.toLowerCase().includes(q),
   );
 
@@ -81,15 +88,7 @@ export function CatalogPicker({ locale, onAdd }: CatalogPickerProps) {
                 key={c.id}
                 type="button"
                 className="cat-item"
-                onClick={() => onAdd({
-                  id: newId(),
-                  kind: "normal",
-                  label: c.de,
-                  uebersetzungen: c.uebersetzungen,
-                  qty: 1,
-                  unit: c.einheit,
-                  preisCents: c.preisCents,
-                })}
+                onClick={() => onAddCatalog(c.id)}
               >
                 <span className="cat-item-ic">
                   <Brush size={21} strokeWidth={STROKE} aria-hidden />
@@ -111,13 +110,15 @@ export function CatalogPicker({ locale, onAdd }: CatalogPickerProps) {
                 </span>
               </button>
             ))}
-            {items.length === 0 && <div className="empty">—</div>}
+            {items.length === 0 && (
+              <div className="empty">{query ? t("noCatalogResults") : t("catalogEmpty")}</div>
+            )}
           </div>
         </>
       )}
 
-      {tab === "frei" && <FreeForm onAdd={onAdd} />}
-      {tab === "fremd" && <FremdForm onAdd={onAdd} />}
+      {tab === "frei" && <FreeForm onAdd={onAddFree} />}
+      {tab === "fremd" && <FremdForm onAdd={onAddFremd} />}
     </>
   );
 }

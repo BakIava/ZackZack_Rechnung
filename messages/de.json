@@ -189,6 +189,9 @@
     "ncNotePh": "z. B. Zahlungsweise, Anfahrt …",
     "ncOptional": "optional",
     "ncCreate": "Anlegen & auswählen",
+    "ncSaving": "Anlegen…",
+    "ncError": "Fehler beim Anlegen. Bitte erneut versuchen.",
+    "draftError": "Fehler beim Speichern. Bitte erneut versuchen.",
     "ncCreated": "neu angelegt",
     "ncClose": "Schließen",
     "cancel": "Abbrechen",
@@ -262,7 +265,15 @@
     "less": "Weniger",
     "more": "Mehr",
     "delete": "Löschen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "edit": "Bearbeiten",
+    "save": "Speichern",
+    "margin": "Marge",
+    "markupPercent": "Prozent",
+    "markupFixed": "Festbetrag",
+    "itemError": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
+    "noCatalogResults": "Keine Leistung gefunden",
+    "catalogEmpty": "Noch keine Leistungen im Katalog"
   },
   "StepHeader": {
     "progress": "Schritt {step} von {total}"

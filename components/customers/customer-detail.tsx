@@ -18,6 +18,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useParams, useRouter } from "next/navigation";
 import { updateCustomer, deleteCustomer } from "@/lib/customers/actions";
+import { startNewDocument } from "@/lib/documents/draft-actions";
 import { formatDateDE, formatMoney, formatDateShort } from "@/lib/format";
 import type { CustomerRow, CustomerDocRow } from "@/lib/customers/types";
 import "./customer-detail.css";
@@ -218,14 +219,18 @@ function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps
           </button>
         </div>
         <div className="cdm-dactions">
-          <a href={`/${locale}/create/1`} className="cdm-dbtn">
-            <ReceiptText size={19} strokeWidth={STROKE} color="#fff" aria-hidden />
-            {t("newInvoiceFor")}
-          </a>
-          <a href={`/${locale}/create/1`} className="cdm-dbtn cdm-dbtn--ghost">
-            <FileText size={18} strokeWidth={STROKE} aria-hidden />
-            {t("newOfferFor")}
-          </a>
+          <form action={startNewDocument} className="contents">
+            <button type="submit" className="cdm-dbtn">
+              <ReceiptText size={19} strokeWidth={STROKE} color="#fff" aria-hidden />
+              {t("newInvoiceFor")}
+            </button>
+          </form>
+          <form action={startNewDocument} className="contents">
+            <button type="submit" className="cdm-dbtn cdm-dbtn--ghost">
+              <FileText size={18} strokeWidth={STROKE} aria-hidden />
+              {t("newOfferFor")}
+            </button>
+          </form>
         </div>
       </div>
 

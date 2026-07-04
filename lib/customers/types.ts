@@ -26,3 +26,12 @@ export interface CustomerMutationResult {
   error?: string;
   id?: string;
 }
+
+export interface CustomerListItem {
+  id: string;
+  name: string;
+  city: string | null;
+  street: string | null;
+  initials: string;
+  isNew?: boolean;
+}

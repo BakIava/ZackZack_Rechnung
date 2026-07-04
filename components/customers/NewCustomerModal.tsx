@@ -1,9 +1,10 @@
 "use client";
 
-import { Building2, Check, User, X } from "lucide-react";
+import { Building2, Check, Loader2, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import type { NewCustomerInput } from "@/lib/demo/customers-data";
+import { createCustomer } from "@/lib/customers/actions";
+import type { CustomerListItem } from "@/lib/customers/types";
 import "./NewCustomerModal.css";
 
 type CustomerType = "private" | "company";
@@ -11,12 +12,11 @@ type CustomerType = "private" | "company";
 interface NewCustomerModalProps {
   dir: "ltr" | "rtl";
   onClose: () => void;
-  onCreate: (customer: NewCustomerInput) => void;
+  onCreate: (customer: CustomerListItem) => void;
 }
 
 const STROKE = 1.75;
 
-/** Initialen aus dem Namen: erster + letzter Wortanfang, sonst die ersten zwei Zeichen. */
 function deriveInitials(name: string): string {
   const parts = name.split(/\s+/).filter(Boolean);
   const raw =
@@ -26,10 +26,6 @@ function deriveInitials(name: string): string {
   return raw.toUpperCase();
 }
 
-/** Wiederverwendbares „Neuer Kunde“-Modal. Legt einen Kunden mit wenigen
- *  Feldern an und gibt ihn per `onCreate` zurück – genutzt im Flow (Schritt 1)
- *  und im Kunden-Bereich. UI folgt der Bediensprache (inkl. RTL); Eigennamen
- *  bleiben deutsch, da sie so auf dem Dokument erscheinen. */
 export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalProps) {
   const t = useTranslations("Create");
   const [type, setType] = useState<CustomerType>("private");
@@ -41,9 +37,11 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const isCompany = type === "company";
-  const ok = name.trim().length > 0 && city.trim().length > 0;
+  const ok = name.trim().length > 0;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -53,26 +51,38 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  function submit() {
-    if (!ok) return;
+  async function submit() {
+    if (!ok || saving) return;
     const nm = name.trim();
-    const trimmedZip = zip.trim();
     const trimmedCity = city.trim();
-    onCreate({
-      id: `new-${Date.now()}`,
+    const trimmedStreet = street.trim();
+
+    setSaving(true);
+    setSaveError(null);
+
+    const res = await createCustomer({
       name: nm,
-      firma: isCompany,
+      street: trimmedStreet || undefined,
+      postcode: zip.trim() || undefined,
+      city: trimmedCity || undefined,
+      phone: phone.trim() || undefined,
+      email: email.trim() || undefined,
+      notes: note.trim() || undefined,
+    });
+
+    setSaving(false);
+
+    if (res.error || !res.id) {
+      setSaveError(t("ncError"));
+      return;
+    }
+
+    onCreate({
+      id: res.id,
+      name: nm,
+      city: trimmedCity || null,
+      street: trimmedStreet || null,
       initials: deriveInitials(nm),
-      street: street.trim() || "—",
-      // Demodaten halten PLZ + Ort gemeinsam im Feld `city` (z. B. „60385 Frankfurt“).
-      city: [trimmedZip, trimmedCity].filter(Boolean).join(" "),
-      // Einzelfelder für Detailansichten (Adresse/Kontakt).
-      zip: trimmedZip,
-      cityName: trimmedCity,
-      contact: contact.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-      note: note.trim(),
       isNew: true,
     });
   }
@@ -162,7 +172,10 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
             )}
 
             <label className="f-row">
-              <span className="f-lbl">{t("ncStreet")}</span>
+              <span className="f-lbl">
+                {t("ncStreet")}
+                <span className="nc-opt">{t("ncOptional")}</span>
+              </span>
               <input
                 className="f-input"
                 autoComplete="street-address"
@@ -174,7 +187,10 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
 
             <div className="f-row two">
               <label className="f-row nc-zip">
-                <span className="f-lbl">{t("ncZip")}</span>
+                <span className="f-lbl">
+                  {t("ncZip")}
+                  <span className="nc-opt">{t("ncOptional")}</span>
+                </span>
                 <input
                   className="f-input"
                   inputMode="numeric"
@@ -185,7 +201,10 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 />
               </label>
               <label className="f-row">
-                <span className="f-lbl">{t("ncCity")}</span>
+                <span className="f-lbl">
+                  {t("ncCity")}
+                  <span className="nc-opt">{t("ncOptional")}</span>
+                </span>
                 <input
                   className="f-input"
                   autoComplete="address-level2"
@@ -244,17 +263,22 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
         </div>
 
         <div className="dmodal-foot">
-          <button type="button" className="nc-cancel" onClick={onClose}>
+          {saveError && <span className="nc-error">{saveError}</span>}
+          <button type="button" className="nc-cancel" onClick={onClose} disabled={saving}>
             {t("cancel")}
           </button>
           <button
             type="button"
             className="nc-create"
-            disabled={!ok}
+            disabled={!ok || saving}
             onClick={submit}
           >
-            <Check size={20} strokeWidth={2.4} aria-hidden />
-            {t("ncCreate")}
+            {saving ? (
+              <Loader2 size={20} strokeWidth={2.4} className="nc-spin" aria-hidden />
+            ) : (
+              <Check size={20} strokeWidth={2.4} aria-hidden />
+            )}
+            {saving ? t("ncSaving") : t("ncCreate")}
           </button>
         </div>
       </div>

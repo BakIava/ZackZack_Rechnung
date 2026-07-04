@@ -189,6 +189,9 @@
     "ncNotePh": "ör. ödeme şekli, ulaşım …",
     "ncOptional": "isteğe bağlı",
     "ncCreate": "Ekle & seç",
+    "ncSaving": "Ekleniyor…",
+    "ncError": "Ekleme hatası. Lütfen tekrar deneyin.",
+    "draftError": "Kaydetme hatası. Lütfen tekrar deneyin.",
     "ncCreated": "yeni eklendi",
     "ncClose": "Kapat",
     "cancel": "İptal",
@@ -262,7 +265,15 @@
     "less": "Azalt",
     "more": "Artır",
     "delete": "Sil",
-    "close": "Kapat"
+    "close": "Kapat",
+    "edit": "Düzenle",
+    "save": "Kaydet",
+    "margin": "Kâr payı",
+    "markupPercent": "Yüzde",
+    "markupFixed": "Sabit tutar",
+    "itemError": "İşlem başarısız. Lütfen tekrar deneyin.",
+    "noCatalogResults": "Hizmet bulunamadı",
+    "catalogEmpty": "Katalogda henüz hizmet yok"
   },
   "StepHeader": {
     "progress": "Adım {step} / {total}"
