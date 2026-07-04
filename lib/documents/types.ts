@@ -1,4 +1,4 @@
-export type DbDocumentStatus = "draft" | "final" | "sent" | "paid" | "cancelled";
+export type DbDocumentStatus = "draft" | "finalized" | "sent" | "paid" | "cancelled";
 export type DbDocumentType = "invoice" | "quote";
 export type UiDocumentStatus = "bezahlt" | "offen" | "versendet" | "entwurf";
 

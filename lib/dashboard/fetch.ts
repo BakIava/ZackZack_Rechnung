@@ -26,7 +26,7 @@ function mapStatus(dbStatus: string): DocStatus {
     case "draft":
       return "entwurf";
     default:
-      return "offen"; // "final" and "cancelled" treated as offen for display
+      return "offen"; // "finalized" and "cancelled" treated as offen for display
   }
 }
 
@@ -57,7 +57,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       supabase
         .from("documents")
         .select("total_amount")
-        .in("status", ["final", "sent"]),
+        .in("status", ["finalized", "sent"]),
       supabase
         .from("documents")
         .select("total_amount")
