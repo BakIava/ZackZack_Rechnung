@@ -1,0 +1,164 @@
+/**
+ * Reines View-Model für den PDF-Beleg. Leitet aus dem eingefrorenen
+ * DocumentPreview alle darstellbaren Werte ab — IMMER Deutsch, reine
+ * Kundensicht. Ohne React/Supabase, damit die harten Regeln testbar bleiben:
+ *
+ *  - Einkaufspreis/Marge existieren im DTO nicht und tauchen hier nie auf
+ *    (nur `unitPrice` = Verkaufspreis geht in die Zeile).
+ *  - §19-Kleinunternehmer: keine USt., stattdessen automatischer §19-Hinweis.
+ *  - Empfänger stammt aus dem Snapshot (der Aufrufer liest nie live).
+ *  - Beträge/Datum deutsch formatiert (de-DE).
+ *
+ * Dieselbe Wahrheit wie die HTML-Vorschau (DocumentA4): gleiche Labels aus
+ * DOKUMENT_DE, gleiche Formatter → Bildschirm und PDF bleiben deckungsgleich.
+ */
+
+import { formatDateDE, formatMoney } from "@/lib/format";
+import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
+import type { DocumentPreview } from "@/lib/documents/preview-types";
+
+export interface PdfRow {
+  position: number;
+  descriptionDe: string;
+  mengeText: string;
+  unitPriceText: string;
+  totalText: string;
+}
+
+export interface PdfViewModel {
+  isRechnung: boolean;
+  /** Firmen-Monogramm als Logo-Fallback (kein Bild vorhanden). */
+  monogram: string;
+
+  companyName: string;
+  companyAddressLine: string;
+  companyContactLine: string;
+
+  senderLine: string;
+  empfaengerLabel: string;
+  recipientName: string;
+  recipientStreetLine: string;
+  recipientCityLine: string;
+
+  numberLabel: string;
+  numberValue: string;
+  isDraftNumber: boolean;
+  dateValue: string;
+  serviceDateValue: string | null;
+  steuerLabel: string;
+  steuerValue: string;
+
+  title: string;
+  rows: PdfRow[];
+
+  gesamtNettoLabel: string;
+  sumLabel: string;
+  totalText: string;
+
+  showKleinunternehmerHinweis: boolean;
+  kleinunternehmerHinweis: string;
+
+  /** Nur bei Rechnung mit Ausstellungsdatum. */
+  paymentText: string | null;
+  bankLine: string | null;
+
+  footerCompanyName: string;
+  footerOwnerLine: string | null;
+  footerAddressLine: string;
+  footerContactPhone: string | null;
+  footerContactEmail: string | null;
+  footerBankName: string | null;
+}
+
+function joinTrim(parts: (string | null | undefined)[], sep: string): string {
+  return parts.map((p) => (p ?? "").trim()).filter(Boolean).join(sep);
+}
+
+function initialsOf(name: string): string {
+  const parts = name.split(/\s+/).filter(Boolean);
+  const raw =
+    parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2);
+  return raw.toUpperCase();
+}
+
+export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
+  const { company: co, customer: rc, docType, isKleinunternehmer } = preview;
+  const isRechnung = docType === "rechnung";
+
+  // Summe strikt aus den Zeilen (Verkaufspreis) — nie aus internen Feldern.
+  const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
+
+  const coStreet = joinTrim([co.street, co.streetNo], " ");
+  const coCity = joinTrim([co.postcode, co.city], " ");
+  const rcStreet = rc ? joinTrim([rc.street, rc.streetNo], " ") : "";
+  const rcCity = rc ? joinTrim([rc.postcode, rc.city], " ") : "";
+
+  const steuerLabel = co.steuernummer ? DOKUMENT_DE.steuerNr : DOKUMENT_DE.ustId;
+  const steuerValue = co.steuernummer ?? co.ustId ?? "—";
+
+  const numberLabel = isRechnung ? DOKUMENT_DE.rechnungNr : DOKUMENT_DE.angebotNr;
+  const titleWort = isRechnung ? DOKUMENT_DE.rechnung : DOKUMENT_DE.angebot;
+
+  const bankLine =
+    joinTrim([co.bankName, co.iban ? `${DOKUMENT_DE.iban} ${co.iban}` : null], " · ") ||
+    null;
+
+  const paymentText =
+    isRechnung && preview.issueDate
+      ? zahlungszielText(preview.issueDate, co.paymentDays)
+      : null;
+
+  return {
+    isRechnung,
+    monogram: initialsOf(co.name || "—"),
+
+    companyName: co.name,
+    companyAddressLine: joinTrim([coStreet, coCity], " · "),
+    companyContactLine: joinTrim(
+      [co.phone ? `Tel. ${co.phone}` : null, co.email],
+      " · ",
+    ),
+
+    senderLine: joinTrim([co.name, coStreet, coCity], " · "),
+    empfaengerLabel: isRechnung
+      ? DOKUMENT_DE.empfaengerRechnung
+      : DOKUMENT_DE.empfaengerAngebot,
+    recipientName: rc?.name ?? "—",
+    recipientStreetLine: rcStreet,
+    recipientCityLine: rcCity,
+
+    numberLabel,
+    numberValue: preview.documentNumber ?? DOKUMENT_DE.entwurfPlatzhalter,
+    isDraftNumber: !preview.documentNumber,
+    dateValue: preview.issueDate ? formatDateDE(preview.issueDate) : "—",
+    serviceDateValue: preview.serviceDate ? formatDateDE(preview.serviceDate) : null,
+    steuerLabel,
+    steuerValue,
+
+    title: `${titleWort}${preview.documentNumber ? ` ${preview.documentNumber}` : ""}`,
+    rows: preview.items.map((p) => ({
+      position: p.position,
+      descriptionDe: p.descriptionDe,
+      mengeText: joinTrim([String(p.amount), p.unit], " "),
+      unitPriceText: formatMoney(p.unitPrice),
+      totalText: formatMoney(p.totalAmount),
+    })),
+
+    gesamtNettoLabel: DOKUMENT_DE.gesamtNetto,
+    sumLabel: isRechnung ? DOKUMENT_DE.rechnungsbetrag : DOKUMENT_DE.angebotssumme,
+    totalText: formatMoney(total),
+
+    showKleinunternehmerHinweis: isKleinunternehmer,
+    kleinunternehmerHinweis: DOKUMENT_DE.kleinunternehmerHinweis,
+
+    paymentText,
+    bankLine,
+
+    footerCompanyName: co.name,
+    footerOwnerLine: co.director ? `${co.director}, ${DOKUMENT_DE.inhaber}` : null,
+    footerAddressLine: joinTrim([coStreet, coCity], ", "),
+    footerContactPhone: co.phone ? `Tel. ${co.phone}` : null,
+    footerContactEmail: co.email,
+    footerBankName: co.bankName,
+  };
+}

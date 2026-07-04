@@ -50,6 +50,8 @@ function toCustomer(snapshot: unknown): PreviewCustomer | null {
     streetNo: (s.street_no as string | null) ?? null,
     postcode: (s.postcode as string | null) ?? null,
     city: (s.city as string | null) ?? null,
+    email: (s.email as string | null) ?? null,
+    phone: (s.phone as string | null) ?? null,
   };
 }
 

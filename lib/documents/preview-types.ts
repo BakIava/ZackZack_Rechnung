@@ -29,6 +29,9 @@ export interface PreviewCustomer {
   streetNo: string | null;
   postcode: string | null;
   city: string | null;
+  /** Nur fürs Teilen (E-Mail/WhatsApp vorbelegen) – NICHT für den Beleg. */
+  email: string | null;
+  phone: string | null;
 }
 
 export interface PreviewItem {
