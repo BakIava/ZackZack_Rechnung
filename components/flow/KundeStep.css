@@ -300,6 +300,30 @@
   color: var(--ink);
   font-weight: 650;
 }
+.dflow-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.14s;
+}
+.dflow-edit:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+.dflow-edit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
 .dbtn {
   display: flex;
   align-items: center;
