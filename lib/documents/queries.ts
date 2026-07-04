@@ -1,6 +1,11 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import type { DocumentListItem, DocumentsPageData, DraftDoc } from "./types";
+import type {
+  DbDocumentStatus,
+  DocumentListItem,
+  DocumentsPageData,
+  DraftDoc,
+} from "./types";
 
 type DB = Awaited<ReturnType<typeof createClient>>;
 
@@ -110,6 +115,49 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
 
   return { documents, paymentDays };
 }
+
+export interface FlowDocMeta {
+  id: string;
+  status: DbDocumentStatus;
+  docType: "rechnung" | "angebot";
+}
+
+/**
+ * Leichtgewichtiger Zugehörigkeits-/Status-Check für den Flow-Layout-Guard und
+ * die Schritt-1/2-Weichen: liefert Status & Typ eines EIGENEN Dokuments,
+ * unabhängig vom Status (draft, finalized, …). Fremde/nicht existierende
+ * Dokumente ergeben null. `cache()` dedupliziert den Fetch pro Request.
+ */
+export const getFlowDocMeta = cache(
+  async (documentId: string): Promise<FlowDocMeta | null> => {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: userData } = await supabase
+      .from("users")
+      .select("company_id")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (!userData?.company_id) return null;
+
+    const { data } = await supabase
+      .from("documents")
+      .select("id, status, document_type")
+      .eq("id", documentId)
+      .eq("company_id", userData.company_id)
+      .maybeSingle();
+    if (!data) return null;
+
+    return {
+      id: data.id as string,
+      status: data.status as DbDocumentStatus,
+      docType: data.document_type === "quote" ? "angebot" : "rechnung",
+    };
+  },
+);
 
 /**
  * Lädt einen Draft und validiert Zugehörigkeit (eigene Firma + status='draft').
