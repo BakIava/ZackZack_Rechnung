@@ -21,6 +21,7 @@ const FELD_LABEL_KEY: Record<PflichtFeld, string> = {
   companyAddress: "pfCompanyAddress",
   companySteuer: "pfCompanySteuer",
   customerName: "pfCustomerName",
+  customerAddress: "pfCustomerAddress",
   issueDate: "pfIssueDate",
   positions: "pfPositions",
 };

@@ -32,6 +32,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
   const [street, setStreet] = useState("");
+  const [houseNo, setHouseNo] = useState("");
   const [zip, setZip] = useState("");
   const [city, setCity] = useState("");
   const [phone, setPhone] = useState("");
@@ -41,7 +42,15 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const isCompany = type === "company";
-  const ok = name.trim().length > 0;
+  // Rechtssichere Anschrift (§14 Abs. 4 Nr. 1 UStG): ein gespeicherter Kunde ist
+  // für Rechnungen über 250 € nutzbar, daher Name + vollständige Anschrift Pflicht.
+  // Für Kleinbeträge bis 250 € wird gar kein Kunde benötigt (Schritt 1 überspringbar).
+  const ok =
+    name.trim().length > 0 &&
+    street.trim().length > 0 &&
+    houseNo.trim().length > 0 &&
+    zip.trim().length > 0 &&
+    city.trim().length > 0;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -56,6 +65,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
     const nm = name.trim();
     const trimmedCity = city.trim();
     const trimmedStreet = street.trim();
+    const trimmedHouseNo = houseNo.trim();
 
     setSaving(true);
     setSaveError(null);
@@ -63,6 +73,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
     const res = await createCustomer({
       name: nm,
       street: trimmedStreet || undefined,
+      streetNo: trimmedHouseNo || undefined,
       postcode: zip.trim() || undefined,
       city: trimmedCity || undefined,
       phone: phone.trim() || undefined,
@@ -81,7 +92,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
       id: res.id,
       name: nm,
       city: trimmedCity || null,
-      street: trimmedStreet || null,
+      street: [trimmedStreet, trimmedHouseNo].filter(Boolean).join(" ") || null,
       initials: deriveInitials(nm),
       isNew: true,
     });
@@ -143,7 +154,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
 
             <label className="f-row">
               <span className="f-lbl">
-                {isCompany ? t("ncCompanyName") : t("ncName")}
+                {isCompany ? t("ncCompanyName") : t("ncName")} *
               </span>
               <input
                 className="f-input"
@@ -171,26 +182,32 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
               </label>
             )}
 
-            <label className="f-row">
-              <span className="f-lbl">
-                {t("ncStreet")}
-                <span className="nc-opt">{t("ncOptional")}</span>
-              </span>
-              <input
-                className="f-input"
-                autoComplete="street-address"
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                placeholder={t("ncStreetPh")}
-              />
-            </label>
+            <div className="f-row two">
+              <label className="f-row">
+                <span className="f-lbl">{t("ncStreet")} *</span>
+                <input
+                  className="f-input"
+                  autoComplete="address-line1"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                  placeholder={t("ncStreetPh")}
+                />
+              </label>
+              <label className="f-row nc-zip">
+                <span className="f-lbl">{t("ncHouseNo")} *</span>
+                <input
+                  className="f-input"
+                  autoComplete="address-line2"
+                  value={houseNo}
+                  onChange={(e) => setHouseNo(e.target.value)}
+                  placeholder={t("ncHouseNoPh")}
+                />
+              </label>
+            </div>
 
             <div className="f-row two">
               <label className="f-row nc-zip">
-                <span className="f-lbl">
-                  {t("ncZip")}
-                  <span className="nc-opt">{t("ncOptional")}</span>
-                </span>
+                <span className="f-lbl">{t("ncZip")} *</span>
                 <input
                   className="f-input"
                   inputMode="numeric"
@@ -201,10 +218,7 @@ export function NewCustomerModal({ dir, onClose, onCreate }: NewCustomerModalPro
                 />
               </label>
               <label className="f-row">
-                <span className="f-lbl">
-                  {t("ncCity")}
-                  <span className="nc-opt">{t("ncOptional")}</span>
-                </span>
+                <span className="f-lbl">{t("ncCity")} *</span>
                 <input
                   className="f-input"
                   autoComplete="address-level2"

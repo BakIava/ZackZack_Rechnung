@@ -82,7 +82,13 @@ export function KundeStep({
   }
 
   async function handleWeiter() {
-    if (!selected || saving) return;
+    if (saving) return;
+    // Schritt 1 ist überspringbar: ohne Kundenwahl direkt zu den Positionen.
+    // Ein Kunde ist erst ab > 250 € Pflicht (geprüft in Schritt 3).
+    if (!selected) {
+      router.push(`/create/${documentId}/2`);
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     const res = await updateDraftCustomer(documentId, selected);
@@ -239,13 +245,13 @@ export function KundeStep({
               </span>
             </>
           ) : (
-            <span>{t("chooseCustomer")}</span>
+            <span>{t("customerOptionalHint")}</span>
           )}
         </div>
         <button
           type="button"
           className="dbtn"
-          disabled={!selectedCustomer || saving}
+          disabled={saving}
           onClick={handleWeiter}
         >
           {saving ? (
