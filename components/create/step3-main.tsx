@@ -11,27 +11,34 @@ import {
   ReceiptText,
   TriangleAlert,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { INVOICE_PREVIEW, invoiceTotalCents } from "@/lib/demo/create-data";
+import { Link, useRouter } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/format";
-import {
-  istExportierbar,
-  pruefePflichtangaben,
-} from "@/lib/legal/pflichtangaben";
+import { DOKUMENT_DE } from "@/lib/documents/document-de";
+import { finalizeDocument, type FinalizeError } from "@/lib/documents/finalize-actions";
+import { istFinalisierbar, type PflichtCheck } from "@/lib/legal/dokumentPflicht";
+import type { DocumentPreview } from "@/lib/documents/preview-types";
 import { FlowSteps } from "@/components/flow/FlowSteps";
-import { CheckList, type CheckRow } from "./check-list";
-import { InvoiceA4 } from "./invoice-a4";
-import { ShareButtons } from "./share-buttons";
+import { DocumentA4 } from "./document-a4";
+import { FinalizeDialog } from "./finalize-dialog";
+import { PflichtList } from "./pflicht-list";
 import { ZoomOverlay } from "./zoom-overlay";
 
 interface Step3MainProps {
   dir: "ltr" | "rtl";
-  documentId: string;
+  preview: DocumentPreview;
+  checks: PflichtCheck[];
 }
 
 const STROKE = 1.75;
+
+const ERROR_KEY: Record<FinalizeError, string> = {
+  notAuthenticated: "errNotAuthenticated",
+  notFinalizable: "errNotFinalizable",
+  issueDateMissing: "errIssueDate",
+  unknown: "errUnknown",
+};
 
 function initialsOf(name: string): string {
   return name
@@ -42,70 +49,75 @@ function initialsOf(name: string): string {
     .toUpperCase();
 }
 
-/** Schritt 3 (Vorschau & Versand) — Desktop-Hauptbereich: A4-Vorschau links,
- *  sticky Aktions-Sidebar rechts. Interaktiv (PDF-Phase, Zoom). */
-export function Step3Main({ dir, documentId }: Step3MainProps) {
+/** Schritt 3 (Vorschau & Finalisierung) — Desktop: A4-Vorschau links, sticky
+ *  Aktions-Sidebar rechts. Dokumentinhalt bleibt Deutsch/LTR; die Bedienung
+ *  folgt der UI-Sprache. Entwurf: Pflicht-Check + Finalisieren. Finalisiert:
+ *  read-only mit echter Nummer (PDF/Teilen folgt im nächsten Schritt). */
+export function Step3Main({ dir, preview, checks }: Step3MainProps) {
   const t = useTranslations("Create");
-  const [created, setCreated] = useState(false);
+  const router = useRouter();
   const [zoom, setZoom] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [errorCode, setErrorCode] = useState<FinalizeError | null>(null);
+  const [pending, startTransition] = useTransition();
 
-  const invoice = INVOICE_PREVIEW;
-  const total = invoiceTotalCents(invoice);
-  const customerInitials = initialsOf(invoice.recipient.name);
+  const isDraft = preview.status === "draft";
+  const isRechnung = preview.docType === "rechnung";
+  const canFinalize = istFinalisierbar(checks);
+  const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
 
-  // Pflichtangaben aus der echten Legal-Prüfung ableiten.
-  const items = pruefePflichtangaben({
-    ausstellerName: invoice.issuer.name,
-    empfaengerName: invoice.recipient.name,
-    steuernummer: invoice.issuer.taxNo,
-    datum: invoice.date,
-    hatLeistung: invoice.positions.length > 0,
-    betragCents: total,
-    rechnungsnummer: invoice.number,
-    mwstAusgewiesen: false,
-    kleinunternehmerHinweisGesetzt: true,
-  });
-  const ok = Object.fromEntries(items.map((i) => [i.key, i.ok]));
-  const allOk = istExportierbar(items);
-  const rows: CheckRow[] = [
-    { id: "issuer", label: t("ckIssuer"), ok: !!ok.aussteller && !!ok.steuernummer },
-    { id: "recipient", label: t("ckRecipient"), ok: !!ok.empfaenger },
-    { id: "position", label: t("ckPosition"), ok: !!ok.leistung },
-    { id: "number", label: t("ckNumber"), ok: !!ok.nummer },
-    { id: "vat", label: t("ckVat"), ok: !!ok.kleinunternehmer },
-    { id: "date", label: t("ckDate"), ok: !!ok.datum },
-  ];
-  const checkLabels = {
-    title: t("checkTitle"),
-    allGood: t("checkAllGood"),
-    some: t("checkSome"),
-    correct: t("correct"),
-  };
+  const customerName = preview.customer?.name ?? "—";
+  const customerInitials = preview.customer ? initialsOf(preview.customer.name) : "—";
+  const numberText = preview.documentNumber ?? DOKUMENT_DE.entwurfPlatzhalter;
+  const zoomTitle = `${isRechnung ? DOKUMENT_DE.rechnung : DOKUMENT_DE.angebot}${
+    preview.documentNumber ? ` ${preview.documentNumber}` : ""
+  }`;
 
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
+  const headerTitle = isRechnung ? t("createInvoiceTitle") : t("createQuoteTitle");
+  const backHref = isDraft ? `/create/${preview.id}/2` : `/documents`;
+
+  function handleConfirm() {
+    setErrorCode(null);
+    startTransition(async () => {
+      const res = await finalizeDocument(preview.id);
+      if ("error" in res) {
+        setErrorCode(res.error);
+        setConfirmOpen(false);
+        return;
+      }
+      setConfirmOpen(false);
+      // Server-Component neu laden → Status jetzt 'finalized', echte Nummer sichtbar.
+      router.refresh();
+    });
+  }
 
   return (
     <main className="dmain">
       <div className="dscroll">
         <div className="dflow-head">
-          <Link href={`/create/${documentId}/2`} className="dflow-back" aria-label={t("back")}>
+          <Link href={backHref} className="dflow-back" aria-label={t("back")}>
             <BackChevron size={20} strokeWidth={STROKE} aria-hidden />
           </Link>
           <div>
-            <div className="dflow-title">{t("createInvoiceTitle")}</div>
+            <div className="dflow-title">{headerTitle}</div>
             <div className="dflow-sub">{t("previewSend")}</div>
           </div>
-          <FlowSteps current={3} />
+          {isDraft && <FlowSteps current={3} />}
         </div>
 
         <div className="d2-ctx">
           <span className="p2-chip p2-chip--mode">
-            <ReceiptText size={15} strokeWidth={STROKE} aria-hidden />
-            {t("rechnung")}
+            {isRechnung ? (
+              <ReceiptText size={15} strokeWidth={STROKE} aria-hidden />
+            ) : (
+              <FileText size={15} strokeWidth={STROKE} aria-hidden />
+            )}
+            {isRechnung ? t("rechnung") : t("angebot")}
           </span>
           <span className="p2-chip">
             <span className="p2-av">{customerInitials}</span>
-            {invoice.recipient.name}
+            {customerName}
           </span>
         </div>
 
@@ -114,7 +126,7 @@ export function Step3Main({ dir, documentId }: Step3MainProps) {
             <div className="d3-doctop">
               <span className="d3-doctop-t">
                 <Eye size={17} strokeWidth={STROKE} aria-hidden />
-                {t("viewPreview")} · {invoice.number}
+                {t("viewPreview")} · {numberText}
               </span>
               <button type="button" className="d3-zoom" onClick={() => setZoom(true)}>
                 <Maximize2 size={16} strokeWidth={STROKE} aria-hidden />
@@ -122,43 +134,55 @@ export function Step3Main({ dir, documentId }: Step3MainProps) {
               </button>
             </div>
             <div className="d3-docstage">
-              <InvoiceA4 invoice={invoice} />
+              <DocumentA4 preview={preview} />
             </div>
           </div>
 
           <div className="d3-side">
-            <div className={`d3-card${allOk ? "" : " has-issue"}`}>
-              <CheckList rows={rows} labels={checkLabels} />
-            </div>
+            {isDraft && (
+              <div className={`d3-card${canFinalize ? "" : " has-issue"}`}>
+                <PflichtList checks={checks} documentId={preview.id} />
+              </div>
+            )}
 
             <div className="d3-sumcard">
-              <div className="d3-sum-l">{t("invoiceAmount")}</div>
-              <div className="d3-sum-v">{formatMoney(total)}</div>
-              <div className="d3-sum-ku">
-                <Lock size={14} strokeWidth={STROKE} aria-hidden />
-                {t("kuNote")}
+              <div className="d3-sum-l">
+                {isRechnung ? t("invoiceAmount") : t("quoteAmount")}
               </div>
+              <div className="d3-sum-v">{formatMoney(total)}</div>
+              {preview.isKleinunternehmer && (
+                <div className="d3-sum-ku">
+                  <Lock size={14} strokeWidth={STROKE} aria-hidden />
+                  {t("kuNote")}
+                </div>
+              )}
             </div>
 
             <div className="d3-actcard">
-              {!created ? (
+              {isDraft ? (
                 <>
-                  {!allOk && (
+                  {!canFinalize && (
                     <div className="locknote">
                       <TriangleAlert size={15} strokeWidth={STROKE} aria-hidden />
                       {t("lockedHint")}
                     </div>
                   )}
+                  {errorCode && (
+                    <div className="locknote">
+                      <TriangleAlert size={15} strokeWidth={STROKE} aria-hidden />
+                      {t(ERROR_KEY[errorCode])}
+                    </div>
+                  )}
                   <button
                     type="button"
                     className="d3-pdfbtn"
-                    disabled={!allOk}
-                    onClick={() => setCreated(true)}
+                    disabled={!canFinalize || pending}
+                    onClick={() => setConfirmOpen(true)}
                   >
-                    <FileText size={21} strokeWidth={2.4} aria-hidden />
-                    {t("createPdf")}
+                    <Lock size={21} strokeWidth={2.4} aria-hidden />
+                    {t("finalize")}
                   </button>
-                  <Link href={`/create/${documentId}/2`} className="d3-back">
+                  <Link href={`/create/${preview.id}/2`} className="d3-back">
                     {t("back")}
                   </Link>
                 </>
@@ -169,16 +193,20 @@ export function Step3Main({ dir, documentId }: Step3MainProps) {
                       <Check size={20} strokeWidth={2.5} color="#fff" aria-hidden />
                     </span>
                     <div>
-                      <div className="share-success-t">{t("pdfReady")}</div>
+                      <div className="share-success-t">{t("finalizedTitle")}</div>
                       <div className="share-success-s">
-                        {t("rechnung")} {invoice.number} · {t("pdfReadySub")}
+                        {isRechnung ? t("rechnung") : t("angebot")} {preview.documentNumber}
                       </div>
                     </div>
                   </div>
-                  <span className="share-via">{t("shareVia")}</span>
-                  <ShareButtons
-                    labels={{ wa: t("shareWa"), mail: t("shareMail"), save: t("shareSave") }}
-                  />
+                  <div className="d3-pdfnote">
+                    <FileText size={15} strokeWidth={STROKE} aria-hidden />
+                    {t("pdfComingSoon")}
+                  </div>
+                  <Link href="/documents" className="d3-pdfbtn d3-pdfbtn--done">
+                    <Check size={21} strokeWidth={2.4} aria-hidden />
+                    {t("done")}
+                  </Link>
                 </>
               )}
             </div>
@@ -186,7 +214,19 @@ export function Step3Main({ dir, documentId }: Step3MainProps) {
         </div>
       </div>
 
-      {zoom && <ZoomOverlay invoice={invoice} onClose={() => setZoom(false)} />}
+      {zoom && (
+        <ZoomOverlay title={zoomTitle} onClose={() => setZoom(false)}>
+          <DocumentA4 preview={preview} />
+        </ZoomOverlay>
+      )}
+
+      {confirmOpen && (
+        <FinalizeDialog
+          onConfirm={handleConfirm}
+          onCancel={() => setConfirmOpen(false)}
+          pending={pending}
+        />
+      )}
     </main>
   );
 }
