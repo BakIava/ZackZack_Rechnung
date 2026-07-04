@@ -203,6 +203,8 @@
     "editCustomer": "Kunde bearbeiten",
     "editCustomerSub": "Angaben ändern und speichern",
     "editCustomerSave": "Speichern",
+    "fixCustomerHintEdit": "Anschrift ergänzen: unten auf 'Kunde bearbeiten' tippen.",
+    "fixCustomerHintSelect": "Kunden auswählen oder neu anlegen und die Anschrift ergänzen.",
     "next": "Weiter",
     "back": "Zurück",
     "createInvoiceTitle": "Rechnung erstellen",

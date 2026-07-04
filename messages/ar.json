@@ -203,6 +203,8 @@
     "editCustomer": "تعديل العميل",
     "editCustomerSub": "غيّر البيانات واحفظ",
     "editCustomerSave": "حفظ",
+    "fixCustomerHintEdit": "لإكمال العنوان: اضغط على 'تعديل العميل' في الأسفل.",
+    "fixCustomerHintSelect": "اختر عميلاً أو أضِف عميلاً جديداً وأكمل العنوان.",
     "next": "التالي",
     "back": "رجوع",
     "createInvoiceTitle": "إنشاء فاتورة",

@@ -203,6 +203,8 @@
     "editCustomer": "Müşteriyi düzenle",
     "editCustomerSub": "Bilgileri değiştir ve kaydet",
     "editCustomerSave": "Kaydet",
+    "fixCustomerHintEdit": "Adresi tamamlamak için aşağıdaki 'Müşteriyi düzenle' düğmesine dokunun.",
+    "fixCustomerHintSelect": "Bir müşteri seçin veya yeni ekleyin ve adresi tamamlayın.",
     "next": "Devam",
     "back": "Geri",
     "createInvoiceTitle": "Fatura oluştur",
