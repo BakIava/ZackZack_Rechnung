@@ -324,6 +324,75 @@
   opacity: 0.6;
   cursor: default;
 }
+.dflow-edit--pulse {
+  animation: dflow-edit-pulse 1.6s ease-out infinite;
+}
+@keyframes dflow-edit-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 45%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 9px color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+}
+
+/* Hinweis-Callout beim Sprung aus Schritt 3 („Beim Kunden ergänzen"). */
+.dflow-hint {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-inline: 34px;
+  margin-block-end: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--surface));
+  color: var(--primary);
+  font-size: 13.5px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.dflow-hint::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 30px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  border-inline-end: 1px solid color-mix(in srgb, var(--primary) 30%, var(--surface));
+  border-bottom: 1px solid color-mix(in srgb, var(--primary) 30%, var(--surface));
+  transform: rotate(45deg);
+}
+.dflow-hint-txt {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.4;
+}
+.dflow-hint-x {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 6px;
+}
+.dflow-hint-x:hover {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dflow-edit--pulse {
+    animation: none;
+  }
+}
 .dbtn {
   display: flex;
   align-items: center;
