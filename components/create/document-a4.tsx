@@ -29,7 +29,7 @@ function joinTrim(parts: (string | null | undefined)[], sep: string): string {
  */
 export function DocumentA4({ preview, className }: DocumentA4Props) {
   const { company: co, customer: rc, docType, isKleinunternehmer } = preview;
-  const isRechnung = docType === "rechnung";
+  const isRechnung = docType === "invoice";
   const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
 
   const coStreet = joinTrim([co.street, co.streetNo], " ");

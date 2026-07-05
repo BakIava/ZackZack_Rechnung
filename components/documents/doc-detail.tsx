@@ -149,7 +149,7 @@ export function DocDetail({
             ) : (
               <FileText size={15} strokeWidth={STROKE} />
             )}
-            {doc.type === "invoice" ? t("rechnung") : t("angebot")}
+            {doc.type === "invoice" ? t("invoice") : t("offer")}
           </span>
           <span className="hpill-light">
             {/* dot color is truly dynamic runtime value — no static class */}

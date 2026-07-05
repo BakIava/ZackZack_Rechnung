@@ -4,8 +4,7 @@ import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
-
-type DocType = "rechnung" | "angebot";
+import { DocType } from "@/shared/doc";
 
 /** Eingefrorene Kundenkopie im Dokument. Nie als Live-Join – immer Kopie. */
 interface CustomerSnapshot {
@@ -126,7 +125,7 @@ export async function updateDraftDocumentType(
 
   const { error } = await ctx.supabase
     .from("documents")
-    .update({ document_type: docType === "rechnung" ? "invoice" : "quote" })
+    .update({ document_type: docType })
     .eq("id", documentId)
     .eq("company_id", ctx.companyId)
     .eq("status", "draft");

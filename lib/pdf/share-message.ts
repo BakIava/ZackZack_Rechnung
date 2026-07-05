@@ -4,11 +4,12 @@
  * selbst. Rein & deterministisch, damit testbar.
  */
 
-type DocType = "rechnung" | "angebot";
+import { DocType } from "@/shared/doc";
+
 
 /** Betreff für E-Mail / Titel im Teilen-Sheet, z. B. „Rechnung R-2026-041". */
 export function shareSubject(docType: DocType, documentNumber: string): string {
-  const wort = docType === "rechnung" ? "Rechnung" : "Angebot";
+  const wort = docType === "invoice" ? "Rechnung" : "Angebot";
   return `${wort} ${documentNumber}`.trim();
 }
 
@@ -18,7 +19,7 @@ export function shareMessage(
   documentNumber: string,
   companyName: string | null,
 ): string {
-  const wort = docType === "rechnung" ? "Ihre Rechnung" : "Ihr Angebot";
+  const wort = docType === "invoice" ? "Ihre Rechnung" : "Ihr Angebot";
   const beleg = documentNumber ? `${wort} ${documentNumber}` : wort;
   const firma = companyName?.trim();
   const gruss = firma ? `\n\nMit freundlichen Grüßen\n${firma}` : "";

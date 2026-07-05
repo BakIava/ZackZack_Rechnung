@@ -175,7 +175,7 @@ export const getDraft = cache(
 
     return {
       id: data.id as string,
-      docType: data.document_type === "quote" ? "angebot" : "rechnung",
+      docType: data.document_type,
       customerId: (data.customer_id as string | null) ?? null,
     };
   },

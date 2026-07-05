@@ -1,8 +1,9 @@
+import { DocType } from "@/shared/doc";
+
 /* Beispieldaten fürs Dashboard (verbindliche Demodaten aus dem Design-Handoff).
    Eigennamen (Betrieb, Kunden, Leistungen) bleiben deutsch — sie stehen so auf
    dem Dokument. Beträge als ganzzahlige Cents. */
-
-export type DocType = "rechnung" | "angebot";
+   
 export type DocStatus = "bezahlt" | "offen" | "versendet" | "entwurf";
 
 export interface DashboardDoc {
@@ -23,11 +24,11 @@ export const COMPANY = {
 } as const;
 
 export const DOCS: DashboardDoc[] = [
-  { id: "R-2026-041", type: "rechnung", customer: "Familie Schneider", number: "R-2026-041", amount: 48000, date: "2026-06-02", status: "bezahlt" },
-  { id: "A-2026-088", type: "angebot", customer: "Bäckerei Krause GmbH", number: "A-2026-088", amount: 234000, date: "2026-05-30", status: "versendet" },
-  { id: "R-2026-040", type: "rechnung", customer: "Ahmet Demir", number: "R-2026-040", amount: 69000, date: "2026-05-28", status: "offen" },
-  { id: "A-2026-087", type: "angebot", customer: "Familie Wagner", number: "A-2026-087", amount: 112000, date: "2026-05-25", status: "entwurf" },
-  { id: "R-2026-039", type: "rechnung", customer: "Café Sonne", number: "R-2026-039", amount: 85000, date: "2026-05-22", status: "bezahlt" },
+  { id: "R-2026-041", type: "invoice", customer: "Familie Schneider", number: "R-2026-041", amount: 48000, date: "2026-06-02", status: "bezahlt" },
+  { id: "A-2026-088", type: "offer", customer: "Bäckerei Krause GmbH", number: "A-2026-088", amount: 234000, date: "2026-05-30", status: "versendet" },
+  { id: "R-2026-040", type: "invoice", customer: "Ahmet Demir", number: "R-2026-040", amount: 69000, date: "2026-05-28", status: "offen" },
+  { id: "A-2026-087", type: "offer", customer: "Familie Wagner", number: "A-2026-087", amount: 112000, date: "2026-05-25", status: "entwurf" },
+  { id: "R-2026-039", type: "invoice", customer: "Café Sonne", number: "R-2026-039", amount: 85000, date: "2026-05-22", status: "bezahlt" },
 ];
 
 export interface DemoCustomer {

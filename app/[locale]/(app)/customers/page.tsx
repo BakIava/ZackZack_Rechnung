@@ -11,6 +11,9 @@ export default async function CustomersPage({ params }: Props) {
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
   const customers = await getCustomers();
 
+  console.log(customers);
+  
+
   return <CustomersScreen dir={dir} customers={customers} />;
 }
 

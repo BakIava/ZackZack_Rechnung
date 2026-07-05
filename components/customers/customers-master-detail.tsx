@@ -183,7 +183,7 @@ function MasterRow({ customer, selected, isNew, onSelect }: MasterRowProps) {
   const docs = sortedDocs(customer.documents);
   const lastDoc = docs[0];
   const docLabel = lastDoc
-    ? `${lastDoc.document_type === "rechnung" ? t("rechnung") : t("angebot")} ${formatDateShort(lastDoc.issue_date)}`
+    ? `${lastDoc.document_type === "invoice" ? t("invoice") : t("offer")} ${formatDateShort(lastDoc.issue_date)}`
     : "";
 
   return (

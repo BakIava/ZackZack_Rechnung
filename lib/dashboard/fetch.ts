@@ -13,10 +13,6 @@ export interface DashboardData {
   paidSumCents: number;
 }
 
-function mapType(dbType: string): DocType {
-  return dbType === "invoice" ? "rechnung" : "angebot";
-}
-
 function mapStatus(dbStatus: string): DocStatus {
   switch (dbStatus) {
     case "paid":
@@ -75,7 +71,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     const snapshot = doc.customer_snapshot as { name?: string } | null;
     return {
       id: doc.id,
-      type: mapType(doc.document_type),
+      type: doc.document_type,
       customer: snapshot?.name ?? "—",
       number: doc.document_number ?? "",
       amount: doc.total_amount ?? 0,
