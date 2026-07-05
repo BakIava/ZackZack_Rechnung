@@ -34,7 +34,7 @@ function Header({ vm, logo }: { vm: PdfViewModel; logo: PdfLogo | null }) {
       <View>
         <Text style={s.coName}>{vm.companyName}</Text>
         {!!vm.companyAddressLine && <Text style={s.coAddr}>{vm.companyAddressLine}</Text>}
-        {!!vm.companyContactLine && <Text style={s.coAddr}>{vm.companyContactLine}</Text>}
+        {!!vm.companyContactLine && <Text style={s.coContact}>{vm.companyContactLine}</Text>}
       </View>
       {logo ? (
         // eslint-disable-next-line jsx-a11y/alt-text
@@ -73,7 +73,7 @@ function Parties({ vm }: { vm: PdfViewModel }) {
         {vm.serviceDateValue && (
           <MetaRow label={DOKUMENT_DE.leistungsdatum} value={vm.serviceDateValue} />
         )}
-        <MetaRow label={vm.steuerLabel} value={vm.steuerValue} />
+        {/* <MetaRow label={vm.steuerLabel} value={vm.steuerValue} /> */}
       </View>
     </View>
   );
@@ -121,7 +121,7 @@ function Totals({ vm }: { vm: PdfViewModel }) {
 
 function Footer({ vm }: { vm: PdfViewModel }) {
   return (
-    <View style={s.foot}>
+    <View style={s.foot} fixed>
       <View style={s.footCol}>
         <Text style={s.footHead}>{vm.footerCompanyName}</Text>
         {vm.footerOwnerLine && <Text style={s.footText}>{vm.footerOwnerLine}</Text>}
@@ -146,9 +146,13 @@ function Footer({ vm }: { vm: PdfViewModel }) {
 /** Vollständiger A4-Beleg. `logo` ist serverseitig vorbereitet (siehe document-logo.ts). */
 export function DocumentPdf({ preview, logo }: DocumentPdfProps) {
   const vm = buildPdfViewModel(preview);
+  const wort = preview.docType === "rechnung" ? "Rechnung" : "Angebot";
+  // Setzt die PDF-Metadaten /Title — dort lesen Browser den Tab-Titel bei
+  // `inline`-Anzeige aus (die URL selbst endet nur auf ".../pdf").
+  const title = preview.documentNumber ? `${wort} ${preview.documentNumber}` : wort;
 
   return (
-    <Document language={DOCUMENT_LOCALE}>
+    <Document language={DOCUMENT_LOCALE} title={title}>
       <Page size="A4" style={s.page}>
         <Header vm={vm} logo={logo} />
         <Parties vm={vm} />

@@ -60,11 +60,12 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       supabase
         .from("documents")
         .select("total_amount")
+        .is("paid_at", null)
         .in("status", ["finalized", "sent"]),
       supabase
         .from("documents")
         .select("total_amount")
-        .eq("status", "paid"),
+        .not("paid_at", "is", null)
     ]);
 
   const companyName = companyRes.data?.name ?? "";
@@ -76,12 +77,12 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       id: doc.id,
       type: mapType(doc.document_type),
       customer: snapshot?.name ?? "—",
-      service: doc.document_number ?? "",
+      number: doc.document_number ?? "",
       amount: doc.total_amount ?? 0,
       date: doc.issue_date,
       status: mapStatus(doc.status),
     };
-  });
+  });  
 
   const openDocs = openRes.data ?? [];
   const paidDocs = paidRes.data ?? [];

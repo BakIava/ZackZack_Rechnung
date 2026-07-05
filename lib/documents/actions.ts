@@ -24,7 +24,10 @@ export async function markDocumentAsPaid(documentId: string): Promise<{ error?: 
 
   const { error } = await ctx.supabase
     .from("documents")
-    .update({ paid_at: new Date().toISOString() })
+    .update({ 
+      status: "paid",
+      paid_at: new Date().toISOString() 
+    })
     .eq("id", documentId)
     .eq("company_id", ctx.companyId);
 

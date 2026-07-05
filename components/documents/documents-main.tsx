@@ -27,6 +27,8 @@ interface DocumentsMainProps {
   documents: DocumentListItem[];
   paymentDays: number;
   companyName: string;
+  /** Über /documents/[document_id] direkt geöffnetes Dokument; null → nichts vorausgewählt. */
+  initialSelectedId?: string | null;
 }
 
 type TypeFilter = "all" | "rechnung" | "angebot";
@@ -42,7 +44,7 @@ const STATUS_DOT_CLASS: Record<string, string> = {
 };
 
 function getDisplayStatus(doc: DocumentListItem) {
-  if (doc.paidAt) return "bezahlt" as const;
+  if (doc.status === "paid") return "bezahlt" as const;
   if (doc.status === "sent") return "versendet" as const;
   if (doc.status === "finalized") return "offen" as const;
   return "entwurf" as const;
@@ -56,7 +58,13 @@ function matchesStatusFilter(doc: DocumentListItem, f: StatusFilter): boolean {
   return true;
 }
 
-export function DocumentsMain({ dir, documents, paymentDays, companyName }: DocumentsMainProps) {
+export function DocumentsMain({
+  dir,
+  documents,
+  paymentDays,
+  companyName,
+  initialSelectedId = null,
+}: DocumentsMainProps) {
   const t = useTranslations("Documents");
   const router = useRouter();
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
@@ -64,7 +72,7 @@ export function DocumentsMain({ dir, documents, paymentDays, companyName }: Docu
   const [query, setQuery] = useState("");
   const [typeF, setTypeF] = useState<TypeFilter>("all");
   const [statusF, setStatusF] = useState<StatusFilter>("all");
-  const [sel, setSel] = useState<string | null>(null);
+  const [sel, setSel] = useState<string | null>(initialSelectedId);
   const [detailItems, setDetailItems] = useState<DocumentItem[] | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [markingPaid, setMarkingPaid] = useState(false);
@@ -145,7 +153,7 @@ export function DocumentsMain({ dir, documents, paymentDays, companyName }: Docu
         d.customerName.toLowerCase().includes(q)),
   );
 
-  const selDoc = sel ? (documents.find((d) => d.id === sel) ?? null) : null;
+  const selDoc = sel ? (documents.find((d) => d.id === sel) ?? null) : null;  
 
   const typeFilters: { id: TypeFilter; label: string }[] = [
     { id: "all", label: t("fAll") },
@@ -293,7 +301,7 @@ export function DocumentsMain({ dir, documents, paymentDays, companyName }: Docu
                       data-sel={sel === d.id ? "1" : "0"}
                       onClick={() =>
                         d.status === "draft"
-                          ? router.push(`/create/${d.id}/1`)
+                          ? router.push(`/create/${d.id}/2`)
                           : setSel(d.id)
                       }
                     >

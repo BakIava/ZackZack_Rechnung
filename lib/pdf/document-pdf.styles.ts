@@ -22,7 +22,9 @@ const BOLD = "bold" as const;
 export const pdfStyles = StyleSheet.create({
   page: {
     paddingTop: 44,
-    paddingBottom: 40,
+    // Reserviert Platz für den absolut positionierten Footer (s. foot unten),
+    // damit fließender Inhalt nie unter ihm verschwindet.
+    paddingBottom: 130,
     paddingHorizontal: 44,
     fontSize: 10,
     fontFamily: PDF_FONT_FAMILY,
@@ -34,12 +36,13 @@ export const pdfStyles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingBottom: 16,
-    borderBottomWidth: 2,
+    paddingBottom: 0,
+    borderBottomWidth: 0.5,
     borderBottomColor: RULE,
   },
   coName: { fontSize: 15, fontWeight: BOLD, color: HEAD },
   coAddr: { fontSize: 8.5, color: MUTED, marginTop: 7 },
+  coContact: { fontSize: 8.5, color: MUTED },
   logoBox: {
     width: 44,
     height: 44,
@@ -155,9 +158,12 @@ export const pdfStyles = StyleSheet.create({
   thanks: { marginTop: 12, fontSize: 10, fontWeight: BOLD, color: "#1a2430" },
 
   foot: {
+    position: "absolute",
+    bottom: 40,
+    left: 44,
+    right: 44,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 22,
     paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: LINE,

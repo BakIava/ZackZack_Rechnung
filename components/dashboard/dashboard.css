@@ -553,7 +553,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.dtd-serv,
+.dtd-number,
 .dtd-date {
   font-size: 14px;
   color: var(--muted);

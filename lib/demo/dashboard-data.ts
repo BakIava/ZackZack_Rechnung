@@ -9,7 +9,7 @@ export interface DashboardDoc {
   id: string;
   type: DocType;
   customer: string;
-  service: string;
+  number: string;
   amount: number; // Cent
   date: string; // ISO (JJJJ-MM-TT)
   status: DocStatus;
@@ -23,11 +23,11 @@ export const COMPANY = {
 } as const;
 
 export const DOCS: DashboardDoc[] = [
-  { id: "R-2026-041", type: "rechnung", customer: "Familie Schneider", service: "Malerarbeiten Wandfläche", amount: 48000, date: "2026-06-02", status: "bezahlt" },
-  { id: "A-2026-088", type: "angebot", customer: "Bäckerei Krause GmbH", service: "Fassadenanstrich Außen", amount: 234000, date: "2026-05-30", status: "versendet" },
-  { id: "R-2026-040", type: "rechnung", customer: "Ahmet Demir", service: "Lackierarbeiten Innentüren", amount: 69000, date: "2026-05-28", status: "offen" },
-  { id: "A-2026-087", type: "angebot", customer: "Familie Wagner", service: "Tapezieren Wohnzimmer", amount: 112000, date: "2026-05-25", status: "entwurf" },
-  { id: "R-2026-039", type: "rechnung", customer: "Café Sonne", service: "Deckenanstrich Gastraum", amount: 85000, date: "2026-05-22", status: "bezahlt" },
+  { id: "R-2026-041", type: "rechnung", customer: "Familie Schneider", number: "R-2026-041", amount: 48000, date: "2026-06-02", status: "bezahlt" },
+  { id: "A-2026-088", type: "angebot", customer: "Bäckerei Krause GmbH", number: "A-2026-088", amount: 234000, date: "2026-05-30", status: "versendet" },
+  { id: "R-2026-040", type: "rechnung", customer: "Ahmet Demir", number: "R-2026-040", amount: 69000, date: "2026-05-28", status: "offen" },
+  { id: "A-2026-087", type: "angebot", customer: "Familie Wagner", number: "A-2026-087", amount: 112000, date: "2026-05-25", status: "entwurf" },
+  { id: "R-2026-039", type: "rechnung", customer: "Café Sonne", number: "R-2026-039", amount: 85000, date: "2026-05-22", status: "bezahlt" },
 ];
 
 export interface DemoCustomer {

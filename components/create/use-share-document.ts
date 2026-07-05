@@ -44,8 +44,18 @@ function toWaNumber(phone: string | null): string | null {
   return digits.length >= 8 ? digits : null;
 }
 
+/** Grobe Geräte-Erkennung: Desktop-Browser sollen nie das native Share-Sheet
+ * bekommen (dort ist es meist nur ein Screenshot-Teilen ohne Datei-Anhang). */
+function isDesktopBrowser(): boolean {
+  if (typeof navigator === "undefined") return true;
+  const uaData = (navigator as Navigator & { userAgentData?: { mobile: boolean } }).userAgentData;
+  if (uaData && typeof uaData.mobile === "boolean") return !uaData.mobile;
+  return !/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 function canShareFiles(file: File): boolean {
   return (
+    !isDesktopBrowser() &&
     typeof navigator !== "undefined" &&
     typeof navigator.share === "function" &&
     typeof navigator.canShare === "function" &&
@@ -130,7 +140,7 @@ export function useShareDocument(target: ShareTarget) {
 
         // Bevorzugt: natives Teilen mit Datei-Anhang (mobil/PWA). Bei
         // vorgeladenem File ohne await → Nutzer-Aktivierung bleibt gültig.
-        if (canShareFiles(file)) {
+        if (canShareFiles(file)) {          
           try {
             await navigator.share({ files: [file], title: subject, text });
           } catch (err) {
@@ -149,7 +159,7 @@ export function useShareDocument(target: ShareTarget) {
           window.open(`${base}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
         } else {
           const to = customerEmail ?? "";
-          const href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+          const href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;  
           window.location.href = href;
         }
         setState({ pending: null, error: false, downloadedHint: true });

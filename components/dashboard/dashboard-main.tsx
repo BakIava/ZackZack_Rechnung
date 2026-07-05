@@ -32,7 +32,8 @@ const STATUS_KEY: Record<DocStatus, string> = {
 export async function DashboardMain({ dir, data }: DashboardMainProps) {
   const t = await getTranslations("Dashboard");
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
-  const firstName = data.director.split(/\s+/)[0] || data.companyName.split(/\s+/)[0];
+  const firstName =
+    data.director.split(/\s+/)[0] || data.companyName.split(/\s+/)[0];
   const isEmpty = data.docs.length === 0;
 
   return (
@@ -47,9 +48,16 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
         <div className="dtools">
           <div className="dsearch">
             <Search size={18} strokeWidth={STROKE} aria-hidden />
-            <input placeholder={t("searchGlobal")} aria-label={t("searchGlobal")} />
+            <input
+              placeholder={t("searchGlobal")}
+              aria-label={t("searchGlobal")}
+            />
           </div>
-          <button type="button" className="iconbtn" aria-label={t("openAmount")}>
+          <button
+            type="button"
+            className="iconbtn"
+            aria-label={t("openAmount")}
+          >
             <Bell size={20} strokeWidth={STROKE} aria-hidden />
             <span className="dot" />
           </button>
@@ -80,12 +88,17 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
               </span>
               <span className="dhl-lbl">{t("openAmount")}</span>
             </div>
-            <div className="dhl-val">{formatMoney(isEmpty ? 0 : data.openSumCents)}</div>
+            <div className="dhl-val">
+              {formatMoney(isEmpty ? 0 : data.openSumCents)}
+            </div>
             <div className="dhl-meta">
               {isEmpty ? (
                 t("hlEmptySub")
               ) : (
-                <>{data.openCount} {t("docsOpen")} · <b>{formatMoney(data.paidSumCents)}</b> {t("paidMonth")}</>
+                <>
+                  {data.openCount} {t("docsOpen")} ·{" "}
+                  <b>{formatMoney(data.paidSumCents)}</b> {t("paidMonth")}
+                </>
               )}
             </div>
           </div>
@@ -113,7 +126,7 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
             <div className="dtr dthead">
               <span className="dth">{t("colType")}</span>
               <span className="dth">{t("navCustomers")}</span>
-              <span className="dth">{t("colService")}</span>
+              <span className="dth">{t("colNumber")}</span>
               <span className="dth">{t("colDate")}</span>
               <span className="dth num">{t("colAmount")}</span>
               <span className="dth num">{t("colStatus")}</span>
@@ -147,14 +160,23 @@ const GHOST_ROWS = [
   { w1: "50%", w2: "44%" },
 ];
 
-function EmptyGhost({ ghostTitle, ghostSub, newDocLabel, dir }: EmptyGhostProps) {
+function EmptyGhost({
+  ghostTitle,
+  ghostSub,
+  newDocLabel,
+  dir,
+}: EmptyGhostProps) {
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   return (
     <div className="le-card le-ghost">
       <div className="le-ghost-rows" aria-hidden="true">
         <div className="le-grow le-grow--head">
           {[60, 46, 52, 40, 46, 46].map((w, i) => (
-            <span key={i} className="le-bar le-bar--head" style={{ width: `${w}%` }} />
+            <span
+              key={i}
+              className="le-bar le-bar--head"
+              style={{ width: `${w}%` }}
+            />
           ))}
         </div>
         {GHOST_ROWS.map((r, i) => (
@@ -203,8 +225,10 @@ interface DocRowProps {
 
 function DocRow({ doc, typeLabel, statusLabel }: DocRowProps) {
   const TypeIcon = doc.type === "rechnung" ? ReceiptText : FileText;
+  const href = doc.status === "entwurf" ? `/create/${doc.id}/2` : `/documents/${doc.id}`;
+
   return (
-    <div className="dtr drow">
+    <Link href={href} className="dtr drow">
       <span className="dtd-doc">
         <span className={`dtd-ic dtd-ic--${doc.type}`}>
           <TypeIcon size={19} strokeWidth={STROKE} aria-hidden />
@@ -212,7 +236,7 @@ function DocRow({ doc, typeLabel, statusLabel }: DocRowProps) {
         <span className="dtype-chip">{typeLabel}</span>
       </span>
       <span className="dtd-cust">{doc.customer}</span>
-      <span className="dtd-serv">{doc.service}</span>
+      <span className="dtd-number">{doc.number}</span>
       <span className="dtd-date">{formatDateDE(doc.date)}</span>
       <span className="dtd-amount num">{formatMoney(doc.amount)}</span>
       <span className="dtd-status num">
@@ -221,6 +245,6 @@ function DocRow({ doc, typeLabel, statusLabel }: DocRowProps) {
           {statusLabel}
         </span>
       </span>
-    </div>
+    </Link>
   );
 }

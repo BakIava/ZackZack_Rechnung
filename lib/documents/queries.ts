@@ -80,7 +80,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
     supabase
       .from("documents")
       .select(
-        "id, document_type, document_number, status, issue_date, total_amount, paid_at, customer_snapshot",
+        "id, document_type, document_number, status, issue_date, total_amount, paid_at, customer_id, customer_snapshot",
       )
       .eq("company_id", companyId)
       .order("issue_date", { ascending: false }),
@@ -90,6 +90,8 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   const paymentDays = companyRes.data?.payment_days ?? 14;
   const companyName = (companyRes.data?.name as string | null) ?? "";
   const today = new Date().toISOString().split("T")[0];
+  const customerIds = (docsRes.data?.map((d) => d.customer_id as string | null).filter(Boolean) ?? []) as string[];
+  const customers = await getCustomersByIds(customerIds);
 
   const documents: DocumentListItem[] = (docsRes.data ?? []).map((doc) => {
     const snapshot = doc.customer_snapshot as
@@ -97,6 +99,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       | null;
     const status = doc.status as DocumentListItem["status"];
     const paidAt = doc.paid_at as string | null;
+    const customer = customers.find((c) => c.id === doc.customer_id);
 
     const isOverdue =
       paidAt === null &&
@@ -107,9 +110,9 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       id: doc.id,
       type: doc.document_type as DocumentListItem["type"],
       documentNumber: doc.document_number ?? "",
-      customerName: snapshot?.name ?? "—",
-      customerEmail: snapshot?.email ?? null,
-      customerPhone: snapshot?.phone ?? null,
+      customerName: customer?.name ?? snapshot?.name ?? "—",
+      customerEmail: customer?.email ?? snapshot?.email ?? null,
+      customerPhone: customer?.phone ?? snapshot?.phone ?? null,
       status,
       issueDate: doc.issue_date,
       totalAmount: doc.total_amount ?? 0,
@@ -201,3 +204,55 @@ export const getDraft = cache(
     };
   },
 );
+
+export interface DocumentCustomer {
+  id: string;
+  name: string;
+  street: string | null;
+  streetNo: string | null;
+  postcode: string | null;
+  city: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+/**
+ * Lädt mehrere Kunden auf einen Schlag (z. B. um eine Dokumentenliste mit
+ * aktuellen Kundendaten statt dem eingefrorenen `customer_snapshot` anzureichern),
+ * scoped auf die eigene Firma. Fremde/unbekannte IDs werden stillschweigend
+ * übersprungen; leere `customerIds` sparen den Roundtrip.
+ */
+export async function getCustomersByIds(customerIds: string[]): Promise<DocumentCustomer[]> {
+  if (customerIds.length === 0) return [];
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: userData } = await supabase
+    .from("users")
+    .select("company_id")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!userData?.company_id) return [];
+
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id, name, street, street_no, postcode, city, email, phone")
+    .eq("company_id", userData.company_id)
+    .in("id", customerIds);
+  if (error || !data) return [];
+
+  return data.map((c) => ({
+    id: c.id as string,
+    name: c.name as string,
+    street: (c.street as string | null) ?? null,
+    streetNo: (c.street_no as string | null) ?? null,
+    postcode: (c.postcode as string | null) ?? null,
+    city: (c.city as string | null) ?? null,
+    email: (c.email as string | null) ?? null,
+    phone: (c.phone as string | null) ?? null,
+  }));
+}

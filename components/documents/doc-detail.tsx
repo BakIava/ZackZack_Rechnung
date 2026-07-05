@@ -20,6 +20,7 @@ import type { ShareTarget } from "@/components/create/use-share-document";
 import type { DocumentListItem, DocumentItem } from "@/lib/documents/types";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocShareRow } from "./doc-share-row";
+import { PositionsList } from "./positions-list";
 import "./documents-main.css";
 
 const STROKE = 1.75;
@@ -182,10 +183,10 @@ export function DocDetail({
             <div className="hmeta-v">{formatDateDE(doc.issueDate)}</div>
           </div>
           {doc.type === "invoice" &&
-            (doc.paidAt ? (
+            (doc.status === "paid" ? (
               <div className="hmeta-cell">
                 <div className="hmeta-k">{t("mPaid")}</div>
-                <div className="hmeta-v">{formatDateDE(doc.paidAt)}</div>
+                {doc.paidAt && <div className="hmeta-v">{formatDateDE(doc.paidAt)}</div>}
               </div>
             ) : (
               <div className="hmeta-cell">
@@ -204,26 +205,7 @@ export function DocDetail({
               <Loader2 size={20} strokeWidth={STROKE} className="hpos-spinner" />
             </div>
           ) : items && items.length > 0 ? (
-            <div className="hpos">
-              {items.map((item) => (
-                <div className="hpos-row" key={item.position}>
-                  <div className="hpos-row-body">
-                    <div className="hpos-desc">{item.descriptionDe}</div>
-                    <div className="hpos-qty">
-                      {item.amount} {item.unit} · {formatMoney(item.unitPrice)}
-                    </div>
-                  </div>
-                  <div className="hpos-sum">{formatMoney(item.totalAmount)}</div>
-                </div>
-              ))}
-              <div className="hpos-total">
-                <span className="hpos-total-l">
-                  {t("total")}{" "}
-                  <span className="hpos-total-net">{t("mNet")}</span>
-                </span>
-                <span className="hpos-total-v">{formatMoney(doc.totalAmount)}</span>
-              </div>
-            </div>
+            <PositionsList key={doc.id} items={items} totalAmount={doc.totalAmount} />
           ) : (
             <div className="hpos">
               <div className="hpos-total">

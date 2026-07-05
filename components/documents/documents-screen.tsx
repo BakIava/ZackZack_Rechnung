@@ -6,16 +6,25 @@ interface DocumentsScreenProps {
   documents: DocumentListItem[];
   paymentDays: number;
   companyName: string;
+  /** Über /documents/[document_id] direkt geöffnetes Dokument; null → nichts vorausgewählt. */
+  initialSelectedId?: string | null;
 }
 
 /** Dokumente-Screen: delegiert an DocumentsMain. Sidebar kommt vom (app)-Layout. */
-export function DocumentsScreen({ dir, documents, paymentDays, companyName }: DocumentsScreenProps) {
+export function DocumentsScreen({
+  dir,
+  documents,
+  paymentDays,
+  companyName,
+  initialSelectedId = null,
+}: DocumentsScreenProps) {
   return (
     <DocumentsMain
       dir={dir}
       documents={documents}
       paymentDays={paymentDays}
       companyName={companyName}
+      initialSelectedId={initialSelectedId}
     />
   );
 }
