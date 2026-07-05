@@ -1,24 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { deriveInitials } from "@/lib/initials";
 import type { DraftContext, DraftItem } from "./item-types";
 
-async function getCompanyId(): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  return (data?.company_id as string | null) ?? null;
-}
-
 /** Positionen eines Drafts, sortiert nach position. */
 export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
-  const companyId = await getCompanyId();
+  const companyId = await getCurrentCompanyId();
   if (!companyId) return [];
 
   const supabase = await createClient();
@@ -52,7 +39,7 @@ export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
 export async function getDraftContext(
   documentId: string,
 ): Promise<DraftContext | null> {
-  const companyId = await getCompanyId();
+  const companyId = await getCurrentCompanyId();
   if (!companyId) return null;
 
   const supabase = await createClient();

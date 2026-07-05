@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 
 export interface SettingsActionResult {
   error?: string;
@@ -15,20 +16,9 @@ const LOGO_TYPES: Record<string, string> = {
 };
 
 async function getCompanyId(): Promise<{ companyId: string } | { error: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "notAuthenticated" };
-
-  const { data: profile } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!profile) return { error: "notAuthenticated" };
-
-  return { companyId: profile.company_id };
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { error: "notAuthenticated" };
+  return { companyId };
 }
 
 async function updateCompany(

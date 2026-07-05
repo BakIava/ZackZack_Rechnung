@@ -1,24 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { deriveInitials } from "@/lib/initials";
 import type { CustomerListItem, CustomerRow } from "./types";
 
-async function getCompanyId(): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  return data?.company_id ?? null;
-}
-
 export async function getCustomers(): Promise<CustomerRow[]> {
-  const companyId = await getCompanyId();
+  const companyId = await getCurrentCompanyId();
   if (!companyId) return [];
 
   const supabase = await createClient();
@@ -36,7 +22,7 @@ export async function getCustomers(): Promise<CustomerRow[]> {
 }
 
 export async function getCustomerSummaries(): Promise<CustomerListItem[]> {
-  const companyId = await getCompanyId();
+  const companyId = await getCurrentCompanyId();
   if (!companyId) return [];
 
   const supabase = await createClient();
