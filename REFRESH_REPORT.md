@@ -316,3 +316,36 @@ Commits (Reihenfolge, kein Squash):
 - Freigabe zum Entfernen der Demo-Startseite (Punkt 1).
 - Initialen-/CompanyId-/Geld-Duplikate: Konsolidierung nur mit Beachtung der
   False-Friend-Semantik und der PDF/Auth-Tabus.
+
+---
+
+# LAUF 2 — Umsetzung klar sicherer Empfehlungen
+
+Branch: `claude/codebase-consolidation-eut0tg` (Fortsetzung von Lauf 1; die Aufgabe
+schlug `chore/codebase-refresh-2` vor, die Harness-Vorgabe dieser Session schreibt
+aber den bestehenden Branch verbindlich vor — dort liegt auch der Stand aus Lauf 1).
+Prinzip unverändert: **kein Verhalten ändern**.
+
+## Lauf-2 Baseline (= Endzustand Lauf 1)
+
+| Check | Ergebnis |
+|---|---|
+| `typecheck` | ✅ 0 Fehler |
+| `lint` | ✅ 0 Fehler, 0 Warnungen |
+| `build` | ✅ grün |
+| `test` | 51 grün / 1 vorbestehender Fehler (`katalog.test.ts`, AR-Daten) |
+
+## Phase 1 — Tote i18n-Keys (SAFE) — ✅ erledigt
+
+- Entfernt: **kompletter `Placeholder`-Namespace** (`Placeholder.comingSoon`) aus
+  `messages/de.json`, `tr.json`, `ar.json` — in allen drei Locales gemeinsam,
+  Parität gewahrt.
+- **Verifikation vor Löschung:** repoweit 0 Referenzen auf `Placeholder`/`comingSoon`
+  (statisch **und** dynamisch). `comingSoon` war der einzige Key des Namespaces →
+  ganzer Namespace entfernt.
+- **False-Positive-Falle bewusst vermieden:** `Create.step1/step2/step3` sehen wie
+  Kandidaten aus (kein `t("step2")` im Code), werden aber **dynamisch** über
+  `FLOW_STEPS[].labelKey` in `FlowSteps.tsx` referenziert → **behalten**.
+  `Create.title` wird 8× genutzt → behalten.
+- JSON valide, `messages.test.ts`-Paritätstest grün, Typecheck grün, Tests unverändert.
+- Commit: `cc36f83`
