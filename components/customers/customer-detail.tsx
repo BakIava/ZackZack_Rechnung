@@ -16,7 +16,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import { updateCustomer, deleteCustomer } from "@/lib/customers/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 import { formatDateDE, formatMoney, formatDateShort } from "@/lib/format";
@@ -128,8 +129,6 @@ interface CustomerReadViewProps {
 
 function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps) {
   const t = useTranslations("Customers");
-  const params = useParams();
-  const locale = params.locale as string;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showDelConfirm, setShowDelConfirm] = useState(false);
@@ -260,7 +259,7 @@ function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps
             <span className="cdm-th num">{t("colStatus")}</span>
           </div>
           {docs.map((d) => (
-            <DocRow key={d.id} doc={d} locale={locale} />
+            <DocRow key={d.id} doc={d} />
           ))}
           {docs.length === 0 && (
             <div className="cdm-nodocs">{t("noDocs")}</div>
@@ -420,10 +419,9 @@ function Field({ icon: Icon, label, value }: FieldProps) {
 
 interface DocRowProps {
   doc: CustomerDocRow;
-  locale: string;
 }
 
-function DocRow({ doc, locale }: DocRowProps) {
+function DocRow({ doc }: DocRowProps) {
   const t = useTranslations("Customers");
   const TypeIcon = doc.document_type === "rechnung" ? ReceiptText : FileText;
   const typeLabel = doc.document_type === "rechnung" ? t("rechnung") : t("angebot");
@@ -432,11 +430,7 @@ function DocRow({ doc, locale }: DocRowProps) {
   const docId = doc.document_number ?? doc.id;
 
   return (
-    <a
-      href={`/${locale}/documents/${doc.id}`}
-      className="cdm-tr cdm-drow"
-      style={{ textDecoration: "none", color: "inherit" }}
-    >
+    <Link href={`/documents/${doc.id}`} className="cdm-tr cdm-drow">
       <span className="cdm-tdoc">
         <span className={`cdm-tdoc-ic cdm-tdoc-ic--${doc.document_type}`}>
           <TypeIcon
@@ -459,7 +453,7 @@ function DocRow({ doc, locale }: DocRowProps) {
           {t(statusKey)}
         </span>
       </span>
-    </a>
+    </Link>
   );
 }
 

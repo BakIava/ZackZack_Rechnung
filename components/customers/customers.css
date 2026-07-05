@@ -132,7 +132,7 @@
 .cdm-thead { height: 42px; background: var(--bg); border-bottom: 1px solid var(--line); }
 .cdm-th { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 .cdm-th.num { text-align: end; justify-self: end; }
-.cdm-drow { height: 64px; border-bottom: 1px solid var(--line); cursor: pointer; transition: .12s; }
+.cdm-drow { height: 64px; border-bottom: 1px solid var(--line); cursor: pointer; transition: .12s; text-decoration: none; color: inherit; }
 .cdm-drow:last-child { border-bottom: none; }
 .cdm-drow:hover { background: color-mix(in srgb, var(--primary) 3%, var(--surface)); }
 .cdm-tdoc { display: flex; align-items: center; gap: 11px; }
