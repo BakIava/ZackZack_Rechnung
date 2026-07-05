@@ -507,6 +507,8 @@
     "shareWa": "WhatsApp",
     "shareMail": "E-Mail",
     "sharePdf": "PDF",
+    "shareError": "PDF konnte nicht erstellt werden. Bitte erneut versuchen.",
+    "shareDownloadedHint": "PDF gespeichert – jetzt im Chat als Anhang auswählen.",
     "noResults": "Keine Dokumente gefunden",
     "noResultsSub": "Ändere die Suche oder den Filter.",
     "selectHint": "Dokument auswählen",

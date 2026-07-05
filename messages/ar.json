@@ -507,6 +507,8 @@
     "shareWa": "واتساب",
     "shareMail": "بريد",
     "sharePdf": "PDF",
+    "shareError": "تعذّر إنشاء ملف PDF. يُرجى المحاولة مرة أخرى.",
+    "shareDownloadedHint": "تم حفظ ملف PDF – اختره الآن كمرفق في المحادثة.",
     "noResults": "لا توجد مستندات",
     "noResultsSub": "غيّر البحث أو الفلتر.",
     "selectHint": "اختر مستنداً",
