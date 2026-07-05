@@ -41,10 +41,11 @@ function toInitials(name: string): string {
 export async function fetchDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
 
-  // Position 5 (supabase.auth.getUser()) wird weiterhin aufgerufen, das Ergebnis
-  // aber nicht gebunden — bewusst per Elision, um den bisherigen Aufruf (und dessen
-  // Netz-/Auth-Seiteneffekt) unverändert zu lassen.
-  const [companyRes, docsRes, customersRes, catalogRes, , openRes, paidRes] =
+  // Kein separater supabase.auth.getUser() mehr: Die Middleware validiert und
+  // refresht das Token bereits vor dem Rendern der Seite, und alle Queries hier
+  // sind per RLS auf die Firma des eingeloggten Users beschränkt. Der frühere
+  // (ergebnislose) Aufruf war damit ein reiner zusätzlicher Auth-Roundtrip.
+  const [companyRes, docsRes, customersRes, catalogRes, openRes, paidRes] =
     await Promise.all([
       supabase.from("companies").select("name, director").single(),
       supabase
@@ -56,7 +57,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
         .limit(5),
       supabase.from("customers").select("id", { count: "exact", head: true }),
       supabase.from("services").select("id", { count: "exact", head: true }),
-      supabase.auth.getUser(),
       supabase
         .from("documents")
         .select("total_amount")

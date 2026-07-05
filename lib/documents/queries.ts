@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import type {
   DbDocumentStatus,
   DocumentListItem,
@@ -58,24 +59,16 @@ async function deleteEmptyDrafts(supabase: DB, companyId: string): Promise<void>
 }
 
 export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { documents: [], paymentDays: 14, companyName: "" };
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { documents: [], paymentDays: 14, companyName: "" };
 
-  const { data: userData } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!userData?.company_id) return { documents: [], paymentDays: 14, companyName: "" };
-
-  const companyId = userData.company_id;
-
-  // Verwaiste, positionslose Entwürfe aufräumen, bevor die Liste geladen wird.
-  await deleteEmptyDrafts(supabase, companyId);
-
+  // Die Aufräumaktion für verwaiste Entwürfe läuft nebenläufig zum eigentlichen
+  // Laden der Liste, statt sie davor zu blockieren. Sie betrifft nur leere,
+  // >30 Min alte Drafts; taucht ausnahmsweise einmal einer in der Liste auf,
+  // ist er beim nächsten Laden verschwunden – dafür entfällt der sequentielle
+  // Latenz-Aufschlag von 2–3 Roundtrips bei jedem Öffnen der Dokumentenliste.
   const [docsRes, companyRes] = await Promise.all([
     supabase
       .from("documents")
@@ -85,6 +78,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       .eq("company_id", companyId)
       .order("issue_date", { ascending: false }),
     supabase.from("companies").select("name, payment_days").eq("id", companyId).maybeSingle(),
+    deleteEmptyDrafts(supabase, companyId),
   ]);
 
   const paymentDays = companyRes.data?.payment_days ?? 14;
@@ -138,24 +132,15 @@ export interface FlowDocMeta {
  */
 export const getFlowDocMeta = cache(
   async (documentId: string): Promise<FlowDocMeta | null> => {
+    const companyId = await getCurrentCompanyId();
+    if (!companyId) return null;
+
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const { data: userData } = await supabase
-      .from("users")
-      .select("company_id")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (!userData?.company_id) return null;
-
     const { data } = await supabase
       .from("documents")
       .select("id, status, document_type")
       .eq("id", documentId)
-      .eq("company_id", userData.company_id)
+      .eq("company_id", companyId)
       .maybeSingle();
     if (!data) return null;
 
@@ -174,24 +159,15 @@ export const getFlowDocMeta = cache(
  */
 export const getDraft = cache(
   async (documentId: string): Promise<DraftDoc | null> => {
+    const companyId = await getCurrentCompanyId();
+    if (!companyId) return null;
+
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const { data: userData } = await supabase
-      .from("users")
-      .select("company_id")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (!userData?.company_id) return null;
-
     const { data } = await supabase
       .from("documents")
       .select("id, document_type, customer_id")
       .eq("id", documentId)
-      .eq("company_id", userData.company_id)
+      .eq("company_id", companyId)
       .eq("status", "draft")
       .maybeSingle();
 
@@ -225,23 +201,14 @@ export interface DocumentCustomer {
 export async function getCustomersByIds(customerIds: string[]): Promise<DocumentCustomer[]> {
   if (customerIds.length === 0) return [];
 
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return [];
+
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data: userData } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!userData?.company_id) return [];
-
   const { data, error } = await supabase
     .from("customers")
     .select("id, name, street, street_no, postcode, city, email, phone")
-    .eq("company_id", userData.company_id)
+    .eq("company_id", companyId)
     .in("id", customerIds);
   if (error || !data) return [];
 

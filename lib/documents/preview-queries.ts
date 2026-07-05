@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import type { DbDocumentStatus } from "./types";
 import type {
   DocumentPreview,
@@ -64,20 +65,10 @@ function toCustomer(snapshot: unknown): PreviewCustomer | null {
  */
 export const getDocumentPreview = cache(
   async (documentId: string): Promise<DocumentPreview | null> => {
+    const companyId = await getCurrentCompanyId();
+    if (!companyId) return null;
+
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    const { data: userData } = await supabase
-      .from("users")
-      .select("company_id")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (!userData?.company_id) return null;
-
-    const companyId = userData.company_id as string;
 
     const { data: docRow } = await supabase
       .from("documents")

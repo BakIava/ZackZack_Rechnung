@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
 import type { CompanySettings, SettingsData } from "./types";
 
 export type GetSettingsResult =
@@ -23,26 +24,19 @@ const COMPANY_DEFAULTS: Partial<CompanySettings> = {
 };
 
 export async function getSettingsData(): Promise<GetSettingsResult> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return { ok: false, reason: "unauthenticated" };
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!profile) return { ok: false, reason: "no_profile" };
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { ok: false, reason: "no_profile" };
 
+  const supabase = await createClient();
   let company: Record<string, unknown> | null = null;
 
   const { data: full, error: fullError } = await supabase
     .from("companies")
     .select(COMPANY_COLUMNS)
-    .eq("id", profile.company_id)
+    .eq("id", companyId)
     .single();
 
   if (full && !fullError) {
@@ -53,7 +47,7 @@ export async function getSettingsData(): Promise<GetSettingsResult> {
     const { data: minimal, error: minError } = await supabase
       .from("companies")
       .select(COMPANY_COLUMNS_FALLBACK)
-      .eq("id", profile.company_id)
+      .eq("id", companyId)
       .single();
 
     if (!minimal || minError) {
@@ -66,7 +60,7 @@ export async function getSettingsData(): Promise<GetSettingsResult> {
   const { data: sequence } = await supabase
     .from("number_sequences")
     .select("last_number")
-    .eq("company_id", profile.company_id)
+    .eq("company_id", companyId)
     .eq("document_type", "invoice")
     .eq("year", year)
     .maybeSingle();
