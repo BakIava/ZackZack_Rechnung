@@ -41,7 +41,10 @@ function toInitials(name: string): string {
 export async function fetchDashboardData(): Promise<DashboardData> {
   const supabase = await createClient();
 
-  const [companyRes, docsRes, customersRes, catalogRes, userRes, openRes, paidRes] =
+  // Position 5 (supabase.auth.getUser()) wird weiterhin aufgerufen, das Ergebnis
+  // aber nicht gebunden — bewusst per Elision, um den bisherigen Aufruf (und dessen
+  // Netz-/Auth-Seiteneffekt) unverändert zu lassen.
+  const [companyRes, docsRes, customersRes, catalogRes, , openRes, paidRes] =
     await Promise.all([
       supabase.from("companies").select("name, director").single(),
       supabase

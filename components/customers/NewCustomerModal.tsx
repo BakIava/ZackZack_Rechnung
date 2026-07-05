@@ -4,6 +4,7 @@ import { Building2, Check, Loader2, User, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { createCustomer, updateCustomer } from "@/lib/customers/actions";
+import { deriveInitials } from "@/lib/initials";
 import type { CustomerListItem, FlowCustomer } from "@/lib/customers/types";
 import "./NewCustomerModal.css";
 
@@ -21,15 +22,6 @@ interface NewCustomerModalProps {
 }
 
 const STROKE = 1.75;
-
-function deriveInitials(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  const raw =
-    parts.length > 1
-      ? parts[0][0] + parts[parts.length - 1][0]
-      : name.slice(0, 2);
-  return raw.toUpperCase();
-}
 
 export function NewCustomerModal({
   dir,
