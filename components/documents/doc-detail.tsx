@@ -238,7 +238,7 @@ export function DocDetail({
         )}
 
         {doc.status === "draft" && (
-          <Link className="hbtn-primary navy" href="/create/3">
+          <Link className="hbtn-primary navy" href={`/create/${doc.id}/3`}>
             <Chevron size={19} strokeWidth={STROKE} />
             {t("aFinish")}
           </Link>
@@ -257,12 +257,17 @@ export function DocDetail({
             </span>
             {t("shareMail")}
           </button>
-          <Link className="hshare-btn pdf" href="/create/3">
+          <a
+            className="hshare-btn pdf"
+            href={`/api/documents/${doc.id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <span className="hshare-ic">
               <Download size={20} strokeWidth={STROKE} />
             </span>
             {t("sharePdf")}
-          </Link>
+          </a>
         </div>
 
         <div className="hsecondary">
@@ -278,10 +283,15 @@ export function DocDetail({
               {t("aEdit")}
             </button>
           )}
-          <Link className="hbtn-ghost" href="/create/3">
+          <a
+            className="hbtn-ghost"
+            href={`/api/documents/${doc.id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Download size={17} strokeWidth={STROKE} />
             {t("aOpenPdf")}
-          </Link>
+          </a>
         </div>
       </div>
     </div>
