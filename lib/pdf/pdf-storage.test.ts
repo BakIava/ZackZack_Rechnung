@@ -99,10 +99,21 @@ describe("getOrArchiveDocumentPdf", () => {
 
     expect(out.toString()).toBe("RENDERED");
     expect(h.renderDocumentPdfBuffer).toHaveBeenCalledOnce();
-    expect(h.upload).toHaveBeenCalledWith(`${preview.id}.pdf`, expect.any(Buffer), {
+    expect(h.upload).toHaveBeenCalledWith(`${preview.id}.pdf`, expect.any(Blob), {
       contentType: "application/pdf",
       upsert: true,
     });
+  });
+
+  it("behandelt ein leeres Archiv-Objekt (0 Bytes) als nicht vorhanden → rendert neu", async () => {
+    h.download.mockResolvedValue({ data: blobLike(""), error: null });
+    h.upload.mockResolvedValue({ error: null });
+
+    const out = await getOrArchiveDocumentPdf(preview);
+
+    expect(out.toString()).toBe("RENDERED");
+    expect(h.renderDocumentPdfBuffer).toHaveBeenCalledOnce();
+    expect(h.upload).toHaveBeenCalledOnce();
   });
 });
 

@@ -34,6 +34,11 @@ export async function GET(_req: Request, { params }: RouteContext) {
   }
 
   const pdf = await getOrArchiveDocumentPdf(preview);
+  // Ein 0-Byte-PDF nie als Erfolg ausliefern — sonst hängt der Client ein
+  // leeres File an (Teilen/E-Mail schlägt fehl). Lieber sauberer Fehler.
+  if (pdf.length === 0) {
+    return new Response("PDF render failed", { status: 500 });
+  }
   const filename = pdfFileName(preview);
 
   return new Response(new Uint8Array(pdf), {

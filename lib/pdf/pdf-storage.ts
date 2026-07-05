@@ -35,9 +35,13 @@ export async function archiveDocumentPdf(preview: DocumentPreview): Promise<Buff
   const buffer = await renderDocumentPdfBuffer(preview, logo);
 
   const admin = createAdminClient();
+  // Als Blob hochladen (nicht als roher Node-Buffer): der Buffer-Body kann in
+  // manchen Node-/Fetch-Umgebungen zu einem 0-Byte-Objekt führen. Der Blob
+  // trägt Länge + Content-Type zuverlässig.
+  const body = new Blob([new Uint8Array(buffer)], { type: "application/pdf" });
   const { error } = await admin.storage
     .from(PDF_BUCKET)
-    .upload(pdfObjectPath(preview.id), buffer, {
+    .upload(pdfObjectPath(preview.id), body, {
       contentType: "application/pdf",
       upsert: true,
     });
@@ -47,21 +51,27 @@ export async function archiveDocumentPdf(preview: DocumentPreview): Promise<Buff
   return buffer;
 }
 
-/** Holt das archivierte PDF aus dem Storage; null, wenn (noch) keines existiert. */
+/**
+ * Holt das archivierte PDF aus dem Storage; null, wenn (noch) keines existiert.
+ * Ein leeres/kaputtes Objekt (0 Bytes) gilt bewusst als "nicht vorhanden", damit
+ * der Aufrufer neu rendert statt ein leeres PDF auszuliefern.
+ */
 export async function fetchArchivedPdf(documentId: string): Promise<Buffer | null> {
   const admin = createAdminClient();
   const { data, error } = await admin.storage
     .from(PDF_BUCKET)
     .download(pdfObjectPath(documentId));
   if (error || !data) return null;
-  return Buffer.from(await data.arrayBuffer());
+  const buffer = Buffer.from(await data.arrayBuffer());
+  return buffer.length > 0 ? buffer : null;
 }
 
 /**
  * Liefert das PDF eines finalisierten Belegs: bevorzugt das eingefrorene
  * Archiv-Blob (GoBD — exakt die Bytes, die der Kunde erhalten hat), sonst
  * on-demand gerendert und dabei nachträglich archiviert (self-healing für
- * Belege, die vor Einführung des Archivs finalisiert wurden). Nur für
+ * Belege, die vor Einführung des Archivs finalisiert wurden, oder für ein
+ * fehlerhaft leer gespeichertes Objekt — upsert überschreibt es). Nur für
  * finalisierte Dokumente aufrufen — Entwürfe haben kein PDF.
  */
 export async function getOrArchiveDocumentPdf(preview: DocumentPreview): Promise<Buffer> {
