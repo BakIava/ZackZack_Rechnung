@@ -9,9 +9,16 @@ export default async function DocumentsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
-  const { documents, paymentDays } = await fetchDocumentsPageData();
+  const { documents, paymentDays, companyName } = await fetchDocumentsPageData();
 
-  return <DocumentsScreen dir={dir} documents={documents} paymentDays={paymentDays} />;
+  return (
+    <DocumentsScreen
+      dir={dir}
+      documents={documents}
+      paymentDays={paymentDays}
+      companyName={companyName}
+    />
+  );
 }
 
 export function generateStaticParams() {

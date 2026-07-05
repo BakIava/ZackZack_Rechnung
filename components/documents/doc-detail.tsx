@@ -10,15 +10,16 @@ import {
   FileText,
   Loader2,
   Mail,
-  MessageCircle,
   Pencil,
   ReceiptText,
   User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import type { ShareTarget } from "@/components/create/use-share-document";
 import type { DocumentListItem, DocumentItem } from "@/lib/documents/types";
 import { formatDateDE, formatMoney } from "@/lib/format";
+import { DocShareRow } from "./doc-share-row";
 import "./documents-main.css";
 
 const STROKE = 1.75;
@@ -48,6 +49,7 @@ interface DocDetailProps {
   items: DocumentItem[] | null;
   itemsLoading: boolean;
   paymentDays: number;
+  companyName: string;
   markingPaid: boolean;
   onMarkPaid: () => void;
   dir: "ltr" | "rtl";
@@ -58,6 +60,7 @@ export function DocDetail({
   items,
   itemsLoading,
   paymentDays,
+  companyName,
   markingPaid,
   onMarkPaid,
   dir,
@@ -125,6 +128,15 @@ export function DocDetail({
 
   const canMarkPaid =
     doc.paidAt === null && (doc.status === "finalized" || doc.status === "sent");
+
+  const shareTarget: ShareTarget = {
+    documentId: doc.id,
+    docType: doc.type === "invoice" ? "rechnung" : "angebot",
+    documentNumber: doc.documentNumber,
+    companyName,
+    customerEmail: doc.customerEmail,
+    customerPhone: doc.customerPhone,
+  };
 
   return (
     <div className="hdetail">
@@ -244,31 +256,7 @@ export function DocDetail({
           </Link>
         )}
 
-        <div className="hshare">
-          <button className="hshare-btn wa">
-            <span className="hshare-ic">
-              <MessageCircle size={20} strokeWidth={STROKE} />
-            </span>
-            {t("shareWa")}
-          </button>
-          <button className="hshare-btn mail">
-            <span className="hshare-ic">
-              <Mail size={20} strokeWidth={STROKE} />
-            </span>
-            {t("shareMail")}
-          </button>
-          <a
-            className="hshare-btn pdf"
-            href={`/api/documents/${doc.id}/pdf`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="hshare-ic">
-              <Download size={20} strokeWidth={STROKE} />
-            </span>
-            {t("sharePdf")}
-          </a>
-        </div>
+        <DocShareRow target={shareTarget} />
 
         <div className="hsecondary">
           {(displayStatus === "bezahlt" || displayStatus === "versendet" || doc.isOverdue) && (

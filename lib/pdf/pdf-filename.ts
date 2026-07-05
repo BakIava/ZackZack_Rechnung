@@ -6,6 +6,9 @@
 
 import type { DocumentPreview } from "@/lib/documents/preview-types";
 
+/** Nur die für den Dateinamen nötigen Felder — so auch aus der Liste nutzbar. */
+type PdfFileNameInput = Pick<DocumentPreview, "docType" | "documentNumber">;
+
 function slug(value: string): string {
   return value
     .replace(/[ä]/g, "ae")
@@ -20,8 +23,8 @@ function slug(value: string): string {
     .replace(/^-|-$/g, "");
 }
 
-export function pdfFileName(preview: DocumentPreview): string {
-  const wort = preview.docType === "rechnung" ? "Rechnung" : "Angebot";
-  const nummer = preview.documentNumber ? slug(preview.documentNumber) : "Entwurf";
+export function pdfFileName({ docType, documentNumber }: PdfFileNameInput): string {
+  const wort = docType === "rechnung" ? "Rechnung" : "Angebot";
+  const nummer = documentNumber ? slug(documentNumber) : "Entwurf";
   return `${wort}_${nummer}.pdf`;
 }

@@ -62,14 +62,14 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { documents: [], paymentDays: 14 };
+  if (!user) return { documents: [], paymentDays: 14, companyName: "" };
 
   const { data: userData } = await supabase
     .from("users")
     .select("company_id")
     .eq("id", user.id)
     .maybeSingle();
-  if (!userData?.company_id) return { documents: [], paymentDays: 14 };
+  if (!userData?.company_id) return { documents: [], paymentDays: 14, companyName: "" };
 
   const companyId = userData.company_id;
 
@@ -84,14 +84,17 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       )
       .eq("company_id", companyId)
       .order("issue_date", { ascending: false }),
-    supabase.from("companies").select("payment_days").eq("id", companyId).maybeSingle(),
+    supabase.from("companies").select("name, payment_days").eq("id", companyId).maybeSingle(),
   ]);
 
   const paymentDays = companyRes.data?.payment_days ?? 14;
+  const companyName = (companyRes.data?.name as string | null) ?? "";
   const today = new Date().toISOString().split("T")[0];
 
   const documents: DocumentListItem[] = (docsRes.data ?? []).map((doc) => {
-    const snapshot = doc.customer_snapshot as { name?: string } | null;
+    const snapshot = doc.customer_snapshot as
+      | { name?: string; email?: string | null; phone?: string | null }
+      | null;
     const status = doc.status as DocumentListItem["status"];
     const paidAt = doc.paid_at as string | null;
 
@@ -105,6 +108,8 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       type: doc.document_type as DocumentListItem["type"],
       documentNumber: doc.document_number ?? "",
       customerName: snapshot?.name ?? "—",
+      customerEmail: snapshot?.email ?? null,
+      customerPhone: snapshot?.phone ?? null,
       status,
       issueDate: doc.issue_date,
       totalAmount: doc.total_amount ?? 0,
@@ -113,7 +118,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
     };
   });
 
-  return { documents, paymentDays };
+  return { documents, paymentDays, companyName };
 }
 
 export interface FlowDocMeta {

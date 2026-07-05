@@ -18,7 +18,14 @@ const STROKE = 1.75;
  */
 export function ShareButtons({ preview }: ShareButtonsProps) {
   const t = useTranslations("Create");
-  const { state, share } = useShareDocument(preview);
+  const { state, share } = useShareDocument({
+    documentId: preview.id,
+    docType: preview.docType,
+    documentNumber: preview.documentNumber ?? "",
+    companyName: preview.company.name,
+    customerEmail: preview.customer?.email ?? null,
+    customerPhone: preview.customer?.phone ?? null,
+  });
 
   function iconFor(channel: ShareChannel) {
     if (state.pending === channel) {

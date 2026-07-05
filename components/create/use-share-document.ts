@@ -3,9 +3,25 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pdfFileName } from "@/lib/pdf/pdf-filename";
 import { shareMessage, shareSubject } from "@/lib/pdf/share-message";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
 
 export type ShareChannel = "whatsapp" | "email" | "download";
+
+/**
+ * Minimal nötige Daten zum Teilen eines finalisierten Belegs — bewusst NICHT
+ * das ganze DocumentPreview, damit sowohl Schritt 3 (voller Preview) als auch
+ * die Dokumentenliste (Listeneintrag + Snapshot) denselben Hook nutzen können.
+ */
+export interface ShareTarget {
+  documentId: string;
+  docType: "rechnung" | "angebot";
+  documentNumber: string;
+  /** Grußzeile im Begleittext; null → ohne Signatur. */
+  companyName: string | null;
+  /** Empfänger für den E-Mail-Entwurf (Desktop-Fallback); null → offen lassen. */
+  customerEmail: string | null;
+  /** Nummer für den WhatsApp-Deeplink (Desktop-Fallback); null → wa.me ohne Ziel. */
+  customerPhone: string | null;
+}
 
 export interface ShareState {
   /** Kanal, der gerade arbeitet (Spinner/disabled), oder null. */
@@ -61,7 +77,7 @@ function triggerDownload(file: File): void {
  * Nutzer-Aktivierung bleibt erhalten) und der Versand fühlt sich sofortig an —
  * wichtig für die nicht tech-affine Zielgruppe auf langsamem Baustellen-Netz.
  */
-export function useShareDocument(preview: DocumentPreview) {
+export function useShareDocument(target: ShareTarget) {
   const [state, setState] = useState<ShareState>({
     pending: null,
     error: false,
@@ -69,11 +85,11 @@ export function useShareDocument(preview: DocumentPreview) {
   });
   const fileRef = useRef<File | null>(null);
 
-  const fileName = pdfFileName(preview);
-  const number = preview.documentNumber ?? "";
-  const subject = shareSubject(preview.docType, number);
-  const text = shareMessage(preview.docType, number, preview.company.name);
-  const pdfUrl = `/api/documents/${preview.id}/pdf`;
+  const { docType, documentNumber, companyName, customerEmail, customerPhone } = target;
+  const fileName = pdfFileName({ docType, documentNumber });
+  const subject = shareSubject(docType, documentNumber);
+  const text = shareMessage(docType, documentNumber, companyName);
+  const pdfUrl = `/api/documents/${target.documentId}/pdf`;
 
   const fetchPdfFile = useCallback(async (): Promise<File> => {
     const res = await fetch(pdfUrl, { cache: "no-store" });
@@ -83,8 +99,12 @@ export function useShareDocument(preview: DocumentPreview) {
   }, [pdfUrl, fileName]);
 
   // Vorladen – Fehler hier sind unkritisch, share() lädt bei Bedarf erneut.
+  // Wechselt das Ziel-Dokument (z. B. andere Auswahl in der Dokumentenliste),
+  // ändert sich fetchPdfFile → das alte vorgeladene File wird verworfen, damit
+  // nie der Beleg eines zuvor gewählten Dokuments geteilt wird.
   useEffect(() => {
     let active = true;
+    fileRef.current = null;
     fetchPdfFile()
       .then((f) => {
         if (active) fileRef.current = f;
@@ -124,11 +144,11 @@ export function useShareDocument(preview: DocumentPreview) {
         // Desktop-Fallback: PDF speichern, Kanal zum manuellen Anhängen öffnen.
         triggerDownload(file);
         if (channel === "whatsapp") {
-          const num = toWaNumber(preview.customer?.phone ?? null);
+          const num = toWaNumber(customerPhone);
           const base = num ? `https://wa.me/${num}` : "https://wa.me/";
           window.open(`${base}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
         } else {
-          const to = preview.customer?.email ?? "";
+          const to = customerEmail ?? "";
           const href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
           window.location.href = href;
         }
@@ -137,7 +157,7 @@ export function useShareDocument(preview: DocumentPreview) {
         setState({ pending: null, error: true, downloadedHint: false });
       }
     },
-    [fetchPdfFile, subject, text, preview.customer?.phone, preview.customer?.email],
+    [fetchPdfFile, subject, text, customerPhone, customerEmail],
   );
 
   return { state, share };
