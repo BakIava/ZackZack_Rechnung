@@ -556,6 +556,29 @@
 .hshare-btn.wa .hshare-ic { background: #25d366; }
 .hshare-btn.mail .hshare-ic { background: var(--info); }
 .hshare-btn.pdf .hshare-ic { background: var(--primary); }
+.hshare-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.hshare-spin {
+  animation: hpos-spin 0.75s linear infinite;
+}
+
+/* ── Teilen-Hinweis (Fehler / Download-Fallback) ──────────────────────────── */
+.dshare-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--muted);
+}
+.dshare-note--err {
+  color: #c0392b;
+}
 
 /* Sekundäre Aktionen */
 .hsecondary {
