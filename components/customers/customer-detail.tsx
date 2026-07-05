@@ -254,6 +254,7 @@ function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps
         <div className="cdm-table">
           <div className="cdm-tr cdm-thead">
             <span className="cdm-th">{t("colType")}</span>
+            <span className="cdm-th">{t("colNumber")}</span>
             <span className="cdm-th">{t("colDate")}</span>
             <span className="cdm-th num">{t("colAmount")}</span>
             <span className="cdm-th num">{t("colStatus")}</span>
@@ -434,17 +435,15 @@ function DocRow({ doc }: DocRowProps) {
       <span className="cdm-tdoc">
         <span className={`cdm-tdoc-ic cdm-tdoc-ic--${doc.document_type}`}>
           <TypeIcon
-            size={18}
+            size={19}
             strokeWidth={STROKE}
             color={doc.document_type === "rechnung" ? "#fff" : "currentColor"}
             aria-hidden
           />
         </span>
-        <span className="cdm-tdoc-body">
-          <span className="cdm-tno">{docId}</span>
-          <span className="cdm-ttype">{typeLabel}</span>
-        </span>
+        <span className="cdm-tchip">{typeLabel}</span>
       </span>
+      <span className="cdm-tno">{docId}</span>
       <span className="cdm-tdate">{formatDateDE(doc.issue_date)}</span>
       <span className="cdm-tamount num">{formatMoney(doc.total_amount)}</span>
       <span className="cdm-tstatus num">
