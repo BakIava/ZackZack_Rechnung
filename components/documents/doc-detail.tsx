@@ -10,15 +10,16 @@ import {
   FileText,
   Loader2,
   Mail,
-  MessageCircle,
   Pencil,
   ReceiptText,
   User,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import type { ShareTarget } from "@/components/create/use-share-document";
 import type { DocumentListItem, DocumentItem } from "@/lib/documents/types";
 import { formatDateDE, formatMoney } from "@/lib/format";
+import { DocShareRow } from "./doc-share-row";
 import "./documents-main.css";
 
 const STROKE = 1.75;
@@ -48,6 +49,7 @@ interface DocDetailProps {
   items: DocumentItem[] | null;
   itemsLoading: boolean;
   paymentDays: number;
+  companyName: string;
   markingPaid: boolean;
   onMarkPaid: () => void;
   dir: "ltr" | "rtl";
@@ -58,6 +60,7 @@ export function DocDetail({
   items,
   itemsLoading,
   paymentDays,
+  companyName,
   markingPaid,
   onMarkPaid,
   dir,
@@ -125,6 +128,15 @@ export function DocDetail({
 
   const canMarkPaid =
     doc.paidAt === null && (doc.status === "finalized" || doc.status === "sent");
+
+  const shareTarget: ShareTarget = {
+    documentId: doc.id,
+    docType: doc.type === "invoice" ? "rechnung" : "angebot",
+    documentNumber: doc.documentNumber,
+    companyName,
+    customerEmail: doc.customerEmail,
+    customerPhone: doc.customerPhone,
+  };
 
   return (
     <div className="hdetail">
@@ -238,32 +250,13 @@ export function DocDetail({
         )}
 
         {doc.status === "draft" && (
-          <Link className="hbtn-primary navy" href="/create/3">
+          <Link className="hbtn-primary navy" href={`/create/${doc.id}/3`}>
             <Chevron size={19} strokeWidth={STROKE} />
             {t("aFinish")}
           </Link>
         )}
 
-        <div className="hshare">
-          <button className="hshare-btn wa">
-            <span className="hshare-ic">
-              <MessageCircle size={20} strokeWidth={STROKE} />
-            </span>
-            {t("shareWa")}
-          </button>
-          <button className="hshare-btn mail">
-            <span className="hshare-ic">
-              <Mail size={20} strokeWidth={STROKE} />
-            </span>
-            {t("shareMail")}
-          </button>
-          <Link className="hshare-btn pdf" href="/create/3">
-            <span className="hshare-ic">
-              <Download size={20} strokeWidth={STROKE} />
-            </span>
-            {t("sharePdf")}
-          </Link>
-        </div>
+        <DocShareRow target={shareTarget} />
 
         <div className="hsecondary">
           {(displayStatus === "bezahlt" || displayStatus === "versendet" || doc.isOverdue) && (
@@ -278,10 +271,15 @@ export function DocDetail({
               {t("aEdit")}
             </button>
           )}
-          <Link className="hbtn-ghost" href="/create/3">
+          <a
+            className="hbtn-ghost"
+            href={`/api/documents/${doc.id}/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Download size={17} strokeWidth={STROKE} />
             {t("aOpenPdf")}
-          </Link>
+          </a>
         </div>
       </div>
     </div>

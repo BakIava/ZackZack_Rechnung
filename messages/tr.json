@@ -507,6 +507,8 @@
     "shareWa": "WhatsApp",
     "shareMail": "E-posta",
     "sharePdf": "PDF",
+    "shareError": "PDF oluşturulamadı. Lütfen tekrar deneyin.",
+    "shareDownloadedHint": "PDF kaydedildi – şimdi sohbette ek olarak seçin.",
     "noResults": "Belge bulunamadı",
     "noResultsSub": "Aramayı veya filtreyi değiştir.",
     "selectHint": "Belge seç",

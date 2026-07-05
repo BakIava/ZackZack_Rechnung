@@ -26,6 +26,7 @@ interface DocumentsMainProps {
   dir: "ltr" | "rtl";
   documents: DocumentListItem[];
   paymentDays: number;
+  companyName: string;
 }
 
 type TypeFilter = "all" | "rechnung" | "angebot";
@@ -55,7 +56,7 @@ function matchesStatusFilter(doc: DocumentListItem, f: StatusFilter): boolean {
   return true;
 }
 
-export function DocumentsMain({ dir, documents, paymentDays }: DocumentsMainProps) {
+export function DocumentsMain({ dir, documents, paymentDays, companyName }: DocumentsMainProps) {
   const t = useTranslations("Documents");
   const router = useRouter();
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
@@ -340,6 +341,7 @@ export function DocumentsMain({ dir, documents, paymentDays }: DocumentsMainProp
             items={detailItems}
             itemsLoading={detailLoading}
             paymentDays={paymentDays}
+            companyName={companyName}
             markingPaid={markingPaid}
             onMarkPaid={handleMarkPaid}
             dir={dir}

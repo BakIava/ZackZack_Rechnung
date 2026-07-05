@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getDocumentPreview } from "@/lib/documents/preview-queries";
+import { archiveDocumentPdf } from "@/lib/pdf/pdf-storage";
 
 export type FinalizeError =
   | "notAuthenticated"
@@ -46,5 +48,19 @@ export async function finalizeDocument(documentId: string): Promise<FinalizeResu
   if (typeof data !== "string" || data.length === 0) {
     return { error: "unknown" };
   }
+
+  // Beleg jetzt ins Langzeit-Archiv legen — der Moment des Festschreibens ist
+  // der rechtlich relevante (Dokument ist ab hier eingefroren). Best effort:
+  // schlägt die Archivierung fehl (z. B. Storage kurz nicht erreichbar), bleibt
+  // die Finalisierung gültig; die PDF-Route archiviert beim ersten Abruf nach.
+  try {
+    const preview = await getDocumentPreview(documentId);
+    if (preview && preview.status !== "draft") {
+      await archiveDocumentPdf(preview);
+    }
+  } catch (err) {
+    console.error("[finalizeDocument] pdf archive failed:", err);
+  }
+
   return { number: data };
 }

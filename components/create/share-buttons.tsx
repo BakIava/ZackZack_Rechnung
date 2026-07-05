@@ -18,7 +18,14 @@ const STROKE = 1.75;
  */
 export function ShareButtons({ preview }: ShareButtonsProps) {
   const t = useTranslations("Create");
-  const { state, share } = useShareDocument(preview);
+  const { state, share } = useShareDocument({
+    documentId: preview.id,
+    docType: preview.docType,
+    documentNumber: preview.documentNumber ?? "",
+    companyName: preview.company.name,
+    customerEmail: preview.customer?.email ?? null,
+    customerPhone: preview.customer?.phone ?? null,
+  });
 
   function iconFor(channel: ShareChannel) {
     if (state.pending === channel) {
@@ -34,11 +41,13 @@ export function ShareButtons({ preview }: ShareButtonsProps) {
   return (
     <>
       <div className="sharegrid">
+        {/* WhatsApp-Versand noch offen (WhatsApp-Business-Flow = Phase 2) →
+            sichtbarer, aber deaktivierter Platzhalter. */}
         <button
           type="button"
           className="sharebtn sharebtn--wa"
-          onClick={() => share("whatsapp")}
-          disabled={busy}
+          disabled
+          aria-disabled="true"
         >
           <span className="sharebtn-ic">{iconFor("whatsapp")}</span>
           {t("shareWa")}

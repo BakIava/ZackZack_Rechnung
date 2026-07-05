@@ -7,6 +7,10 @@ export interface DocumentListItem {
   type: DbDocumentType;
   documentNumber: string;
   customerName: string;
+  /** Aus dem eingefrorenen Snapshot – nur fürs Teilen (E-Mail vorbelegen). */
+  customerEmail: string | null;
+  /** Aus dem eingefrorenen Snapshot – nur fürs Teilen (WhatsApp-Deeplink). */
+  customerPhone: string | null;
   status: DbDocumentStatus;
   issueDate: string; // YYYY-MM-DD
   totalAmount: number; // cents
@@ -26,6 +30,8 @@ export interface DocumentItem {
 export interface DocumentsPageData {
   documents: DocumentListItem[];
   paymentDays: number;
+  /** Firmenname für die Grußzeile im Teilen-Begleittext. */
+  companyName: string;
 }
 
 export interface DraftDoc {
