@@ -39,12 +39,9 @@ export function DocShareRow({ target }: DocShareRowProps) {
   return (
     <>
       <div className="hshare">
-        <button
-          type="button"
-          className="hshare-btn wa"
-          onClick={() => share("whatsapp")}
-          disabled={busy}
-        >
+        {/* WhatsApp-Versand noch offen (WhatsApp-Business-Flow = Phase 2) →
+            sichtbarer, aber deaktivierter Platzhalter. */}
+        <button type="button" className="hshare-btn wa" disabled aria-disabled="true">
           <span className="hshare-ic">{icon("whatsapp")}</span>
           {t("shareWa")}
         </button>

@@ -41,11 +41,13 @@ export function ShareButtons({ preview }: ShareButtonsProps) {
   return (
     <>
       <div className="sharegrid">
+        {/* WhatsApp-Versand noch offen (WhatsApp-Business-Flow = Phase 2) →
+            sichtbarer, aber deaktivierter Platzhalter. */}
         <button
           type="button"
           className="sharebtn sharebtn--wa"
-          onClick={() => share("whatsapp")}
-          disabled={busy}
+          disabled
+          aria-disabled="true"
         >
           <span className="sharebtn-ic">{iconFor("whatsapp")}</span>
           {t("shareWa")}
