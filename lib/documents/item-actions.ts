@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { computeLineTotal, computeUnitPrice } from "./margin";
 import { getDraftItems } from "./item-queries";
 import type {
@@ -15,18 +16,10 @@ type DB = Awaited<ReturnType<typeof createClient>>;
 export type ItemsResult = { items: DraftItem[]; total: number } | { error: string };
 
 async function getCtx() {
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { error: "notAuthenticated" as const };
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "notAuthenticated" as const };
-  const { data } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!data?.company_id) return { error: "notAuthenticated" as const };
-  return { companyId: data.company_id as string, supabase };
+  return { companyId, supabase };
 }
 
 async function isDraft(db: DB, companyId: string, documentId: string): Promise<boolean> {

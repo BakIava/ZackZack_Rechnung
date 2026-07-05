@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
 
 type DocType = "rechnung" | "angebot";
 
@@ -18,19 +19,14 @@ interface CustomerSnapshot {
 }
 
 async function getCompanyCtx() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return { error: "notAuthenticated" as const };
 
-  const { data } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!data?.company_id) return { error: "notAuthenticated" as const };
-  return { companyId: data.company_id as string, userId: user.id, supabase };
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { error: "notAuthenticated" as const };
+
+  const supabase = await createClient();
+  return { companyId, userId: user.id, supabase };
 }
 
 /**

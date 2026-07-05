@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/auth";
 import { getDocumentPreview } from "@/lib/documents/preview-queries";
 import { archiveDocumentPdf } from "@/lib/pdf/pdf-storage";
 
@@ -31,12 +32,10 @@ function mapError(message: string): FinalizeError {
  * fehl und landen hier als Fehlercode.
  */
 export async function finalizeDocument(documentId: string): Promise<FinalizeResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) return { error: "notAuthenticated" };
 
+  const supabase = await createClient();
   const { data, error } = await supabase.rpc("finalize_document", {
     p_document_id: documentId,
   });

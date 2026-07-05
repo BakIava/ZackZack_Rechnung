@@ -1,21 +1,14 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 
 async function getCompanyCtx() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "notAuthenticated" as const };
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { error: "notAuthenticated" as const };
 
-  const { data } = await supabase
-    .from("users")
-    .select("company_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!data?.company_id) return { error: "notAuthenticated" as const };
-  return { companyId: data.company_id, supabase };
+  const supabase = await createClient();
+  return { companyId, supabase };
 }
 
 export async function markDocumentAsPaid(documentId: string): Promise<{ error?: string }> {
