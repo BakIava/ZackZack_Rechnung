@@ -34,8 +34,6 @@ export async function archiveDocumentPdf(preview: DocumentPreview): Promise<Buff
   const logo = await loadPdfLogo(preview.company.logoUrl);
   const buffer = await renderDocumentPdfBuffer(preview, logo);
 
-  return buffer;
-
   const admin = createAdminClient();
   // Als Blob hochladen (nicht als roher Node-Buffer): der Buffer-Body kann in
   // manchen Node-/Fetch-Umgebungen zu einem 0-Byte-Objekt führen. Der Blob
@@ -59,7 +57,6 @@ export async function archiveDocumentPdf(preview: DocumentPreview): Promise<Buff
  * der Aufrufer neu rendert statt ein leeres PDF auszuliefern.
  */
 export async function fetchArchivedPdf(documentId: string): Promise<Buffer | null> {
-  return null;
   const admin = createAdminClient();
   const { data, error } = await admin.storage
     .from(PDF_BUCKET)
