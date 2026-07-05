@@ -348,4 +348,4 @@ Prinzip unverändert: **kein Verhalten ändern**.
   `FLOW_STEPS[].labelKey` in `FlowSteps.tsx` referenziert → **behalten**.
   `Create.title` wird 8× genutzt → behalten.
 - JSON valide, `messages.test.ts`-Paritätstest grün, Typecheck grün, Tests unverändert.
-- Commit: `cc36f83`
+- Commit: `701cea2`
