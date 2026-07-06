@@ -63,7 +63,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
   const [pending, startTransition] = useTransition();
 
   const isDraft = preview.status === "draft";
-  const isRechnung = preview.docType === "rechnung";
+  const isRechnung = preview.docType === "invoice";
   const canFinalize = istFinalisierbar(checks);
   const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
 
@@ -114,7 +114,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
             ) : (
               <FileText size={15} strokeWidth={STROKE} aria-hidden />
             )}
-            {isRechnung ? t("rechnung") : t("angebot")}
+            {isRechnung ? t("invoice") : t("offer")}
           </span>
           <span className="p2-chip">
             <span className="p2-av">{customerInitials}</span>
@@ -196,7 +196,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
                     <div>
                       <div className="share-success-t">{t("finalizedTitle")}</div>
                       <div className="share-success-s">
-                        {isRechnung ? t("rechnung") : t("angebot")} {preview.documentNumber}
+                        {isRechnung ? t("invoice") : t("offer")} {preview.documentNumber}
                       </div>
                     </div>
                   </div>

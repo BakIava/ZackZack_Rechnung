@@ -127,22 +127,23 @@
 .cdm-note-val { display: block; font-size: 15px; font-weight: 500; margin-top: 2px; word-break: break-word; }
 
 .cdm-sec { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 22px 0 12px; }
-.cdm-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
-.cdm-tr { display: grid; grid-template-columns: minmax(140px, 1.5fr) 1fr 104px 124px; align-items: center; gap: 12px; padding: 0 18px; }
-.cdm-thead { height: 42px; background: var(--bg); border-bottom: 1px solid var(--line); }
-.cdm-th { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+/* Dokumenttabelle — bewusst identisch zur Dashboard-Tabelle (.dtable/.dtr/.drow),
+   nur ohne Kunden-Spalte (im Kunden-Detail redundant). */
+.cdm-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+.cdm-tr { display: grid; grid-template-columns: 116px 1.6fr 110px 120px 120px; align-items: center; gap: 14px; padding: 0 22px; }
+.cdm-thead { height: 44px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.cdm-th { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 .cdm-th.num { text-align: end; justify-self: end; }
-.cdm-drow { height: 64px; border-bottom: 1px solid var(--line); cursor: pointer; transition: .12s; text-decoration: none; color: inherit; }
+.cdm-drow { height: 66px; border-bottom: 1px solid var(--line); cursor: pointer; transition: .12s; text-decoration: none; color: inherit; }
 .cdm-drow:last-child { border-bottom: none; }
 .cdm-drow:hover { background: color-mix(in srgb, var(--primary) 3%, var(--surface)); }
 .cdm-tdoc { display: flex; align-items: center; gap: 11px; }
 .cdm-tdoc-ic { width: 38px; height: 38px; border-radius: var(--r-sm); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 .cdm-tdoc-ic--rechnung { background: var(--primary); color: #fff; }
 .cdm-tdoc-ic--angebot { background: var(--info-bg); color: var(--info); }
-.cdm-tdoc-body { min-width: 0; }
-.cdm-tno { display: block; font-size: 14.5px; font-weight: 650; white-space: nowrap; }
-.cdm-ttype { display: block; font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+.cdm-tchip { font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
+.cdm-tno { font-size: 15px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cdm-tdate { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cdm-tamount { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cdm-tamount { font-size: 15.5px; font-weight: 700; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
 .cdm-tamount.num, .cdm-tstatus.num { text-align: end; justify-self: end; }
 .cdm-nodocs { display: flex; justify-content: center; color: var(--muted); padding: 26px 14px; font-size: 14px; }

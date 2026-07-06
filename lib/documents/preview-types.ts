@@ -1,3 +1,4 @@
+import { DocType } from "@/shared/doc";
 import type { DbDocumentStatus } from "./types";
 
 /** Firmenstammdaten für den Dokumentkopf (Verkaufssicht, alle Felder Deutsch). */
@@ -45,7 +46,7 @@ export interface PreviewItem {
 
 export interface DocumentPreview {
   id: string;
-  docType: "rechnung" | "angebot";
+  docType: DocType;
   status: DbDocumentStatus;
   documentNumber: string | null;
   issueDate: string | null; // YYYY-MM-DD

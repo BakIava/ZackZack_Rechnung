@@ -57,7 +57,7 @@ export function Step2Main({
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
   const total = items.reduce((sum, i) => sum + i.totalAmount, 0);
-  const docLabel = context.docType === "rechnung" ? t("rechnung") : t("angebot");
+  const docLabel = context.docType === "rechnung" ? t("invoice") : t("offer");
 
   function run(action: () => Promise<ItemsResult>) {
     setError(null);

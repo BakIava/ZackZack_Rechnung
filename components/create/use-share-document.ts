@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pdfFileName } from "@/lib/pdf/pdf-filename";
 import { shareMessage, shareSubject } from "@/lib/pdf/share-message";
+import { DocType } from "@/shared/doc";
 
 export type ShareChannel = "whatsapp" | "email" | "download";
 
@@ -13,7 +14,7 @@ export type ShareChannel = "whatsapp" | "email" | "download";
  */
 export interface ShareTarget {
   documentId: string;
-  docType: "rechnung" | "angebot";
+  docType: DocType;
   documentNumber: string;
   /** Grußzeile im Begleittext; null → ohne Signatur. */
   companyName: string | null;

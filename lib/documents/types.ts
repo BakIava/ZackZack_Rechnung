@@ -1,5 +1,7 @@
-export type DbDocumentStatus = "draft" | "finalized" | "sent" | "paid" | "cancelled";
-export type DbDocumentType = "invoice" | "quote";
+import { DocStatus, DocType } from "@/shared/doc";
+
+export type DbDocumentStatus = DocStatus;
+export type DbDocumentType = DocType;
 export type UiDocumentStatus = "bezahlt" | "offen" | "versendet" | "entwurf";
 
 export interface DocumentListItem {
@@ -36,7 +38,7 @@ export interface DocumentsPageData {
 
 export interface DraftDoc {
   id: string;
-  docType: "rechnung" | "angebot";
+  docType: DocType;
   /** documents.customer_id – null, solange noch kein Kunde gewählt ist */
   customerId: string | null;
 }

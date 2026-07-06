@@ -24,7 +24,7 @@ function slug(value: string): string {
 }
 
 export function pdfFileName({ docType, documentNumber }: PdfFileNameInput): string {
-  const wort = docType === "rechnung" ? "Rechnung" : "Angebot";
+  const wort = docType === "invoice" ? "Rechnung" : "Angebot";
   const nummer = documentNumber ? slug(documentNumber) : "Entwurf";
   return `${wort}_${nummer}.pdf`;
 }

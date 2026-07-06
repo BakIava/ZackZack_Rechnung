@@ -8,6 +8,7 @@ import type {
   PreviewCustomer,
   PreviewItem,
 } from "./preview-types";
+import { DocType } from "@/shared/doc";
 
 // Als ein String-Literal (nicht verkettet), sonst kann Supabase die Spalten
 // nicht typisieren und die Zeile wird zu GenericStringError.
@@ -101,7 +102,7 @@ export const getDocumentPreview = cache(
 
     return {
       id: doc.id as string,
-      docType: doc.document_type === "quote" ? "angebot" : "rechnung",
+      docType: doc.document_type as DocType,
       status: doc.status as DbDocumentStatus,
       documentNumber: (doc.document_number as string | null) ?? null,
       issueDate: (doc.issue_date as string | null) ?? null,

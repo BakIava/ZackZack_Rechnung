@@ -30,7 +30,7 @@ export default async function Step1Page({ params }: Step1PageProps) {
   ]);
 
   // Layout garantiert einen gültigen Draft; Fallback nur zur Typsicherheit.
-  const initialDocType = draft?.docType ?? "rechnung";
+  const initialDocType = draft?.docType ?? "invoice";
   const initialCustomerId = draft?.customerId ?? null;
 
   return (

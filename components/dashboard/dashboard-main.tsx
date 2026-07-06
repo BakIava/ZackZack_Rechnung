@@ -224,7 +224,7 @@ interface DocRowProps {
 }
 
 function DocRow({ doc, typeLabel, statusLabel }: DocRowProps) {
-  const TypeIcon = doc.type === "rechnung" ? ReceiptText : FileText;
+  const TypeIcon = doc.type === "invoice" ? ReceiptText : FileText;
   const href = doc.status === "entwurf" ? `/create/${doc.id}/2` : `/documents/${doc.id}`;
 
   return (

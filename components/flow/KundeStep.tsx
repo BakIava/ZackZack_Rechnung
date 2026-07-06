@@ -27,8 +27,7 @@ import {
 import { NewCustomerModal } from "@/components/customers/NewCustomerModal";
 import { FlowSteps } from "./FlowSteps";
 import "./KundeStep.css";
-
-type DocType = "rechnung" | "angebot";
+import { DocType } from "@/shared/doc";
 
 interface KundeStepProps {
   dir: "ltr" | "rtl";
@@ -46,7 +45,7 @@ export function KundeStep({
   customers,
   documentId,
   initialCustomerId = null,
-  initialDocType = "rechnung",
+  initialDocType = "invoice",
 }: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
@@ -57,6 +56,8 @@ export function KundeStep({
     () => searchParams.get("fix") === "customer",
   );
   const [docType, setDocType] = useState<DocType>(initialDocType);
+  console.log(docType)
+
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(initialCustomerId);
   const [created, setCreated] = useState<CustomerListItem[]>([]);
@@ -82,7 +83,7 @@ export function KundeStep({
       (c.city ?? "").toLowerCase().includes(needle),
   );
   const selectedCustomer = allCustomers.find((c) => c.id === selected) ?? null;
-  const docLabel = docType === "rechnung" ? t("rechnung") : t("angebot");
+  const docLabel = docType === "invoice" ? t("invoice") : t("offer");
 
   function handleCreated(customer: CustomerListItem) {
     setCreated((prev) => [customer, ...prev]);
@@ -163,22 +164,22 @@ export function KundeStep({
             <button
               type="button"
               className="seg--gold"
-              data-on={docType === "rechnung" ? "1" : "0"}
-              aria-pressed={docType === "rechnung"}
-              onClick={() => handleDocType("rechnung")}
+              data-on={docType === "invoice" ? "1" : "0"}
+              aria-pressed={docType === "invoice"}
+              onClick={() => handleDocType("invoice")}
             >
               <ReceiptText size={20} strokeWidth={STROKE} aria-hidden />
-              {t("rechnung")}
+              {t("invoice")}
             </button>
             <button
               type="button"
               className="seg--gold"
-              data-on={docType === "angebot" ? "1" : "0"}
-              aria-pressed={docType === "angebot"}
-              onClick={() => handleDocType("angebot")}
+              data-on={docType === "offer" ? "1" : "0"}
+              aria-pressed={docType === "offer"}
+              onClick={() => handleDocType("offer")}
             >
               <FileText size={20} strokeWidth={STROKE} aria-hidden />
-              {t("angebot")}
+              {t("offer")}
             </button>
           </div>
         </div>

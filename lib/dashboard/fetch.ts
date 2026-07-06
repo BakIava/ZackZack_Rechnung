@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DocStatus, DocType, DashboardDoc } from "@/lib/demo/dashboard-data";
+import type { DocStatus, DashboardDoc } from "@/lib/demo/dashboard-data";
 
 export interface DashboardData {
   companyName: string;
@@ -11,10 +11,6 @@ export interface DashboardData {
   openCount: number;
   openSumCents: number;
   paidSumCents: number;
-}
-
-function mapType(dbType: string): DocType {
-  return dbType === "invoice" ? "rechnung" : "angebot";
 }
 
 function mapStatus(dbStatus: string): DocStatus {
@@ -75,7 +71,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     const snapshot = doc.customer_snapshot as { name?: string } | null;
     return {
       id: doc.id,
-      type: mapType(doc.document_type),
+      type: doc.document_type,
       customer: snapshot?.name ?? "—",
       number: doc.document_number ?? "",
       amount: doc.total_amount ?? 0,

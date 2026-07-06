@@ -1,6 +1,6 @@
 export interface CustomerDocRow {
   id: string;
-  document_type: "rechnung" | "angebot";
+  document_type: "invoice" | "offer";
   document_number: string | null;
   status: string;
   total_amount: number;

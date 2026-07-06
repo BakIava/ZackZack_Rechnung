@@ -37,7 +37,7 @@ function isFirma(name: string): boolean {
 function docStatusToKey(status: string): string {
   switch (status) {
     case "draft": return "statusEntwurf";
-    case "finalized": return "statusVersendet";
+    case "finalized": return "statusOffen";
     case "sent": return "statusVersendet";
     case "paid": return "statusBezahlt";
     case "accepted": return "statusAngenommen";
@@ -254,6 +254,7 @@ function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps
         <div className="cdm-table">
           <div className="cdm-tr cdm-thead">
             <span className="cdm-th">{t("colType")}</span>
+            <span className="cdm-th">{t("colNumber")}</span>
             <span className="cdm-th">{t("colDate")}</span>
             <span className="cdm-th num">{t("colAmount")}</span>
             <span className="cdm-th num">{t("colStatus")}</span>
@@ -423,28 +424,22 @@ interface DocRowProps {
 
 function DocRow({ doc }: DocRowProps) {
   const t = useTranslations("Customers");
-  const TypeIcon = doc.document_type === "rechnung" ? ReceiptText : FileText;
-  const typeLabel = doc.document_type === "rechnung" ? t("rechnung") : t("angebot");
+  console.log(doc);
+  const TypeIcon = doc.document_type === "invoice" ? ReceiptText : FileText;
+  const typeLabel = doc.document_type === "invoice" ? t("invoice") : t("offer");
   const statusKey = docStatusToKey(doc.status) as Parameters<typeof t>[0];
   const pillVariant = docStatusToPill(doc.status);
-  const docId = doc.document_number ?? doc.id;
+  const docId = doc.document_number ?? "-";
 
   return (
     <Link href={`/documents/${doc.id}`} className="cdm-tr cdm-drow">
       <span className="cdm-tdoc">
         <span className={`cdm-tdoc-ic cdm-tdoc-ic--${doc.document_type}`}>
-          <TypeIcon
-            size={18}
-            strokeWidth={STROKE}
-            color={doc.document_type === "rechnung" ? "#fff" : "currentColor"}
-            aria-hidden
-          />
+          <TypeIcon size={19} strokeWidth={STROKE} aria-hidden />
         </span>
-        <span className="cdm-tdoc-body">
-          <span className="cdm-tno">{docId}</span>
-          <span className="cdm-ttype">{typeLabel}</span>
-        </span>
+        <span className="cdm-tchip">{typeLabel}</span>
       </span>
+      <span className="cdm-tno">{docId}</span>
       <span className="cdm-tdate">{formatDateDE(doc.issue_date)}</span>
       <span className="cdm-tamount num">{formatMoney(doc.total_amount)}</span>
       <span className="cdm-tstatus num">

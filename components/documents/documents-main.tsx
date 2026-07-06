@@ -31,7 +31,7 @@ interface DocumentsMainProps {
   initialSelectedId?: string | null;
 }
 
-type TypeFilter = "all" | "rechnung" | "angebot";
+type TypeFilter = "all" | "invoice" | "offer";
 type StatusFilter = "all" | "offen" | "bezahlt" | "versendet" | "entwurf";
 
 const STROKE = 1.75;
@@ -146,7 +146,7 @@ export function DocumentsMain({
   const filtered = documents.filter(
     (d) =>
       (typeF === "all" ||
-        (typeF === "rechnung" ? d.type === "invoice" : d.type === "quote")) &&
+        (typeF === "invoice" ? d.type === "invoice" : d.type === "offer")) &&
       matchesStatusFilter(d, statusF) &&
       (!q ||
         d.documentNumber.toLowerCase().includes(q) ||
@@ -157,8 +157,8 @@ export function DocumentsMain({
 
   const typeFilters: { id: TypeFilter; label: string }[] = [
     { id: "all", label: t("fAll") },
-    { id: "rechnung", label: t("fRechnung") },
-    { id: "angebot", label: t("fAngebot") },
+    { id: "invoice", label: t("fInvoice") },
+    { id: "offer", label: t("fOffer") },
   ];
 
   const statusFilters: { id: Exclude<StatusFilter, "all">; label: string }[] = [
