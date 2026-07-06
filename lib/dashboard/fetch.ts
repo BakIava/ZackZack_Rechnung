@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DocStatus, DocType, DashboardDoc } from "@/lib/demo/dashboard-data";
+import type { DocStatus, DashboardDoc } from "@/lib/demo/dashboard-data";
 
 export interface DashboardData {
   companyName: string;

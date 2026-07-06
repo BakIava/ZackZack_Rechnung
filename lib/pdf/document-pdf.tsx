@@ -146,7 +146,7 @@ function Footer({ vm }: { vm: PdfViewModel }) {
 /** Vollständiger A4-Beleg. `logo` ist serverseitig vorbereitet (siehe document-logo.ts). */
 export function DocumentPdf({ preview, logo }: DocumentPdfProps) {
   const vm = buildPdfViewModel(preview);
-  const wort = preview.docType === "rechnung" ? "Rechnung" : "Angebot";
+  const wort = preview.docType === "invoice" ? "Rechnung" : "Angebot";
   // Setzt die PDF-Metadaten /Title — dort lesen Browser den Tab-Titel bei
   // `inline`-Anzeige aus (die URL selbst endet nur auf ".../pdf").
   const title = preview.documentNumber ? `${wort} ${preview.documentNumber}` : wort;

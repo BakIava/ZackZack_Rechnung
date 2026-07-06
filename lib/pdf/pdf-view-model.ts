@@ -83,7 +83,7 @@ function initialsOf(name: string): string {
 
 export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
   const { company: co, customer: rc, docType, isKleinunternehmer } = preview;  
-  const isRechnung = docType === "rechnung";
+  const isRechnung = docType === "invoice";
 
   // Summe strikt aus den Zeilen (Verkaufspreis) — nie aus internen Feldern.
   const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
