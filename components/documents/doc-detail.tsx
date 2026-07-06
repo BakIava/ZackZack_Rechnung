@@ -132,7 +132,7 @@ export function DocDetail({
 
   const shareTarget: ShareTarget = {
     documentId: doc.id,
-    docType: doc.type === "invoice" ? "rechnung" : "angebot",
+    docType: doc.type,
     documentNumber: doc.documentNumber,
     companyName,
     customerEmail: doc.customerEmail,
