@@ -47,7 +47,7 @@ describe("pdfFileName", () => {
   });
 
   it("unterscheidet Angebot und Rechnung", () => {
-    expect(pdfFileName(base({ docType: "offer", documentNumber: "A-2026-088" }))).toBe(
+    expect(pdfFileName(base({ docType: "quote", documentNumber: "A-2026-088" }))).toBe(
       "Angebot_A-2026-088.pdf",
     );
   });

@@ -7,17 +7,19 @@
  * `types/document.ts`, `types/customer.ts`, `types/company.ts`,
  * `types/service.ts`) — Entitätsfelder werden nirgendwo erneut definiert.
  *
- * Die Werte der Postgres-Enums (`document_type`, `document_status_enum`,
- * `surcharge_type`) sind im Dump nicht enthalten; die Unions unten spiegeln
- * die App-seitig verwendeten Werte. Bekannte Inkonsistenz `'quote'` vs.
- * `'offer'`: siehe CLAUDE.md / REFACTOR_REPORT.md.
+ * Enum-Werte gegen pg_enum verifiziert (Stand 2026-07):
+ * document_type_enum = {invoice, quote}, document_status_enum =
+ * {draft, finalized, sent, paid, cancelled}, surcharge_type_enum =
+ * {percent, fixed}. Ein früherer App-seitiger Rename auf "offer" war nie in
+ * die DB migriert und wurde zurückgenommen — "Angebot" heißt in DB UND App
+ * `quote`; UI-Labels übersetzen das (t("offer")).
  *
  * Offener Punkt: sobald CLI-Zugriff auf das Supabase-Projekt besteht, durch
- * `supabase gen types typescript` ersetzen (löst auch die Enum-Frage).
+ * `supabase gen types typescript` ersetzen.
  */
 
-/** documents.document_type (Postgres-Enum) */
-export type DocType = "offer" | "invoice";
+/** documents.document_type (document_type_enum) */
+export type DocType = "invoice" | "quote";
 
 /** documents.status (document_status_enum) */
 export type DocStatus = "draft" | "finalized" | "sent" | "paid" | "cancelled";

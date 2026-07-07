@@ -110,7 +110,7 @@ describe("buildPdfViewModel – harte Regeln", () => {
     expect(rechnung.paymentText).toContain("Zahlbar innerhalb von 14 Tagen");
     expect(rechnung.bankLine).toContain("IBAN");
 
-    const angebot = buildPdfViewModel(preview({ docType: "offer" }));
+    const angebot = buildPdfViewModel(preview({ docType: "quote" }));
     expect(angebot.paymentText).toBeNull();
     expect(angebot.sumLabel).toBe("Angebotssumme");
   });

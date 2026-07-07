@@ -56,7 +56,6 @@ export function KundeStep({
     () => searchParams.get("fix") === "customer",
   );
   const [docType, setDocType] = useState<DocType>(initialDocType);
-  console.log(docType)
 
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(initialCustomerId);
@@ -174,9 +173,9 @@ export function KundeStep({
             <button
               type="button"
               className="seg--gold"
-              data-on={docType === "offer" ? "1" : "0"}
-              aria-pressed={docType === "offer"}
-              onClick={() => handleDocType("offer")}
+              data-on={docType === "quote" ? "1" : "0"}
+              aria-pressed={docType === "quote"}
+              onClick={() => handleDocType("quote")}
             >
               <FileText size={20} strokeWidth={STROKE} aria-hidden />
               {t("offer")}

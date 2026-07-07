@@ -467,9 +467,9 @@ Duplikat-Typdateien und die sechs alten `queries.ts`-Module.
    Tailwind umgestellt.
 5. **Query-Formen 1:1 übernommen**, inkl. Eigenheiten: manche Reads filtern
    explizit auf `company_id`, andere verlassen sich auf RLS (Sidebar/
-   Dashboard-Counts); `document_type`-Mapping prüft weiterhin `"quote"`,
-   obwohl der Typ `"offer"` heißt (Fundorte: `lib/repositories/documents.ts`,
-   getFlowDocMeta/getDraftContext). Verhalten unangetastet.
+   Dashboard-Counts). *Nachtrag:* die `"quote"`-Mappings in getFlowDocMeta/
+   getDraftContext waren korrekt — die DB kennt `quote`; der Rest der App
+   wurde nachgezogen (siehe unten).
 6. **`lib/supabase/auth.ts`** (getCurrentUser/getCurrentCompanyId, inkl. des
    `users`-Lookups) bleibt Auth-Infrastruktur und wandert nicht ins
    Repository – sie ist requestweit gecacht und wird von allen Repositories
@@ -482,11 +482,13 @@ Duplikat-Typdateien und die sechs alten `queries.ts`-Module.
 ## Offene Punkte / Empfehlungen
 
 1. **Supabase-generierte Typen**: `types/database.ts` ist handgeschrieben.
-   Mit Projektzugriff per `supabase gen types typescript` ersetzen und die
-   Ableitungen in `types/*` darauf umstellen.
-2. **`"quote"`-vs-`"offer"`-Inkonsistenz** klären: Entweder enthält die DB
-   noch Altwerte (`document_type_enum`?) – dann Migration – oder die beiden
-   `=== "quote"`-Checks sind tote Zweige.
+   ✅ *Nachtrag:* inzwischen gegen den echten Schema-Dump und `pg_enum`
+   verifiziert (Nullability-Korrekturen, fehlende Timestamps, Enum-Werte —
+   siehe Nachtrag unten). `supabase gen types typescript` bleibt als
+   langfristige Absicherung empfohlen.
+2. **`"quote"`-vs-`"offer"`-Inkonsistenz**: ✅ geklärt (siehe Nachtrag) —
+   `document_type_enum = {invoice, quote}`; der App-Rename auf `"offer"` war
+   nie migriert und wurde zurückgenommen.
 3. **`complete_onboarding.sql` wird vom Code nicht genutzt** –
    `lib/onboarding/actions.ts` macht Admin-Inserts mit manuellem Rollback.
    Entweder auf die atomare RPC umstellen oder das SQL-Script entfernen.
@@ -504,3 +506,39 @@ Duplikat-Typdateien und die sechs alten `queries.ts`-Module.
 7. **Flow-CSS-Feinschliff**: die fast-identischen `.dflow-*`/`.dstep2*`-
    Blöcke nach einer bewussten Design-Entscheidung in eine gemeinsame
    Datei (z. B. `flow-steps.css` bei der gemeinsamen Komponente) ziehen.
+
+---
+
+# Nachtrag (nach PR-Eröffnung, gleiche Branch)
+
+1. **500 auf `/[locale]/documents/[document_id]`** (`DYNAMIC_SERVER_USAGE`):
+   Die Deep-Link-Seite hatte ein `generateStaticParams` nur über `{locale}`
+   (Copy-Paste der Listen-Seite, PR #33). Der Build konnte nie einen
+   Prerender versuchen; die Route blieb als einzige App-Route im
+   prerender-manifest (`dynamicRoutes`, fallback null) und wurde bei Abruf
+   mit statischer Semantik gerendert → `cookies()` bricht ab. Fix:
+   `dynamic = "force-dynamic"`, `generateStaticParams` entfernt; Route ist
+   jetzt ƒ und aus dem Manifest verschwunden.
+
+2. **`types/database.ts` gegen echten Schema-Dump abgeglichen**:
+   `companies.legal_form/street/street_no/postcode/city/steuernummer` und
+   `document_items.unit` sind nullable (waren zu streng typisiert),
+   `users.email` ist NOT NULL (war zu locker), Timestamps ergänzt;
+   `CustomerRow`/`CompanySettings` als explizite Selektions-Picks. Folgefix:
+   `settings-firma.tsx` behandelte die sechs falsch typisierten Felder ohne
+   `?? ""` — bei NULL-Werten wäre `data.street.trim()` in den Save-Actions
+   gecrasht.
+
+3. **Enum-Klärung** (`pg_enum`-Abfrage): `document_type_enum = {invoice,
+   quote}` — **`offer` existiert in der DB nicht.** Der App-Rename
+   `angebot → offer` (c75ecd2/d620851) war nie migriert. Dadurch real kaputt:
+   (a) der Angebot-Schalter in Schritt 1 (Enum-Fehler beim Update wurde
+   fire-and-forget verschluckt — Angebote wären als Rechnung finalisiert),
+   (b) wiedergeöffnete Angebots-Drafts (kein Toggle-Button aktiv),
+   (c) der „Angebote"-Filter der Dokumentenliste (`=== "offer"` matcht nie).
+   Lösung ohne DB-Eingriff: `DocType = "invoice" | "quote"`, alle
+   `"offer"`-Datenwerte im Code ersetzt; UI-Labels übersetzen weiterhin
+   (`t("offer")`). Alternative (DB auf `offer` migrieren: Enum-Wert +
+   documents + number_sequences + finalize_document.sql) ist bewusst NICHT
+   umgesetzt — Migration am lückenlosen Nummernkreis nur nach
+   Produktentscheidung.
