@@ -17,7 +17,7 @@ import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { markDocumentAsPaid } from "@/lib/documents/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
-import type { DocumentListItem, DocumentItem } from "@/lib/documents/types";
+import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocDetail } from "./doc-detail";
 import "./documents-main.css";

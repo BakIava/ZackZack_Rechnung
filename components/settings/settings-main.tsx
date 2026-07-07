@@ -8,7 +8,7 @@ import { SettingsRechnung } from "./settings-rechnung";
 import { SettingsBedienung } from "./settings-bedienung";
 import { SettingsKonto } from "./settings-konto";
 import { SettingsRecht } from "./settings-recht";
-import type { SettingsData } from "@/lib/settings/types";
+import type { SettingsData } from "@/types/company";
 
 interface SettingsMainProps {
   dir: "ltr" | "rtl";

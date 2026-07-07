@@ -5,7 +5,7 @@ import Image from "next/image";
 import { SetupIcon } from "./SetupIcon";
 import { type Translations } from "./translations";
 import { Field, TextInput, Seg3, Toggle19 } from "./SetupPrimitives";
-import type { SetupFormData, SetupFormErrors } from "./types";
+import type { SetupFormData, SetupFormErrors } from "@/types/company";
 
 interface StepProps {
   t: Translations;

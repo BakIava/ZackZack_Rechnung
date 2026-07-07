@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Lock } from "lucide-react";
-import type { CompanySettings } from "@/lib/settings/types";
+import type { CompanySettings } from "@/types/company";
 import { saveKleinunternehmer, savePaymentDays } from "@/lib/settings/actions";
 
 const STROKE = 1.75;

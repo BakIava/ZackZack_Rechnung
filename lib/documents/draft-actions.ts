@@ -4,18 +4,8 @@ import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
-import { DocType } from "@/shared/doc";
-
-/** Eingefrorene Kundenkopie im Dokument. Nie als Live-Join – immer Kopie. */
-interface CustomerSnapshot {
-  name: string;
-  street: string | null;
-  street_no: string | null;
-  postcode: string | null;
-  city: string | null;
-  email: string | null;
-  phone: string | null;
-}
+import type { DocType } from "@/types/document";
+import type { CustomerSnapshot } from "@/types/customer";
 
 async function getCompanyCtx() {
   const user = await getCurrentUser();

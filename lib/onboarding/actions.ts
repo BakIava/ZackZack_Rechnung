@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { SetupFormData, SetupFormErrors } from "@/components/setup/types";
+import type { SetupFormData, SetupFormErrors } from "@/types/company";
 
 export interface OnboardingResult {
   error: string;

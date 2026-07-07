@@ -6,14 +6,14 @@ import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/format";
-import type { KatalogEintrag } from "@/lib/katalog/types";
+import type { KatalogEintrag } from "@/types/service";
 import type {
   DraftContext,
   DraftItem,
   FreeItemInput,
   FremdItemInput,
   ItemPatch,
-} from "@/lib/documents/item-types";
+} from "@/types/document";
 import type { ItemsResult } from "@/lib/documents/item-actions";
 import {
   addCatalogItem,

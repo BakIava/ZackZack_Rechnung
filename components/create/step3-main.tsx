@@ -18,7 +18,7 @@ import { formatMoney } from "@/lib/format";
 import { DOKUMENT_DE } from "@/lib/documents/document-de";
 import { finalizeDocument, type FinalizeError } from "@/lib/documents/finalize-actions";
 import { istFinalisierbar, type PflichtCheck } from "@/lib/legal/dokumentPflicht";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 import { FlowSteps } from "@/components/flow/FlowSteps";
 import { DocumentA4 } from "./document-a4";
 import { FinalizeDialog } from "./finalize-dialog";

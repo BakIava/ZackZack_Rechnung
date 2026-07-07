@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { deriveInitials } from "@/lib/initials";
-import type { CustomerListItem, CustomerRow } from "./types";
+import type { CustomerListItem, CustomerRow } from "@/types/customer";
 
 export async function getCustomers(): Promise<CustomerRow[]> {
   const companyId = await getCurrentCompanyId();

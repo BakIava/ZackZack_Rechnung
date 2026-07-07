@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Pencil } from "lucide-react";
-import type { CompanySettings } from "@/lib/settings/types";
+import type { CompanySettings } from "@/types/company";
 import {
   saveFirmaInhaber,
   saveAdresse,

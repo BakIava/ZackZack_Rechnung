@@ -9,7 +9,7 @@ import type {
   FreeItemInput,
   FremdItemInput,
   ItemPatch,
-} from "./item-types";
+} from "@/types/document";
 
 type DB = Awaited<ReturnType<typeof createClient>>;
 

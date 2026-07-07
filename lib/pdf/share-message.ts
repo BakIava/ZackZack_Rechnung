@@ -4,7 +4,7 @@
  * selbst. Rein & deterministisch, damit testbar.
  */
 
-import { DocType } from "@/shared/doc";
+import type { DocType } from "@/types/document";
 
 
 /** Betreff für E-Mail / Titel im Teilen-Sheet, z. B. „Rechnung R-2026-041". */

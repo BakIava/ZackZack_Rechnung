@@ -5,7 +5,7 @@ import { Lock, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FLOW_UNITS } from "@/lib/demo/flow-data";
 import { computeUnitPrice } from "@/lib/documents/margin";
-import type { FreeItemInput, FremdItemInput } from "@/lib/documents/item-types";
+import type { FreeItemInput, FremdItemInput } from "@/types/document";
 import { formatMoney } from "@/lib/format";
 import { eurosToCents } from "@/lib/money";
 

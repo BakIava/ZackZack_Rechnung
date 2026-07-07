@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { pdfFileName } from "@/lib/pdf/pdf-filename";
 import { shareMessage, shareSubject } from "@/lib/pdf/share-message";
-import { DocType } from "@/shared/doc";
+import type { DocType } from "@/types/document";
 
 export type ShareChannel = "whatsapp" | "email" | "download";
 

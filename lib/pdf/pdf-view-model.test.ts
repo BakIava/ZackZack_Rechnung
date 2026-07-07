@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildPdfViewModel } from "./pdf-view-model";
-import type {
-  DocumentPreview,
-  PreviewCompany,
-  PreviewCustomer,
-  PreviewItem,
-} from "@/lib/documents/preview-types";
+import type { DocumentItem, DocumentPreview } from "@/types/document";
+import type { PreviewCompany } from "@/types/company";
+import type { PreviewCustomer } from "@/types/customer";
 
 function company(overrides: Partial<PreviewCompany> = {}): PreviewCompany {
   return {
@@ -45,7 +42,7 @@ function customer(overrides: Partial<PreviewCustomer> = {}): PreviewCustomer {
 }
 
 function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
-  const items: PreviewItem[] = [
+  const items: DocumentItem[] = [
     { position: 1, descriptionDe: "Innenanstrich Wohnzimmer", amount: 1, unit: "psch", unitPrice: 48000, totalAmount: 48000 },
     { position: 2, descriptionDe: "Material (Farbe, Grundierung)", amount: 1, unit: "psch", unitPrice: 9500, totalAmount: 9500 },
   ];

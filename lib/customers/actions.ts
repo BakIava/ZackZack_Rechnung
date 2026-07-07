@@ -2,23 +2,12 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import type { CustomerMutationResult, FlowCustomer } from "./types";
+import type { CustomerInput, CustomerMutationResult, FlowCustomer } from "@/types/customer";
 
 async function getCompanyId(): Promise<{ companyId: string } | { error: string }> {
   const companyId = await getCurrentCompanyId();
   if (!companyId) return { error: "notAuthenticated" };
   return { companyId };
-}
-
-export interface CustomerInput {
-  name: string;
-  street?: string;
-  streetNo?: string;
-  postcode?: string;
-  city?: string;
-  phone?: string;
-  email?: string;
-  notes?: string;
 }
 
 export async function createCustomer(

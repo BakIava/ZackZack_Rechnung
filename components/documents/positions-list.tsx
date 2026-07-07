@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { DocumentItem } from "@/lib/documents/types";
+import type { DocumentItem } from "@/types/document";
 import { formatMoney } from "@/lib/format";
 
 const STROKE = 1.75;

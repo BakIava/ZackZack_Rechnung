@@ -1,4 +1,4 @@
-import type { KatalogEintrag } from "@/lib/katalog/types";
+import type { KatalogEintrag } from "@/types/service";
 import { CatalogMasterDetail } from "./catalog-master-detail";
 import "./catalog-screen.css";
 

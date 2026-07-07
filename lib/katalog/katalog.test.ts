@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anzeigeName, dokumentName } from "./types";
+import { anzeigeName, dokumentName } from "./anzeige";
 import { sampleKatalog } from "./sample";
 
 const eintrag = sampleKatalog[0];

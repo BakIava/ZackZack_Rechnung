@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { createCustomer, updateCustomer } from "@/lib/customers/actions";
 import { deriveInitials } from "@/lib/initials";
-import type { CustomerListItem, FlowCustomer } from "@/lib/customers/types";
+import type { CustomerListItem, FlowCustomer } from "@/types/customer";
 import "./NewCustomerModal.css";
 
 type CustomerType = "private" | "company";

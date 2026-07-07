@@ -14,8 +14,9 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
-import { anzeigeName, type KatalogEintrag } from "@/lib/katalog/types";
-import { katalogToServiceInput } from "@/lib/services/types";
+import { anzeigeName } from "@/lib/katalog/anzeige";
+import type { KatalogEintrag } from "@/types/service";
+import { katalogToServiceInput } from "@/lib/services/mappers";
 import { createService, updateService, deleteService } from "@/lib/services/actions";
 import type { Locale } from "@/i18n/routing";
 import { formatMoney } from "@/lib/format";

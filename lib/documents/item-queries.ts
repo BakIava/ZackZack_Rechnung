@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { deriveInitials } from "@/lib/initials";
-import type { DraftContext, DraftItem } from "./item-types";
+import type { DraftContext, DraftItem } from "@/types/document";
 
 /** Positionen eines Drafts, sortiert nach position. */
 export async function getDraftItems(documentId: string): Promise<DraftItem[]> {

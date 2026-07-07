@@ -18,7 +18,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { getCustomerForEdit } from "@/lib/customers/actions";
-import type { CustomerListItem, FlowCustomer } from "@/lib/customers/types";
+import type { CustomerListItem, FlowCustomer } from "@/types/customer";
 import {
   deleteDraftIfEmpty,
   updateDraftCustomer,
@@ -27,7 +27,7 @@ import {
 import { NewCustomerModal } from "@/components/customers/NewCustomerModal";
 import { FlowSteps } from "./FlowSteps";
 import "./KundeStep.css";
-import { DocType } from "@/shared/doc";
+import type { DocType } from "@/types/document";
 
 interface KundeStepProps {
   dir: "ltr" | "rtl";

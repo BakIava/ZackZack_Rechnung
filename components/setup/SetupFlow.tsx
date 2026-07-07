@@ -9,7 +9,8 @@ import { SetupUpload } from "./SetupUpload";
 import { SetupReview } from "./SetupReview";
 import { SetupDone } from "./SetupDone";
 import { SetupWizard } from "./SetupWizard";
-import { INITIAL_FORM_DATA, type SetupFormData, type SetupFormErrors } from "./types";
+import { INITIAL_FORM_DATA } from "./types";
+import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import { completeOnboarding } from "@/lib/onboarding/actions";
 
 export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDashboard }: SetupFlowProps) {

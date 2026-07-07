@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { loadPdfLogo } from "@/lib/pdf/document-logo";
 import { renderDocumentPdfBuffer } from "@/lib/pdf/render-document";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 
 /**
  * Langzeit-Archiv für finalisierte Belege.

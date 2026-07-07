@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Brush, ClipboardList, FileText, Languages, Pencil, Plus, Search, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
-import { anzeigeName } from "@/lib/katalog/types";
-import type { KatalogEintrag } from "@/lib/katalog/types";
-import type { FreeItemInput, FremdItemInput } from "@/lib/documents/item-types";
+import { anzeigeName } from "@/lib/katalog/anzeige";
+import type { KatalogEintrag } from "@/types/service";
+import type { FreeItemInput, FremdItemInput } from "@/types/document";
 import { formatMoney } from "@/lib/format";
 import { FreeForm, FremdForm } from "./position-forms";
 

@@ -1,14 +1,9 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import type { DbDocumentStatus } from "./types";
-import type {
-  DocumentPreview,
-  PreviewCompany,
-  PreviewCustomer,
-  PreviewItem,
-} from "./preview-types";
-import { DocType } from "@/shared/doc";
+import type { DocStatus, DocType, DocumentItem, DocumentPreview } from "@/types/document";
+import type { PreviewCompany } from "@/types/company";
+import type { PreviewCustomer } from "@/types/customer";
 
 // Als ein String-Literal (nicht verkettet), sonst kann Supabase die Spalten
 // nicht typisieren und die Zeile wird zu GenericStringError.
@@ -91,7 +86,7 @@ export const getDocumentPreview = cache(
     ]);
     if (!companyRes.data) return null;
 
-    const items: PreviewItem[] = (itemsRes.data ?? []).map((r) => ({
+    const items: DocumentItem[] = (itemsRes.data ?? []).map((r) => ({
       position: r.position as number,
       descriptionDe: (r.description_de as string) ?? "",
       amount: Number(r.amount ?? 0),
@@ -103,7 +98,7 @@ export const getDocumentPreview = cache(
     return {
       id: doc.id as string,
       docType: doc.document_type as DocType,
-      status: doc.status as DbDocumentStatus,
+      status: doc.status as DocStatus,
       documentNumber: (doc.document_number as string | null) ?? null,
       issueDate: (doc.issue_date as string | null) ?? null,
       serviceDate: (doc.service_date as string | null) ?? null,

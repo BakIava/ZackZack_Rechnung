@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { pdfFileName } from "./pdf-filename";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 
 function base(overrides: Partial<DocumentPreview>): DocumentPreview {
   return {

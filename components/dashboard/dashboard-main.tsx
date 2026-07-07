@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import type { DashboardDoc, DocStatus } from "@/lib/demo/dashboard-data";
+import type { DashboardDoc, UiDocumentStatus } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import type { DashboardData } from "@/lib/dashboard/fetch";
 import { startNewDocument } from "@/lib/documents/draft-actions";
@@ -21,7 +21,7 @@ interface DashboardMainProps {
 
 const STROKE = 1.75;
 
-const STATUS_KEY: Record<DocStatus, string> = {
+const STATUS_KEY: Record<UiDocumentStatus, string> = {
   bezahlt: "statusBezahlt",
   offen: "statusOffen",
   versendet: "statusVersendet",

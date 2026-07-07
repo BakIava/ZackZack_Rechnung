@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check, Lock, Truck, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { computeUnitPrice } from "@/lib/documents/margin";
-import type { DraftItem, ItemPatch, SurchargeType } from "@/lib/documents/item-types";
+import type { DraftItem, ItemPatch, SurchargeType } from "@/types/document";
 import { formatMoney } from "@/lib/format";
 import { eurosToCents } from "@/lib/money";
 

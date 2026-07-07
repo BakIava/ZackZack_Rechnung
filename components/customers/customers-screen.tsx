@@ -1,5 +1,5 @@
 import { CustomersMasterDetail } from "./customers-master-detail";
-import type { CustomerRow } from "@/lib/customers/types";
+import type { CustomerRow } from "@/types/customer";
 import "./customers.css";
 
 interface CustomersScreenProps {

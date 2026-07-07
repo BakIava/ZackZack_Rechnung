@@ -1,7 +1,7 @@
 import { Sidebar } from "@/components/dashboard/sidebar";
 import type { Locale } from "@/i18n/routing";
-import type { KatalogEintrag } from "@/lib/katalog/types";
-import type { DraftContext, DraftItem } from "@/lib/documents/item-types";
+import type { KatalogEintrag } from "@/types/service";
+import type { DraftContext, DraftItem } from "@/types/document";
 import { Step2Main } from "./step2-main";
 import "@/components/dashboard/dashboard.css";
 import "./step2.css";

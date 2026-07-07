@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, Lock, Minus, Pencil, Plus, Trash2, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMoney } from "@/lib/format";
-import type { DraftItem, ItemPatch } from "@/lib/documents/item-types";
+import type { DraftItem, ItemPatch } from "@/types/document";
 import { PositionEditor } from "./position-editor";
 
 const STROKE = 1.75;

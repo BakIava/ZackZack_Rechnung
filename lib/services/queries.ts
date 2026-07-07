@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import type { KatalogEintrag } from "@/lib/katalog/types";
-import { rowToKatalog, type ServiceRow } from "./types";
+import type { KatalogEintrag } from "@/types/service";
+import type { ServiceRow } from "@/types/service";
+import { rowToKatalog } from "./mappers";
 
 export async function getServices(): Promise<KatalogEintrag[]> {
   const companyId = await getCurrentCompanyId();

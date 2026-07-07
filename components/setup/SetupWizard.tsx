@@ -5,7 +5,7 @@ import { SetupIcon } from "./SetupIcon";
 import { type Translations, type Lang, type Phase } from "./translations";
 import { LangLink, DesktopBar } from "./SetupPrimitives";
 import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoEmpty, LogoPreview } from "./SetupStepFields";
-import type { SetupFormData, SetupFormErrors } from "./types";
+import type { SetupFormData, SetupFormErrors } from "@/types/company";
 
 interface WizardProps {
   t: Translations;

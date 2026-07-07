@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
-import type { CompanySettings, SettingsData } from "./types";
+import type { CompanySettings, SettingsData } from "@/types/company";
 
 export type GetSettingsResult =
   | { ok: true; data: SettingsData }

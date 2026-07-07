@@ -4,7 +4,7 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { Building2, Check, MapPin, Plus, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import type { CustomerListItem, CustomerRow } from "@/lib/customers/types";
+import type { CustomerListItem, CustomerRow } from "@/types/customer";
 import { NewCustomerModal } from "./NewCustomerModal";
 import { CustomerDetail, CustomerDetailEmpty, isFirma, deriveInitials, sortedDocs, formatDateShort } from "./customer-detail";
 

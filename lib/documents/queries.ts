@@ -2,11 +2,13 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import type {
-  DbDocumentStatus,
+  DocStatus,
   DocumentListItem,
   DocumentsPageData,
   DraftDoc,
-} from "./types";
+  FlowDocMeta,
+} from "@/types/document";
+import type { DocumentCustomer } from "@/types/customer";
 
 type DB = Awaited<ReturnType<typeof createClient>>;
 
@@ -118,12 +120,6 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   return { documents, paymentDays, companyName };
 }
 
-export interface FlowDocMeta {
-  id: string;
-  status: DbDocumentStatus;
-  docType: "rechnung" | "angebot";
-}
-
 /**
  * Leichtgewichtiger Zugehörigkeits-/Status-Check für den Flow-Layout-Guard und
  * die Schritt-1/2-Weichen: liefert Status & Typ eines EIGENEN Dokuments,
@@ -146,7 +142,7 @@ export const getFlowDocMeta = cache(
 
     return {
       id: data.id as string,
-      status: data.status as DbDocumentStatus,
+      status: data.status as DocStatus,
       docType: data.document_type === "quote" ? "angebot" : "rechnung",
     };
   },
@@ -180,17 +176,6 @@ export const getDraft = cache(
     };
   },
 );
-
-export interface DocumentCustomer {
-  id: string;
-  name: string;
-  street: string | null;
-  streetNo: string | null;
-  postcode: string | null;
-  city: string | null;
-  email: string | null;
-  phone: string | null;
-}
 
 /**
  * Lädt mehrere Kunden auf einen Schlag (z. B. um eine Dokumentenliste mit

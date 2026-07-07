@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
+import type { ServiceInput } from "@/types/service";
 
 type MutationResult = { id?: string; error?: string };
 
@@ -11,13 +12,6 @@ async function getCompanyId(): Promise<{ companyId: string } | { error: string }
   return { companyId };
 }
 
-export interface ServiceInput {
-  description_de: string;
-  description_tr?: string | null;
-  description_ar?: string | null;
-  unit?: string | null;
-  default_price?: number | null;
-}
 
 export async function createService(input: ServiceInput): Promise<MutationResult> {
   if (!input.description_de.trim()) return { error: "deRequired" };

@@ -22,7 +22,7 @@ import { updateCustomer, deleteCustomer } from "@/lib/customers/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 import { formatDateDE, formatMoney, formatDateShort } from "@/lib/format";
 import { deriveInitials } from "@/lib/initials";
-import type { CustomerRow, CustomerDocRow } from "@/lib/customers/types";
+import type { CustomerRow, CustomerDocRow } from "@/types/customer";
 import "./customer-detail.css";
 
 const STROKE = 1.75;

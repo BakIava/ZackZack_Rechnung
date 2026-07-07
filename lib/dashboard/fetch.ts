@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { DocStatus, DashboardDoc } from "@/lib/demo/dashboard-data";
+import type { UiDocumentStatus, DashboardDoc } from "@/types/document";
 
 export interface DashboardData {
   companyName: string;
@@ -13,7 +13,7 @@ export interface DashboardData {
   paidSumCents: number;
 }
 
-function mapStatus(dbStatus: string): DocStatus {
+function mapStatus(dbStatus: string): UiDocumentStatus {
   switch (dbStatus) {
     case "paid":
       return "bezahlt";

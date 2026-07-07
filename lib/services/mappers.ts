@@ -1,14 +1,4 @@
-import type { KatalogEintrag } from "@/lib/katalog/types";
-
-export interface ServiceRow {
-  id: string;
-  company_id: string;
-  description_de: string;
-  description_tr: string | null;
-  description_ar: string | null;
-  unit: string | null;
-  default_price: number | null;
-}
+import type { KatalogEintrag, ServiceRow } from "@/types/service";
 
 export function rowToKatalog(row: ServiceRow): KatalogEintrag {
   return {

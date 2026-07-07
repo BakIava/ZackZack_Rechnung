@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 
 // ── Mocks (via vi.hoisted, damit sie vor den Imports greifen) ──────────────────
 const h = vi.hoisted(() => {

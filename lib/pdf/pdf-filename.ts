@@ -4,7 +4,7 @@
  * Name in WhatsApp/E-Mail/Downloads überall sauber ankommt.
  */
 
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 
 /** Nur die für den Dateinamen nötigen Felder — so auch aus der Liste nutzbar. */
 type PdfFileNameInput = Pick<DocumentPreview, "docType" | "documentNumber">;
