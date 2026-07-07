@@ -15,8 +15,21 @@ export interface CustomerDocRow {
   issue_date: string;
 }
 
-/** Kundenliste inkl. Dokumente-Join (Kunden-Seite). */
-export type CustomerRow = Omit<CustomerDbRow, "company_id"> & {
+/** Kundenliste inkl. Dokumente-Join (Kunden-Seite) — Spalten wie im SELECT. */
+export type CustomerRow = Pick<
+  CustomerDbRow,
+  | "id"
+  | "name"
+  | "street"
+  | "street_no"
+  | "postcode"
+  | "city"
+  | "email"
+  | "phone"
+  | "notes"
+  | "customer_number"
+  | "created_at"
+> & {
   documents: CustomerDocRow[];
 };
 

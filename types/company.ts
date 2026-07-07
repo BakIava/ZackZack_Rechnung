@@ -4,8 +4,8 @@
 
 import type { CompanyRow } from "./database";
 
-/** Vollständige Firmen-Stammdaten (Einstellungen). Feldnamen wie in der DB. */
-export type CompanySettings = CompanyRow;
+/** Firmen-Stammdaten der Einstellungen — Spalten wie im SELECT (ohne Timestamps). */
+export type CompanySettings = Omit<CompanyRow, "created_at" | "updated_at">;
 
 export interface SettingsData {
   company: CompanySettings;
