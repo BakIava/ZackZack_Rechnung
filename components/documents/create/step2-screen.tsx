@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 import type { Locale } from "@/i18n/routing";
 import type { KatalogEintrag } from "@/types/service";
 import type { DraftContext, DraftItem } from "@/types/document";

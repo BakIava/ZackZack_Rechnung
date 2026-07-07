@@ -9,7 +9,7 @@ import { SetupUpload } from "./SetupUpload";
 import { SetupReview } from "./SetupReview";
 import { SetupDone } from "./SetupDone";
 import { SetupWizard } from "./SetupWizard";
-import { INITIAL_FORM_DATA } from "./types";
+import { INITIAL_FORM_DATA } from "./form-defaults";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import { completeOnboarding } from "@/lib/onboarding/actions";
 

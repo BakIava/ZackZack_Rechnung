@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 import type { PflichtCheck } from "@/lib/legal/dokumentPflicht";
 import type { DocumentPreview } from "@/types/document";
 import { Step3Main } from "./step3-main";

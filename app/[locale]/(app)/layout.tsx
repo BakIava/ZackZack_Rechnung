@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { isRtlLocale } from "@/i18n/routing";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 import { AppShell } from "@/components/layout/AppShell";
 import "@/components/dashboard/dashboard.css";
 

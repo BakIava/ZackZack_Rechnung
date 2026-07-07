@@ -1,6 +1,6 @@
 import { FileDown } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { RtlDemoCard } from "@/components/demo/rtl-demo-card";
+import { RtlDemoCard } from "@/components/shared/rtl-demo-card";
 import { AppNav } from "@/components/layout/app-nav";
 import { Button, buttonVariants, Input, LangSwitch } from "@/components/ui";
 import { cn } from "@/lib/utils";

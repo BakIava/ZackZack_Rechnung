@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { ShareTarget } from "@/components/create/use-share-document";
+import type { ShareTarget } from "@/components/documents/create/use-share-document";
 import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocShareRow } from "./doc-share-row";
