@@ -51,7 +51,7 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
   ];
   return {
     id: "doc-1",
-    docType: "rechnung",
+    docType: "invoice",
     status: "finalized",
     documentNumber: "R-2026-041",
     issueDate: "2026-06-09",
@@ -109,11 +109,11 @@ describe("buildPdfViewModel – harte Regeln", () => {
   });
 
   it("Rechnung mit Datum → Zahlungsziel; Angebot → keins", () => {
-    const rechnung = buildPdfViewModel(preview({ docType: "rechnung" }));
+    const rechnung = buildPdfViewModel(preview({ docType: "invoice" }));
     expect(rechnung.paymentText).toContain("Zahlbar innerhalb von 14 Tagen");
     expect(rechnung.bankLine).toContain("IBAN");
 
-    const angebot = buildPdfViewModel(preview({ docType: "angebot" }));
+    const angebot = buildPdfViewModel(preview({ docType: "offer" }));
     expect(angebot.paymentText).toBeNull();
     expect(angebot.sumLabel).toBe("Angebotssumme");
   });

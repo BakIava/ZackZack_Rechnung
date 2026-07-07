@@ -37,7 +37,7 @@ function blobLike(text: string) {
 
 const preview: DocumentPreview = {
   id: "11111111-2222-3333-4444-555555555555",
-  docType: "rechnung",
+  docType: "invoice",
   status: "finalized",
   documentNumber: "R-2026-041",
   issueDate: "2026-06-09",
