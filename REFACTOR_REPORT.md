@@ -399,3 +399,108 @@ Reine Testdaten-/Übersetzungsdaten-Korrekturen, keine Verhaltensänderung.
 
 Nach jedem Schritt: `npm run build` + `npx tsc --noEmit` (+ `npm run test`)
 müssen grün sein; Commits pro Schritt atomar.
+
+---
+
+# Ergebnis der Umsetzung
+
+Alle fünf Schritte sind umgesetzt; nach jedem Schritt (und final) liefen
+`npm run build`, `npx tsc --noEmit`, `npx eslint .` und `npm run test`
+(58/58) fehlerfrei. Commits auf `claude/codebase-refactor-cleanup-4l7gnm`:
+
+| Commit | Inhalt |
+|---|---|
+| `docs:` | dieser Report (Analyse vor Umsetzung) |
+| `test:` | Baseline-Reparatur (siehe oben – Voraussetzung fürs Grün-Kriterium) |
+| `refactor(types):` | Schritt 1 – zentrale Typen unter `types/` |
+| `refactor(data):` | Schritt 2 – Repository-Pattern unter `lib/repositories/` |
+| `refactor(struktur):` | Schritt 3 – Flow-Konsolidierung + Ordnerleichen |
+| `refactor(namen):` | Schritt 4 – kebab-case via `git mv` |
+| `refactor(css):` | Schritt 5 – `dashboard.css` aufgelöst, Tokens in `globals.css` |
+
+## Struktur nachher (betroffene Teile)
+
+```
+types/                          ← NEU: Single Source of Truth
+  database.ts  document.ts  customer.ts  company.ts  service.ts
+lib/
+  repositories/                 ← NEU: einzige Stelle mit supabase.from()/.rpc()/storage
+    companies.ts  customers.ts  documents.ts  document-items.ts
+    document-items.client.ts    ← Client-Variante (Browser-Read im Dokument-Detail)
+    document-pdfs.ts  services.ts  users.ts
+  customers/actions.ts          ← nur noch dünne Server-Actions (Validierung, Redirects)
+  documents/{actions,draft-actions,finalize-actions,item-actions}.ts   ← dito
+  documents/{margin.ts,document-de.ts,flow-steps.ts,units.ts}          ← Domänenlogik
+  services/{actions.ts,mappers.ts}   settings/actions.ts
+  auth/  onboarding/  dashboard/  katalog/  legal/  pdf/  supabase/
+components/
+  documents/create/             ← kompletter Create-Flow (vorher flow/ + create/)
+  layout/                       ← app-shell.tsx/.css, sidebar*.tsx, sidebar.css
+  shared/                       ← rtl-demo-card (von der Startseite genutzt)
+  ui/  dashboard/  documents/  customers/  catalog/  settings/  login/  setup/
+app/[locale]/…                  ← Routen unverändert (nur setup/SetupFlowClient.tsx raus)
+```
+
+Gelöscht: `components/flow/`, `components/create/`, `components/demo/`,
+`hooks/`, `shared/`, `lib/db/`, `lib/store/`, `lib/flow/`, `lib/demo/`,
+`components/dashboard/dashboard.css` sowie alle in Abschnitt 1 gelisteten
+Duplikat-Typdateien und die sechs alten `queries.ts`-Module.
+
+## Was bewusst NICHT geändert wurde
+
+1. **Kein `src/`-Präfix** – Begründung siehe Kopf des Reports (Root-Struktur
+   mit `@/`-Alias beibehalten; `app/` bleibt ohnehin Root).
+2. **Per-Komponenten-CSS-Dateien bleiben CSS** (keine Tailwind-Umschreibung
+   der ~7.500 verbliebenen Zeilen) – entspricht der Projektkonvention in
+   `CLAUDE.md`; eine Utility-Umschreibung wäre eine Neuschreibung mit hohem
+   Regressionsrisiko ohne visuelle Testsuite. Der Auftragskern (keine
+   zentrale Sammel-CSS, sauberes `globals.css`, logische Properties) ist
+   vollständig erfüllt.
+3. **`.dflow-*`/`.dstep2*`-Blöcke in `kunde-step.css`/`step2.css`/`step3.css`
+   nicht zusammengelegt**: Die Blöcke sind zwischen den Dateien NICHT
+   identisch (unterschiedliche Hover-/Transition-/`flex-shrink`-Details).
+   Eine Vereinheitlichung wäre eine sichtbare Designentscheidung → offen.
+4. **Bestehende Inline-Styles** (~20 Stellen, v. a. `components/setup/`,
+   `components/settings/`, `customers-master-detail.tsx`) nicht angefasst –
+   Verstoß gegen die CSS-Regeln aus `CLAUDE.md`, aber außerhalb der fünf
+   Auftragspunkte; nur die ohnehin bearbeitete `setup/page.tsx` wurde auf
+   Tailwind umgestellt.
+5. **Query-Formen 1:1 übernommen**, inkl. Eigenheiten: manche Reads filtern
+   explizit auf `company_id`, andere verlassen sich auf RLS (Sidebar/
+   Dashboard-Counts); `document_type`-Mapping prüft weiterhin `"quote"`,
+   obwohl der Typ `"offer"` heißt (Fundorte: `lib/repositories/documents.ts`,
+   getFlowDocMeta/getDraftContext). Verhalten unangetastet.
+6. **`lib/supabase/auth.ts`** (getCurrentUser/getCurrentCompanyId, inkl. des
+   `users`-Lookups) bleibt Auth-Infrastruktur und wandert nicht ins
+   Repository – sie ist requestweit gecacht und wird von allen Repositories
+   konsumiert.
+7. **API-Platzhalter-Routen** (`app/api/{catalog,customers,settings}`)
+   unverändert – sie sind Serwist-Offline-Cache-Ziele (`app/sw.ts`).
+8. **next-intl/Locale-Routing, DB-Schema, RLS, Postgres-Funktionen**: nicht
+   angefasst (Auftragsvorgabe). Ebenso keine neuen Dependencies.
+
+## Offene Punkte / Empfehlungen
+
+1. **Supabase-generierte Typen**: `types/database.ts` ist handgeschrieben.
+   Mit Projektzugriff per `supabase gen types typescript` ersetzen und die
+   Ableitungen in `types/*` darauf umstellen.
+2. **`"quote"`-vs-`"offer"`-Inkonsistenz** klären: Entweder enthält die DB
+   noch Altwerte (`document_type_enum`?) – dann Migration – oder die beiden
+   `=== "quote"`-Checks sind tote Zweige.
+3. **`complete_onboarding.sql` wird vom Code nicht genutzt** –
+   `lib/onboarding/actions.ts` macht Admin-Inserts mit manuellem Rollback.
+   Entweder auf die atomare RPC umstellen oder das SQL-Script entfernen.
+4. **Parallel-Implementierungen in `lib/legal/`**: `marge.ts` (nur noch vom
+   eigenen Test genutzt; produktiv ist `lib/documents/margin.ts`) und
+   `pflichtangaben.ts` (Vorgänger von `dokument-pflicht.ts`, hängt am
+   ungenutzten UI-Primitive `AmpelCheck`). Konsolidierung braucht eine
+   Produktentscheidung zu `AmpelCheck`.
+5. **Setup-Übersetzungen** (`components/setup/translations.ts`) laufen am
+   next-intl-System vorbei (eigenes `T`-Objekt) – mittelfristig in
+   `messages/*.json` überführen.
+6. **Inline-Styles** (Punkt 4 oben) schrittweise in Tailwind-Klassen bzw.
+   Komponenten-CSS überführen, wenn die jeweiligen Dateien ohnehin angefasst
+   werden.
+7. **Flow-CSS-Feinschliff**: die fast-identischen `.dflow-*`/`.dstep2*`-
+   Blöcke nach einer bewussten Design-Entscheidung in eine gemeinsame
+   Datei (z. B. `flow-steps.css` bei der gemeinsamen Komponente) ziehen.
