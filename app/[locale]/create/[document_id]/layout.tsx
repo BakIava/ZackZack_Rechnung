@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { getFlowDocMeta } from "@/lib/repositories/documents";
-import "@/components/dashboard/dashboard.css";
+import "@/components/layout/app-shell.css";
 
 // Draft-Validierung + Redirect sind pro Request – nie statisch vorrendern.
 export const dynamic = "force-dynamic";

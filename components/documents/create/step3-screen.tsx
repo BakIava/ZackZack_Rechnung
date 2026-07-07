@@ -2,8 +2,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import type { PflichtCheck } from "@/lib/legal/dokument-pflicht";
 import type { DocumentPreview } from "@/types/document";
 import { Step3Main } from "./step3-main";
-// Gemeinsame Sidebar-/Shell-Styles (Sidebar wird aus dem Dashboard wiederverwendet).
-import "@/components/dashboard/dashboard.css";
+// Gemeinsame Shell-Styles (Scope-Fläche, Sidebar+Main-Split, Topbar).
+import "@/components/layout/app-shell.css";
 import "./step3.css";
 
 interface Step3ScreenProps {

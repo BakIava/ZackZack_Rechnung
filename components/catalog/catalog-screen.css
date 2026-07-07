@@ -1,31 +1,8 @@
 /* catalog-screen.css — Token-Scope für den Katalog-Bereich.
-   Geteilte Shell-Klassen (.dapp, .dmain, .dside, .pill) kommen aus dashboard.css.
+   Geteilte Shell-Klassen (.dapp, .dmain, .dside, .pill) kommen aus components/layout/app-shell.css bzw. sidebar.css; Tokens aus globals.css.
    Logische Properties → RTL automatisch. */
 
 .zz-catalog {
-  --primary: #02335c;
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #eff2f6;
-  --r: 13px;
-  --ui-font: var(--font-hanken), var(--font-plex-arabic), system-ui, sans-serif;
-
-  --r-sm: calc(var(--r) * 0.55);
-  --r-lg: min(calc(var(--r) * 1.4), 22px);
-  --primary-2: color-mix(in srgb, var(--primary) 82%, #6f8ba0);
-  --primary-ink: #ffffff;
-  --accent: #fb6202;
-  --accent-deep: #d85402;
-  --accent-ink: #ffffff;
-  --ink: #1a2430;
-  --muted: #6a7682;
-  --line: #e2e7ec;
-
-  --ok: #1f8a5b;   --ok-bg: #e5f3ec;
-  --warn: #b7791f; --warn-bg: #fbefd7;
-  --info: #2e5c92; --info-bg: #e7eef6;
-  --draft: #6b7682; --draft-bg: #edf0f3;
-
   position: fixed;
   inset: 0;
   background: var(--bg);

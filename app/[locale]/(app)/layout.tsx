@@ -4,7 +4,6 @@ import { setRequestLocale } from "next-intl/server";
 import { isRtlLocale } from "@/i18n/routing";
 import { Sidebar } from "@/components/layout/sidebar";
 import { AppShell } from "@/components/layout/app-shell";
-import "@/components/dashboard/dashboard.css";
 
 const hanken = Hanken_Grotesk({
   variable: "--font-hanken",

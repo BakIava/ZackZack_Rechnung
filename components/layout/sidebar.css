@@ -1,0 +1,183 @@
+/* sidebar.css — linke Navigationsleiste der App-Screens (RTL-fest).
+   Tokens kommen aus globals.css (zz-*-Scopes). */
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+.dside {
+  width: 250px;
+  flex-shrink: 0;
+  background: linear-gradient(190deg, var(--primary-2), var(--primary));
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 16px 16px;
+  border-inline-end: 1px solid rgba(0, 0, 0, 0.1);
+}
+.dside-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 22px;
+}
+.dside-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 17px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.dside-name {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.dside-trade {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 1px;
+  white-space: nowrap;
+}
+.dnav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dnav-lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  padding: 8px 12px 6px;
+}
+.dnav-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 13px;
+  border-radius: var(--r-sm);
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: 0.14s;
+  width: 100%;
+  text-align: start;
+  position: relative;
+  text-decoration: none;
+}
+.dnav-item > span:not(.dnav-count) {
+  white-space: nowrap;
+}
+.dnav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.dnav-item[data-on="1"] {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  font-weight: 600;
+}
+.dnav-item[data-on="1"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+.dapp[dir="rtl"] .dnav-item[data-on="1"]::before {
+  border-radius: 3px 0 0 3px;
+}
+.dnav-count {
+  margin-inline-start: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.dside-foot {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dside-lang-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dside-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.dside-lang:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+.dside-lang-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  direction: ltr;
+}
+.dside-lang-txt b {
+  font-weight: 600;
+}
+.dside-lang-txt i {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.4);
+}
+.dside-user {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 4px 8px;
+}
+.dside-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.dside-uname {
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.dside-urole {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+}

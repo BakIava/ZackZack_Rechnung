@@ -1,5 +1,5 @@
 /* step2.css — Schritt 2 (Positionen), Desktop.
-   Tokens stammen aus .zz-dash (dashboard.css). Logische Properties → RTL
+   Tokens kommen aus globals.css (zz-*-Scopes). Logische Properties → RTL
    automatisch. Kein komponentenspezifisches CSS in app.css. */
 
 /* ── Flow-Kopf + Schritt-Indikator ───────────────────────────────────────── */

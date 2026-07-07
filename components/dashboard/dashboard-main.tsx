@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import type { DashboardDoc, UiDocumentStatus } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import type { DashboardData } from "@/lib/dashboard/fetch";
+import "./dashboard-main.css";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 
 interface DashboardMainProps {
