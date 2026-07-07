@@ -1,7 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { isRtlLocale, routing } from "@/i18n/routing";
 import { DocumentsScreen } from "@/components/documents/documents-screen";
-import { fetchDocumentsPageData } from "@/lib/documents/queries";
+import { fetchDocumentsPageData } from "@/lib/repositories/documents";
 
 type Props = { params: Promise<{ locale: string; document_id: string }> };
 

@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { getDocumentItems } from "@/lib/repositories/document-items.client";
 import { markDocumentAsPaid } from "@/lib/documents/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 import type { DocumentListItem, DocumentItem } from "@/types/document";
@@ -84,25 +84,10 @@ export function DocumentsMain({
     }
     setDetailLoading(true);
     setDetailItems(null);
-    const client = createClient();
-    client
-      .from("document_items")
-      .select("position, description_de, amount, unit, unit_price, total_amount")
-      .eq("document_id", sel)
-      .order("position", { ascending: true })
-      .then(({ data }) => {
-        setDetailItems(
-          (data ?? []).map((r) => ({
-            position: r.position,
-            descriptionDe: r.description_de,
-            amount: r.amount,
-            unit: r.unit,
-            unitPrice: r.unit_price,
-            totalAmount: r.total_amount,
-          })),
-        );
-        setDetailLoading(false);
-      });
+    getDocumentItems(sel).then((items) => {
+      setDetailItems(items);
+      setDetailLoading(false);
+    });
   }, [sel]);
 
   async function handleMarkPaid() {

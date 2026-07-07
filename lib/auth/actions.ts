@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasUserProfile } from "@/lib/repositories/users";
 
 export type AuthErrorKey = "rateLimitExceeded" | "codeExpiredOrInvalid" | "generic";
 export type AuthResult = { error?: string; errorKey?: AuthErrorKey };
@@ -55,13 +56,11 @@ export async function verifyLoginCode(
     });
     if (error) return { error: error.message, errorKey: "generic" };
 
-    const { data: profile } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", (await supabase.auth.getUser()).data.user!.id)
-      .maybeSingle();
+    const hasProfile = await hasUserProfile(
+      (await supabase.auth.getUser()).data.user!.id,
+    );
 
-    redirect(profile ? `/${locale}/dashboard` : `/${locale}/setup`);
+    redirect(hasProfile ? `/${locale}/dashboard` : `/${locale}/setup`);
   }
 
   const supabase = await createClient();
@@ -79,13 +78,9 @@ export async function verifyLoginCode(
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id")
-    .eq("id", user!.id)
-    .maybeSingle();
+  const hasProfile = await hasUserProfile(user!.id);
 
-  redirect(profile ? `/${locale}/dashboard` : `/${locale}/setup`);
+  redirect(hasProfile ? `/${locale}/dashboard` : `/${locale}/setup`);
 }
 
 export async function signOut(): Promise<void> {

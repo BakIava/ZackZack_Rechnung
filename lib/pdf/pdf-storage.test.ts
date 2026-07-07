@@ -23,12 +23,11 @@ vi.mock("@/lib/pdf/document-logo", () => ({
   loadPdfLogo: h.loadPdfLogo,
 }));
 
+import { PDF_BUCKET, pdfObjectPath } from "@/lib/repositories/document-pdfs";
 import {
-  PDF_BUCKET,
   archiveDocumentPdf,
   fetchArchivedPdf,
   getOrArchiveDocumentPdf,
-  pdfObjectPath,
 } from "./pdf-storage";
 
 function blobLike(text: string) {

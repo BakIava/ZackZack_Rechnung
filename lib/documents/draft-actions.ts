@@ -2,10 +2,19 @@
 
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
-import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
+import { getCompanyKleinunternehmer } from "@/lib/repositories/companies";
+import { getCustomerSnapshot } from "@/lib/repositories/customers";
+import { countDocumentItems } from "@/lib/repositories/document-items";
+import {
+  deleteDraftDocument,
+  findReusableDraft,
+  getDraftIssueDate,
+  insertDraftDocument,
+  setDraftDocumentType,
+  updateDraftCustomerSnapshot,
+} from "@/lib/repositories/documents";
 import type { DocType } from "@/types/document";
-import type { CustomerSnapshot } from "@/types/customer";
 
 async function getCompanyCtx() {
   const user = await getCurrentUser();
@@ -14,36 +23,7 @@ async function getCompanyCtx() {
   const companyId = await getCurrentCompanyId();
   if (!companyId) return { error: "notAuthenticated" as const };
 
-  const supabase = await createClient();
-  return { companyId, userId: user.id, supabase };
-}
-
-/**
- * Neuesten leeren Entwurf (ohne Positionen) der Firma finden – falls vorhanden.
- * Verhindert, dass „Neue Rechnung" bei jedem Klick Duplikate anlegt.
- */
-async function findReusableDraft(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  companyId: string,
-): Promise<string | null> {
-  const { data: drafts } = await supabase
-    .from("documents")
-    .select("id")
-    .eq("company_id", companyId)
-    .eq("status", "draft")
-    .order("created_at", { ascending: false });
-  if (!drafts || drafts.length === 0) return null;
-
-  const ids = drafts.map((d) => d.id as string);
-  const { data: itemRows } = await supabase
-    .from("document_items")
-    .select("document_id")
-    .eq("company_id", companyId)
-    .in("document_id", ids);
-  const hasItems = new Set((itemRows ?? []).map((r) => r.document_id as string));
-
-  const reusable = drafts.find((d) => !hasItems.has(d.id as string));
-  return reusable ? (reusable.id as string) : null;
+  return { companyId, userId: user.id };
 }
 
 /**
@@ -59,39 +39,11 @@ export async function createDraftDocument(): Promise<
   if ("error" in ctx) return { error: "notAuthenticated" };
 
   // Bestehenden leeren Entwurf wiederverwenden statt Duplikate anzulegen.
-  const reusable = await findReusableDraft(ctx.supabase, ctx.companyId);
+  const reusable = await findReusableDraft(ctx.companyId);
   if (reusable) return { id: reusable };
 
-  const { data: company } = await ctx.supabase
-    .from("companies")
-    .select("kleinunternehmer")
-    .eq("id", ctx.companyId)
-    .maybeSingle();
-  const isKleinunternehmer = company?.kleinunternehmer ?? true;
-
-  const { data, error } = await ctx.supabase
-    .from("documents")
-    .insert({
-      company_id: ctx.companyId,
-      created_by: ctx.userId,
-      document_type: "invoice",
-      status: "draft",
-      is_kleinunternehmer: isKleinunternehmer,
-      customer_snapshot: {},
-      total_amount: 0,
-      // issue_date direkt setzen: Schritt 1 (Kunde) ist überspringbar, das
-      // Ausstellungsdatum (§14-Pflichtangabe) darf dabei nicht fehlen. Die
-      // Kundenwahl überschreibt es nicht (updateDraftCustomer setzt nur, wenn leer).
-      issue_date: new Date().toISOString().split("T")[0],
-    })
-    .select("id")
-    .single();
-
-  if (error || !data) {
-    console.error("[createDraftDocument] insert failed:", error);
-    return { error: error?.message ?? "unknown" };
-  }
-  return { id: data.id as string };
+  const isKleinunternehmer = await getCompanyKleinunternehmer(ctx.companyId);
+  return insertDraftDocument(ctx.companyId, isKleinunternehmer);
 }
 
 /**
@@ -110,18 +62,7 @@ export async function updateDraftDocumentType(
   documentId: string,
   docType: DocType,
 ): Promise<{ error?: string }> {
-  const ctx = await getCompanyCtx();
-  if ("error" in ctx) return { error: "notAuthenticated" };
-
-  const { error } = await ctx.supabase
-    .from("documents")
-    .update({ document_type: docType })
-    .eq("id", documentId)
-    .eq("company_id", ctx.companyId)
-    .eq("status", "draft");
-
-  if (error) return { error: error.message };
-  return {};
+  return setDraftDocumentType(documentId, docType);
 }
 
 /**
@@ -135,51 +76,17 @@ export async function updateDraftCustomer(
   const ctx = await getCompanyCtx();
   if ("error" in ctx) return { error: "notAuthenticated" };
 
-  const { data: customer } = await ctx.supabase
-    .from("customers")
-    .select("name, street, street_no, postcode, city, email, phone")
-    .eq("id", customerId)
-    .eq("company_id", ctx.companyId)
-    .maybeSingle();
-  if (!customer) return { error: "customerNotFound" };
+  const snapshot = await getCustomerSnapshot(customerId);
+  if (!snapshot) return { error: "customerNotFound" };
 
-  const snapshot: CustomerSnapshot = {
-    name: customer.name as string,
-    street: (customer.street as string | null) ?? null,
-    street_no: (customer.street_no as string | null) ?? null,
-    postcode: (customer.postcode as string | null) ?? null,
-    city: (customer.city as string | null) ?? null,
-    email: (customer.email as string | null) ?? null,
-    phone: (customer.phone as string | null) ?? null,
-  };
-
-  const { data: doc } = await ctx.supabase
-    .from("documents")
-    .select("issue_date")
-    .eq("id", documentId)
-    .eq("company_id", ctx.companyId)
-    .eq("status", "draft")
-    .maybeSingle();
+  const doc = await getDraftIssueDate(documentId);
   if (!doc) return { error: "draftNotFound" };
 
-  const update: {
-    customer_id: string;
-    customer_snapshot: CustomerSnapshot;
-    issue_date?: string;
-  } = { customer_id: customerId, customer_snapshot: snapshot };
-  if (!doc.issue_date) {
-    update.issue_date = new Date().toISOString().split("T")[0];
-  }
+  const issueDate = doc.issueDate
+    ? undefined
+    : new Date().toISOString().split("T")[0];
 
-  const { error } = await ctx.supabase
-    .from("documents")
-    .update(update)
-    .eq("id", documentId)
-    .eq("company_id", ctx.companyId)
-    .eq("status", "draft");
-
-  if (error) return { error: error.message };
-  return {};
+  return updateDraftCustomerSnapshot(documentId, customerId, snapshot, issueDate);
 }
 
 /**
@@ -192,18 +99,9 @@ export async function deleteDraftIfEmpty(documentId: string): Promise<void> {
   const ctx = await getCompanyCtx();
   if ("error" in ctx) return;
 
-  const { count, error } = await ctx.supabase
-    .from("document_items")
-    .select("id", { count: "exact", head: true })
-    .eq("document_id", documentId)
-    .eq("company_id", ctx.companyId);
-  if (error) return; // im Zweifel behalten
-  if ((count ?? 0) > 0) return; // hat Positionen → behalten
+  const count = await countDocumentItems(documentId);
+  if (count === null) return; // im Zweifel behalten
+  if (count > 0) return; // hat Positionen → behalten
 
-  await ctx.supabase
-    .from("documents")
-    .delete()
-    .eq("id", documentId)
-    .eq("company_id", ctx.companyId)
-    .eq("status", "draft");
+  await deleteDraftDocument(documentId);
 }

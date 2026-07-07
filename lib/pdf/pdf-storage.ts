@@ -1,28 +1,20 @@
-import { createAdminClient } from "@/lib/supabase/admin";
 import { loadPdfLogo } from "@/lib/pdf/document-logo";
 import { renderDocumentPdfBuffer } from "@/lib/pdf/render-document";
+import {
+  downloadDocumentPdf,
+  uploadDocumentPdf,
+} from "@/lib/repositories/document-pdfs";
 import type { DocumentPreview } from "@/types/document";
 
 /**
- * Langzeit-Archiv für finalisierte Belege.
+ * Langzeit-Archiv für finalisierte Belege (Rendering + Orchestrierung; die
+ * Storage-Zugriffe selbst liegen im Repository `document-pdfs`).
  *
  * Finalisierte Dokumente sind eingefroren (§14 UStG / GoBD): Nummer, Empfänger-
  * Snapshot und Positionen ändern sich nie mehr. Das gerenderte PDF wird deshalb
  * beim Festschreiben in einen PRIVATEN Supabase-Storage-Bucket abgelegt und dort
  * dauerhaft (Rechnungen: 10 Jahre Aufbewahrungspflicht, § 14b UStG) vorgehalten.
- *
- * Der Bucket ist nicht öffentlich; ausschließlich der Service-Role-Client (hier)
- * liest/schreibt. Die Zugriffsberechtigung prüft die aufrufende Route separat
- * (getDocumentPreview: Anmeldung + Firmenzugehörigkeit). Es gibt daher bewusst
- * keine anon/authenticated-Policies auf dem Bucket — alles läuft über den
- * autorisierten Server-Pfad. Bucket-Anlage: scripts/document_pdf_storage.sql.
  */
-export const PDF_BUCKET = "documents";
-
-/** Objektpfad im Bucket. Dokument-IDs sind global eindeutige UUIDs. */
-export function pdfObjectPath(documentId: string): string {
-  return `${documentId}.pdf`;
-}
 
 /**
  * Rendert den Beleg und legt ihn (idempotent, upsert) im Archiv ab. Gibt den
@@ -34,19 +26,13 @@ export async function archiveDocumentPdf(preview: DocumentPreview): Promise<Buff
   const logo = await loadPdfLogo(preview.company.logoUrl);
   const buffer = await renderDocumentPdfBuffer(preview, logo);
 
-  const admin = createAdminClient();
   // Als Blob hochladen (nicht als roher Node-Buffer): der Buffer-Body kann in
   // manchen Node-/Fetch-Umgebungen zu einem 0-Byte-Objekt führen. Der Blob
   // trägt Länge + Content-Type zuverlässig.
   const body = new Blob([new Uint8Array(buffer)], { type: "application/pdf" });
-  const { error } = await admin.storage
-    .from(PDF_BUCKET)
-    .upload(pdfObjectPath(preview.id), body, {
-      contentType: "application/pdf",
-      upsert: true,
-    });
-  if (error) {
-    console.error("[archiveDocumentPdf] upload failed:", error.message);
+  const { errorMessage } = await uploadDocumentPdf(preview.id, body);
+  if (errorMessage) {
+    console.error("[archiveDocumentPdf] upload failed:", errorMessage);
   }
   return buffer;
 }
@@ -57,11 +43,8 @@ export async function archiveDocumentPdf(preview: DocumentPreview): Promise<Buff
  * der Aufrufer neu rendert statt ein leeres PDF auszuliefern.
  */
 export async function fetchArchivedPdf(documentId: string): Promise<Buffer | null> {
-  const admin = createAdminClient();
-  const { data, error } = await admin.storage
-    .from(PDF_BUCKET)
-    .download(pdfObjectPath(documentId));
-  if (error || !data) return null;
+  const data = await downloadDocumentPdf(documentId);
+  if (!data) return null;
   const buffer = Buffer.from(await data.arrayBuffer());
   return buffer.length > 0 ? buffer : null;
 }

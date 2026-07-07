@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { KundeStep } from "@/components/flow/KundeStep";
-import { getDraft, getFlowDocMeta } from "@/lib/documents/queries";
-import { getCustomerSummaries } from "@/lib/customers/queries";
+import { getDraft, getFlowDocMeta } from "@/lib/repositories/documents";
+import { getCustomerSummaries } from "@/lib/repositories/customers";
 import { isRtlLocale } from "@/i18n/routing";
 
 export const dynamic = "force-dynamic";

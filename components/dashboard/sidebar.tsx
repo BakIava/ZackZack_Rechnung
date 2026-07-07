@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { SidebarLangLink } from "./sidebar-lang-link";
 import { SidebarNav } from "./sidebar-nav";
-import { createClient } from "@/lib/supabase/server";
+import { getCompanyNameAndDirector } from "@/lib/repositories/companies";
+import { countCustomers } from "@/lib/repositories/customers";
+import { countServices } from "@/lib/repositories/services";
 
 function toInitials(name: string): string {
   return name
@@ -14,19 +16,16 @@ function toInitials(name: string): string {
 /** Linke Navigationsleiste des Desktop-Dashboards (RTL-fest). */
 export async function Sidebar() {
   const t = await getTranslations("Dashboard");
-  const supabase = await createClient();
 
-  const [companyRes, customersRes, catalogRes] = await Promise.all([
-    supabase.from("companies").select("name, director").single(),
-    supabase.from("customers").select("id", { count: "exact", head: true }),
-    supabase.from("services").select("id", { count: "exact", head: true }),
+  const [company, customerCount, catalogCount] = await Promise.all([
+    getCompanyNameAndDirector(),
+    countCustomers(),
+    countServices(),
   ]);
 
-  const companyName = companyRes.data?.name ?? "";
-  const ownerName = companyRes.data?.director ?? "";
+  const companyName = company.name;
+  const ownerName = company.director;
   const initials = toInitials(companyName);
-  const customerCount = customersRes.count ?? 0;
-  const catalogCount = catalogRes.count ?? 0;
 
   return (
     <aside className="dside">
