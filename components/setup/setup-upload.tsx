@@ -1,11 +1,11 @@
 "use client";
 
-import "./SetupUpload.css";
+import "./setup-upload.css";
 import Image from "next/image";
-import { SetupIcon } from "./SetupIcon";
+import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
-import { LangLink, Privacy, ScanDoc, DesktopBar, UpProgress } from "./SetupPrimitives";
-import { UploadOpts } from "./SetupOtherFields";
+import { LangLink, Privacy, ScanDoc, DesktopBar, UpProgress } from "./setup-primitives";
+import { UploadOpts } from "./setup-other-fields";
 
 interface UploadProps {
   t: Translations;

@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "./Setup.css";
+import "./setup.css";
 import { T, type Lang, type Phase, type SetupFlowProps } from "./translations";
-import { SetupWelcome } from "./SetupWelcome";
-import { SetupEntry } from "./SetupEntry";
-import { SetupUpload } from "./SetupUpload";
-import { SetupReview } from "./SetupReview";
-import { SetupDone } from "./SetupDone";
-import { SetupWizard } from "./SetupWizard";
+import { SetupWelcome } from "./setup-welcome";
+import { SetupEntry } from "./setup-entry";
+import { SetupUpload } from "./setup-upload";
+import { SetupReview } from "./setup-review";
+import { SetupDone } from "./setup-done";
+import { SetupWizard } from "./setup-wizard";
 import { INITIAL_FORM_DATA } from "./form-defaults";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import { completeOnboarding } from "@/lib/onboarding/actions";

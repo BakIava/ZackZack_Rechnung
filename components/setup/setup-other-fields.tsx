@@ -1,9 +1,9 @@
 "use client";
 
-import "./SetupStepFields.css";
-import { SetupIcon } from "./SetupIcon";
+import "./setup-step-fields.css";
+import { SetupIcon } from "./setup-icon";
 import { type Translations } from "./translations";
-import { Field, TextInput } from "./SetupPrimitives";
+import { Field, TextInput } from "./setup-primitives";
 
 // ── EntryTiles ────────────────────────────────────────────────────────────────
 

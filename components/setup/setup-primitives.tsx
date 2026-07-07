@@ -1,10 +1,10 @@
 "use client";
 
-import "./SetupPrimitives.css";
+import "./setup-primitives.css";
 import React, { useState, type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { SetupIcon } from "./SetupIcon";
+import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang, LANG_LABEL } from "./translations";
 
 // ── LangLink ──────────────────────────────────────────────────────────────────

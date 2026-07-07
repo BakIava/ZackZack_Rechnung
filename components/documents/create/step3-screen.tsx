@@ -1,5 +1,5 @@
 import { Sidebar } from "@/components/layout/sidebar";
-import type { PflichtCheck } from "@/lib/legal/dokumentPflicht";
+import type { PflichtCheck } from "@/lib/legal/dokument-pflicht";
 import type { DocumentPreview } from "@/types/document";
 import { Step3Main } from "./step3-main";
 // Gemeinsame Sidebar-/Shell-Styles (Sidebar wird aus dem Dashboard wiederverwendet).

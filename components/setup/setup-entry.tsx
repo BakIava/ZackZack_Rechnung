@@ -1,11 +1,11 @@
 "use client";
 
-import "./SetupEntry.css";
+import "./setup-entry.css";
 import Image from "next/image";
-import { SetupIcon } from "./SetupIcon";
+import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
-import { LangLink, Privacy, DesktopBar } from "./SetupPrimitives";
-import { EntryTiles } from "./SetupOtherFields";
+import { LangLink, Privacy, DesktopBar } from "./setup-primitives";
+import { EntryTiles } from "./setup-other-fields";
 
 interface EntryProps {
   t: Translations;

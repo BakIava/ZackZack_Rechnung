@@ -5,7 +5,7 @@ import { Building2, Check, MapPin, Plus, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { CustomerListItem, CustomerRow } from "@/types/customer";
-import { NewCustomerModal } from "./NewCustomerModal";
+import { NewCustomerModal } from "./new-customer-modal";
 import { CustomerDetail, CustomerDetailEmpty, isFirma, deriveInitials, sortedDocs, formatDateShort } from "./customer-detail";
 
 interface CustomersMasterDetailProps {

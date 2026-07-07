@@ -1,9 +1,9 @@
 "use client";
 
-import "./SetupDone.css";
-import { SetupIcon } from "./SetupIcon";
+import "./setup-done.css";
+import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
-import { LangLink, DesktopBar } from "./SetupPrimitives";
+import { LangLink, DesktopBar } from "./setup-primitives";
 
 interface DoneProps {
   t: Translations;

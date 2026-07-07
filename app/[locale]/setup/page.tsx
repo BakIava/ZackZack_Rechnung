@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { isRtlLocale } from "@/i18n/routing";
-import { SetupFlowClient } from "@/components/setup/SetupFlowClient";
+import { SetupFlowClient } from "@/components/setup/setup-flow-client";
 
 interface Props {
   params: Promise<{ locale: string }>;

@@ -1,10 +1,10 @@
 "use client";
 
-import "./SetupWelcome.css";
+import "./setup-welcome.css";
 import Image from "next/image";
-import { SetupIcon } from "./SetupIcon";
+import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
-import { LangLink, DesktopBar } from "./SetupPrimitives";
+import { LangLink, DesktopBar } from "./setup-primitives";
 
 interface WelcomeProps {
   t: Translations;

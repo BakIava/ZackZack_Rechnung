@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
-import { SetupFlow } from "./SetupFlow";
+import { SetupFlow } from "./setup-flow";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 
 interface Props {

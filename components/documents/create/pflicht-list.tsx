@@ -7,7 +7,7 @@ import type {
   PflichtCheck,
   PflichtFeld,
   PflichtLocation,
-} from "@/lib/legal/dokumentPflicht";
+} from "@/lib/legal/dokument-pflicht";
 
 interface PflichtListProps {
   checks: PflichtCheck[];

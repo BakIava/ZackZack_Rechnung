@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { createCustomer, updateCustomer } from "@/lib/customers/actions";
 import { deriveInitials } from "@/lib/initials";
 import type { CustomerListItem, FlowCustomer } from "@/types/customer";
-import "./NewCustomerModal.css";
+import "./new-customer-modal.css";
 
 type CustomerType = "private" | "company";
 

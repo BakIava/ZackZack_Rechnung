@@ -24,7 +24,7 @@ import {
   updateItem,
 } from "@/lib/documents/item-actions";
 import { CatalogPicker } from "./catalog-picker";
-import { FlowSteps } from "./FlowSteps";
+import { FlowSteps } from "./flow-steps";
 import { PositionRow } from "./position-row";
 
 const STROKE = 1.75;

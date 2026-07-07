@@ -1,10 +1,10 @@
 "use client";
 
-import "./SetupStepFields.css";
+import "./setup-step-fields.css";
 import Image from "next/image";
-import { SetupIcon } from "./SetupIcon";
+import { SetupIcon } from "./setup-icon";
 import { type Translations } from "./translations";
-import { Field, TextInput, Seg3, Toggle19 } from "./SetupPrimitives";
+import { Field, TextInput, Seg3, Toggle19 } from "./setup-primitives";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 
 interface StepProps {

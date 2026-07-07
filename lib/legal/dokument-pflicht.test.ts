@@ -5,7 +5,7 @@ import {
   offeneMaengel,
   pruefeDokumentPflicht,
   type DokumentPflichtInput,
-} from "./dokumentPflicht";
+} from "./dokument-pflicht";
 
 // Vollständige, große Rechnung (> 250 €): Empfängerangaben sind Pflicht.
 const grossVollstaendig: DokumentPflichtInput = {

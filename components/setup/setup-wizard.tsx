@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { SetupIcon } from "./SetupIcon";
+import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang, type Phase } from "./translations";
-import { LangLink, DesktopBar } from "./SetupPrimitives";
-import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoEmpty, LogoPreview } from "./SetupStepFields";
+import { LangLink, DesktopBar } from "./setup-primitives";
+import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoEmpty, LogoPreview } from "./setup-step-fields";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 
 interface WizardProps {

@@ -1,11 +1,11 @@
 "use client";
 
-import "./SetupReview.css";
+import "./setup-review.css";
 import Image from "next/image";
-import { SetupIcon } from "./SetupIcon";
+import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
-import { LangLink, DesktopBar, UpProgress } from "./SetupPrimitives";
-import { ReviewFields } from "./SetupOtherFields";
+import { LangLink, DesktopBar, UpProgress } from "./setup-primitives";
+import { ReviewFields } from "./setup-other-fields";
 
 interface ReviewProps {
   t: Translations;
