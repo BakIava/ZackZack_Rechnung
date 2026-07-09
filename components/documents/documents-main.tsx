@@ -143,7 +143,7 @@ export function DocumentsMain({
   const typeFilters: { id: TypeFilter; label: string }[] = [
     { id: "all", label: t("fAll") },
     { id: "invoice", label: t("fInvoice") },
-    { id: "quote", label: t("fquote") },
+    { id: "quote", label: t("fQuote") },
   ];
 
   const statusFilters: { id: Exclude<StatusFilter, "all">; label: string }[] = [

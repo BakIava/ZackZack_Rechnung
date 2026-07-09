@@ -223,7 +223,7 @@ function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps
           <form action={startNewDocument} className="contents">
             <button type="submit" className="cdm-dbtn cdm-dbtn--ghost">
               <FileText size={18} strokeWidth={STROKE} aria-hidden />
-              {t("newquoteFor")}
+              {t("newQuoteFor")}
             </button>
           </form>
         </div>
