@@ -263,6 +263,9 @@
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 .cdm-edit-foot .btn-save {
   padding: 12px 24px;

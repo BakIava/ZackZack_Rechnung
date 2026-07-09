@@ -6,7 +6,7 @@ import {
   useShareDocument,
   type ShareChannel,
   type ShareTarget,
-} from "@/components/documents/create/use-share-document";
+} from "@/components/create/use-share-document";
 import "./documents-main.css";
 
 const STROKE = 1.75;

@@ -19,7 +19,7 @@ import { DOKUMENT_DE } from "@/lib/documents/document-de";
 import { finalizeDocument, type FinalizeError } from "@/lib/documents/finalize-actions";
 import { istFinalisierbar, type PflichtCheck } from "@/lib/legal/dokument-pflicht";
 import type { DocumentPreview } from "@/types/document";
-import { FlowSteps } from "@/components/documents/create/flow-steps";
+import { FlowSteps } from "@/components/create/flow-steps";
 import { DocumentA4 } from "./document-a4";
 import { FinalizeDialog } from "./finalize-dialog";
 import { PflichtList } from "./pflicht-list";
