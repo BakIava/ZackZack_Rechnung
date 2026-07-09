@@ -223,7 +223,7 @@ function CustomerReadView({ customer, onEdit, onMutated }: CustomerReadViewProps
           <form action={startNewDocument} className="contents">
             <button type="submit" className="cdm-dbtn cdm-dbtn--ghost">
               <FileText size={18} strokeWidth={STROKE} aria-hidden />
-              {t("newOfferFor")}
+              {t("newquoteFor")}
             </button>
           </form>
         </div>
@@ -426,7 +426,7 @@ function DocRow({ doc }: DocRowProps) {
   const t = useTranslations("Customers");
   console.log(doc);
   const TypeIcon = doc.document_type === "invoice" ? ReceiptText : FileText;
-  const typeLabel = doc.document_type === "invoice" ? t("invoice") : t("offer");
+  const typeLabel = doc.document_type === "invoice" ? t("invoice") : t("quote");
   const statusKey = docStatusToKey(doc.status) as Parameters<typeof t>[0];
   const pillVariant = docStatusToPill(doc.status);
   const docId = doc.document_number ?? "-";

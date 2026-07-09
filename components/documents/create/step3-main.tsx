@@ -114,7 +114,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
             ) : (
               <FileText size={15} strokeWidth={STROKE} aria-hidden />
             )}
-            {isRechnung ? t("invoice") : t("offer")}
+            {isRechnung ? t("invoice") : t("quote")}
           </span>
           <span className="p2-chip">
             <span className="p2-av">{customerInitials}</span>
@@ -196,7 +196,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
                     <div>
                       <div className="share-success-t">{t("finalizedTitle")}</div>
                       <div className="share-success-s">
-                        {isRechnung ? t("invoice") : t("offer")} {preview.documentNumber}
+                        {isRechnung ? t("invoice") : t("quote")} {preview.documentNumber}
                       </div>
                     </div>
                   </div>
