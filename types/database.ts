@@ -10,9 +10,9 @@
  * Enum-Werte gegen pg_enum verifiziert (Stand 2026-07):
  * document_type_enum = {invoice, quote}, document_status_enum =
  * {draft, finalized, sent, paid, cancelled}, surcharge_type_enum =
- * {percent, fixed}. Ein früherer App-seitiger Rename auf "quote" war nie in
- * die DB migriert und wurde zurückgenommen — "Angebot" heißt in DB UND App
- * `quote`; UI-Labels übersetzen das (t("quote")).
+ * {percent, fixed}. Ein früherer App-seitiger Rename auf "offer" war nie in
+ * die DB migriert und wurde zurückgenommen — "Angebot" heißt in DB und App
+ * `quote`; UI-Labels übersetzen das (Message-Key `quote`).
  *
  * Offener Punkt: sobald CLI-Zugriff auf das Supabase-Projekt besteht, durch
  * `supabase gen types typescript` ersetzen.
