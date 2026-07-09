@@ -83,7 +83,6 @@ export function KundeStep({
   );
   const selectedCustomer = allCustomers.find((c) => c.id === selected) ?? null;
   const docLabel = docType === "invoice" ? t("invoice") : t("quote");
-quote
   function handleCreated(customer: CustomerListItem) {
     setCreated((prev) => [customer, ...prev]);
     setSelected(customer.id);
@@ -174,12 +173,12 @@ quote
               type="button"
               className="seg--gold"
               data-on={docType === "quote" ? "1" : "0"}
-              aria-pressed={docType quotequote"}
-              onClick={() => handleDocTypquoteote")}
-            >quote
+              aria-pressed={docType === "quote"}
+              onClick={() => handleDocType("quote")}
+            >
               <FileText size={20} strokeWidth={STROKE} aria-hidden />
               {t("quote")}
-            </buttquote
+            </button>
           </div>
         </div>
 
