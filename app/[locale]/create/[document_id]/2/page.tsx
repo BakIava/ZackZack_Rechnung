@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { Step2Screen } from "@/components/flow/step2-screen";
-import { getDraftContext, getDraftItems } from "@/lib/documents/item-queries";
-import { getFlowDocMeta } from "@/lib/documents/queries";
-import { getServices } from "@/lib/services/queries";
+import { Step2Screen } from "@/components/documents/create/step2-screen";
+import { getDraftItems } from "@/lib/repositories/document-items";
+import { getDraftContext, getFlowDocMeta } from "@/lib/repositories/documents";
+import { getServices } from "@/lib/repositories/services";
 import { isRtlLocale, type Locale } from "@/i18n/routing";
 
 export const dynamic = "force-dynamic";

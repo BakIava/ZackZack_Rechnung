@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { isRtlLocale, routing } from "@/i18n/routing";
 import { SettingsScreen } from "@/components/settings/settings-screen";
-import { getSettingsData } from "@/lib/settings/queries";
+import { getSettingsData } from "@/lib/repositories/companies";
 
 type Props = { params: Promise<{ locale: string }> };
 

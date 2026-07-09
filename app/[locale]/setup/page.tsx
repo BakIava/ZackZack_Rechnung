@@ -1,6 +1,6 @@
 import { setRequestLocale } from "next-intl/server";
 import { isRtlLocale } from "@/i18n/routing";
-import { SetupFlowClient } from "./SetupFlowClient";
+import { SetupFlowClient } from "@/components/setup/setup-flow-client";
 
 interface Props {
   params: Promise<{ locale: string }>;
@@ -13,7 +13,7 @@ export default async function SetupPage({ params }: Props) {
   const lang = (["de", "tr", "ar"].includes(locale) ? locale : "de") as "de" | "tr" | "ar";
 
   return (
-    <div style={{ height: "100dvh", overflow: "hidden" }}>
+    <div className="h-dvh overflow-hidden">
       <SetupFlowClient lang={lang} dir={dir} />
     </div>
   );

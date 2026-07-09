@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { KatalogEintrag } from "@/lib/katalog/types";
+import type { KatalogEintrag } from "@/types/service";
 import "./service-modal.css";
 
 interface ServiceModalProps {

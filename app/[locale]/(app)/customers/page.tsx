@@ -1,7 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 import { isRtlLocale, routing } from "@/i18n/routing";
 import { CustomersScreen } from "@/components/customers/customers-screen";
-import { getCustomers } from "@/lib/customers/queries";
+import { getCustomers } from "@/lib/repositories/customers";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -10,9 +10,6 @@ export default async function CustomersPage({ params }: Props) {
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
   const customers = await getCustomers();
-
-  console.log(customers);
-  
 
   return <CustomersScreen dir={dir} customers={customers} />;
 }

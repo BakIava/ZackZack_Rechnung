@@ -1,5 +1,5 @@
 import { renderToBuffer } from "@react-pdf/renderer";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 import { DocumentPdf, type PdfLogo } from "@/lib/pdf/document-pdf";
 import { registerPdfFonts } from "@/lib/pdf/fonts";
 

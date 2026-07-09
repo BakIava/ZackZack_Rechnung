@@ -6,7 +6,7 @@
  * darf jemals auf das Dokument/PDF gelangen.
  */
 
-import type { SurchargeType } from "./item-types";
+import type { SurchargeType } from "@/types/database";
 
 /**
  * Verkaufspreis (unit_price) aus Einkaufspreis + Aufschlag.

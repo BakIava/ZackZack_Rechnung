@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 
 // ── Mocks (via vi.hoisted, damit sie vor den Imports greifen) ──────────────────
 const h = vi.hoisted(() => {
@@ -23,12 +23,11 @@ vi.mock("@/lib/pdf/document-logo", () => ({
   loadPdfLogo: h.loadPdfLogo,
 }));
 
+import { PDF_BUCKET, pdfObjectPath } from "@/lib/repositories/document-pdfs";
 import {
-  PDF_BUCKET,
   archiveDocumentPdf,
   fetchArchivedPdf,
   getOrArchiveDocumentPdf,
-  pdfObjectPath,
 } from "./pdf-storage";
 
 function blobLike(text: string) {
@@ -37,7 +36,7 @@ function blobLike(text: string) {
 
 const preview: DocumentPreview = {
   id: "11111111-2222-3333-4444-555555555555",
-  docType: "rechnung",
+  docType: "invoice",
   status: "finalized",
   documentNumber: "R-2026-041",
   issueDate: "2026-06-09",

@@ -1,0 +1,228 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { ChevronLeft, ChevronRight, FileText, Lock, Plus, ReceiptText, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import type { Locale } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/navigation";
+import { formatMoney } from "@/lib/format";
+import type { KatalogEintrag } from "@/types/service";
+import type {
+  DraftContext,
+  DraftItem,
+  FreeItemInput,
+  FremdItemInput,
+  ItemPatch,
+} from "@/types/document";
+import type { ItemsResult } from "@/lib/documents/item-actions";
+import {
+  addCatalogItem,
+  addFreeItem,
+  addFremdItem,
+  deleteItem,
+  moveItem,
+  updateItem,
+} from "@/lib/documents/item-actions";
+import { CatalogPicker } from "./catalog-picker";
+import { FlowSteps } from "./flow-steps";
+import { PositionRow } from "./position-row";
+
+const STROKE = 1.75;
+
+interface Step2MainProps {
+  dir: "ltr" | "rtl";
+  locale: Locale;
+  documentId: string;
+  context: DraftContext;
+  initialItems: DraftItem[];
+  services: KatalogEintrag[];
+}
+
+/** Desktop-Hauptbereich von Schritt 2: Positionen aus dem Draft, live in der DB. */
+export function Step2Main({
+  dir,
+  locale,
+  documentId,
+  context,
+  initialItems,
+  services,
+}: Step2MainProps) {
+  const t = useTranslations("Step2");
+  const router = useRouter();
+  const [items, setItems] = useState<DraftItem[]>(initialItems);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
+  const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
+  const total = items.reduce((sum, i) => sum + i.totalAmount, 0);
+  const docLabel = context.docType === "rechnung" ? t("invoice") : t("quote");
+
+  function run(action: () => Promise<ItemsResult>) {
+    setError(null);
+    startTransition(async () => {
+      const res = await action();
+      if ("error" in res) {
+        setError(t("itemError"));
+        return;
+      }
+      setItems(res.items);
+    });
+  }
+
+  const addCatalog = (serviceId: string) => {
+    setModalOpen(false);
+    run(() => addCatalogItem(documentId, serviceId));
+  };
+  const addFree = (input: FreeItemInput) => {
+    setModalOpen(false);
+    run(() => addFreeItem(documentId, input));
+  };
+  const addFremd = (input: FremdItemInput) => {
+    setModalOpen(false);
+    run(() => addFremdItem(documentId, input));
+  };
+  const changeQty = (id: string, delta: number) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    const next = Math.max(1, item.amount + delta);
+    if (next === item.amount) return;
+    run(() => updateItem(id, { amount: next }));
+  };
+  const edit = (id: string, patch: ItemPatch) => run(() => updateItem(id, patch));
+  const remove = (id: string) => run(() => deleteItem(id));
+  const move = (id: string, direction: "up" | "down") =>
+    run(() => moveItem(id, direction));
+
+  return (
+    <main className="dmain">
+      <div className="dscroll">
+        <div className="dflow-head">
+          <Link href={`/create/${documentId}/1`} className="dflow-back" aria-label={t("back")}>
+            <Backward size={20} strokeWidth={STROKE} aria-hidden />
+          </Link>
+          <div className="dflow-headings">
+            <div className="dflow-title">{t("createTitle", { type: docLabel })}</div>
+            <div className="dflow-sub">{t("stepItems")}</div>
+          </div>
+          <FlowSteps current={2} />
+        </div>
+
+        <div className="d2-ctx">
+          <span className="p2-chip p2-chip--mode">
+            {context.docType === "rechnung" ? (
+              <ReceiptText size={15} strokeWidth={STROKE} aria-hidden />
+            ) : (
+              <FileText size={15} strokeWidth={STROKE} aria-hidden />
+            )}
+            {docLabel}
+          </span>
+          {context.customerName && (
+            <span className="p2-chip">
+              <span className="p2-av">{context.customerInitials}</span>
+              {context.customerName}
+            </span>
+          )}
+        </div>
+
+        <div className="d2-wrap">
+          <div>
+            <button type="button" className="d2-add" onClick={() => setModalOpen(true)}>
+              <span className="d2-add-ic">
+                <Plus size={26} strokeWidth={2.4} color="#fff" aria-hidden />
+              </span>
+              <span className="d2-add-txt">
+                <span className="d2-add-t">{t("addPosition")}</span>
+                <span className="d2-add-s">{t("fromCatalog")} · {t("freePosition")} · {t("subcontract")}</span>
+              </span>
+              <Forward size={22} strokeWidth={STROKE} aria-hidden />
+            </button>
+
+            {error && <div className="d2-error">{error}</div>}
+
+            {items.length === 0 ? (
+              <div className="empty empty--boxed">
+                <div className="empty-t">{t("emptyPos")}</div>
+                {t("emptyPosHint")}
+              </div>
+            ) : (
+              <div className="d2table">
+                <div className="d2thead">
+                  <span className="d2th" />
+                  <span className="d2th">{t("colService")}</span>
+                  <span className="d2th">{t("quantity")}</span>
+                  <span className="d2th">{t("unitPrice")}</span>
+                  <span className="d2th d2th--num">{t("lineSum")}</span>
+                  <span className="d2th" />
+                </div>
+                {items.map((item, i) => (
+                  <PositionRow
+                    key={item.id}
+                    item={item}
+                    index={i}
+                    count={items.length}
+                    disabled={pending}
+                    onQty={changeQty}
+                    onEdit={edit}
+                    onDelete={remove}
+                    onMove={move}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="d2-sumpanel">
+            <div className="d2-sum-t">{t("summary")}</div>
+            <div className="d2-sum-lines">
+              <div className="d2-sum-line"><span>{t("positionsWord")}</span><b>{items.length}</b></div>
+              <div className="d2-sum-line"><span>{t("total")} ({t("net")})</span><b>{formatMoney(total)}</b></div>
+            </div>
+            <div className="d2-sum-div" />
+            <div className="d2-sum-total"><span className="d2-sum-total-l">{t("total")}</span><span className="d2-sum-total-v">{formatMoney(total)}</span></div>
+            {context.isKleinunternehmer && (
+              <div className="d2-sum-ku">
+                <Lock size={14} strokeWidth={STROKE} aria-hidden />
+                {t("kuNote")}
+              </div>
+            )}
+            <button
+              type="button"
+              className="d2-sum-btn"
+              disabled={items.length === 0 || pending}
+              onClick={() => router.push(`/create/${documentId}/3`)}
+            >
+              {t("next")}
+              <Forward size={20} strokeWidth={2.4} aria-hidden />
+            </button>
+            <Link href={`/create/${documentId}/1`} className="d2-back">{t("back")}</Link>
+          </div>
+        </div>
+      </div>
+
+      {modalOpen && (
+        <div className="dmodal-wrap">
+          <div className="dmodal-bd" onClick={() => setModalOpen(false)} />
+          <div className="dmodal" role="dialog" aria-modal="true" aria-label={t("addPosition")}>
+            <div className="dmodal-head">
+              <span className="dmodal-title">{t("addPosition")}</span>
+              <button type="button" className="sheet-x" onClick={() => setModalOpen(false)} aria-label={t("close")}>
+                <X size={18} strokeWidth={STROKE} aria-hidden />
+              </button>
+            </div>
+            <div className="dmodal-body">
+              <CatalogPicker
+                locale={locale}
+                services={services}
+                onAddCatalog={addCatalog}
+                onAddFree={addFree}
+                onAddFremd={addFremd}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}

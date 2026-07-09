@@ -1,8 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/auth";
-import { getDocumentPreview } from "@/lib/documents/preview-queries";
+import { finalizeDocumentRpc, getDocumentPreview } from "@/lib/repositories/documents";
 import { archiveDocumentPdf } from "@/lib/pdf/pdf-storage";
 
 export type FinalizeError =
@@ -35,17 +34,10 @@ export async function finalizeDocument(documentId: string): Promise<FinalizeResu
   const user = await getCurrentUser();
   if (!user) return { error: "notAuthenticated" };
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("finalize_document", {
-    p_document_id: documentId,
-  });
-
-  if (error) {
-    console.error("[finalizeDocument] rpc failed:", error.message);
-    return { error: mapError(error.message) };
-  }
-  if (typeof data !== "string" || data.length === 0) {
-    return { error: "unknown" };
+  const result = await finalizeDocumentRpc(documentId);
+  if ("errorMessage" in result) {
+    console.error("[finalizeDocument] rpc failed:", result.errorMessage);
+    return { error: mapError(result.errorMessage) };
   }
 
   // Beleg jetzt ins Langzeit-Archiv legen — der Moment des Festschreibens ist
@@ -61,5 +53,5 @@ export async function finalizeDocument(documentId: string): Promise<FinalizeResu
     console.error("[finalizeDocument] pdf archive failed:", err);
   }
 
-  return { number: data };
+  return { number: result.number };
 }

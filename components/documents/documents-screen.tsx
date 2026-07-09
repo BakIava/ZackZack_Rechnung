@@ -1,5 +1,5 @@
 import { DocumentsMain } from "./documents-main";
-import type { DocumentListItem } from "@/lib/documents/types";
+import type { DocumentListItem } from "@/types/document";
 
 interface DocumentsScreenProps {
   dir: "ltr" | "rtl";

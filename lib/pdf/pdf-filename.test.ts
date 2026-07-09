@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { pdfFileName } from "./pdf-filename";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 
 function base(overrides: Partial<DocumentPreview>): DocumentPreview {
   return {
     id: "d1",
-    docType: "rechnung",
+    docType: "invoice",
     status: "finalized",
     documentNumber: "R-2026-041",
     issueDate: "2026-06-09",
@@ -47,7 +47,7 @@ describe("pdfFileName", () => {
   });
 
   it("unterscheidet Angebot und Rechnung", () => {
-    expect(pdfFileName(base({ docType: "angebot", documentNumber: "A-2026-088" }))).toBe(
+    expect(pdfFileName(base({ docType: "quote", documentNumber: "A-2026-088" }))).toBe(
       "Angebot_A-2026-088.pdf",
     );
   });

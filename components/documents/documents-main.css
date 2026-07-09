@@ -1,5 +1,5 @@
 /* documents-main.css — Dokumente-Screen (Stat-Reihe, Filter, Liste, Detail-Panel).
-   Logische Properties → RTL automatisch. Tokens von .zz-dash geerbt. */
+   Logische Properties → RTL automatisch. Tokens aus globals.css (zz-*-Scopes). */
 
 /* ── Kennzahlen-Reihe ─────────────────────────────────────────────────────── */
 .hstat-row {

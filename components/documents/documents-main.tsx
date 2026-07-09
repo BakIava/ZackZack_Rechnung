@@ -14,10 +14,10 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { getDocumentItems } from "@/lib/repositories/document-items.client";
 import { markDocumentAsPaid } from "@/lib/documents/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
-import type { DocumentListItem, DocumentItem } from "@/lib/documents/types";
+import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocDetail } from "./doc-detail";
 import "./documents-main.css";
@@ -31,7 +31,7 @@ interface DocumentsMainProps {
   initialSelectedId?: string | null;
 }
 
-type TypeFilter = "all" | "invoice" | "offer";
+type TypeFilter = "all" | "invoice" | "quote";
 type StatusFilter = "all" | "offen" | "bezahlt" | "versendet" | "entwurf";
 
 const STROKE = 1.75;
@@ -84,25 +84,10 @@ export function DocumentsMain({
     }
     setDetailLoading(true);
     setDetailItems(null);
-    const client = createClient();
-    client
-      .from("document_items")
-      .select("position, description_de, amount, unit, unit_price, total_amount")
-      .eq("document_id", sel)
-      .order("position", { ascending: true })
-      .then(({ data }) => {
-        setDetailItems(
-          (data ?? []).map((r) => ({
-            position: r.position,
-            descriptionDe: r.description_de,
-            amount: r.amount,
-            unit: r.unit,
-            unitPrice: r.unit_price,
-            totalAmount: r.total_amount,
-          })),
-        );
-        setDetailLoading(false);
-      });
+    getDocumentItems(sel).then((items) => {
+      setDetailItems(items);
+      setDetailLoading(false);
+    });
   }, [sel]);
 
   async function handleMarkPaid() {
@@ -146,7 +131,7 @@ export function DocumentsMain({
   const filtered = documents.filter(
     (d) =>
       (typeF === "all" ||
-        (typeF === "invoice" ? d.type === "invoice" : d.type === "offer")) &&
+        (typeF === "invoice" ? d.type === "invoice" : d.type === "quote")) &&
       matchesStatusFilter(d, statusF) &&
       (!q ||
         d.documentNumber.toLowerCase().includes(q) ||
@@ -158,7 +143,7 @@ export function DocumentsMain({
   const typeFilters: { id: TypeFilter; label: string }[] = [
     { id: "all", label: t("fAll") },
     { id: "invoice", label: t("fInvoice") },
-    { id: "offer", label: t("fOffer") },
+    { id: "quote", label: t("fQuote") },
   ];
 
   const statusFilters: { id: Exclude<StatusFilter, "all">; label: string }[] = [

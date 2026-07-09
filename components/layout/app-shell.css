@@ -1,0 +1,174 @@
+/* app-shell.css — gemeinsames Grundgerüst der eingeloggten Screens
+   (Scope-Fläche, Sidebar+Main-Split, Topbar, Suche, Scrollbereich,
+   Status-Pills). Tokens kommen aus globals.css (zz-*-Scopes).
+   Logische Properties → RTL automatisch. */
+
+.zz-dash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  font-family: var(--ui-font);
+  color: var(--ink);
+}
+
+.dapp {
+  display: flex;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--ui-font);
+}
+.dapp * {
+  font-family: var(--ui-font);
+  box-sizing: border-box;
+}
+
+/* Auf schmalen Screens nicht horizontal stauchen — Sidebar bleibt nutzbar. */
+@media (max-width: 880px) {
+  .zz-dash {
+    overflow: auto;
+  }
+  .dapp {
+    min-width: 880px;
+  }
+}
+
+/* ── Hauptbereich ─────────────────────────────────────────────────────────── */
+/* ── Hauptbereich ─────────────────────────────────────────────────────────── */
+.dmain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.dtopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 34px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.dtopbar > div:first-child {
+  flex-shrink: 0;
+}
+.greet-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+.greet-main {
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.dtools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dsearch {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 280px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 10px 13px;
+  color: var(--muted);
+}
+.dsearch input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+.dsearch input::placeholder {
+  color: var(--muted);
+}
+.iconbtn {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: 0.15s;
+  position: relative;
+}
+.iconbtn:hover {
+  border-color: #c3ccd4;
+}
+.iconbtn .dot {
+  position: absolute;
+  top: 9px;
+  inset-inline-end: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.dscroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px 34px 40px;
+}
+.dscroll::-webkit-scrollbar {
+  width: 10px;
+}
+.dscroll::-webkit-scrollbar-thumb {
+  background: rgba(15, 42, 63, 0.16);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* Statusplakette */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+}
+.pill--bezahlt {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.pill--offen {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.pill--versendet {
+  background: var(--info-bg);
+  color: var(--info);
+}
+.pill--entwurf {
+  background: var(--draft-bg);
+  color: var(--draft);
+}

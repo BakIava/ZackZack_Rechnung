@@ -1,5 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
-import type { DocStatus, DashboardDoc } from "@/lib/demo/dashboard-data";
+import { getCompanyNameAndDirector } from "@/lib/repositories/companies";
+import { countCustomers } from "@/lib/repositories/customers";
+import { countServices } from "@/lib/repositories/services";
+import {
+  getOpenDocumentAmounts,
+  getPaidDocumentAmounts,
+  getRecentDocuments,
+} from "@/lib/repositories/documents";
+import type { UiDocumentStatus, DashboardDoc } from "@/types/document";
 
 export interface DashboardData {
   companyName: string;
@@ -13,7 +20,7 @@ export interface DashboardData {
   paidSumCents: number;
 }
 
-function mapStatus(dbStatus: string): DocStatus {
+function mapStatus(dbStatus: string): UiDocumentStatus {
   switch (dbStatus) {
     case "paid":
       return "bezahlt";
@@ -35,39 +42,20 @@ function toInitials(name: string): string {
 }
 
 export async function fetchDashboardData(): Promise<DashboardData> {
-  const supabase = await createClient();
-
   // Kein separater supabase.auth.getUser() mehr: Die Middleware validiert und
   // refresht das Token bereits vor dem Rendern der Seite, und alle Queries hier
-  // sind per RLS auf die Firma des eingeloggten Users beschränkt. Der frühere
-  // (ergebnislose) Aufruf war damit ein reiner zusätzlicher Auth-Roundtrip.
-  const [companyRes, docsRes, customersRes, catalogRes, openRes, paidRes] =
+  // sind per RLS auf die Firma des eingeloggten Users beschränkt.
+  const [company, recentDocs, customerCount, catalogCount, openDocs, paidDocs] =
     await Promise.all([
-      supabase.from("companies").select("name, director").single(),
-      supabase
-        .from("documents")
-        .select(
-          "id, document_type, document_number, status, total_amount, issue_date, customer_snapshot",
-        )
-        .order("created_at", { ascending: false })
-        .limit(5),
-      supabase.from("customers").select("id", { count: "exact", head: true }),
-      supabase.from("services").select("id", { count: "exact", head: true }),
-      supabase
-        .from("documents")
-        .select("total_amount")
-        .is("paid_at", null)
-        .in("status", ["finalized", "sent"]),
-      supabase
-        .from("documents")
-        .select("total_amount")
-        .not("paid_at", "is", null)
+      getCompanyNameAndDirector(),
+      getRecentDocuments(5),
+      countCustomers(),
+      countServices(),
+      getOpenDocumentAmounts(),
+      getPaidDocumentAmounts(),
     ]);
 
-  const companyName = companyRes.data?.name ?? "";
-  const director = companyRes.data?.director ?? "";
-
-  const docs: DashboardDoc[] = (docsRes.data ?? []).map((doc) => {
+  const docs: DashboardDoc[] = recentDocs.map((doc) => {
     const snapshot = doc.customer_snapshot as { name?: string } | null;
     return {
       id: doc.id,
@@ -75,20 +63,17 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       customer: snapshot?.name ?? "—",
       number: doc.document_number ?? "",
       amount: doc.total_amount ?? 0,
-      date: doc.issue_date,
+      date: doc.issue_date ?? "",
       status: mapStatus(doc.status),
     };
-  });  
-
-  const openDocs = openRes.data ?? [];
-  const paidDocs = paidRes.data ?? [];
+  });
 
   return {
-    companyName,
-    companyInitials: toInitials(companyName),
-    director,
-    customerCount: customersRes.count ?? 0,
-    catalogCount: catalogRes.count ?? 0,
+    companyName: company.name,
+    companyInitials: toInitials(company.name),
+    director: company.director,
+    customerCount,
+    catalogCount,
     docs,
     openCount: openDocs.length,
     openSumCents: openDocs.reduce((s, d) => s + (d.total_amount ?? 0), 0),

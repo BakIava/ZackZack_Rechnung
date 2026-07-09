@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
+import { updateCompany, uploadCompanyLogo } from "@/lib/repositories/companies";
 
 export interface SettingsActionResult {
   error?: string;
@@ -19,16 +20,6 @@ async function getCompanyId(): Promise<{ companyId: string } | { error: string }
   const companyId = await getCurrentCompanyId();
   if (!companyId) return { error: "notAuthenticated" };
   return { companyId };
-}
-
-async function updateCompany(
-  companyId: string,
-  patch: Record<string, unknown>,
-): Promise<SettingsActionResult> {
-  const supabase = await createClient();
-  const { error } = await supabase.from("companies").update(patch).eq("id", companyId);
-  if (error) return { error: error.message };
-  return {};
 }
 
 export async function saveFirmaInhaber(data: {
@@ -143,16 +134,9 @@ export async function uploadLogo(formData: FormData): Promise<SettingsActionResu
   const ctx = await getCompanyId();
   if ("error" in ctx) return ctx;
 
-  const supabase = await createClient();
-  const path = `${ctx.companyId}/logo.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("company-logos")
-    .upload(path, file, { upsert: true, contentType: file.type });
-  if (uploadError) return { error: uploadError.message };
-
-  const { data: publicUrl } = supabase.storage.from("company-logos").getPublicUrl(path);
-  const logoUrl = `${publicUrl.publicUrl}?t=${Date.now()}`;
+  const uploaded = await uploadCompanyLogo(ctx.companyId, file, ext);
+  if ("error" in uploaded) return { error: uploaded.error };
+  const logoUrl = `${uploaded.publicUrl}?t=${Date.now()}`;
 
   const saveResult = await updateCompany(ctx.companyId, { logo_url: logoUrl });
   if (saveResult.error) return saveResult;

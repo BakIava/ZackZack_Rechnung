@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Pencil } from "lucide-react";
-import type { CompanySettings } from "@/lib/settings/types";
+import type { CompanySettings } from "@/types/company";
 import {
   saveFirmaInhaber,
   saveAdresse,
@@ -150,19 +150,20 @@ export function SettingsFirma({ company }: SettingsFirmaProps) {
 
   const [firmaInhaber, setFirmaInhaber] = useState({
     name: company.name,
-    legal_form: company.legal_form,
+    // Select-Feld: Fallback auf den Onboarding-Default statt leerem Wert.
+    legal_form: company.legal_form ?? "einzel",
     director: company.director ?? "",
     registergericht: company.registergericht ?? "",
     handelsregister_nr: company.handelsregister_nr ?? "",
   });
   const [adresse, setAdresse] = useState({
-    street: company.street,
-    street_no: company.street_no,
-    postcode: company.postcode,
-    city: company.city,
+    street: company.street ?? "",
+    street_no: company.street_no ?? "",
+    postcode: company.postcode ?? "",
+    city: company.city ?? "",
   });
   const [steuer, setSteuer] = useState({
-    steuernummer: company.steuernummer,
+    steuernummer: company.steuernummer ?? "",
     ust_id: company.ust_id ?? "",
   });
   const [kontakt, setKontakt] = useState({

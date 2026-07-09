@@ -4,8 +4,8 @@ import { useMemo, useRef, useState, useEffect } from "react";
 import { Building2, Check, MapPin, Plus, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import type { CustomerListItem, CustomerRow } from "@/lib/customers/types";
-import { NewCustomerModal } from "./NewCustomerModal";
+import type { CustomerListItem, CustomerRow } from "@/types/customer";
+import { NewCustomerModal } from "./new-customer-modal";
 import { CustomerDetail, CustomerDetailEmpty, isFirma, deriveInitials, sortedDocs, formatDateShort } from "./customer-detail";
 
 interface CustomersMasterDetailProps {
@@ -183,7 +183,7 @@ function MasterRow({ customer, selected, isNew, onSelect }: MasterRowProps) {
   const docs = sortedDocs(customer.documents);
   const lastDoc = docs[0];
   const docLabel = lastDoc
-    ? `${lastDoc.document_type === "invoice" ? t("invoice") : t("offer")} ${formatDateShort(lastDoc.issue_date)}`
+    ? `${lastDoc.document_type === "invoice" ? t("invoice") : t("quote")} ${formatDateShort(lastDoc.issue_date)}`
     : "";
 
   return (

@@ -1,4 +1,4 @@
-import type { KatalogEintrag } from "@/lib/katalog/types";
+import type { KatalogEintrag } from "@/types/service";
 
 /** Beispieldaten für einen Malerbetrieb – alle Kategorien und Übersetzungen. */
 export const sampleKatalog: KatalogEintrag[] = [

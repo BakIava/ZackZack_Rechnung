@@ -1,5 +1,5 @@
 /* catalog-master-detail.css — Leistungskatalog Desktop-Layout.
-   Tokens kommen aus catalog-screen.css (.zz-catalog) und dashboard.css (.dapp). */
+   Tokens kommen aus globals.css (zz-*-Scopes); Shell-Klassen aus components/layout/app-shell.css. */
 
 /* ── Haupt-Wrapper: füllt dmain, topbar + body als Spalte ──────────────── */
 .cat-wrap {

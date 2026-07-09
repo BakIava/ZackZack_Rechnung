@@ -14,7 +14,7 @@
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { DOCUMENT_LOCALE } from "@/lib/document-locale";
 import { DOKUMENT_DE } from "@/lib/documents/document-de";
-import type { DocumentPreview } from "@/lib/documents/preview-types";
+import type { DocumentPreview } from "@/types/document";
 import { buildPdfViewModel, type PdfViewModel } from "@/lib/pdf/pdf-view-model";
 import { pdfStyles as s } from "@/lib/pdf/document-pdf.styles";
 

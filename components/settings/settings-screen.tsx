@@ -1,5 +1,5 @@
 import { SettingsMain } from "./settings-main";
-import type { SettingsData } from "@/lib/settings/types";
+import type { SettingsData } from "@/types/company";
 import "./settings.css";
 
 interface SettingsScreenProps {

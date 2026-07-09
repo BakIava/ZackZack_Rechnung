@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { ShareTarget } from "@/components/create/use-share-document";
-import type { DocumentListItem, DocumentItem } from "@/lib/documents/types";
+import type { ShareTarget } from "@/components/documents/create/use-share-document";
+import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocShareRow } from "./doc-share-row";
 import { PositionsList } from "./positions-list";
@@ -149,7 +149,7 @@ export function DocDetail({
             ) : (
               <FileText size={15} strokeWidth={STROKE} />
             )}
-            {doc.type === "invoice" ? t("invoice") : t("offer")}
+            {doc.type === "invoice" ? t("invoice") : t("quote")}
           </span>
           <span className="hpill-light">
             {/* dot color is truly dynamic runtime value — no static class */}

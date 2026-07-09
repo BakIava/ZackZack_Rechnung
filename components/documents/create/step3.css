@@ -1,0 +1,966 @@
+/* step3.css — Schritt 3 (Vorschau & Versand), Desktop.
+   Tokens auf .zz-create gekapselt (wie .zz-dash beim Dashboard). Sidebar- und
+   Shell-Styles kommen aus components/layout/app-shell.css. Logische
+   Properties → RTL automatisch. A4-Beleg bleibt immer LTR/Deutsch. */
+
+.zz-create {
+  /* Screen-Abweichung vom gemeinsamen Token-Set (globals.css) */
+  --bad: #c0392b;  --bad-bg: #fbeeec; --bad-line: #e7bcb3;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  font-family: var(--ui-font);
+  color: var(--ink);
+}
+
+/* Auf schmalen Screens nicht stauchen — horizontal scrollen wie das Dashboard. */
+@media (max-width: 880px) {
+  .zz-create {
+    overflow: auto;
+  }
+  .zz-create .dapp {
+    min-width: 880px;
+  }
+}
+
+/* ── Flow-Kopf (Zurück + Titel + Schritt-Indikator) ───────────────────────── */
+.dflow-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 26px;
+}
+.dflow-back {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: 0.14s;
+}
+.dflow-back:hover {
+  border-color: #c3ccd4;
+}
+.dflow-head > div:not(.dsteps2) {
+  flex-shrink: 0;
+}
+.dflow-title {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.dflow-sub {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.dsteps2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-inline-start: auto;
+}
+.dstep2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.dstep2-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.dstep2-dot--done {
+  background: var(--ok);
+  color: #fff;
+  border-color: var(--ok);
+}
+.dstep2--active .dstep2-dot {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.dstep2-lbl {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.dstep2--active .dstep2-lbl {
+  color: var(--ink);
+}
+.dstep2-line {
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.dstep2-line--done {
+  background: var(--ok);
+}
+
+/* ── Kontext-Chips (Dokumenttyp + Kunde) ──────────────────────────────────── */
+.d2-ctx {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.p2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+}
+.p2-chip .p2-av {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+.p2-chip--mode {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* ── Zwei-Spalten-Layout: A4 links, Aktionen rechts ───────────────────────── */
+.d3-wrap {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 26px;
+  align-items: start;
+}
+.d3-doctop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.d3-doctop-t {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--muted);
+}
+.d3-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: 0.14s;
+}
+.d3-zoom:hover {
+  border-color: #c3ccd4;
+}
+.d3-docstage {
+  background: #e7ebef;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  background-image: radial-gradient(circle at 1px 1px, rgba(15, 42, 63, 0.06) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+.d3-docstage .a4-paper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.d3-side {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.d3-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px;
+}
+.d3-card.has-issue {
+  border-color: var(--bad-line);
+  box-shadow: 0 0 0 1px var(--bad-line);
+}
+.d3-sumcard {
+  background: linear-gradient(155deg, var(--primary-2), var(--primary));
+  color: #fff;
+  border-radius: var(--r-lg);
+  padding: 22px;
+  box-shadow: 0 16px 34px -18px rgba(15, 42, 63, 0.7);
+}
+.d3-sum-l {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 600;
+}
+.d3-sum-v {
+  font-size: 34px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
+}
+.d3-sum-ku {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.74);
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  line-height: 1.4;
+}
+.d3-actcard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.d3-pdfbtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--r);
+  border: none;
+  font-family: inherit;
+  font-size: 16.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 12px 26px -12px rgba(251, 98, 2, 0.6);
+}
+.d3-pdfbtn:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.d3-pdfbtn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+.d3-back {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+.d3-back:hover {
+  color: var(--ink);
+  border-color: #c3ccd4;
+}
+.locknote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #b23a1e;
+}
+
+/* ── Pflichtangaben-Check ──────────────────────────────────────────────────── */
+.check-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+.check-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.check-badge.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.check-badge.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+.check-head-t {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.check-head-s {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.check-head-s.ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+.check-head-s.bad {
+  color: var(--bad);
+  font-weight: 600;
+}
+.check-list {
+  display: flex;
+  flex-direction: column;
+}
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.check-row:first-child {
+  border-top: none;
+  padding-top: 2px;
+}
+.check-tick {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.check-tick.ok {
+  background: var(--ok);
+  color: #fff;
+}
+.check-tick.bad {
+  background: var(--bad);
+  color: #fff;
+}
+.check-lbl {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 550;
+  color: var(--ink);
+}
+.check-row.bad .check-lbl {
+  color: #a5331f;
+  font-weight: 600;
+}
+.check-fix {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.check-fix:hover {
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+}
+
+/* ── Versand ──────────────────────────────────────────────────────────────── */
+.sharegrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.sharebtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  padding: 16px 8px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ink);
+  transition: 0.14s;
+}
+.sharebtn:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -16px rgba(12, 24, 32, 0.5);
+  border-color: #c3ccd4;
+}
+.sharebtn:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+.share-spin {
+  animation: share-spin 0.9s linear infinite;
+}
+@keyframes share-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* Hinweis-/Fehlerzeile unter den Teilen-Buttons. */
+.share-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.share-note--err {
+  color: #b23a1e;
+}
+/* „Fertig" ist nach der Finalisierung sekundär (Teilen ist die Hauptaktion). */
+.d3-back--done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ok);
+}
+.d3-back--done:hover {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 40%, var(--line));
+}
+.sharebtn-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.sharebtn--wa .sharebtn-ic {
+  background: #25d366;
+}
+.sharebtn--mail .sharebtn-ic {
+  background: var(--info);
+}
+.sharebtn--save .sharebtn-ic {
+  background: var(--primary);
+}
+.share-success {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ok-bg);
+  border: 1px solid color-mix(in srgb, var(--ok) 28%, var(--surface));
+  border-radius: var(--r);
+  padding: 13px 14px;
+}
+.share-success-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--ok);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.share-success-t {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #14603f;
+}
+.share-success-s {
+  font-size: 12.5px;
+  color: #2e7d55;
+  margin-top: 1px;
+}
+.share-via {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ════════════════════════ A4-BELEG (immer LTR & Deutsch) ═══════════════════ */
+.a4-paper {
+  background: #fff;
+  color: #23303a;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 42, 63, 0.07);
+  box-shadow: 0 1px 2px rgba(12, 24, 32, 0.12), 0 22px 50px -22px rgba(12, 24, 32, 0.4);
+}
+.a4 {
+  padding: 46px 44px 34px;
+  font-family: var(--ui-font);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.a4-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #16242f;
+}
+.a4-co-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f2a3f;
+  letter-spacing: -0.01em;
+}
+.a4-co-trade {
+  font-size: 11.5px;
+  color: #6a7682;
+  margin-top: 1px;
+}
+.a4-co-addr {
+  font-size: 11px;
+  color: #6a7682;
+  margin-top: 9px;
+  line-height: 1.55;
+}
+.a4-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+.a4-mid {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 34px;
+  margin-top: 26px;
+}
+.a4-to {
+  flex: 1;
+  min-width: 0;
+}
+.a4-sender {
+  font-size: 9px;
+  color: #99a1a9;
+  padding-bottom: 4px;
+  border-bottom: 0.5px solid #c7ced4;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+.a4-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #99a1a9;
+  margin-bottom: 6px;
+}
+.a4-to-name {
+  font-size: 14.5px;
+  font-weight: 650;
+  color: #1a2430;
+}
+.a4-to-addr {
+  font-size: 12.5px;
+  color: #3a4651;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+.a4-meta {
+  width: 210px;
+  flex-shrink: 0;
+}
+.a4-meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11.5px;
+  padding: 5px 0;
+  border-bottom: 1px solid #eef1f4;
+}
+.a4-meta-row .k {
+  color: #6a7682;
+}
+.a4-meta-row .v {
+  color: #1a2430;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+.a4-resv-wrap {
+  margin-top: 7px;
+  text-align: end;
+}
+.a4-resv {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  background: color-mix(in srgb, var(--accent) 14%, #fff);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.a4-h1 {
+  font-size: 21px;
+  font-weight: 700;
+  color: #0f2a3f;
+  letter-spacing: -0.01em;
+  margin: 26px 0 18px;
+}
+.a4-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.a4-table th {
+  text-align: start;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #6a7682;
+  padding: 0 8px 8px;
+  border-bottom: 1.5px solid #16242f;
+}
+.a4-table th.num,
+.a4-table td.num {
+  text-align: end;
+}
+.a4-table td {
+  font-size: 12.5px;
+  color: #23303a;
+  padding: 12px 8px;
+  border-bottom: 1px solid #eef1f4;
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+.a4-td-desc {
+  font-weight: 650;
+  color: #1a2430;
+}
+.a4-pos {
+  color: #99a1a9;
+  width: 30px;
+}
+.a4-sumwrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.a4-sumbox {
+  width: 270px;
+}
+.a4-sumline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 12.5px;
+  padding: 6px 8px;
+  color: #3a4651;
+}
+.a4-sumline .v {
+  font-variant-numeric: tabular-nums;
+}
+.a4-grand {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 8px 4px;
+  margin-top: 4px;
+  border-top: 2px solid #16242f;
+}
+.a4-grand .l {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f2a3f;
+}
+.a4-grand .v {
+  font-size: 19px;
+  font-weight: 750;
+  color: #0f2a3f;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.a4-vat {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 20px;
+  font-size: 11.5px;
+  color: #2c3742;
+  background: #f4f6f8;
+  border-radius: 7px;
+  padding: 11px 13px;
+  line-height: 1.45;
+}
+.a4-vat svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #4a5560;
+}
+.a4-pay {
+  margin-top: 14px;
+  font-size: 11.5px;
+  color: #3a4651;
+  line-height: 1.55;
+}
+.a4-thanks {
+  margin-top: 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1a2430;
+}
+.a4-foot {
+  margin-top: 26px;
+  padding-top: 14px;
+  border-top: 1px solid #eef1f4;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  font-size: 10px;
+  color: #8a929b;
+  line-height: 1.55;
+}
+.a4-foot b {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5a6671;
+  margin-bottom: 3px;
+}
+
+/* ── Vollbild-Zoom der A4-Vorschau ────────────────────────────────────────── */
+.a4-zoom-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 24, 32, 0.62);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  direction: ltr;
+}
+.a4-zoom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.a4-zoom-title {
+  font-size: 15px;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.a4-zoom-x {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.a4-zoom-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 22px 32px;
+}
+.a4-zoom-scroll .a4-paper {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Auf engen Breiten Aktionen unter die Vorschau stapeln. */
+@media (max-width: 1100px) {
+  .d3-wrap {
+    grid-template-columns: 1fr;
+  }
+  .d3-side {
+    position: static;
+  }
+}
+
+/* ── Finalisierung (Vorschau echt: Logo, Entwurf-Platzhalter, Dialog) ───────── */
+.a4-logo-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+/* Entwurf: Nummer noch nicht vergeben → gedämpft/kursiv statt harter Wert. */
+.a4-num--draft {
+  color: var(--accent-deep) !important;
+  font-weight: 600;
+  font-style: italic;
+  font-variant-numeric: normal;
+}
+
+/* Bestätigungs-Dialog vor der endgültigen Finalisierung. */
+.fin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 24, 32, 0.55);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+.fin-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 26px 24px 20px;
+  box-shadow: 0 26px 60px -20px rgba(12, 24, 32, 0.55);
+  text-align: center;
+}
+.fin-card-ic {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  margin: 0 auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent-deep);
+}
+.fin-card-t {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.fin-card-b {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.fin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+.fin-btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.fin-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.fin-btn--cancel {
+  background: var(--surface);
+  color: var(--muted);
+}
+.fin-btn--cancel:not(:disabled):hover {
+  color: var(--ink);
+  border-color: #c3ccd4;
+}
+.fin-btn--go {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  box-shadow: 0 12px 26px -12px rgba(251, 98, 2, 0.6);
+}
+.fin-btn--go:not(:disabled):hover {
+  transform: translateY(-1px);
+}

@@ -1,9 +1,15 @@
 import { setRequestLocale } from "next-intl/server";
-import { isRtlLocale, routing } from "@/i18n/routing";
+import { isRtlLocale } from "@/i18n/routing";
 import { DocumentsScreen } from "@/components/documents/documents-screen";
-import { fetchDocumentsPageData } from "@/lib/documents/queries";
+import { fetchDocumentsPageData } from "@/lib/repositories/documents";
 
 type Props = { params: Promise<{ locale: string; document_id: string }> };
+
+// Pro Request rendern: lädt Nutzerdaten (Cookies/RLS) für beliebige Dokument-IDs.
+// Ohne dieses Flag registriert der Build die Route als On-Demand-SSG (die
+// document_id ist beim Build unbekannt) und cookies() schlägt zur Laufzeit mit
+// DYNAMIC_SERVER_USAGE fehl.
+export const dynamic = "force-dynamic";
 
 /** Wie documents/page.tsx, aber mit bereits geöffnetem Detail (Deep-Link, z. B. aus Suche/E-Mail). */
 export default async function DocumentDetailPage({ params }: Props) {
@@ -21,8 +27,4 @@ export default async function DocumentDetailPage({ params }: Props) {
       initialSelectedId={document_id}
     />
   );
-}
-
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
 }
