@@ -22,6 +22,7 @@ import {
   deleteItem,
   updateItem,
 } from "@/lib/documents/item-actions";
+import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "./flow-steps";
 import { NumberPad, type PadField } from "./number-pad";
@@ -93,10 +94,21 @@ export function Step2Main({
   const remove = (id: string) => run(() => deleteItem(id));
 
   const openPad = (item: DraftItem, field: PadField) => {
-    const initial =
-      field === "qty"
-        ? String(item.amount).replace(".", ",")
-        : String(item.unitPrice / 100).replace(".", ",");
+    let initial: string;
+    if (field === "qty") {
+      initial = String(item.amount).replace(".", ",");
+    } else if (field === "markup") {
+      // Aufschlag exakt aus dem gespeicherten Prozentwert lesen, sonst rückrechnen.
+      const m =
+        item.surchargeType === "percent" && item.surcharge != null
+          ? item.surcharge / 100
+          : markupPercent(item.purchasePrice ?? 0, item.unitPrice);
+      initial = String(m).replace(".", ",");
+    } else {
+      // „purchase" liest den Einkauf, alle übrigen Preisfelder den Verkaufspreis.
+      const cents = field === "purchase" ? item.purchasePrice ?? 0 : item.unitPrice;
+      initial = String(cents / 100).replace(".", ",");
+    }
     setPad({ itemId: item.id, field, unit: item.unit, name: item.descriptionDe, initial });
   };
   const commitPad = (value: number) => {
@@ -106,8 +118,37 @@ export function Step2Main({
     if (field === "qty") {
       const amount = Math.max(0, Math.round(value * 100) / 100) || 1;
       run(() => updateItem(itemId, { amount }));
-    } else {
+      return;
+    }
+    if (field === "price") {
       run(() => updateItem(itemId, { unitPrice: eurosToCents(value) }));
+      return;
+    }
+    // Fremdleistung: Verkaufspreis, Einkauf oder Aufschlag anpassen. Der
+    // Verkaufspreis bleibt maßgeblich (fester Aufschlag = Verkauf − Einkauf);
+    // beim Aufschlag ergibt sich der Verkaufspreis prozentual neu.
+    const item = items.find((i) => i.id === itemId);
+    if (!item || item.purchasePrice == null) return;
+    if (field === "markup") {
+      const surcharge = Math.round(value * 100); // Prozent → Basispunkte
+      run(() => updateItem(itemId, { surcharge, surchargeType: "percent" }));
+    } else if (field === "purchase") {
+      const purchasePrice = eurosToCents(value);
+      run(() =>
+        updateItem(itemId, {
+          purchasePrice,
+          surcharge: fixedSurchargeForSale(purchasePrice, item.unitPrice),
+          surchargeType: "fixed",
+        }),
+      );
+    } else {
+      const salePrice = eurosToCents(value);
+      run(() =>
+        updateItem(itemId, {
+          surcharge: fixedSurchargeForSale(item.purchasePrice ?? 0, salePrice),
+          surchargeType: "fixed",
+        }),
+      );
     }
   };
 

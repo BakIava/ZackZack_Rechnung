@@ -2,7 +2,8 @@
 
 import { Lock, Pencil, Trash2, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatPercent } from "@/lib/format";
+import { markupPercent } from "@/lib/documents/margin";
 import type { DraftItem } from "@/types/document";
 import type { PadField } from "./number-pad";
 
@@ -17,15 +18,18 @@ interface PositionCardProps {
 }
 
 /** Positionskarte (Variante B): „Menge × Preis = Summe". Menge und Preis werden
- *  per Ziffernblock angepasst; Fremdleistungen zeigen nur den Verkaufspreis +
- *  internen Block (Einkauf/Marge erreichen niemals das Dokument). */
+ *  per Ziffernblock angepasst. Fremdleistungen zeigen den anpassbaren
+ *  Verkaufspreis („Kunde zahlt") + internen Block (Einkauf anpassbar, Aufschlag
+ *  errechnet) — Einkauf/Marge erreichen niemals das Dokument. */
 export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: PositionCardProps) {
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
-  const markupLabel =
-    item.surchargeType === "percent"
-      ? `${(item.surcharge ?? 0) / 100} %`
-      : formatMoney(item.surcharge ?? 0);
+  // Prozentaufschlag exakt aus dem gespeicherten Wert lesen (12,50 % = 1250 bp);
+  // bei festem Aufschlag (Verkaufspreis direkt gesetzt) rückgerechnet.
+  const markup =
+    item.surchargeType === "percent" && item.surcharge != null
+      ? item.surcharge / 100
+      : markupPercent(item.purchasePrice ?? 0, item.unitPrice);
   const qtyLabel = String(item.amount).replace(".", ",");
 
   return (
@@ -55,7 +59,19 @@ export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: Pos
       {isFremd ? (
         <>
           <div className="d2card-eq">
-            <span className="d2card-unit">{item.unit}</span>
+            <button
+              type="button"
+              className="d2field d2field--wide"
+              disabled={disabled}
+              onClick={() => onOpenPad(item, "sale")}
+            >
+              <span className="d2field-l">
+                <Pencil size={12} strokeWidth={STROKE} aria-hidden />
+                {t("salePrice")} · {t("customerPays")}
+              </span>
+              <span className="d2field-v">{formatMoney(item.unitPrice)}</span>
+            </button>
+            <span className="d2op">=</span>
             <div className="d2card-res">
               <span className="d2-sumlbl">{t("lineSum")}</span>
               <div className="d2-sumval">{formatMoney(item.totalAmount)}</div>
@@ -66,9 +82,24 @@ export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: Pos
               <Lock size={13} strokeWidth={STROKE} aria-hidden />
               {t("internalOnly")}
             </span>
-            <span className="d2-intern-i">{t("purchase")}: <b>{formatMoney(item.purchasePrice ?? 0)}</b></span>
-            <span className="d2-intern-i">{t("markup")}: <b>{markupLabel}</b></span>
-            <span className="d2-intern-i">{t("salePrice")}: <b>{formatMoney(item.unitPrice)}</b></span>
+            <button
+              type="button"
+              className="d2-intern-edit"
+              disabled={disabled}
+              onClick={() => onOpenPad(item, "purchase")}
+            >
+              <Pencil size={12} strokeWidth={STROKE} aria-hidden />
+              {t("purchase")}: <b>{formatMoney(item.purchasePrice ?? 0)}</b>
+            </button>
+            <button
+              type="button"
+              className="d2-intern-edit"
+              disabled={disabled}
+              onClick={() => onOpenPad(item, "markup")}
+            >
+              <Pencil size={12} strokeWidth={STROKE} aria-hidden />
+              {t("markup")}: <b>{formatPercent(markup)} %</b>
+            </button>
           </div>
         </>
       ) : (
