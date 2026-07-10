@@ -289,6 +289,7 @@
     "inclVat": "inkl. MwSt",
     "markup": "Aufschlag",
     "salePrice": "Verkaufspreis",
+    "customerPays": "Kunde zahlt",
     "total": "Gesamt",
     "net": "netto",
     "kuNote": "Kleinunternehmer §19 · keine USt. ausgewiesen",

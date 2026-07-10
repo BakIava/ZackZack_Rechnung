@@ -289,6 +289,7 @@
     "inclVat": "KDV dahil",
     "markup": "Kâr payı",
     "salePrice": "Satış fiyatı",
+    "customerPays": "Müşteri öder",
     "total": "Toplam",
     "net": "net",
     "kuNote": "Küçük işletme §19 · KDV gösterilmez",
