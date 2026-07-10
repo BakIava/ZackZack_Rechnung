@@ -46,9 +46,9 @@ export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: Pos
           className="d2card-del"
           disabled={disabled}
           onClick={() => onDelete(item.id)}
-          aria-label={t("delete")}
         >
-          <Trash2 size={20} strokeWidth={STROKE} aria-hidden />
+          <Trash2 size={18} strokeWidth={STROKE} aria-hidden />
+          {t("delete")}
         </button>
       </div>
 

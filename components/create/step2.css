@@ -225,21 +225,25 @@
   line-height: 1.25;
 }
 .d2card-del {
-  width: 46px;
-  height: 46px;
   flex-shrink: 0;
+  height: 46px;
+  padding: 0 16px;
   border-radius: var(--r-sm);
   border: 1.5px solid #e3b5ae;
   background: #fbeeec;
   color: #c0392b;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 650;
   cursor: pointer;
   transition: 0.12s;
 }
 .d2card-del:hover {
   background: #f6d6d0;
+  border-color: #d89a90;
 }
 .d2card-del:disabled {
   opacity: 0.5;
