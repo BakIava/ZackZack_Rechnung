@@ -32,3 +32,30 @@ export function computeUnitPrice(
 export function computeLineTotal(unitPrice: number, amount: number): number {
   return Math.round(unitPrice * amount);
 }
+
+/**
+ * Fester Aufschlag (Cents), damit `computeUnitPrice(purchase, x, "fixed")` exakt
+ * den gewünschten Verkaufspreis ergibt. Wird beim direkten Anpassen von Einkauf
+ * bzw. Verkaufspreis in Schritt 2 gespeichert (Verkaufspreis ist maßgeblich –
+ * „Kunde zahlt" bleibt centgenau, der Aufschlag ergibt sich).
+ * Beide Werte in Cents; Ergebnis kann negativ sein (Verkauf < Einkauf).
+ */
+export function fixedSurchargeForSale(
+  purchasePrice: number,
+  salePrice: number,
+): number {
+  return salePrice - purchasePrice;
+}
+
+/**
+ * Aufschlag als ganzzahlige Prozent – rein zur internen Anzeige
+ * („Nur für dich"). Strikt intern; erreicht niemals Dokument/PDF.
+ * 0 %, wenn kein Einkaufspreis vorliegt.
+ */
+export function markupPercent(
+  purchasePrice: number,
+  salePrice: number,
+): number {
+  if (purchasePrice <= 0) return 0;
+  return Math.round((salePrice / purchasePrice - 1) * 100);
+}

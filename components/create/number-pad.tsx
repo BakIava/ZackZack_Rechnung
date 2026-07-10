@@ -6,8 +6,9 @@ import { useTranslations } from "next-intl";
 
 const STROKE = 1.75;
 
-/** Feld, das der Ziffernblock gerade bearbeitet. */
-export type PadField = "qty" | "price";
+/** Feld, das der Ziffernblock gerade bearbeitet.
+ *  `sale`/`purchase` sind die Fremdleistungs-Felder (Verkaufspreis/Einkauf). */
+export type PadField = "qty" | "price" | "sale" | "purchase";
 
 interface NumberPadProps {
   field: PadField;
@@ -49,7 +50,14 @@ export function NumberPad({ field, unit, name, initial, onCommit, onClose }: Num
   const back = () => setRaw((s) => s.slice(0, -1) || "0");
   const commit = () => onCommit(parseFloat((raw || "0").replace(",", ".")) || 0);
 
-  const label = field === "qty" ? t("quantity") : t("price");
+  const label =
+    field === "qty"
+      ? t("quantity")
+      : field === "sale"
+        ? t("salePrice")
+        : field === "purchase"
+          ? t("purchase")
+          : t("price");
   const suffix = field === "qty" ? unit : "€";
   const keepFocus = (e: React.MouseEvent) => e.preventDefault();
 

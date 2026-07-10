@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { computeUnitPrice, computeLineTotal } from "./margin";
+import {
+  computeUnitPrice,
+  computeLineTotal,
+  fixedSurchargeForSale,
+  markupPercent,
+} from "./margin";
 
 describe("computeUnitPrice", () => {
   it("adds a fixed surcharge (cents) to the purchase price", () => {
@@ -31,5 +36,44 @@ describe("computeLineTotal", () => {
     expect(computeLineTotal(1250, 2.5)).toBe(3125);
     // 999 * 1.5 = 1498.5 → 1499
     expect(computeLineTotal(999, 1.5)).toBe(1499);
+  });
+});
+
+describe("fixedSurchargeForSale", () => {
+  it("is the difference between sale and purchase (cents)", () => {
+    expect(fixedSurchargeForSale(20000, 25000)).toBe(5000);
+  });
+
+  it("round-trips exactly through computeUnitPrice (fixed)", () => {
+    const purchase = 19999;
+    const sale = 25001;
+    const surcharge = fixedSurchargeForSale(purchase, sale);
+    expect(computeUnitPrice(purchase, surcharge, "fixed")).toBe(sale);
+  });
+
+  it("can be negative when sale is below purchase", () => {
+    expect(fixedSurchargeForSale(20000, 18000)).toBe(-2000);
+    expect(computeUnitPrice(20000, -2000, "fixed")).toBe(18000);
+  });
+});
+
+describe("markupPercent", () => {
+  it("computes the whole-percent markup from purchase and sale", () => {
+    expect(markupPercent(20000, 25000)).toBe(25);
+  });
+
+  it("rounds to the nearest whole percent", () => {
+    // 25001 / 20000 - 1 = 0.250050 → 25 %
+    expect(markupPercent(20000, 25001)).toBe(25);
+    // 23000 / 20000 - 1 = 0.15 → 15 %
+    expect(markupPercent(20000, 23000)).toBe(15);
+  });
+
+  it("is negative when the sale is below the purchase", () => {
+    expect(markupPercent(20000, 18000)).toBe(-10);
+  });
+
+  it("returns 0 without a purchase price", () => {
+    expect(markupPercent(0, 25000)).toBe(0);
   });
 });

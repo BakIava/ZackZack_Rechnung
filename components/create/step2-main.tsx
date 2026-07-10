@@ -20,6 +20,7 @@ import {
   addFreeItem,
   addFremdItem,
   deleteItem,
+  setFremdPricing,
   updateItem,
 } from "@/lib/documents/item-actions";
 import { CatalogPicker } from "./catalog-picker";
@@ -93,10 +94,12 @@ export function Step2Main({
   const remove = (id: string) => run(() => deleteItem(id));
 
   const openPad = (item: DraftItem, field: PadField) => {
+    // „purchase" liest den Einkauf, alle übrigen Preisfelder den Verkaufspreis.
+    const cents = field === "purchase" ? item.purchasePrice ?? 0 : item.unitPrice;
     const initial =
       field === "qty"
         ? String(item.amount).replace(".", ",")
-        : String(item.unitPrice / 100).replace(".", ",");
+        : String(cents / 100).replace(".", ",");
     setPad({ itemId: item.id, field, unit: item.unit, name: item.descriptionDe, initial });
   };
   const commitPad = (value: number) => {
@@ -106,8 +109,16 @@ export function Step2Main({
     if (field === "qty") {
       const amount = Math.max(0, Math.round(value * 100) / 100) || 1;
       run(() => updateItem(itemId, { amount }));
-    } else {
+    } else if (field === "price") {
       run(() => updateItem(itemId, { unitPrice: eurosToCents(value) }));
+    } else {
+      // Fremdleistung: Verkaufspreis („sale") oder Einkauf („purchase") anpassen.
+      const item = items.find((i) => i.id === itemId);
+      if (!item || item.purchasePrice == null) return;
+      const purchasePrice =
+        field === "purchase" ? eurosToCents(value) : item.purchasePrice;
+      const salePrice = field === "sale" ? eurosToCents(value) : item.unitPrice;
+      run(() => setFremdPricing(itemId, { purchasePrice, salePrice }));
     }
   };
 
