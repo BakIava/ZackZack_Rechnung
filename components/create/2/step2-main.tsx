@@ -24,7 +24,7 @@ import {
 } from "@/lib/documents/item-actions";
 import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
 import { CatalogPicker } from "./catalog-picker";
-import { FlowSteps } from "./flow-steps";
+import { FlowSteps } from "../flow-steps";
 import { NumberPad, type PadField } from "./number-pad";
 import { PositionCard } from "./position-card";
 

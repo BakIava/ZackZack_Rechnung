@@ -25,7 +25,7 @@ import {
   updateDraftDocumentType,
 } from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/new-customer-modal";
-import { FlowSteps } from "./flow-steps";
+import { FlowSteps } from "../flow-steps";
 import "./kunde-step.css";
 import type { DocType } from "@/types/document";
 

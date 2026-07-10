@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { Step3Screen } from "@/components/create/step3-screen";
+import { Step3Screen } from "@/components/create/3/step3-screen";
 import { getDocumentPreview } from "@/lib/repositories/documents";
 import { pruefeDokumentPflicht } from "@/lib/legal/dokument-pflicht";
 import { isRtlLocale } from "@/i18n/routing";

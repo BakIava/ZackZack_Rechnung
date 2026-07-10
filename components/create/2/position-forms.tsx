@@ -4,9 +4,12 @@ import { useState } from "react";
 import { Lock, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FLOW_UNITS } from "@/lib/documents/units";
-import { computeUnitPrice } from "@/lib/documents/margin";
+import {
+  computeUnitPrice,
+  fixedSurchargeForSale,
+  surchargeBasisPointsForSale,
+} from "@/lib/documents/margin";
 import type { FreeItemInput, FremdItemInput } from "@/types/document";
-import { formatMoney } from "@/lib/format";
 import { eurosToCents } from "@/lib/money";
 
 const STROKE = 1.75;
@@ -69,11 +72,45 @@ export function FremdForm({ onAdd }: { onAdd: (input: FremdItemInput) => void })
   const [label, setLabel] = useState("");
   const [purchase, setPurchase] = useState("");
   const [markup, setMarkup] = useState("25");
+  const [salePrice, setSalePrice] = useState("");
+  const [priceSource, setPriceSource] = useState<"markup" | "sale">("markup");
   const purchaseCents = eurosToCents(parseFloat(purchase) || 0);
-  // Aufschlag in Basispunkten (12,50 % = 1250) für die DB.
   const surchargeBp = Math.round((parseFloat(markup) || 0) * 100);
-  const salePriceCents = computeUnitPrice(purchaseCents, surchargeBp, "percent");
-  const ok = label.trim().length > 0 && purchaseCents > 0;
+  const calculatedSalePriceCents = computeUnitPrice(purchaseCents, surchargeBp, "percent");
+  const salePriceCents = priceSource === "sale"
+    ? eurosToCents(parseFloat(salePrice) || 0)
+    : calculatedSalePriceCents;
+  const ok = label.trim().length > 0 && purchaseCents > 0 && salePriceCents > 0;
+
+  const updatePurchase = (value: string) => {
+    setPurchase(value);
+    if (priceSource !== "sale") return;
+
+    const nextPurchaseCents = eurosToCents(parseFloat(value) || 0);
+    const nextSalePriceCents = eurosToCents(parseFloat(salePrice) || 0);
+    const nextSurchargeBp = surchargeBasisPointsForSale(
+      nextPurchaseCents,
+      nextSalePriceCents,
+    );
+    setMarkup(String(nextSurchargeBp / 100));
+  };
+
+  const updateMarkup = (value: string) => {
+    setMarkup(value);
+    setPriceSource("markup");
+  };
+
+  const updateSalePrice = (value: string) => {
+    setSalePrice(value);
+    setPriceSource("sale");
+
+    const nextSalePriceCents = eurosToCents(parseFloat(value) || 0);
+    const nextSurchargeBp = surchargeBasisPointsForSale(
+      purchaseCents,
+      nextSalePriceCents,
+    );
+    setMarkup(String(nextSurchargeBp / 100));
+  };
 
   return (
     <div className="f-grid">
@@ -90,28 +127,39 @@ export function FremdForm({ onAdd }: { onAdd: (input: FremdItemInput) => void })
             </span>
           </label>
           <div className="f-affix">
-            <input id="fr-purchase" className="f-input" type="number" inputMode="decimal" value={purchase} onChange={(e) => setPurchase(e.target.value)} placeholder="0,00" />
+            <input id="fr-purchase" className="f-input" type="number" inputMode="decimal" value={purchase} onChange={(e) => updatePurchase(e.target.value)} placeholder="0,00" />
             <span className="f-unit">€</span>
           </div>
         </div>
         <div className="f-row">
           <label className="f-lbl" htmlFor="fr-markup">{t("markup")}</label>
           <div className="f-affix">
-            <input id="fr-markup" className="f-input" type="number" inputMode="decimal" value={markup} onChange={(e) => setMarkup(e.target.value)} />
+            <input id="fr-markup" className="f-input" type="number" inputMode="decimal" value={markup} onChange={(e) => updateMarkup(e.target.value)} />
             <span className="f-unit">%</span>
           </div>
         </div>
       </div>
       <div className="f-compute">
-        <span className="f-compute-l">
+        <label className="f-compute-l" htmlFor="fr-sale-price">
           <span className="f-lock">
             <Lock size={13} strokeWidth={STROKE} aria-hidden />
             {t("internalOnly")}
           </span>
           <br />
           {t("salePrice")} ({t("onDocument")})
-        </span>
-        <span className="f-compute-v">{formatMoney(salePriceCents)}</span>
+        </label>
+        <div className="f-affix f-compute-input">
+          <input
+            id="fr-sale-price"
+            className="f-input"
+            type="number"
+            inputMode="decimal"
+            value={priceSource === "sale" ? salePrice : salePriceCents / 100}
+            onChange={(e) => updateSalePrice(e.target.value)}
+            placeholder="0,00"
+          />
+          <span className="f-unit">€</span>
+        </div>
       </div>
       <button
         type="button"
@@ -122,8 +170,10 @@ export function FremdForm({ onAdd }: { onAdd: (input: FremdItemInput) => void })
           unit: "Pauschal",
           amount: 1,
           purchasePrice: purchaseCents,
-          surcharge: surchargeBp,
-          surchargeType: "percent",
+          surcharge: priceSource === "sale"
+            ? fixedSurchargeForSale(purchaseCents, salePriceCents)
+            : surchargeBp,
+          surchargeType: priceSource === "sale" ? "fixed" : "percent",
         })}
       >
         <Plus size={20} strokeWidth={2.4} aria-hidden />

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { Step2Screen } from "@/components/create/step2-screen";
+import { Step2Screen } from "@/components/create/2/step2-screen";
 import { getDraftItems } from "@/lib/repositories/document-items";
 import { getDraftContext, getFlowDocMeta } from "@/lib/repositories/documents";
 import { getServices } from "@/lib/repositories/services";

@@ -48,6 +48,19 @@ export function fixedSurchargeForSale(
 }
 
 /**
+ * Prozentualer Aufschlag in Basispunkten, wenn Einkauf und Verkauf direkt
+ * vorgegeben wurden. 1250 entspricht 12,50 %. Ohne positiven Einkauf ist
+ * keine sinnvolle Prozentberechnung möglich.
+ */
+export function surchargeBasisPointsForSale(
+  purchasePrice: number,
+  salePrice: number,
+): number {
+  if (purchasePrice <= 0) return 0;
+  return Math.round((salePrice / purchasePrice - 1) * 10000);
+}
+
+/**
  * Aufschlag als ganzzahlige Prozent – rein zur internen Anzeige
  * („Nur für dich"). Strikt intern; erreicht niemals Dokument/PDF.
  * 0 %, wenn kein Einkaufspreis vorliegt.

@@ -975,6 +975,14 @@
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
 }
+.f-compute-input {
+  width: min(180px, 48%);
+}
+.f-compute-input .f-input {
+  font-size: 18px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
 .f-submit {
   width: 100%;
   display: flex;

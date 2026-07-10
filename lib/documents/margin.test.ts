@@ -4,6 +4,7 @@ import {
   computeLineTotal,
   fixedSurchargeForSale,
   markupPercent,
+  surchargeBasisPointsForSale,
 } from "./margin";
 
 describe("computeUnitPrice", () => {
@@ -54,6 +55,21 @@ describe("fixedSurchargeForSale", () => {
   it("can be negative when sale is below purchase", () => {
     expect(fixedSurchargeForSale(20000, 18000)).toBe(-2000);
     expect(computeUnitPrice(20000, -2000, "fixed")).toBe(18000);
+  });
+});
+
+describe("surchargeBasisPointsForSale", () => {
+  it("computes a percentage surcharge from purchase and sale", () => {
+    expect(surchargeBasisPointsForSale(20000, 22500)).toBe(1250);
+  });
+
+  it("keeps two decimal places of percentage precision", () => {
+    expect(surchargeBasisPointsForSale(12000, 13333)).toBe(1111);
+  });
+
+  it("supports a sale below purchase and an absent purchase price", () => {
+    expect(surchargeBasisPointsForSale(20000, 18000)).toBe(-1000);
+    expect(surchargeBasisPointsForSale(0, 18000)).toBe(0);
   });
 });
 
