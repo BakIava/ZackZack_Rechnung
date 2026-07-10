@@ -10,6 +10,11 @@ export function formatMoney(cents: number): string {
   return moneyFormat.format(cents / 100);
 }
 
+/** Formatiert einen Prozentwert deutsch (bis 2 Nachkommastellen, ohne Nullen). */
+export function formatPercent(value: number): string {
+  return value.toLocaleString("de-DE", { maximumFractionDigits: 2 });
+}
+
 /** Formatiert ein ISO-Datum als TT.MM.JJJJ (de-DE). */
 export function formatDateDE(iso: string): string {
   return new Date(iso).toLocaleDateString("de-DE", {

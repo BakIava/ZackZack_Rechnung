@@ -2,7 +2,7 @@
 
 import { Lock, Pencil, Trash2, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatPercent } from "@/lib/format";
 import { markupPercent } from "@/lib/documents/margin";
 import type { DraftItem } from "@/types/document";
 import type { PadField } from "./number-pad";
@@ -24,7 +24,12 @@ interface PositionCardProps {
 export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: PositionCardProps) {
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
-  const markup = markupPercent(item.purchasePrice ?? 0, item.unitPrice);
+  // Prozentaufschlag exakt aus dem gespeicherten Wert lesen (12,50 % = 1250 bp);
+  // bei festem Aufschlag (Verkaufspreis direkt gesetzt) rückgerechnet.
+  const markup =
+    item.surchargeType === "percent" && item.surcharge != null
+      ? item.surcharge / 100
+      : markupPercent(item.purchasePrice ?? 0, item.unitPrice);
   const qtyLabel = String(item.amount).replace(".", ",");
 
   return (
@@ -86,7 +91,15 @@ export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: Pos
               <Pencil size={12} strokeWidth={STROKE} aria-hidden />
               {t("purchase")}: <b>{formatMoney(item.purchasePrice ?? 0)}</b>
             </button>
-            <span className="d2-intern-i">{t("markup")}: <b>{markup} %</b></span>
+            <button
+              type="button"
+              className="d2-intern-edit"
+              disabled={disabled}
+              onClick={() => onOpenPad(item, "markup")}
+            >
+              <Pencil size={12} strokeWidth={STROKE} aria-hidden />
+              {t("markup")}: <b>{formatPercent(markup)} %</b>
+            </button>
           </div>
         </>
       ) : (

@@ -2,11 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import {
-  computeLineTotal,
-  computeUnitPrice,
-  fixedSurchargeForSale,
-} from "./margin";
+import { computeLineTotal, computeUnitPrice } from "./margin";
 import { isDraftDocument, setDraftDocumentTotal } from "@/lib/repositories/documents";
 import {
   deleteDocumentItem,
@@ -183,41 +179,6 @@ export async function updateItem(
   if (patch.unit !== undefined) update.unit = patch.unit;
 
   const { error } = await updateDocumentItem(ctx.companyId, itemId, update);
-  if (error) return { error };
-  return recompute(ctx.companyId, documentId);
-}
-
-/**
- * Fremdleistung: Einkauf und/oder Verkaufspreis direkt in Schritt 2 anpassen.
- * Der Verkaufspreis ist maßgeblich (Kunde zahlt centgenau); der Aufschlag ergibt
- * sich als fester Betrag (Verkauf − Einkauf) und bleibt strikt intern.
- */
-export async function setFremdPricing(
-  itemId: string,
-  pricing: { purchasePrice: number; salePrice: number },
-): Promise<ItemsResult> {
-  const ctx = await getCtx();
-  if ("error" in ctx) return { error: "notAuthenticated" };
-
-  const item = await getItemPricing(itemId);
-  if (!item) return { error: "itemNotFound" };
-  // Nur Fremdleistungen haben einen Einkaufspreis – normale Positionen ablehnen.
-  if (item.purchasePrice == null) return { error: "itemNotFound" };
-
-  const documentId = item.documentId;
-  if (!(await isDraftDocument(documentId))) return { error: "draftNotFound" };
-
-  const purchasePrice = Math.max(0, Math.round(pricing.purchasePrice));
-  const unitPrice = Math.max(0, Math.round(pricing.salePrice));
-  const surcharge = fixedSurchargeForSale(purchasePrice, unitPrice);
-
-  const { error } = await updateDocumentItem(ctx.companyId, itemId, {
-    unit_price: unitPrice,
-    total_amount: computeLineTotal(unitPrice, item.amount),
-    purchase_price: purchasePrice,
-    surcharge,
-    surcharge_type: "fixed",
-  });
   if (error) return { error };
   return recompute(ctx.companyId, documentId);
 }
