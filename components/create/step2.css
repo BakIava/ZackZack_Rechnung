@@ -258,11 +258,6 @@
   flex-wrap: wrap;
   margin-top: 18px;
 }
-.d2card-unit {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--ink);
-}
 .d2field {
   display: flex;
   flex-direction: column;
@@ -276,6 +271,10 @@
   background: var(--surface-2);
   font-family: inherit;
   transition: 0.12s;
+}
+/* Verkaufspreis-Feld der Fremdleistung: längeres Label („Kunde zahlt"). */
+.d2field--wide {
+  min-width: 200px;
 }
 .d2field:hover {
   border-color: var(--primary);
@@ -492,6 +491,34 @@
   color: var(--ink);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+/* Anpassbarer Einkauf (bleibt strikt intern – nie aufs Dokument). */
+.d2-intern-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: 0.12s;
+}
+.d2-intern-edit:hover {
+  border-color: var(--primary);
+  color: var(--ink);
+}
+.d2-intern-edit b {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.d2-intern-edit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 .p2-fremdtag {
   display: inline-flex;
