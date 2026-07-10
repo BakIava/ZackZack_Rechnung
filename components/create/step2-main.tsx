@@ -6,13 +6,13 @@ import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/format";
+import { eurosToCents } from "@/lib/money";
 import type { KatalogEintrag } from "@/types/service";
 import type {
   DraftContext,
   DraftItem,
   FreeItemInput,
   FremdItemInput,
-  ItemPatch,
 } from "@/types/document";
 import type { ItemsResult } from "@/lib/documents/item-actions";
 import {
@@ -20,12 +20,12 @@ import {
   addFreeItem,
   addFremdItem,
   deleteItem,
-  moveItem,
   updateItem,
 } from "@/lib/documents/item-actions";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "./flow-steps";
-import { PositionRow } from "./position-row";
+import { NumberPad, type PadField } from "./number-pad";
+import { PositionCard } from "./position-card";
 
 const STROKE = 1.75;
 
@@ -51,6 +51,13 @@ export function Step2Main({
   const router = useRouter();
   const [items, setItems] = useState<DraftItem[]>(initialItems);
   const [modalOpen, setModalOpen] = useState(false);
+  const [pad, setPad] = useState<{
+    itemId: string;
+    field: PadField;
+    unit: string;
+    name: string;
+    initial: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -83,17 +90,26 @@ export function Step2Main({
     setModalOpen(false);
     run(() => addFremdItem(documentId, input));
   };
-  const changeQty = (id: string, delta: number) => {
-    const item = items.find((i) => i.id === id);
-    if (!item) return;
-    const next = Math.max(1, item.amount + delta);
-    if (next === item.amount) return;
-    run(() => updateItem(id, { amount: next }));
-  };
-  const edit = (id: string, patch: ItemPatch) => run(() => updateItem(id, patch));
   const remove = (id: string) => run(() => deleteItem(id));
-  const move = (id: string, direction: "up" | "down") =>
-    run(() => moveItem(id, direction));
+
+  const openPad = (item: DraftItem, field: PadField) => {
+    const initial =
+      field === "qty"
+        ? String(item.amount).replace(".", ",")
+        : String(item.unitPrice / 100).replace(".", ",");
+    setPad({ itemId: item.id, field, unit: item.unit, name: item.descriptionDe, initial });
+  };
+  const commitPad = (value: number) => {
+    if (!pad) return;
+    const { itemId, field } = pad;
+    setPad(null);
+    if (field === "qty") {
+      const amount = Math.max(0, Math.round(value * 100) / 100) || 1;
+      run(() => updateItem(itemId, { amount }));
+    } else {
+      run(() => updateItem(itemId, { unitPrice: eurosToCents(value) }));
+    }
+  };
 
   return (
     <main className="dmain">
@@ -147,26 +163,15 @@ export function Step2Main({
                 {t("emptyPosHint")}
               </div>
             ) : (
-              <div className="d2table">
-                <div className="d2thead">
-                  <span className="d2th" />
-                  <span className="d2th">{t("colService")}</span>
-                  <span className="d2th">{t("quantity")}</span>
-                  <span className="d2th">{t("unitPrice")}</span>
-                  <span className="d2th d2th--num">{t("lineSum")}</span>
-                  <span className="d2th" />
-                </div>
+              <div className="d2cards">
                 {items.map((item, i) => (
-                  <PositionRow
+                  <PositionCard
                     key={item.id}
                     item={item}
                     index={i}
-                    count={items.length}
                     disabled={pending}
-                    onQty={changeQty}
-                    onEdit={edit}
+                    onOpenPad={openPad}
                     onDelete={remove}
-                    onMove={move}
                   />
                 ))}
               </div>
@@ -222,6 +227,17 @@ export function Step2Main({
             </div>
           </div>
         </div>
+      )}
+
+      {pad && (
+        <NumberPad
+          field={pad.field}
+          unit={pad.unit}
+          name={pad.name}
+          initial={pad.initial}
+          onCommit={commitPad}
+          onClose={() => setPad(null)}
+        />
       )}
     </main>
   );

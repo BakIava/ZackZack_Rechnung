@@ -183,159 +183,274 @@
   margin-top: 2px;
 }
 
-/* ── Tabelle ─────────────────────────────────────────────────────────────── */
-.d2table {
+/* ── Positionskarten (Variante B: Menge × Preis = Summe) ─────────────────── */
+.d2cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.d2card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  overflow: hidden;
+  padding: 20px 22px;
 }
-.d2thead {
-  display: grid;
-  grid-template-columns: 30px 1fr 150px 120px 110px 84px;
-  align-items: center;
-  gap: 14px;
-  padding: 13px 20px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--line);
-}
-.d2th {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.d2th--num {
-  text-align: end;
-}
-.d2row {
-  display: grid;
-  grid-template-columns: 30px 1fr 150px 120px 110px 84px;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--line);
-}
-.d2row:last-child {
-  border-bottom: none;
-}
-.d2-rh {
+.d2card-top {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: var(--muted);
+  align-items: flex-start;
+  gap: 14px;
 }
-.d2-rh button {
-  width: 24px;
-  height: 18px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  cursor: pointer;
+.d2card-num {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
 }
-.d2-rh button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-.d2-rh button:not(:disabled):hover {
-  background: var(--bg);
-  color: var(--ink);
-}
-.d2-namecell {
+.d2card-main {
+  flex: 1;
   min-width: 0;
 }
 .d2-name {
-  font-size: 15.5px;
-  font-weight: 650;
+  font-size: 17.5px;
+  font-weight: 700;
   letter-spacing: -0.01em;
+  line-height: 1.25;
 }
-.d2-from {
+.d2card-del {
+  flex-shrink: 0;
+  height: 46px;
+  padding: 0 16px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid #e3b5ae;
+  background: #fbeeec;
+  color: #c0392b;
   display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.12s;
+}
+.d2card-del:hover {
+  background: #f6d6d0;
+  border-color: #d89a90;
+}
+.d2card-del:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Menge × Preis = Summe */
+.d2card-eq {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.d2card-unit {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.d2field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 132px;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  border: 2px solid var(--line);
+  background: var(--surface-2);
+  font-family: inherit;
+  transition: 0.12s;
+}
+.d2field:hover {
+  border-color: var(--primary);
+  background: var(--surface);
+}
+.d2field:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.d2field-l {
+  display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 3px;
-  font-size: 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   color: var(--muted);
 }
-.d2-from b {
+.d2field-v {
+  font-size: 22px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
   color: var(--ink);
+}
+.d2op {
+  font-size: 22px;
   font-weight: 600;
+  color: var(--muted);
 }
-.d2-stepper {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid var(--line);
+.d2card-res {
+  margin-inline-start: auto;
+  text-align: end;
+}
+.d2-sumlbl {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.d2-sumval {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ── Ziffernblock-Overlay (Variante B) ───────────────────────────────────── */
+.d2pad-bd {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(12, 24, 32, 0.42);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: zz-fade 0.2s ease;
+}
+.d2pad {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  padding: 22px 24px 28px;
+  box-shadow: 0 -20px 50px -20px rgba(0, 0, 0, 0.4);
+  animation: zz-pad-up 0.24s cubic-bezier(0.3, 0.8, 0.4, 1);
+}
+@keyframes zz-pad-up {
+  from {
+    transform: translateY(16px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.d2pad-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.d2pad-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.d2pad-x {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   border-radius: var(--r-sm);
-  background: var(--bg);
-  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
-.d2-stepper button {
-  width: 32px;
-  height: 34px;
+.d2pad-x:hover {
+  color: var(--ink);
+}
+.d2pad-disp {
+  height: 66px;
+  border: 2px solid var(--primary);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 16px;
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.d2pad-disp:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+.d2pad-input {
+  flex: 1;
+  min-width: 0;
   border: none;
   background: transparent;
-  color: var(--primary);
+  outline: none;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  text-align: end;
+  padding: 0;
+}
+.d2pad-unit {
+  flex-shrink: 0;
+  margin-inline-start: 8px;
+}
+.d2pad-keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.d2pad-key {
+  height: 62px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  transition: 0.1s;
 }
-.d2-stepper button:active {
+.d2pad-key:hover {
   background: var(--surface-2);
 }
-.d2-stepper-v {
-  min-width: 58px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
+.d2pad-key--ok {
+  grid-column: span 3;
+  background: var(--ok);
+  color: #fff;
+  border-color: var(--ok);
+  font-size: 18px;
+  gap: 8px;
 }
-.d2-price {
-  font-size: 14.5px;
-  color: var(--muted);
-  text-align: end;
-  font-variant-numeric: tabular-nums;
-}
-.d2-price--start {
-  text-align: start;
-}
-.d2-sum {
-  font-size: 15.5px;
-  font-weight: 700;
-  text-align: end;
-  font-variant-numeric: tabular-nums;
-}
-.d2-acts {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-}
-.d2-iconbtn {
-  width: 34px;
-  height: 34px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.d2-iconbtn:hover {
-  color: var(--ink);
-  border-color: #c3ccd4;
-}
-.d2-iconbtn--del:hover {
-  color: #c0392b;
-  border-color: #e3b5ae;
-  background: #fbeeec;
+.d2pad-key--ok:hover {
+  background: var(--ok);
+  filter: brightness(1.05);
 }
 
 /* Fehlermeldung bei fehlgeschlagener Positions-Aktion */
@@ -349,84 +464,13 @@
   font-size: 13.5px;
 }
 
-/* Inline-Editor einer Position (Bearbeiten + Fremdleistung umschalten) */
-.d2-editor {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm);
-  padding: 14px 16px;
-}
-.d2-fremd-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border-radius: var(--r-sm);
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  font-family: inherit;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  align-self: flex-start;
-}
-.d2-fremd-toggle[data-on="1"] {
-  border-color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
-  color: var(--ink);
-}
-.d2-editor-actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
-}
-.d2-editor-cancel {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: var(--r-sm);
-  border: 1px solid var(--line);
-  background: var(--surface);
-  font-family: inherit;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-}
-.d2-editor-cancel:hover {
-  color: var(--ink);
-  border-color: #c3ccd4;
-}
-.d2-editor-save {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: var(--r-sm);
-  border: none;
-  background: var(--primary);
-  color: var(--primary-ink, #fff);
-  font-family: inherit;
-  font-weight: 650;
-  cursor: pointer;
-}
-.d2-editor-save:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Fremdleistung: interne Zusatzzeile (Einkauf/Marge — nie aufs Dokument) */
-.d2-internrow {
-  grid-column: 2 / -1;
-  margin-top: 12px;
-}
+/* Fremdleistung: interner Block (Einkauf/Marge — nie aufs Dokument) */
 .d2-intern {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px 16px;
   flex-wrap: wrap;
+  margin-top: 14px;
   background: color-mix(in srgb, var(--primary) 5%, var(--surface));
   border: 1px dashed color-mix(in srgb, var(--primary) 26%, var(--line));
   border-radius: var(--r-sm);
@@ -448,14 +492,6 @@
   color: var(--ink);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-}
-.d2-intern-note {
-  margin-inline-start: auto;
-  font-size: 11.5px;
-  color: var(--muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 .p2-fremdtag {
   display: inline-flex;

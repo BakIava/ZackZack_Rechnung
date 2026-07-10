@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { computeLineTotal, computeUnitPrice } from "./margin";
 import { isDraftDocument, setDraftDocumentTotal } from "@/lib/repositories/documents";
@@ -46,6 +47,10 @@ async function renumber(companyId: string, documentId: string): Promise<void> {
 async function recompute(companyId: string, documentId: string): Promise<ItemsResult> {
   const total = await sumItemTotals(companyId, documentId);
   await setDraftDocumentTotal(companyId, documentId, total);
+  // Router-Cache des gesamten Flow-Layouts invalidieren, damit beim Zurück-
+  // navigieren (z. B. Schritt 3 → 2) nicht ein veralteter, positionsloser
+  // Server-Render aus dem Client-Cache ausgeliefert wird.
+  revalidatePath("/[locale]/create/[document_id]", "layout");
   const items = await getDraftItems(documentId);
   return { items, total };
 }
