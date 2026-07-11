@@ -1,47 +1,8 @@
 /* NewCustomerModal.css — „Neuer Kunde“-Modal aus Schritt 1.
+   Hülle (Backdrop, Karte, Animation) kommt aus der <Modal>-Primitive
+   (components/ui/modal); hier nur der spezifische Inhalt.
    Tokens (--primary, --line, --muted …) stammen aus der App-Shell (.zz-dash);
    Layout & Abstände nutzen logische Properties → RTL automatisch. */
-
-.dmodal-wrap {
-  position: absolute;
-  inset: 0;
-  z-index: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.dmodal-bd {
-  position: absolute;
-  inset: 0;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  background: rgba(12, 24, 32, 0.45);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-  animation: nc-fade 0.2s ease;
-}
-.dmodal {
-  position: relative;
-  width: 560px;
-  max-width: 88%;
-  max-height: 80%;
-  background: var(--bg);
-  border-radius: 18px;
-  box-shadow: 0 30px 70px rgba(12, 24, 32, 0.4);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: nc-pop 0.22s cubic-bezier(0.3, 0.8, 0.4, 1);
-}
-@keyframes nc-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes nc-pop {
-  from { transform: scale(0.96); opacity: 0.4; }
-  to { transform: scale(1); opacity: 1; }
-}
 
 .dmodal-head {
   display: flex;
