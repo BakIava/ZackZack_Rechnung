@@ -3,7 +3,7 @@
  * Keine erneute Felddefinition außerhalb dieser Datei.
  */
 
-import type { CustomerDbRow, DocType } from "./database";
+import type { CustomerDbRow, CustomerType, DocType } from "./database";
 
 /** Dokument-Zeile im Kunden-Detail (Join `customers → documents`). */
 export interface CustomerDocRow {
@@ -19,7 +19,10 @@ export interface CustomerDocRow {
 export type CustomerRow = Pick<
   CustomerDbRow,
   | "id"
-  | "name"
+  | "customer_type"
+  | "firstname"
+  | "lastname"
+  | "company_name"
   | "street"
   | "street_no"
   | "postcode"
@@ -41,7 +44,9 @@ export interface CustomerMutationResult {
 /** Schlanke Auswahlliste (Schritt 1 – Kundenauswahl). */
 export interface CustomerListItem {
   id: string;
-  name: string;
+  firstname: string | null;
+  lastname: string | null;
+  companyName: string | null;
   city: string | null;
   street: string | null;
   initials: string;
@@ -51,7 +56,10 @@ export interface CustomerListItem {
 /** Vollständige, bearbeitbare Kundendaten (für den Edit-Modus im Flow-Modal). */
 export interface FlowCustomer {
   id: string;
-  name: string;
+  customer_type: CustomerType;
+  firstname: string | null;
+  lastname: string | null;
+  company_name: string | null;
   street: string | null;
   streetNo: string | null;
   postcode: string | null;
@@ -66,7 +74,10 @@ export type DocumentCustomer = Omit<FlowCustomer, "notes">;
 
 /** Formulareingabe für Anlegen/Bearbeiten eines Kunden. */
 export interface CustomerInput {
-  name: string;
+  customerType: CustomerType;
+  firstname: string | null;
+  lastname: string | null;
+  companyName: string | null;
   street?: string;
   streetNo?: string;
   postcode?: string;
@@ -82,7 +93,16 @@ export interface CustomerInput {
  */
 export type CustomerSnapshot = Pick<
   CustomerDbRow,
-  "name" | "street" | "street_no" | "postcode" | "city" | "email" | "phone"
+  | "customer_type"
+  | "firstname"
+  | "lastname"
+  | "company_name"
+  | "street"
+  | "street_no"
+  | "postcode"
+  | "city"
+  | "email"
+  | "phone"
 >;
 
 /**
@@ -90,7 +110,10 @@ export type CustomerSnapshot = Pick<
  * nie Live-Join. E-Mail/Telefon nur fürs Teilen, NICHT für den Beleg.
  */
 export interface PreviewCustomer {
-  name: string;
+  customer_type: CustomerType;
+  firstname: string | null;
+  lastname: string | null;
+  company_name: string | null;
   street: string | null;
   streetNo: string | null;
   postcode: string | null;

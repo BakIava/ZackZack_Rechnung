@@ -66,7 +66,7 @@ export function Step2Main({
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
   const total = items.reduce((sum, i) => sum + i.totalAmount, 0);
-  const docLabel = context.docType === "rechnung" ? t("invoice") : t("quote");
+  const docLabel = t(context.docType);
 
   function run(action: () => Promise<ItemsResult>) {
     setError(null);
@@ -169,7 +169,7 @@ export function Step2Main({
 
         <div className="d2-ctx">
           <span className="p2-chip p2-chip--mode">
-            {context.docType === "rechnung" ? (
+            {context.docType === "invoice" ? (
               <ReceiptText size={15} strokeWidth={STROKE} aria-hidden />
             ) : (
               <FileText size={15} strokeWidth={STROKE} aria-hidden />

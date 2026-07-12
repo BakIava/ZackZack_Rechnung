@@ -11,7 +11,6 @@ import type { CustomerInput, CustomerMutationResult, FlowCustomer } from "@/type
 export async function createCustomer(
   input: CustomerInput,
 ): Promise<CustomerMutationResult> {
-  if (!input.name.trim()) return { error: "nameRequired" };
   return insertCustomer(input);
 }
 
@@ -19,7 +18,6 @@ export async function updateCustomer(
   id: string,
   input: CustomerInput,
 ): Promise<CustomerMutationResult> {
-  if (!input.name.trim()) return { error: "nameRequired" };
   return updateCustomerRow(id, input);
 }
 
@@ -34,3 +32,4 @@ export async function getCustomerForEdit(id: string): Promise<FlowCustomer | nul
 export async function deleteCustomer(id: string): Promise<CustomerMutationResult> {
   return deleteCustomerRow(id);
 }
+

@@ -24,8 +24,9 @@ import type {
 } from "@/types/document";
 import type { PreviewCompany } from "@/types/company";
 import type { CustomerSnapshot, PreviewCustomer } from "@/types/customer";
-import type { DocumentRow } from "@/types/database";
+import type { CustomerType, DocumentRow } from "@/types/database";
 import { deriveInitials } from "@/lib/initials";
+import { getCustomerName } from "../customers/utils";
 
 /**
  * Alter, ab dem ein positionsloser Entwurf beim Laden der Liste automatisch
@@ -116,7 +117,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       id: doc.id,
       type: doc.document_type as DocumentListItem["type"],
       documentNumber: doc.document_number ?? "",
-      customerName: customer?.name ?? snapshot?.name ?? "—",
+      customerName: customer?.firstname && customer?.lastname ? `${customer.firstname} ${customer.lastname}` : snapshot?.name ?? "—",
       customerEmail: customer?.email ?? snapshot?.email ?? null,
       customerPhone: customer?.phone ?? snapshot?.phone ?? null,
       status,
@@ -205,13 +206,13 @@ export async function getDraftContext(
 
   if (!data) return null;
 
-  const snapshot = data.customer_snapshot as { name?: string } | null;
-  const customerName = snapshot?.name?.trim() || "";
+  const snapshot: CustomerSnapshot = data.customer_snapshot;
+  const customerName = getCustomerName(snapshot);
 
   return {
-    docType: data.document_type === "quote" ? "angebot" : "rechnung",
+    docType: data.document_type,
     customerName,
-    customerInitials: customerName ? deriveInitials(customerName) : "—",
+    customerInitials: deriveInitials(snapshot),
     isKleinunternehmer: Boolean(data.is_kleinunternehmer),
   };
 }
@@ -247,19 +248,21 @@ function toCompany(row: Record<string, unknown>): PreviewCompany {
   };
 }
 
-function toCustomer(snapshot: unknown): PreviewCustomer | null {
+function toCustomer(snapshot: CustomerSnapshot): PreviewCustomer | null {
   if (!snapshot || typeof snapshot !== "object") return null;
-  const s = snapshot as Record<string, unknown>;
-  const name = typeof s.name === "string" ? s.name.trim() : "";
+  const name = typeof snapshot.firstname === "string" ? snapshot.firstname.trim() : "";
   if (!name) return null;
   return {
-    name,
-    street: (s.street as string | null) ?? null,
-    streetNo: (s.street_no as string | null) ?? null,
-    postcode: (s.postcode as string | null) ?? null,
-    city: (s.city as string | null) ?? null,
-    email: (s.email as string | null) ?? null,
-    phone: (s.phone as string | null) ?? null,
+    customer_type: snapshot.customer_type as CustomerType,
+    company_name: (snapshot.company_name as string | null) ?? null,
+    firstname: (snapshot.firstname as string | null) ?? null,
+    lastname: (snapshot.lastname as string | null) ?? null,
+    street: (snapshot.street as string | null) ?? null,
+    streetNo: (snapshot.street_no as string | null) ?? null,
+    postcode: (snapshot.postcode as string | null) ?? null,
+    city: (snapshot.city as string | null) ?? null,
+    email: (snapshot.email as string | null) ?? null,
+    phone: (snapshot.phone as string | null) ?? null,
   };
 }
 
@@ -284,7 +287,7 @@ export const getDocumentPreview = cache(
       .eq("company_id", companyId)
       .maybeSingle();
     if (!docRow) return null;
-    const doc = docRow as unknown as Record<string, unknown>;
+    const doc = docRow;
 
     const [companyRes, itemsRes] = await Promise.all([
       supabase.from("companies").select(COMPANY_COLUMNS).eq("id", companyId).maybeSingle(),

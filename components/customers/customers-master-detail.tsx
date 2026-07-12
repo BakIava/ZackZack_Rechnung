@@ -5,8 +5,11 @@ import { Building2, Check, MapPin, Plus, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { CustomerListItem, CustomerRow } from "@/types/customer";
+import { formatDateShort } from "@/lib/format";
+import { deriveInitials } from "@/lib/initials";
 import { NewCustomerModal } from "./new-customer-modal";
-import { CustomerDetail, CustomerDetailEmpty, isFirma, deriveInitials, sortedDocs, formatDateShort } from "./customer-detail";
+import { CustomerDetail, CustomerDetailEmpty } from "./customer-detail";
+import { sortedDocs } from "./customer-view";
 
 interface CustomersMasterDetailProps {
   dir: "ltr" | "rtl";
@@ -16,20 +19,27 @@ interface CustomersMasterDetailProps {
 type SortKey = "az" | "recent";
 const STROKE = 1.75;
 
-export function CustomersMasterDetail({ dir, initialCustomers }: CustomersMasterDetailProps) {
+export function CustomersMasterDetail({
+  dir,
+  initialCustomers,
+}: CustomersMasterDetailProps) {
   const t = useTranslations("Customers");
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("az");
   const [showNew, setShowNew] = useState(false);
-  const [selId, setSelId] = useState<string | null>(initialCustomers[0]?.id ?? null);
+  const [selId, setSelId] = useState<string | null>(
+    initialCustomers[0]?.id ?? null,
+  );
   const pendingSelId = useRef<string | null>(null);
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
 
   // Sync selected ID when prop refreshes (e.g. after router.refresh())
   useEffect(() => {
     if (pendingSelId.current) {
-      const exists = initialCustomers.find((c) => c.id === pendingSelId.current);
+      const exists = initialCustomers.find(
+        (c) => c.id === pendingSelId.current,
+      );
       if (exists) {
         setSelId(pendingSelId.current);
         pendingSelId.current = null;
@@ -38,18 +48,27 @@ export function CustomersMasterDetail({ dir, initialCustomers }: CustomersMaster
       // Selected customer was deleted — fall back to first
       setSelId(initialCustomers[0]?.id ?? null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialCustomers]);
 
   const list = useMemo(() => {
     const q = query.toLowerCase();
     const filtered = initialCustomers.filter((c) =>
-      (c.name + " " + (c.city ?? "")).toLowerCase().includes(q),
+      (c.firstname + " " + c.lastname + " " + (c.city ?? ""))
+        .toLowerCase()
+        .includes(q),
     );
     if (sort === "recent") {
-      return [...filtered].sort((a, b) => b.created_at.localeCompare(a.created_at));
+      return [...filtered].sort((a, b) =>
+        b.created_at.localeCompare(a.created_at),
+      );
     }
-    return [...filtered].sort((a, b) => a.name.localeCompare(b.name, "de"));
+    return [...filtered].sort((a, b) => {
+      if (a.lastname && b.lastname)
+        return a.lastname.localeCompare(b.lastname, "de");
+      if (b.lastname) return -1;
+      return 0;
+    });
   }, [initialCustomers, query, sort]);
 
   const selected = initialCustomers.find((c) => c.id === selId) ?? null;
@@ -87,7 +106,11 @@ export function CustomersMasterDetail({ dir, initialCustomers }: CustomersMaster
                 {t("customers")}
                 <span className="c">{initialCustomers.length}</span>
               </div>
-              <button type="button" className="cdm-new" onClick={() => setShowNew(true)}>
+              <button
+                type="button"
+                className="cdm-new"
+                onClick={() => setShowNew(true)}
+              >
                 <Plus size={16} strokeWidth={2.4} color="#fff" aria-hidden />
                 {t("newCust")}
               </button>
@@ -136,8 +159,17 @@ export function CustomersMasterDetail({ dir, initialCustomers }: CustomersMaster
                 </div>
               )}
               {list.length === 0 && !query && (
-                <div className="cdm-nodocs" style={{ padding: "24px 14px", flexDirection: "column", gap: 6 }}>
-                  <span style={{ fontWeight: 650, color: "var(--ink)" }}>{t("noCustomers")}</span>
+                <div
+                  className="cdm-nodocs"
+                  style={{
+                    padding: "24px 14px",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
+                  <span style={{ fontWeight: 650, color: "var(--ink)" }}>
+                    {t("noCustomers")}
+                  </span>
                   <span>{t("noCustomersSub")}</span>
                 </div>
               )}
@@ -163,7 +195,11 @@ export function CustomersMasterDetail({ dir, initialCustomers }: CustomersMaster
       </div>
 
       {showNew && (
-        <NewCustomerModal dir={dir} onClose={() => setShowNew(false)} onCreate={handleCreate} />
+        <NewCustomerModal
+          dir={dir}
+          onClose={() => setShowNew(false)}
+          onCreate={handleCreate}
+        />
       )}
     </main>
   );
@@ -178,8 +214,8 @@ interface MasterRowProps {
 
 function MasterRow({ customer, selected, isNew, onSelect }: MasterRowProps) {
   const t = useTranslations("Customers");
-  const firma = isFirma(customer.name);
-  const initials = deriveInitials(customer.name);
+  const firma = true;
+  const initials = deriveInitials(customer);
   const docs = sortedDocs(customer.documents);
   const lastDoc = docs[0];
   const docLabel = lastDoc
@@ -194,11 +230,20 @@ function MasterRow({ customer, selected, isNew, onSelect }: MasterRowProps) {
       onClick={onSelect}
     >
       <span className={"cdm-av" + (firma ? " cdm-av--firma" : "")}>
-        {firma ? <Building2 size={20} strokeWidth={STROKE} aria-hidden /> : initials}
+        {firma ? (
+          <Building2 size={20} strokeWidth={STROKE} aria-hidden />
+        ) : (
+          initials
+        )}
       </span>
       <span className="cdm-body">
         <span className="cdm-name">
-          {customer.name}
+          {customer.customer_type === "business" && customer.company_name
+            ? customer.company_name
+            : ""}
+          {customer.firstname && customer.lastname
+            ? `${customer.firstname} ${customer.lastname}`
+            : t("noName")}
           {isNew && (
             <span className="cdm-badge">
               <Check size={11} strokeWidth={2.4} aria-hidden />

@@ -16,6 +16,7 @@ import type {
   DocumentCustomer,
   FlowCustomer,
 } from "@/types/customer";
+import { CustomerType } from "@/types/database";
 
 /** Kundenliste inkl. Dokumente-Join (Kunden-Seite), neueste zuerst. */
 export async function getCustomers(): Promise<CustomerRow[]> {
@@ -26,7 +27,7 @@ export async function getCustomers(): Promise<CustomerRow[]> {
   const { data, error } = await supabase
     .from("customers")
     .select(
-      `id, name, street, street_no, postcode, city, email, phone, notes, customer_number, created_at,
+      `id, company_name, firstname, lastname, street, street_no, postcode, city, email, phone, notes, customer_number, created_at,
        documents ( id, document_type, document_number, status, total_amount, issue_date )`,
     )
     .eq("company_id", companyId)
@@ -44,17 +45,19 @@ export async function getCustomerSummaries(): Promise<CustomerListItem[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("customers")
-    .select("id, name, street, street_no, city")
+    .select("id, customer_type, company_name, firstname, lastname, street, street_no, city")
     .eq("company_id", companyId)
-    .order("name", { ascending: true });
+    .order("firstname", { ascending: true });
 
   if (error || !data) return [];
   return data.map((c) => ({
     id: c.id as string,
-    name: c.name as string,
+    companyName: c.company_name as string,
+    firstname: c.firstname as string,
+    lastname: c.lastname as string,
     city: (c.city as string | null) ?? null,
     street: [c.street, c.street_no].filter(Boolean).join(" ") || null,
-    initials: deriveInitials(c.name as string),
+    initials: deriveInitials(c),
   }));
 }
 
@@ -73,14 +76,17 @@ export async function getCustomersByIds(customerIds: string[]): Promise<Document
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("customers")
-    .select("id, name, street, street_no, postcode, city, email, phone")
+    .select("id, customer_type, company_name, firstname, lastname, street, street_no, postcode, city, email, phone")
     .eq("company_id", companyId)
     .in("id", customerIds);
   if (error || !data) return [];
 
   return data.map((c) => ({
     id: c.id as string,
-    name: c.name as string,
+    customer_type: c.customer_type as CustomerType,
+    company_name: c.company_name as string,
+    firstname: c.firstname as string,
+    lastname: c.lastname as string,
     street: (c.street as string | null) ?? null,
     streetNo: (c.street_no as string | null) ?? null,
     postcode: (c.postcode as string | null) ?? null,
@@ -101,7 +107,7 @@ export async function getCustomerForEdit(id: string): Promise<FlowCustomer | nul
   const supabase = await createClient();
   const { data } = await supabase
     .from("customers")
-    .select("id, name, street, street_no, postcode, city, phone, email, notes")
+    .select("id, customer_type, company_name, firstname, lastname, street, street_no, postcode, city, phone, email, notes")
     .eq("id", id)
     .eq("company_id", companyId)
     .maybeSingle();
@@ -109,7 +115,10 @@ export async function getCustomerForEdit(id: string): Promise<FlowCustomer | nul
 
   return {
     id: data.id as string,
-    name: (data.name as string) ?? "",
+    customer_type: data.customer_type as CustomerType,
+    company_name: (data.company_name as string) ?? "",
+    firstname: (data.firstname as string) ?? "",
+    lastname: (data.lastname as string) ?? "",
     street: (data.street as string | null) ?? null,
     streetNo: (data.street_no as string | null) ?? null,
     postcode: (data.postcode as string | null) ?? null,
@@ -133,14 +142,17 @@ export async function getCustomerSnapshot(
   const supabase = await createClient();
   const { data: customer } = await supabase
     .from("customers")
-    .select("name, street, street_no, postcode, city, email, phone")
+    .select("customer_type, company_name, firstname, lastname, street, street_no, postcode, city, email, phone")
     .eq("id", customerId)
     .eq("company_id", companyId)
     .maybeSingle();
   if (!customer) return null;
 
   return {
-    name: customer.name as string,
+    customer_type: customer.customer_type as CustomerType,
+    company_name: customer.company_name as string,
+    firstname: customer.firstname as string,
+    lastname: customer.lastname as string,
     street: (customer.street as string | null) ?? null,
     street_no: (customer.street_no as string | null) ?? null,
     postcode: (customer.postcode as string | null) ?? null,
@@ -168,7 +180,10 @@ export async function insertCustomer(input: CustomerInput): Promise<CustomerMuta
     .from("customers")
     .insert({
       company_id: companyId,
-      name: input.name.trim(),
+      customer_type: input.customerType,
+      company_name: input.companyName?.trim() || null,
+      firstname: input.firstname?.trim() || null,
+      lastname: input.lastname?.trim() || null,
       street: input.street?.trim() || null,
       street_no: input.streetNo?.trim() || null,
       postcode: input.postcode?.trim() || null,
@@ -195,7 +210,10 @@ export async function updateCustomer(
   const { error } = await supabase
     .from("customers")
     .update({
-      name: input.name.trim(),
+      customer_type: input.customerType,
+      company_name: input.companyName?.trim() || null,
+      firstname: input.firstname?.trim() || null,
+      lastname: input.lastname?.trim() || null,
       street: input.street?.trim() || null,
       street_no: input.streetNo?.trim() || null,
       postcode: input.postcode?.trim() || null,

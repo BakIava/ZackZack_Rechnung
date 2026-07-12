@@ -4,6 +4,7 @@ import { Step3Screen } from "@/components/create/3/step3-screen";
 import { getDocumentPreview } from "@/lib/repositories/documents";
 import { pruefeDokumentPflicht } from "@/lib/legal/dokument-pflicht";
 import { isRtlLocale } from "@/i18n/routing";
+import { getCustomerName } from "@/lib/customers/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export default async function Step3Page({ params }: Step3PageProps) {
     issueDate: preview.issueDate,
     itemCount: preview.items.length,
     totalAmountCents,
-    customerName: preview.customer?.name ?? null,
+    customerName: getCustomerName(preview.customer),
     customerStreet: preview.customer?.street ?? null,
     customerStreetNo: preview.customer?.streetNo ?? null,
     customerPostcode: preview.customer?.postcode ?? null,

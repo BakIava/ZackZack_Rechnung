@@ -30,7 +30,10 @@ function company(overrides: Partial<PreviewCompany> = {}): PreviewCompany {
 
 function customer(overrides: Partial<PreviewCustomer> = {}): PreviewCustomer {
   return {
-    name: "Familie Schneider",
+    customer_type: "private",
+    firstname: "Familie",
+    lastname: "Schneider",
+    company_name: null,
     street: "Gartenweg",
     streetNo: "4",
     postcode: "10117",

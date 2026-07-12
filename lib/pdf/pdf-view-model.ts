@@ -16,6 +16,8 @@
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
+import { deriveInitials } from "../initials";
+import { getCustomerName } from "../customers/utils";
 
 export interface PdfRow {
   position: number;
@@ -71,18 +73,14 @@ export interface PdfViewModel {
 }
 
 function joinTrim(parts: (string | null | undefined)[], sep: string): string {
-  return parts.map((p) => (p ?? "").trim()).filter(Boolean).join(sep);
-}
-
-function initialsOf(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  const raw =
-    parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2);
-  return raw.toUpperCase();
+  return parts
+    .map((p) => (p ?? "").trim())
+    .filter(Boolean)
+    .join(sep);
 }
 
 export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
-  const { company: co, customer: rc, docType, isKleinunternehmer } = preview;  
+  const { company: co, customer: rc, docType, isKleinunternehmer } = preview;
   const isRechnung = docType === "invoice";
 
   // Summe strikt aus den Zeilen (Verkaufspreis) — nie aus internen Feldern.
@@ -93,15 +91,21 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
   const rcStreet = rc ? joinTrim([rc.street, rc.streetNo], " ") : "";
   const rcCity = rc ? joinTrim([rc.postcode, rc.city], " ") : "";
 
-  const steuerLabel = co.steuernummer ? DOKUMENT_DE.steuerNr : DOKUMENT_DE.ustId;
+  const steuerLabel = co.steuernummer
+    ? DOKUMENT_DE.steuerNr
+    : DOKUMENT_DE.ustId;
   const steuerValue = co.steuernummer ?? co.ustId ?? "—";
 
-  const numberLabel = isRechnung ? DOKUMENT_DE.rechnungNr : DOKUMENT_DE.angebotNr;
+  const numberLabel = isRechnung
+    ? DOKUMENT_DE.rechnungNr
+    : DOKUMENT_DE.angebotNr;
   const titleWort = isRechnung ? DOKUMENT_DE.rechnung : DOKUMENT_DE.angebot;
 
   const bankLine =
-    joinTrim([co.bankName, co.iban ? `${DOKUMENT_DE.iban} ${co.iban}` : null], " · ") ||
-    null;
+    joinTrim(
+      [co.bankName, co.iban ? `${DOKUMENT_DE.iban} ${co.iban}` : null],
+      " · ",
+    ) || null;
 
   const paymentText =
     isRechnung && preview.issueDate
@@ -110,7 +114,12 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
 
   return {
     isRechnung,
-    monogram: initialsOf(co.name || "—"),
+    monogram: deriveInitials({
+      firstname: rc?.firstname,
+      lastname: rc?.lastname,
+      company_name: co.name,
+      customerType: rc?.customer_type,
+    }),
 
     companyName: co.name,
     companyAddressLine: joinTrim([coStreet, coCity], " · "),
@@ -123,7 +132,7 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
     empfaengerLabel: isRechnung
       ? DOKUMENT_DE.empfaengerRechnung
       : DOKUMENT_DE.empfaengerAngebot,
-    recipientName: rc?.name ?? "—",
+    recipientName: getCustomerName(rc),
     recipientStreetLine: rcStreet,
     recipientCityLine: rcCity,
 
@@ -131,7 +140,9 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
     numberValue: preview.documentNumber ?? DOKUMENT_DE.entwurfPlatzhalter,
     isDraftNumber: !preview.documentNumber,
     dateValue: preview.issueDate ? formatDateDE(preview.issueDate) : "—",
-    serviceDateValue: preview.serviceDate ? formatDateDE(preview.serviceDate) : null,
+    serviceDateValue: preview.serviceDate
+      ? formatDateDE(preview.serviceDate)
+      : null,
     steuerLabel,
     steuerValue,
 
@@ -145,7 +156,9 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
     })),
 
     gesamtNettoLabel: DOKUMENT_DE.gesamtNetto,
-    sumLabel: isRechnung ? DOKUMENT_DE.rechnungsbetrag : DOKUMENT_DE.angebotssumme,
+    sumLabel: isRechnung
+      ? DOKUMENT_DE.rechnungsbetrag
+      : DOKUMENT_DE.angebotssumme,
     totalText: formatMoney(total),
 
     showKleinunternehmerHinweis: isKleinunternehmer,
@@ -155,7 +168,9 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
     bankLine,
 
     footerCompanyName: co.name,
-    footerOwnerLine: co.director ? `${co.director}, ${DOKUMENT_DE.inhaber}` : null,
+    footerOwnerLine: co.director
+      ? `${co.director}, ${DOKUMENT_DE.inhaber}`
+      : null,
     footerAddressLine: joinTrim([coStreet, coCity], ", "),
     footerContactPhone: co.phone ? `Tel. ${co.phone}` : null,
     footerContactEmail: co.email,
