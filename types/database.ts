@@ -27,6 +27,8 @@ export type DocStatus = "draft" | "finalized" | "sent" | "paid" | "cancelled";
 /** document_items.surcharge_type — Fremdleistungs-Aufschlag (strikt intern) */
 export type SurchargeType = "percent" | "fixed";
 
+export type CustomerType = "private" | "business";
+
 /** public.companies */
 export interface CompanyRow {
   id: string;
@@ -68,8 +70,11 @@ export interface UserRow {
 /** public.customers */
 export interface CustomerDbRow {
   id: string;
-  company_id: string;
-  name: string;
+  company_id: string | null;
+  customer_type: CustomerType;
+  firstname: string | null;
+  lastname: string | null;
+  company_name: string | null;
   street: string | null;
   street_no: string | null;
   postcode: string | null;

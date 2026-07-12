@@ -27,7 +27,7 @@ export default async function Step1Page({ params }: Step1PageProps) {
   const [draft, customers] = await Promise.all([
     getDraft(document_id),
     getCustomerSummaries(),
-  ]);
+  ]);  
 
   // Layout garantiert einen gültigen Draft; Fallback nur zur Typsicherheit.
   const initialDocType = draft?.docType ?? "invoice";

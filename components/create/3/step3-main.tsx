@@ -25,6 +25,8 @@ import { FinalizeDialog } from "./finalize-dialog";
 import { PflichtList } from "./pflicht-list";
 import { ShareButtons } from "./share-buttons";
 import { ZoomOverlay } from "./zoom-overlay";
+import { getCustomerName } from "@/lib/customers/utils";
+import { deriveInitials } from "@/lib/initials";
 
 interface Step3MainProps {
   dir: "ltr" | "rtl";
@@ -40,15 +42,6 @@ const ERROR_KEY: Record<FinalizeError, string> = {
   issueDateMissing: "errIssueDate",
   unknown: "errUnknown",
 };
-
-function initialsOf(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0] ?? "")
-    .join("")
-    .toUpperCase();
-}
 
 /** Schritt 3 (Vorschau & Finalisierung) — Desktop: A4-Vorschau links, sticky
  *  Aktions-Sidebar rechts. Dokumentinhalt bleibt Deutsch/LTR; die Bedienung
@@ -67,8 +60,8 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
   const canFinalize = istFinalisierbar(checks);
   const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
 
-  const customerName = preview.customer?.name ?? "—";
-  const customerInitials = preview.customer ? initialsOf(preview.customer.name) : "—";
+  const customerName = getCustomerName(preview.customer);
+  const customerInitials = deriveInitials(preview.customer);
   const numberText = preview.documentNumber ?? DOKUMENT_DE.entwurfPlatzhalter;
   const zoomTitle = `${isRechnung ? DOKUMENT_DE.rechnung : DOKUMENT_DE.angebot}${
     preview.documentNumber ? ` ${preview.documentNumber}` : ""

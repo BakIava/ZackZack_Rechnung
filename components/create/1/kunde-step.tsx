@@ -78,7 +78,9 @@ export function KundeStep({
   const needle = query.trim().toLowerCase();
   const filtered = allCustomers.filter(
     (c) =>
-      c.name.toLowerCase().includes(needle) ||
+      c.firstname?.toLowerCase().includes(needle) ||
+      c.lastname?.toLowerCase().includes(needle) ||
+      c.companyName?.toLowerCase().includes(needle) ||
       (c.city ?? "").toLowerCase().includes(needle),
   );
   const selectedCustomer = allCustomers.find((c) => c.id === selected) ?? null;
@@ -104,7 +106,8 @@ export function KundeStep({
     setEditing(null);
     // Ist der bearbeitete Kunde der gewählte, den eingefrorenen Snapshot direkt
     // aktualisieren (fire-and-forget), damit die Vorschau die neue Anschrift zeigt.
-    if (selected === customer.id) void updateDraftCustomer(documentId, customer.id);
+    if (selected === customer.id)
+      void updateDraftCustomer(documentId, customer.id);
   }
 
   function handleDocType(next: DocType) {
@@ -151,7 +154,9 @@ export function KundeStep({
             <BackChevron size={20} strokeWidth={STROKE} aria-hidden />
           </button>
           <div>
-            <div className="dflow-title">{t("createTitle", { type: docLabel })}</div>
+            <div className="dflow-title">
+              {t("createTitle", { type: docLabel })}
+            </div>
             <div className="dflow-sub">{t("chooseCustomer")}</div>
           </div>
           <FlowSteps current={1} />
@@ -183,7 +188,12 @@ export function KundeStep({
         </div>
 
         <div className="dsearch2">
-          <Search size={20} strokeWidth={STROKE} color="var(--muted)" aria-hidden />
+          <Search
+            size={20}
+            strokeWidth={STROKE}
+            color="var(--muted)"
+            aria-hidden
+          />
           <input
             type="search"
             autoComplete="off"
@@ -212,13 +222,23 @@ export function KundeStep({
               onClick={() => setShowNew(true)}
             >
               <span className="dcust-av">
-                <Plus size={22} strokeWidth={STROKE_BOLD} color="#fff" aria-hidden />
+                <Plus
+                  size={22}
+                  strokeWidth={STROKE_BOLD}
+                  color="#fff"
+                  aria-hidden
+                />
               </span>
               <span className="dcust-body">
                 <span className="dcust-name">{t("newCustomer")}</span>
                 <span className="dcust-addr">{t("newCustomerSub")}</span>
               </span>
-              <Chevron size={20} strokeWidth={STROKE} color="var(--primary)" aria-hidden />
+              <Chevron
+                size={20}
+                strokeWidth={STROKE}
+                color="var(--primary)"
+                aria-hidden
+              />
             </button>
           )}
           {filtered.map((c) => (
@@ -233,7 +253,8 @@ export function KundeStep({
               <span className="dcust-av">{c.initials}</span>
               <span className="dcust-body">
                 <span className="dcust-name">
-                  {c.name}
+                  {c.companyName + " " || ""}
+                  {c.firstname + " " + c.lastname}
                   {c.isNew && (
                     <span className="dcust-badge">
                       <Check size={11} strokeWidth={STROKE_BOLD} aria-hidden />
@@ -249,7 +270,12 @@ export function KundeStep({
               </span>
               {selected === c.id && (
                 <span className="dcust-check">
-                  <Check size={16} strokeWidth={STROKE_BOLD} color="#fff" aria-hidden />
+                  <Check
+                    size={16}
+                    strokeWidth={STROKE_BOLD}
+                    color="#fff"
+                    aria-hidden
+                  />
                 </span>
               )}
             </button>
@@ -277,7 +303,9 @@ export function KundeStep({
       {showFixHint && !showNew && editing === null && (
         <div className="dflow-hint" role="status">
           <span className="dflow-hint-txt">
-            {selectedCustomer ? t("fixCustomerHintEdit") : t("fixCustomerHintSelect")}
+            {selectedCustomer
+              ? t("fixCustomerHintEdit")
+              : t("fixCustomerHintSelect")}
           </span>
           <button
             type="button"
@@ -296,9 +324,19 @@ export function KundeStep({
             <span className="dflow-error">{saveError}</span>
           ) : selectedCustomer ? (
             <>
-              <Check size={16} strokeWidth={STROKE_BOLD} color="var(--ok)" aria-hidden />
+              <Check
+                size={16}
+                strokeWidth={STROKE_BOLD}
+                color="var(--ok)"
+                aria-hidden
+              />
               <span>
-                <b>{selectedCustomer.name}</b> {t("selected")}
+                <b>                
+                {selectedCustomer.firstname
+                  ? `${selectedCustomer.firstname} ${selectedCustomer.lastname}`
+                  : ""}
+                </b>{" "}
+                {t("selected")}
               </span>
               <button
                 type="button"
@@ -307,7 +345,12 @@ export function KundeStep({
                 disabled={editLoadingId !== null}
               >
                 {editLoadingId === selectedCustomer.id ? (
-                  <Loader2 size={15} strokeWidth={STROKE_BOLD} className="dbtn-spin" aria-hidden />
+                  <Loader2
+                    size={15}
+                    strokeWidth={STROKE_BOLD}
+                    className="dbtn-spin"
+                    aria-hidden
+                  />
                 ) : (
                   <Pencil size={15} strokeWidth={STROKE} aria-hidden />
                 )}
@@ -325,7 +368,12 @@ export function KundeStep({
           onClick={handleWeiter}
         >
           {saving ? (
-            <Loader2 size={20} strokeWidth={STROKE_BOLD} className="dbtn-spin" aria-hidden />
+            <Loader2
+              size={20}
+              strokeWidth={STROKE_BOLD}
+              className="dbtn-spin"
+              aria-hidden
+            />
           ) : (
             <Chevron size={20} strokeWidth={STROKE_BOLD} aria-hidden />
           )}

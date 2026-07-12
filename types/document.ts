@@ -115,7 +115,7 @@ export interface DraftItem {
 
 /** Kontext des Drafts für den Kopfbereich von Schritt 2. */
 export interface DraftContext {
-  docType: "rechnung" | "angebot";
+  docType: DocType;
   customerName: string;
   customerInitials: string;
   isKleinunternehmer: boolean;

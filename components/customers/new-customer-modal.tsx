@@ -5,10 +5,13 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { createCustomer, updateCustomer } from "@/lib/customers/actions";
 import { deriveInitials } from "@/lib/initials";
-import type { CustomerListItem, FlowCustomer } from "@/types/customer";
+import type {
+  CustomerInput,
+  CustomerListItem,
+  FlowCustomer,
+} from "@/types/customer";
 import "./new-customer-modal.css";
-
-type CustomerType = "private" | "company";
+import { CustomerType } from "@/types/database";
 
 interface NewCustomerModalProps {
   dir: "ltr" | "rtl";
@@ -33,8 +36,11 @@ export function NewCustomerModal({
   const t = useTranslations("Create");
   const isEdit = editCustomer !== null;
   const [type, setType] = useState<CustomerType>("private");
-  const [name, setName] = useState(editCustomer?.name ?? "");
-  const [contact, setContact] = useState("");
+  const [companyName, setCompanyName] = useState(
+    editCustomer?.company_name ?? "",
+  );
+  const [firstname, setFirstname] = useState(editCustomer?.firstname ?? "");
+  const [lastname, setLastname] = useState(editCustomer?.lastname ?? "");
   const [street, setStreet] = useState(editCustomer?.street ?? "");
   const [houseNo, setHouseNo] = useState(editCustomer?.streetNo ?? "");
   const [zip, setZip] = useState(editCustomer?.postcode ?? "");
@@ -45,11 +51,14 @@ export function NewCustomerModal({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const isCompany = type === "company";
+  const isCompany = type === "business";
   // Bewusst tolerant: nur der Name ist Pflicht. Die Anschrift kann später ergänzt
   // werden (Entwurf, Adresse noch nicht bekannt). Fehlt sie bei einer Rechnung
   // über 250 €, weist der Pflichtangaben-Check in Schritt 3 darauf hin.
-  const ok = name.trim().length > 0;
+  const ok = (() => {
+    if (isCompany) return companyName.trim().length > 0;
+    return firstname.trim().length > 0 && lastname.trim().length > 0;
+  })();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -61,13 +70,15 @@ export function NewCustomerModal({
 
   async function submit() {
     if (!ok || saving) return;
-    const nm = name.trim();
     const trimmedCity = city.trim();
     const trimmedStreet = street.trim();
     const trimmedHouseNo = houseNo.trim();
 
-    const input = {
-      name: nm,
+    const input: CustomerInput = {
+      customerType: type,
+      firstname: firstname.trim() || null,
+      lastname: lastname.trim() || null,
+      companyName: companyName.trim() || null,
       street: trimmedStreet || undefined,
       streetNo: trimmedHouseNo || undefined,
       postcode: zip.trim() || undefined,
@@ -82,10 +93,17 @@ export function NewCustomerModal({
 
     const listItem: CustomerListItem = {
       id: editCustomer?.id ?? "",
-      name: nm,
+      firstname: firstname.trim() || null,
+      lastname: lastname.trim() || null,
+      companyName: companyName.trim() || null,
       city: trimmedCity || null,
       street: [trimmedStreet, trimmedHouseNo].filter(Boolean).join(" ") || null,
-      initials: deriveInitials(nm),
+      initials: deriveInitials({
+        customerType: type,
+        company_name: companyName,
+        firstname: firstname,
+        lastname: lastname,
+      }),
     };
 
     if (isEdit && editCustomer) {
@@ -124,7 +142,9 @@ export function NewCustomerModal({
       />
       <div className="dmodal">
         <div className="dmodal-head">
-          <span className="dmodal-title">{isEdit ? t("editCustomer") : t("ncTitle")}</span>
+          <span className="dmodal-title">
+            {isEdit ? t("editCustomer") : t("ncTitle")}
+          </span>
           <button
             type="button"
             className="sheet-x"
@@ -134,7 +154,9 @@ export function NewCustomerModal({
             <X size={18} strokeWidth={STROKE} aria-hidden />
           </button>
         </div>
-        <div className="dmodal-sub">{isEdit ? t("editCustomerSub") : t("ncSub")}</div>
+        <div className="dmodal-sub">
+          {isEdit ? t("editCustomerSub") : t("ncSub")}
+        </div>
 
         <div className="dmodal-body">
           <div className="f-grid">
@@ -154,43 +176,48 @@ export function NewCustomerModal({
                   type="button"
                   data-on={isCompany ? "1" : "0"}
                   aria-pressed={isCompany}
-                  onClick={() => setType("company")}
+                  onClick={() => setType("business")}
                 >
                   <Building2 size={18} strokeWidth={STROKE} aria-hidden />
-                  {t("ncCompany")}
+                  {t("ncBusiness")}
                 </button>
               </div>
             </div>
 
-            <label className="f-row">
-              <span className="f-lbl">
-                {isCompany ? t("ncCompanyName") : t("ncName")} *
-              </span>
-              <input
-                className="f-input"
-                autoComplete={isCompany ? "organization" : "name"}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={isCompany ? t("ncCompanyPh") : t("ncNamePh")}
-                autoFocus
-              />
-            </label>
-
             {isCompany && (
               <label className="f-row">
-                <span className="f-lbl">
-                  {t("ncContact")}
-                  <span className="nc-opt">{t("ncOptional")}</span>
-                </span>
+                <span className="f-lbl">{t("ncBusinessName")}</span>
                 <input
                   className="f-input"
                   autoComplete="name"
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
-                  placeholder={t("ncContactPh")}
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder={t("ncBusinessPh")}
                 />
               </label>
             )}
+
+            <label className="f-row">
+              <span className="f-lbl">{t("ncFirstname")}</span>
+              <input
+                className="f-input"
+                autoComplete={"firstname"}
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
+                placeholder={t("ncFirstnamePh")}
+              />
+            </label>
+
+            <label className="f-row">
+              <span className="f-lbl">{t("ncLastname")}</span>
+              <input
+                className="f-input"
+                autoComplete={"lastname"}
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+                placeholder={t("ncLastnamePh")}
+              />
+            </label>
 
             <div className="f-row two">
               <label className="f-row">
@@ -288,7 +315,12 @@ export function NewCustomerModal({
 
         <div className="dmodal-foot">
           {saveError && <span className="nc-error">{saveError}</span>}
-          <button type="button" className="nc-cancel" onClick={onClose} disabled={saving}>
+          <button
+            type="button"
+            className="nc-cancel"
+            onClick={onClose}
+            disabled={saving}
+          >
             {t("cancel")}
           </button>
           <button
@@ -298,11 +330,20 @@ export function NewCustomerModal({
             onClick={submit}
           >
             {saving ? (
-              <Loader2 size={20} strokeWidth={2.4} className="nc-spin" aria-hidden />
+              <Loader2
+                size={20}
+                strokeWidth={2.4}
+                className="nc-spin"
+                aria-hidden
+              />
             ) : (
               <Check size={20} strokeWidth={2.4} aria-hidden />
             )}
-            {saving ? t("ncSaving") : isEdit ? t("editCustomerSave") : t("ncCreate")}
+            {saving
+              ? t("ncSaving")
+              : isEdit
+                ? t("editCustomerSave")
+                : t("ncCreate")}
           </button>
         </div>
       </div>

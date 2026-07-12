@@ -2,6 +2,8 @@ import { ShieldCheck } from "lucide-react";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
+import { deriveInitials } from "@/lib/initials";
+import { getCustomerName } from "@/lib/customers/utils";
 
 interface DocumentA4Props {
   preview: DocumentPreview;
@@ -11,14 +13,11 @@ interface DocumentA4Props {
 
 const STROKE = 1.75;
 
-function initialsOf(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  const raw = parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : name.slice(0, 2);
-  return raw.toUpperCase();
-}
-
 function joinTrim(parts: (string | null | undefined)[], sep: string): string {
-  return parts.map((p) => (p ?? "").trim()).filter(Boolean).join(sep);
+  return parts
+    .map((p) => (p ?? "").trim())
+    .filter(Boolean)
+    .join(sep);
 }
 
 /**
@@ -38,15 +37,27 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
   const rcStreet = rc ? joinTrim([rc.street, rc.streetNo], " ") : "";
   const rcCity = rc ? joinTrim([rc.postcode, rc.city], " ") : "";
 
-  const numberLabel = isRechnung ? DOKUMENT_DE.rechnungNr : DOKUMENT_DE.angebotNr;
+  const numberLabel = isRechnung
+    ? DOKUMENT_DE.rechnungNr
+    : DOKUMENT_DE.angebotNr;
   const titleWort = isRechnung ? DOKUMENT_DE.rechnung : DOKUMENT_DE.angebot;
-  const sumLabel = isRechnung ? DOKUMENT_DE.rechnungsbetrag : DOKUMENT_DE.angebotssumme;
-  const empfLabel = isRechnung ? DOKUMENT_DE.empfaengerRechnung : DOKUMENT_DE.empfaengerAngebot;
-  const steuerLabel = co.steuernummer ? DOKUMENT_DE.steuerNr : DOKUMENT_DE.ustId;
+  const sumLabel = isRechnung
+    ? DOKUMENT_DE.rechnungsbetrag
+    : DOKUMENT_DE.angebotssumme;
+  const empfLabel = isRechnung
+    ? DOKUMENT_DE.empfaengerRechnung
+    : DOKUMENT_DE.empfaengerAngebot;
+  const steuerLabel = co.steuernummer
+    ? DOKUMENT_DE.steuerNr
+    : DOKUMENT_DE.ustId;
   const steuerWert = co.steuernummer ?? co.ustId ?? "—";
 
   return (
-    <div className={`a4-paper${className ? ` ${className}` : ""}`} dir="ltr" lang="de">
+    <div
+      className={`a4-paper${className ? ` ${className}` : ""}`}
+      dir="ltr"
+      lang="de"
+    >
       <div className="a4">
         <div className="a4-top">
           <div>
@@ -71,7 +82,12 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
               // eslint-disable-next-line @next/next/no-img-element
               <img className="a4-logo-img" src={co.logoUrl} alt="" />
             ) : (
-              initialsOf(co.name)
+              deriveInitials({
+                firstname: rc?.firstname,
+                lastname: rc?.lastname,
+                company_name: co.name,
+                customerType: rc?.customer_type,
+              })
             )}
           </div>
         </div>
@@ -80,7 +96,7 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
           <div className="a4-to">
             <div className="a4-sender">{coSenderLine}</div>
             <div className="a4-lbl">{empfLabel}</div>
-            <div className="a4-to-name">{rc?.name ?? "—"}</div>
+            <div className="a4-to-name">{getCustomerName(rc)}</div>
             {rc && (
               <div className="a4-to-addr">
                 {rcStreet}
@@ -92,7 +108,9 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
           <div className="a4-meta">
             <div className="a4-meta-row">
               <span className="k">{numberLabel}</span>
-              <span className={`v${preview.documentNumber ? "" : " a4-num--draft"}`}>
+              <span
+                className={`v${preview.documentNumber ? "" : " a4-num--draft"}`}
+              >
                 {preview.documentNumber ?? DOKUMENT_DE.entwurfPlatzhalter}
               </span>
             </div>
@@ -108,10 +126,6 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
                 <span className="v">{formatDateDE(preview.serviceDate)}</span>
               </div>
             )}
-            <div className="a4-meta-row">
-              <span className="k">{steuerLabel}</span>
-              <span className="v">{steuerWert}</span>
-            </div>
           </div>
         </div>
 
@@ -168,10 +182,16 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
         {isRechnung && preview.issueDate && (
           <div className="a4-pay">
             {zahlungszielText(preview.issueDate, co.paymentDays)}
-            {joinTrim([co.bankName, co.iban ? `IBAN ${co.iban}` : null], " · ") && (
+            {joinTrim(
+              [co.bankName, co.iban ? `IBAN ${co.iban}` : null],
+              " · ",
+            ) && (
               <>
                 <br />
-                {joinTrim([co.bankName, co.iban ? `IBAN ${co.iban}` : null], " · ")}
+                {joinTrim(
+                  [co.bankName, co.iban ? `IBAN ${co.iban}` : null],
+                  " · ",
+                )}
               </>
             )}
           </div>
@@ -182,7 +202,10 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
         <div className="a4-foot">
           <div>
             <b>{co.name}</b>
-            {joinTrim([co.director ? `${co.director}, ${DOKUMENT_DE.inhaber}` : null], "")}
+            {joinTrim(
+              [co.director ? `${co.director}, ${DOKUMENT_DE.inhaber}` : null],
+              "",
+            )}
             {co.director && <br />}
             {joinTrim([coStreet, coCity], ", ")}
           </div>
