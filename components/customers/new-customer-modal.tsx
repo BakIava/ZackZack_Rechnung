@@ -14,18 +14,16 @@ import { useTranslations } from "next-intl";
 import { useRef, useState, type ReactNode } from "react";
 import { Modal } from "@/components/ui";
 import { createCustomer, updateCustomer } from "@/lib/customers/actions";
+import { runCustomerIntake } from "@/lib/customers/intake-actions";
+import { mapIntakeResult, type IntakeField, type MappedIntake } from "@/lib/customers/intake-fields";
 import { deriveInitials } from "@/lib/initials";
-import {
-  recognizeCustomerText,
-  type RecognitionResult,
-  type RecognizedField,
-} from "@/lib/customers/recognize";
 import type {
   CustomerInput,
   CustomerListItem,
   FlowCustomer,
 } from "@/types/customer";
-import { CustomerType } from "@/types/database";
+import type { CustomerIntakeResult } from "@/types/customer-intake";
+import type { CustomerType } from "@/types/database";
 import { CustomerAiIntro } from "./customer-ai-intro";
 import { CustomerAiLoading } from "./customer-ai-loading";
 import "./new-customer-modal.css";
@@ -62,9 +60,11 @@ export function NewCustomerModal({
   const [phase, setPhase] = useState<Phase>(isEdit ? "form" : "intro");
   const [source, setSource] = useState<Source>(isEdit ? "edit" : "manual");
   const [text, setText] = useState("");
-  const recognizeRef = useRef<Promise<RecognitionResult> | null>(null);
+  const intakeRef = useRef<Promise<CustomerIntakeResult> | null>(null);
 
-  const [type, setType] = useState<CustomerType>("private");
+  const [type, setType] = useState<CustomerType>(
+    editCustomer?.customer_type ?? "private",
+  );
   const [companyName, setCompanyName] = useState(editCustomer?.company_name ?? "");
   const [firstname, setFirstname] = useState(editCustomer?.firstname ?? "");
   const [lastname, setLastname] = useState(editCustomer?.lastname ?? "");
@@ -75,8 +75,8 @@ export function NewCustomerModal({
   const [phone, setPhone] = useState(editCustomer?.phone ?? "");
   const [email, setEmail] = useState(editCustomer?.email ?? "");
   const [note, setNote] = useState(editCustomer?.notes ?? "");
-  const [found, setFound] = useState<RecognitionResult["found"]>({});
-  const [corrected, setCorrected] = useState<RecognitionResult["corrected"]>({});
+  const [found, setFound] = useState<MappedIntake["found"]>({});
+  const [corrected, setCorrected] = useState<MappedIntake["corrected"]>({});
   const [count, setCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -92,24 +92,24 @@ export function NewCustomerModal({
 
   const showSpark = phase === "loading" || source === "ai-ok" || source === "ai-fail";
 
-  function applyRecognized(r: RecognitionResult) {
-    setType(r.fields.customerType);
-    setCompanyName(r.fields.companyName);
-    setFirstname(r.fields.firstname);
-    setLastname(r.fields.lastname);
-    setStreet(r.fields.street);
-    setHouseNo(r.fields.houseNo);
-    setZip(r.fields.zip);
-    setCity(r.fields.city);
-    setPhone(r.fields.phone);
-    setEmail(r.fields.email);
-    setCount(r.count);
-    if (r.ok) {
-      setFound(r.found);
-      setCorrected(r.corrected);
+  function applyIntake(m: MappedIntake) {
+    setType(m.values.customerType);
+    setCompanyName(m.values.companyName);
+    setFirstname(m.values.firstname);
+    setLastname(m.values.lastname);
+    setStreet(m.values.street);
+    setHouseNo(m.values.houseNo);
+    setZip(m.values.zip);
+    setCity(m.values.city);
+    setPhone(m.values.phone);
+    setEmail(m.values.email);
+    setCount(m.count);
+    if (m.recognized) {
+      setFound(m.found);
+      setCorrected(m.corrected);
       setSource("ai-ok");
     } else {
-      // Nichts Belastbares erkannt → keine KI-Markierungen, Name bleibt aber vorbefüllt.
+      // Nichts Belastbares erkannt → keine KI-Markierungen, manuell weitermachen.
       setFound({});
       setCorrected({});
       setSource("ai-fail");
@@ -117,13 +117,15 @@ export function NewCustomerModal({
   }
 
   function startFill() {
-    recognizeRef.current = recognizeCustomerText(text);
+    // Server-Action: Claude-Extraktion + Mapbox-Geocoding. Läuft parallel zur
+    // Lade-Animation und wird in handleRecognized abgewartet.
+    intakeRef.current = runCustomerIntake(text);
     setPhase("loading");
   }
 
   async function handleRecognized() {
-    const result = await recognizeRef.current;
-    if (result) applyRecognized(result);
+    const result = await intakeRef.current;
+    if (result) applyIntake(mapIntakeResult(result));
     setPhase("form");
   }
 
@@ -193,7 +195,7 @@ export function NewCustomerModal({
   }
 
   // Feld-Label mit optionalem „optional"-Zusatz und „KI"-Badge (wenn erkannt).
-  function fieldLabel(field: RecognizedField | null, label: string, optional = false): ReactNode {
+  function fieldLabel(field: IntakeField | null, label: string, optional = false): ReactNode {
     const badge = field ? Boolean(found[field]) : false;
     return (
       <span className={`f-lbl${badge ? " ai-flabel" : ""}`}>

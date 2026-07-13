@@ -1,26 +1,30 @@
-import { CustomerType } from "@/types/database";
+import type { CustomerType } from "@/types/database";
 
 /** Leitet Initialen aus einem Namen ab: bei mehreren Wörtern Vor- und
  *  Nachname-Initiale, sonst die ersten zwei Zeichen — immer in Großbuchstaben.
  *  (Gemeinsame Quelle für Kunden-Avatare; identisch zu den bisherigen lokalen
  *  Implementierungen in customer-detail und NewCustomerModal.) */
 
-type DerivIitiliasProps = {
+interface DeriveInitialsProps {
+  customer_type?: CustomerType;
   customerType?: CustomerType;
   company_name?: string | null;
   firstname?: string | null;
   lastname?: string | null;
-};
+}
 
-export function deriveInitials(props: DerivIitiliasProps | null): string {
-  if(props === null) return "—";
+export function deriveInitials(props: DeriveInitialsProps | null): string {
+  if (props === null) return "—";
 
-  if(props.customerType === "business") {
+  const customerType = props.customer_type ?? props.customerType;
+  if (customerType === "business") {
     return props.company_name ? deriveInitialsFromName(props.company_name) : "—";
-  } else {
-    const name = `${props.firstname?.trim()} ${props.lastname?.trim()}`.trim();
-    return name ? deriveInitialsFromName(name) : "—";
   }
+
+  const name = [props.firstname?.trim(), props.lastname?.trim()]
+    .filter(Boolean)
+    .join(" ");
+  return name ? deriveInitialsFromName(name) : "—";
 }
 
 function deriveInitialsFromName(name: string): string {

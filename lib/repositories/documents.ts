@@ -23,10 +23,10 @@ import type {
   FlowDocMeta,
 } from "@/types/document";
 import type { PreviewCompany } from "@/types/company";
-import type { CustomerSnapshot, PreviewCustomer } from "@/types/customer";
-import type { CustomerType, DocumentRow } from "@/types/database";
+import type { CustomerSnapshot } from "@/types/customer";
+import type { DocumentRow } from "@/types/database";
 import { deriveInitials } from "@/lib/initials";
-import { getCustomerName } from "../customers/utils";
+import { getCustomerName, toPreviewCustomer } from "../customers/utils";
 
 /**
  * Alter, ab dem ein positionsloser Entwurf beim Laden der Liste automatisch
@@ -101,9 +101,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   const customers = await getCustomersByIds(customerIds);
 
   const documents: DocumentListItem[] = (docsRes.data ?? []).map((doc) => {
-    const snapshot = doc.customer_snapshot as
-      | { name?: string; email?: string | null; phone?: string | null }
-      | null;
+    const snapshot = doc.customer_snapshot as CustomerSnapshot | null;
     const status = doc.status as DocumentListItem["status"];
     const paidAt = doc.paid_at as string | null;
     const customer = customers.find((c) => c.id === doc.customer_id);
@@ -117,7 +115,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       id: doc.id,
       type: doc.document_type as DocumentListItem["type"],
       documentNumber: doc.document_number ?? "",
-      customerName: customer?.firstname && customer?.lastname ? `${customer.firstname} ${customer.lastname}` : snapshot?.name ?? "—",
+      customerName: getCustomerName(customer ?? snapshot) || "—",
       customerEmail: customer?.email ?? snapshot?.email ?? null,
       customerPhone: customer?.phone ?? snapshot?.phone ?? null,
       status,
@@ -248,24 +246,6 @@ function toCompany(row: Record<string, unknown>): PreviewCompany {
   };
 }
 
-function toCustomer(snapshot: CustomerSnapshot): PreviewCustomer | null {
-  if (!snapshot || typeof snapshot !== "object") return null;
-  const name = typeof snapshot.firstname === "string" ? snapshot.firstname.trim() : "";
-  if (!name) return null;
-  return {
-    customer_type: snapshot.customer_type as CustomerType,
-    company_name: (snapshot.company_name as string | null) ?? null,
-    firstname: (snapshot.firstname as string | null) ?? null,
-    lastname: (snapshot.lastname as string | null) ?? null,
-    street: (snapshot.street as string | null) ?? null,
-    streetNo: (snapshot.street_no as string | null) ?? null,
-    postcode: (snapshot.postcode as string | null) ?? null,
-    city: (snapshot.city as string | null) ?? null,
-    email: (snapshot.email as string | null) ?? null,
-    phone: (snapshot.phone as string | null) ?? null,
-  };
-}
-
 /**
  * Lädt ein Dokument vollständig für die Vorschau (Kopf, Empfänger-Snapshot,
  * Positionen). Anders als getDraft ist hier JEDER Status erlaubt – ein
@@ -319,7 +299,7 @@ export const getDocumentPreview = cache(
       isKleinunternehmer: Boolean(doc.is_kleinunternehmer),
       totalAmount: (doc.total_amount as number | null) ?? 0,
       company: toCompany(companyRes.data as unknown as Record<string, unknown>),
-      customer: toCustomer(doc.customer_snapshot),
+      customer: toPreviewCustomer(doc.customer_snapshot),
       items,
     };
   },
