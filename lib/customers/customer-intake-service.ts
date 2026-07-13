@@ -6,11 +6,14 @@ import {
 } from "./customer-intake";
 import type {
   CustomerAddressCandidate,
+  CustomerAiQuota,
   CustomerIntakeData,
+  CustomerIntakeManualReason,
   CustomerIntakeResult,
 } from "@/types/customer-intake";
 
 interface CustomerIntakeDependencies {
+  consumeCustomerAiQuota: () => Promise<CustomerAiQuota>;
   extractCustomerData: (text: string) => Promise<CustomerIntakeData>;
   geocodeCustomerAddress: (
     customer: CustomerIntakeData,
@@ -18,7 +21,7 @@ interface CustomerIntakeDependencies {
 }
 
 function manual(
-  reason: Extract<CustomerIntakeResult, { status: "manual" }>["reason"],
+  reason: Exclude<CustomerIntakeManualReason, "daily_limit_reached">,
   customer: CustomerIntakeData = { ...EMPTY_CUSTOMER_INTAKE },
 ): CustomerIntakeResult {
   return { status: "manual", reason, customer };
@@ -31,6 +34,21 @@ export async function processCustomerIntake(
 ): Promise<CustomerIntakeResult> {
   const validatedText = validateCustomerIntakeText(text);
   if (!validatedText) return manual("invalid_input");
+
+  let quota: CustomerAiQuota;
+  try {
+    quota = await dependencies.consumeCustomerAiQuota();
+  } catch {
+    return manual("quota_unavailable");
+  }
+  if (!quota.allowed) {
+    return {
+      status: "manual",
+      reason: "daily_limit_reached",
+      customer: { ...EMPTY_CUSTOMER_INTAKE },
+      dailyLimit: quota.dailyLimit,
+    };
+  }
 
   let customer: CustomerIntakeData;
   try {

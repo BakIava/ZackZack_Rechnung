@@ -283,6 +283,7 @@
     "ncAiStepContact": "Telefon & e-posta",
     "ncAiOkBanner": "{count, plural, one {# alan tanındı – lütfen kısaca kontrol et.} other {# alan tanındı – lütfen kısaca kontrol et.}}",
     "ncAiFailBanner": "Maalesef net bir şey tanıyamadık. Lütfen bilgileri kendin gir.",
+    "ncAiDailyLimitBanner": "Günlük {limit} yapay zeka kullanım sınırına ulaştın. Lütfen bilgileri kendin gir.",
     "ncAiManualBanner": "Müşteri bilgilerini gir.",
     "ncAiCorrected": "resmi yazıma uyarlandı",
     "ncAiChangeInput": "Girişi değiştir",

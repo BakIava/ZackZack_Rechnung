@@ -283,6 +283,7 @@
     "ncAiStepContact": "Telefon & E-Mail",
     "ncAiOkBanner": "{count, plural, one {# Feld erkannt – bitte kurz prüfen.} other {# Felder erkannt – bitte kurz prüfen.}}",
     "ncAiFailBanner": "Wir konnten leider nichts sicher erkennen. Bitte trag die Angaben selbst ein.",
+    "ncAiDailyLimitBanner": "Du hast das Tageslimit von {limit} KI-Nutzungen erreicht. Bitte trag die Angaben selbst ein.",
     "ncAiManualBanner": "Trag die Angaben des Kunden ein.",
     "ncAiCorrected": "an amtliche Schreibweise angepasst",
     "ncAiChangeInput": "Eingabe ändern",

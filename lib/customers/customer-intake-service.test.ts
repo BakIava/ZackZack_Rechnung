@@ -26,6 +26,11 @@ const address: CustomerAddressCandidate = {
 
 function dependencies(extracted: CustomerIntakeData = customer) {
   return {
+    consumeCustomerAiQuota: vi.fn().mockResolvedValue({
+      allowed: true,
+      remaining: 9,
+      dailyLimit: 10,
+    }),
     extractCustomerData: vi.fn().mockResolvedValue(extracted),
     geocodeCustomerAddress: vi.fn().mockResolvedValue([address]),
   };
@@ -37,6 +42,41 @@ describe("processCustomerIntake", () => {
     await expect(processCustomerIntake(" ", deps)).resolves.toMatchObject({
       status: "manual",
       reason: "invalid_input",
+    });
+    expect(deps.consumeCustomerAiQuota).not.toHaveBeenCalled();
+    expect(deps.extractCustomerData).not.toHaveBeenCalled();
+    expect(deps.geocodeCustomerAddress).not.toHaveBeenCalled();
+  });
+
+  it("blockiert den elften Versuch vor Claude und Mapbox", async () => {
+    const deps = dependencies();
+    deps.consumeCustomerAiQuota.mockResolvedValue({
+      allowed: false,
+      remaining: 0,
+      dailyLimit: 10,
+    });
+
+    await expect(
+      processCustomerIntake("Max Mustermann", deps),
+    ).resolves.toEqual({
+      status: "manual",
+      reason: "daily_limit_reached",
+      customer: EMPTY_CUSTOMER_INTAKE,
+      dailyLimit: 10,
+    });
+    expect(deps.extractCustomerData).not.toHaveBeenCalled();
+    expect(deps.geocodeCustomerAddress).not.toHaveBeenCalled();
+  });
+
+  it("ruft bei einer nicht prüfbaren Quote keinen Provider auf", async () => {
+    const deps = dependencies();
+    deps.consumeCustomerAiQuota.mockRejectedValue(new Error("database unavailable"));
+
+    await expect(
+      processCustomerIntake("Max Mustermann", deps),
+    ).resolves.toMatchObject({
+      status: "manual",
+      reason: "quota_unavailable",
     });
     expect(deps.extractCustomerData).not.toHaveBeenCalled();
     expect(deps.geocodeCustomerAddress).not.toHaveBeenCalled();
@@ -108,6 +148,6 @@ describe("processCustomerIntake", () => {
       reason: "extraction_failed",
       customer: EMPTY_CUSTOMER_INTAKE,
     });
+    expect(deps.consumeCustomerAiQuota).toHaveBeenCalledOnce();
   });
 });
-

@@ -43,7 +43,7 @@ const STROKE = 1.75;
 
 type Phase = "intro" | "loading" | "form";
 // Woher stammen die Formularwerte → steuert Banner + „KI"-Spark im Kopf.
-type Source = "ai-ok" | "ai-fail" | "manual" | "edit";
+type Source = "ai-ok" | "ai-fail" | "ai-limit" | "manual" | "edit";
 
 export function NewCustomerModal({
   dir,
@@ -78,6 +78,7 @@ export function NewCustomerModal({
   const [found, setFound] = useState<MappedIntake["found"]>({});
   const [corrected, setCorrected] = useState<MappedIntake["corrected"]>({});
   const [count, setCount] = useState(0);
+  const [dailyLimit, setDailyLimit] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -90,7 +91,11 @@ export function NewCustomerModal({
     return firstname.trim().length > 0 && lastname.trim().length > 0;
   })();
 
-  const showSpark = phase === "loading" || source === "ai-ok" || source === "ai-fail";
+  const showSpark =
+    phase === "loading" ||
+    source === "ai-ok" ||
+    source === "ai-fail" ||
+    source === "ai-limit";
 
   function applyIntake(m: MappedIntake) {
     setType(m.values.customerType);
@@ -125,6 +130,17 @@ export function NewCustomerModal({
 
   async function handleRecognized() {
     const result = await intakeRef.current;
+    if (
+      result?.status === "manual" &&
+      result.reason === "daily_limit_reached"
+    ) {
+      setFound({});
+      setCorrected({});
+      setDailyLimit(result.dailyLimit);
+      setSource("ai-limit");
+      setPhase("form");
+      return;
+    }
     if (result) applyIntake(mapIntakeResult(result));
     setPhase("form");
   }
@@ -274,6 +290,16 @@ export function NewCustomerModal({
                 >
                   {t("ncAiChangeInput")}
                 </button>
+              </div>
+            )}
+            {source === "ai-limit" && dailyLimit !== null && (
+              <div className="ai-banner ai-banner--warn">
+                <span className="ai-banner-ic">
+                  <AlertTriangle size={16} strokeWidth={2.6} aria-hidden />
+                </span>
+                <span className="ai-banner-tx">
+                  {t("ncAiDailyLimitBanner", { limit: dailyLimit })}
+                </span>
               </div>
             )}
             {source === "manual" && (

@@ -29,9 +29,17 @@ export interface CustomerAddressCandidate {
   formatted_address: string;
 }
 
+export interface CustomerAiQuota {
+  allowed: boolean;
+  remaining: number;
+  dailyLimit: number;
+}
+
 export type CustomerIntakeManualReason =
   | "not_authenticated"
   | "invalid_input"
+  | "daily_limit_reached"
+  | "quota_unavailable"
   | "extraction_failed"
   | "no_extracted_data"
   | "insufficient_address"
@@ -46,6 +54,12 @@ export type CustomerIntakeResult =
     }
   | {
       status: "manual";
-      reason: CustomerIntakeManualReason;
+      reason: Exclude<CustomerIntakeManualReason, "daily_limit_reached">;
       customer: CustomerIntakeData;
+    }
+  | {
+      status: "manual";
+      reason: "daily_limit_reached";
+      customer: CustomerIntakeData;
+      dailyLimit: number;
     };

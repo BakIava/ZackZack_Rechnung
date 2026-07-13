@@ -253,7 +253,7 @@ export function KundeStep({
               <span className="dcust-av">{c.initials}</span>
               <span className="dcust-body">
                 <span className="dcust-name">
-                  {c.companyName + " " || ""}
+                  {c.companyName ? c.companyName + " " : ""}
                   {c.firstname + " " + c.lastname}
                   {c.isNew && (
                     <span className="dcust-badge">

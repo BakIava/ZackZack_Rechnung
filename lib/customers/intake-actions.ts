@@ -10,6 +10,7 @@ import {
   AddressGeocodingError,
   geocodeCustomerAddress,
 } from "@/lib/integrations/mapbox/address-geocoder";
+import { consumeCustomerAiQuota } from "@/lib/repositories/ai-usage";
 import { EMPTY_CUSTOMER_INTAKE } from "./customer-intake";
 import type { CustomerIntakeResult } from "@/types/customer-intake";
 
@@ -36,6 +37,16 @@ export async function runCustomerIntake(
   }
 
   return processCustomerIntake(text, {
+    consumeCustomerAiQuota: async () => {
+      const result = await consumeCustomerAiQuota();
+      if ("error" in result) {
+        console.error("[customer-intake] AI quota check failed", {
+          code: result.error,
+        });
+        throw new Error(result.error);
+      }
+      return result.quota;
+    },
     extractCustomerData: async (input) => {
       try {
         return await extractCustomerData(input);
