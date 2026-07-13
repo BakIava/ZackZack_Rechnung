@@ -16,7 +16,7 @@ import type {
   DocumentCustomer,
   FlowCustomer,
 } from "@/types/customer";
-import { CustomerType } from "@/types/database";
+import type { CustomerType } from "@/types/database";
 
 /** Kundenliste inkl. Dokumente-Join (Kunden-Seite), neueste zuerst. */
 export async function getCustomers(): Promise<CustomerRow[]> {
@@ -27,7 +27,7 @@ export async function getCustomers(): Promise<CustomerRow[]> {
   const { data, error } = await supabase
     .from("customers")
     .select(
-      `id, company_name, firstname, lastname, street, street_no, postcode, city, email, phone, notes, customer_number, created_at,
+      `id, customer_type, company_name, firstname, lastname, street, street_no, postcode, city, email, phone, notes, customer_number, created_at,
        documents ( id, document_type, document_number, status, total_amount, issue_date )`,
     )
     .eq("company_id", companyId)

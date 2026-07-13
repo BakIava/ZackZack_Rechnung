@@ -11,8 +11,8 @@ import type {
   CustomerListItem,
   FlowCustomer,
 } from "@/types/customer";
+import type { CustomerType } from "@/types/database";
 import "./new-customer-modal.css";
-import { CustomerType } from "@/types/database";
 
 interface NewCustomerModalProps {
   dir: "ltr" | "rtl";
@@ -36,7 +36,9 @@ export function NewCustomerModal({
 }: NewCustomerModalProps) {
   const t = useTranslations("Create");
   const isEdit = editCustomer !== null;
-  const [type, setType] = useState<CustomerType>("private");
+  const [type, setType] = useState<CustomerType>(
+    editCustomer?.customer_type ?? "private",
+  );
   const [companyName, setCompanyName] = useState(
     editCustomer?.company_name ?? "",
   );

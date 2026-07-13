@@ -14,6 +14,7 @@
     "icons": "node scripts/generate-icons.cjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
     "@base-ui/react": "^1.5.0",
     "@react-pdf/renderer": "^4.5.1",
     "@serwist/next": "^9.5.11",
@@ -27,6 +28,7 @@
     "next-intl": "^4.13.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "server-only": "^0.0.1",
     "serwist": "^9.5.11",
     "shadcn": "^4.11.0",
     "sharp": "^0.34.5",
