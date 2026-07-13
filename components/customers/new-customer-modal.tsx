@@ -1,18 +1,34 @@
 "use client";
 
-import { Building2, Check, Loader2, User, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Building2,
+  Check,
+  Loader2,
+  MapPin,
+  Sparkles,
+  User,
+  X,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { Modal } from "@/components/ui";
 import { createCustomer, updateCustomer } from "@/lib/customers/actions";
 import { deriveInitials } from "@/lib/initials";
+import {
+  recognizeCustomerText,
+  type RecognitionResult,
+  type RecognizedField,
+} from "@/lib/customers/recognize";
 import type {
   CustomerInput,
   CustomerListItem,
   FlowCustomer,
 } from "@/types/customer";
-import "./new-customer-modal.css";
 import { CustomerType } from "@/types/database";
+import { CustomerAiIntro } from "./customer-ai-intro";
+import { CustomerAiLoading } from "./customer-ai-loading";
+import "./new-customer-modal.css";
 
 interface NewCustomerModalProps {
   dir: "ltr" | "rtl";
@@ -27,6 +43,10 @@ interface NewCustomerModalProps {
 
 const STROKE = 1.75;
 
+type Phase = "intro" | "loading" | "form";
+// Woher stammen die Formularwerte → steuert Banner + „KI"-Spark im Kopf.
+type Source = "ai-ok" | "ai-fail" | "manual" | "edit";
+
 export function NewCustomerModal({
   dir,
   onClose,
@@ -36,10 +56,16 @@ export function NewCustomerModal({
 }: NewCustomerModalProps) {
   const t = useTranslations("Create");
   const isEdit = editCustomer !== null;
+
+  // Neue Kunden starten mit der KI-Freitext-Eingabe; Bearbeiten springt direkt
+  // ins vorbefüllte Formular.
+  const [phase, setPhase] = useState<Phase>(isEdit ? "form" : "intro");
+  const [source, setSource] = useState<Source>(isEdit ? "edit" : "manual");
+  const [text, setText] = useState("");
+  const recognizeRef = useRef<Promise<RecognitionResult> | null>(null);
+
   const [type, setType] = useState<CustomerType>("private");
-  const [companyName, setCompanyName] = useState(
-    editCustomer?.company_name ?? "",
-  );
+  const [companyName, setCompanyName] = useState(editCustomer?.company_name ?? "");
   const [firstname, setFirstname] = useState(editCustomer?.firstname ?? "");
   const [lastname, setLastname] = useState(editCustomer?.lastname ?? "");
   const [street, setStreet] = useState(editCustomer?.street ?? "");
@@ -49,6 +75,9 @@ export function NewCustomerModal({
   const [phone, setPhone] = useState(editCustomer?.phone ?? "");
   const [email, setEmail] = useState(editCustomer?.email ?? "");
   const [note, setNote] = useState(editCustomer?.notes ?? "");
+  const [found, setFound] = useState<RecognitionResult["found"]>({});
+  const [corrected, setCorrected] = useState<RecognitionResult["corrected"]>({});
+  const [count, setCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -60,6 +89,50 @@ export function NewCustomerModal({
     if (isCompany) return companyName.trim().length > 0;
     return firstname.trim().length > 0 && lastname.trim().length > 0;
   })();
+
+  const showSpark = phase === "loading" || source === "ai-ok" || source === "ai-fail";
+
+  function applyRecognized(r: RecognitionResult) {
+    setType(r.fields.customerType);
+    setCompanyName(r.fields.companyName);
+    setFirstname(r.fields.firstname);
+    setLastname(r.fields.lastname);
+    setStreet(r.fields.street);
+    setHouseNo(r.fields.houseNo);
+    setZip(r.fields.zip);
+    setCity(r.fields.city);
+    setPhone(r.fields.phone);
+    setEmail(r.fields.email);
+    setCount(r.count);
+    if (r.ok) {
+      setFound(r.found);
+      setCorrected(r.corrected);
+      setSource("ai-ok");
+    } else {
+      // Nichts Belastbares erkannt → keine KI-Markierungen, Name bleibt aber vorbefüllt.
+      setFound({});
+      setCorrected({});
+      setSource("ai-fail");
+    }
+  }
+
+  function startFill() {
+    recognizeRef.current = recognizeCustomerText(text);
+    setPhase("loading");
+  }
+
+  async function handleRecognized() {
+    const result = await recognizeRef.current;
+    if (result) applyRecognized(result);
+    setPhase("form");
+  }
+
+  function goManual() {
+    setFound({});
+    setCorrected({});
+    setSource("manual");
+    setPhase("form");
+  }
 
   async function submit() {
     if (!ok || saving) return;
@@ -119,6 +192,23 @@ export function NewCustomerModal({
     onCreate?.({ ...listItem, id: res.id, isNew: true });
   }
 
+  // Feld-Label mit optionalem „optional"-Zusatz und „KI"-Badge (wenn erkannt).
+  function fieldLabel(field: RecognizedField | null, label: string, optional = false): ReactNode {
+    const badge = field ? Boolean(found[field]) : false;
+    return (
+      <span className={`f-lbl${badge ? " ai-flabel" : ""}`}>
+        {label}
+        {optional && <span className="nc-opt">{t("ncOptional")}</span>}
+        {badge && (
+          <span className="ai-badge">
+            <Sparkles size={10} strokeWidth={2.8} aria-hidden />
+            {t("ncAiBadge")}
+          </span>
+        )}
+      </span>
+    );
+  }
+
   return (
     <Modal
       open
@@ -126,195 +216,256 @@ export function NewCustomerModal({
       dir={dir}
       size="lg"
       busy={saving}
+      className="dmodal--ai"
       ariaLabel={isEdit ? t("editCustomer") : t("ncTitle")}
     >
       <div className="dmodal-head">
-        <span className="dmodal-title">{isEdit ? t("editCustomer") : t("ncTitle")}</span>
-        <button
-          type="button"
-          className="sheet-x"
-          aria-label={t("ncClose")}
-          onClick={onClose}
-        >
+        <span className="dmodal-title">
+          {showSpark && (
+            <span className="ai-title-spark">
+              <Sparkles size={15} strokeWidth={2.6} aria-hidden />
+            </span>
+          )}
+          {isEdit ? t("editCustomer") : t("ncTitle")}
+        </span>
+        <button type="button" className="sheet-x" aria-label={t("ncClose")} onClick={onClose}>
           <X size={18} strokeWidth={STROKE} aria-hidden />
         </button>
       </div>
-      <div className="dmodal-sub">{isEdit ? t("editCustomerSub") : t("ncSub")}</div>
 
-      <div className="dmodal-body">
-        <div className="f-grid">
-          <div className="f-row">
-            <span className="f-lbl">{t("ncType")}</span>
-            <div className="nc-seg" role="group" aria-label={t("ncType")}>
-              <button
-                type="button"
-                data-on={isCompany ? "0" : "1"}
-                aria-pressed={!isCompany}
-                onClick={() => setType("private")}
-              >
-                <User size={18} strokeWidth={STROKE} aria-hidden />
-                {t("ncPrivate")}
-              </button>
-              <button
-                type="button"
-                data-on={isCompany ? "1" : "0"}
-                aria-pressed={isCompany}
-                onClick={() => setType("business")}
-              >
-                <Building2 size={18} strokeWidth={STROKE} aria-hidden />
-                {t("ncBusiness")}
-              </button>
+      {phase === "intro" && (
+        <CustomerAiIntro value={text} onChange={setText} onFill={startFill} onManual={goManual} />
+      )}
+
+      {phase === "loading" && <CustomerAiLoading onDone={handleRecognized} />}
+
+      {phase === "form" && (
+        <>
+          {isEdit && <div className="dmodal-sub">{t("editCustomerSub")}</div>}
+
+          <div className="dmodal-body">
+            {source === "ai-ok" && (
+              <div className="ai-banner ai-banner--ok">
+                <span className="ai-banner-ic">
+                  <Check size={16} strokeWidth={3} aria-hidden />
+                </span>
+                <span className="ai-banner-tx">{t("ncAiOkBanner", { count })}</span>
+                <button
+                  type="button"
+                  className="ai-changelink"
+                  onClick={() => setPhase("intro")}
+                >
+                  {t("ncAiChangeInput")}
+                </button>
+              </div>
+            )}
+            {source === "ai-fail" && (
+              <div className="ai-banner ai-banner--warn">
+                <span className="ai-banner-ic">
+                  <AlertTriangle size={16} strokeWidth={2.6} aria-hidden />
+                </span>
+                <span className="ai-banner-tx">{t("ncAiFailBanner")}</span>
+                <button
+                  type="button"
+                  className="ai-changelink"
+                  onClick={() => setPhase("intro")}
+                >
+                  {t("ncAiChangeInput")}
+                </button>
+              </div>
+            )}
+            {source === "manual" && (
+              <div className="ai-banner ai-banner--muted">
+                <span className="ai-banner-tx">{t("ncAiManualBanner")}</span>
+                <button
+                  type="button"
+                  className="ai-changelink"
+                  onClick={() => setPhase("intro")}
+                >
+                  <Sparkles size={13} strokeWidth={2.6} aria-hidden />
+                  {t("ncAiFill")}
+                </button>
+              </div>
+            )}
+
+            <div className="f-grid">
+              <div className="f-row">
+                {fieldLabel("type", t("ncType"))}
+                <div className="nc-seg" role="group" aria-label={t("ncType")}>
+                  <button
+                    type="button"
+                    data-on={isCompany ? "0" : "1"}
+                    aria-pressed={!isCompany}
+                    onClick={() => setType("private")}
+                  >
+                    <User size={18} strokeWidth={STROKE} aria-hidden />
+                    {t("ncPrivate")}
+                  </button>
+                  <button
+                    type="button"
+                    data-on={isCompany ? "1" : "0"}
+                    aria-pressed={isCompany}
+                    onClick={() => setType("business")}
+                  >
+                    <Building2 size={18} strokeWidth={STROKE} aria-hidden />
+                    {t("ncBusiness")}
+                  </button>
+                </div>
+              </div>
+
+              {isCompany && (
+                <label className="f-row">
+                  {fieldLabel("companyName", t("ncBusinessName"))}
+                  <input
+                    className={`f-input${found.companyName ? " ai-filled" : ""}`}
+                    autoComplete="name"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder={t("ncBusinessPh")}
+                  />
+                </label>
+              )}
+
+              <label className="f-row">
+                {fieldLabel("firstname", t("ncFirstname"))}
+                <input
+                  className={`f-input${found.firstname ? " ai-filled" : ""}`}
+                  autoComplete="given-name"
+                  value={firstname}
+                  onChange={(e) => setFirstname(e.target.value)}
+                  placeholder={t("ncFirstnamePh")}
+                />
+              </label>
+
+              <label className="f-row">
+                {fieldLabel("lastname", t("ncLastname"))}
+                <input
+                  className={`f-input${found.lastname ? " ai-filled" : ""}`}
+                  autoComplete="family-name"
+                  value={lastname}
+                  onChange={(e) => setLastname(e.target.value)}
+                  placeholder={t("ncLastnamePh")}
+                />
+              </label>
+
+              <div className="f-row two">
+                <label className="f-row">
+                  {fieldLabel("street", t("ncStreet"))}
+                  <input
+                    className={`f-input${corrected.street ? " ai-corr" : found.street ? " ai-filled" : ""}`}
+                    autoComplete="address-line1"
+                    value={street}
+                    onChange={(e) => setStreet(e.target.value)}
+                    placeholder={t("ncStreetPh")}
+                  />
+                  {corrected.street && (
+                    <span className="ai-corr-note">
+                      <MapPin size={12} strokeWidth={2.6} aria-hidden />
+                      {t("ncAiCorrected")}
+                    </span>
+                  )}
+                </label>
+                <label className="f-row nc-zip">
+                  {fieldLabel("houseNo", t("ncHouseNo"))}
+                  <input
+                    className={`f-input${found.houseNo ? " ai-filled" : ""}`}
+                    autoComplete="address-line2"
+                    value={houseNo}
+                    onChange={(e) => setHouseNo(e.target.value)}
+                    placeholder={t("ncHouseNoPh")}
+                  />
+                </label>
+              </div>
+
+              <div className="f-row two">
+                <label className="f-row nc-zip">
+                  {fieldLabel("zip", t("ncZip"))}
+                  <input
+                    className={`f-input${found.zip ? " ai-filled" : ""}`}
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    value={zip}
+                    onChange={(e) => setZip(e.target.value)}
+                    placeholder={t("ncZipPh")}
+                  />
+                </label>
+                <label className="f-row">
+                  {fieldLabel("city", t("ncCity"))}
+                  <input
+                    className={`f-input${corrected.city ? " ai-corr" : found.city ? " ai-filled" : ""}`}
+                    autoComplete="address-level2"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder={t("ncCityPh")}
+                  />
+                  {corrected.city && (
+                    <span className="ai-corr-note">
+                      <MapPin size={12} strokeWidth={2.6} aria-hidden />
+                      {t("ncAiCorrected")}
+                    </span>
+                  )}
+                </label>
+              </div>
+
+              <div className="f-row two">
+                <label className="f-row">
+                  {fieldLabel("phone", t("ncPhone"), true)}
+                  <input
+                    className={`f-input${found.phone ? " ai-filled" : ""}`}
+                    type="tel"
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder={t("ncPhonePh")}
+                  />
+                </label>
+                <label className="f-row">
+                  {fieldLabel("email", t("ncEmail"), true)}
+                  <input
+                    className={`f-input${found.email ? " ai-filled" : ""}`}
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t("ncEmailPh")}
+                  />
+                </label>
+              </div>
+
+              <label className="f-row">
+                {fieldLabel(null, t("ncNote"), true)}
+                <textarea
+                  className="f-input"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={t("ncNotePh")}
+                  rows={2}
+                />
+              </label>
             </div>
           </div>
 
-          {isCompany && (
-            <label className="f-row">
-              <span className="f-lbl">{t("ncBusinessName")}</span>
-              <input
-                className="f-input"
-                autoComplete="name"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder={t("ncBusinessPh")}
-              />
-            </label>
-          )}
-
-          <label className="f-row">
-            <span className="f-lbl">{t("ncFirstname")}</span>
-            <input
-              className="f-input"
-              autoComplete={"firstname"}
-              value={firstname}
-              onChange={(e) => setFirstname(e.target.value)}
-              placeholder={t("ncFirstnamePh")}
-            />
-          </label>
-
-          <label className="f-row">
-            <span className="f-lbl">{t("ncLastname")}</span>
-            <input
-              className="f-input"
-              autoComplete={"lastname"}
-              value={lastname}
-              onChange={(e) => setLastname(e.target.value)}
-              placeholder={t("ncLastnamePh")}
-            />
-          </label>
-
-          <div className="f-row two">
-            <label className="f-row">
-              <span className="f-lbl">{t("ncStreet")}</span>
-              <input
-                className="f-input"
-                autoComplete="address-line1"
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                placeholder={t("ncStreetPh")}
-              />
-            </label>
-            <label className="f-row nc-zip">
-              <span className="f-lbl">{t("ncHouseNo")}</span>
-              <input
-                className="f-input"
-                autoComplete="address-line2"
-                value={houseNo}
-                onChange={(e) => setHouseNo(e.target.value)}
-                placeholder={t("ncHouseNoPh")}
-              />
-            </label>
+          <div className="dmodal-foot">
+            {saveError && <span className="nc-error">{saveError}</span>}
+            <button type="button" className="nc-cancel" onClick={onClose} disabled={saving}>
+              {t("cancel")}
+            </button>
+            <button
+              type="button"
+              className="nc-create"
+              disabled={!ok || saving}
+              onClick={submit}
+            >
+              {saving ? (
+                <Loader2 size={20} strokeWidth={2.4} className="nc-spin" aria-hidden />
+              ) : (
+                <Check size={20} strokeWidth={2.4} aria-hidden />
+              )}
+              {saving ? t("ncSaving") : isEdit ? t("editCustomerSave") : t("ncCreate")}
+            </button>
           </div>
-
-          <div className="f-row two">
-            <label className="f-row nc-zip">
-              <span className="f-lbl">{t("ncZip")}</span>
-              <input
-                className="f-input"
-                inputMode="numeric"
-                autoComplete="postal-code"
-                value={zip}
-                onChange={(e) => setZip(e.target.value)}
-                placeholder={t("ncZipPh")}
-              />
-            </label>
-            <label className="f-row">
-              <span className="f-lbl">{t("ncCity")}</span>
-              <input
-                className="f-input"
-                autoComplete="address-level2"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder={t("ncCityPh")}
-              />
-            </label>
-          </div>
-
-          <div className="f-row two">
-            <label className="f-row">
-              <span className="f-lbl">
-                {t("ncPhone")}
-                <span className="nc-opt">{t("ncOptional")}</span>
-              </span>
-              <input
-                className="f-input"
-                type="tel"
-                autoComplete="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={t("ncPhonePh")}
-              />
-            </label>
-            <label className="f-row">
-              <span className="f-lbl">
-                {t("ncEmail")}
-                <span className="nc-opt">{t("ncOptional")}</span>
-              </span>
-              <input
-                className="f-input"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("ncEmailPh")}
-              />
-            </label>
-          </div>
-
-          <label className="f-row">
-            <span className="f-lbl">
-              {t("ncNote")}
-              <span className="nc-opt">{t("ncOptional")}</span>
-            </span>
-            <textarea
-              className="f-input"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder={t("ncNotePh")}
-              rows={2}
-            />
-          </label>
-        </div>
-      </div>
-
-      <div className="dmodal-foot">
-        {saveError && <span className="nc-error">{saveError}</span>}
-        <button type="button" className="nc-cancel" onClick={onClose} disabled={saving}>
-          {t("cancel")}
-        </button>
-        <button
-          type="button"
-          className="nc-create"
-          disabled={!ok || saving}
-          onClick={submit}
-        >
-          {saving ? (
-            <Loader2 size={20} strokeWidth={2.4} className="nc-spin" aria-hidden />
-          ) : (
-            <Check size={20} strokeWidth={2.4} aria-hidden />
-          )}
-          {saving ? t("ncSaving") : isEdit ? t("editCustomerSave") : t("ncCreate")}
-        </button>
-      </div>
+        </>
+      )}
     </Modal>
   );
 }

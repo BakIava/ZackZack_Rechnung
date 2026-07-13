@@ -1,0 +1,141 @@
+/* customer-ai-intro.css — Intro-Phase „Neuer Kunde" (Freitext-Eingabe).
+   Chrome (.dmodal-body/.dmodal-foot) liegt in new-customer-modal.css.
+   Werte aus dem Design-Handoff. Logische Properties → RTL automatisch. */
+
+.ai-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 4px;
+}
+.ai-hero {
+  width: 58px;
+  height: 58px;
+  border-radius: 17px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  color: var(--accent-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+.ai-lead {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 430px;
+  margin-bottom: 16px;
+}
+.ai-tawrap {
+  width: 100%;
+}
+.ai-ta {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  padding: 15px 16px;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 108px;
+  transition: 0.14s;
+  text-align: start;
+}
+.ai-ta:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15, 42, 63, 0.07);
+}
+.ai-ta::placeholder {
+  color: var(--muted);
+}
+.ai-ex {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 13px;
+  width: 100%;
+}
+.ai-ex-lbl {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-inline-end: 2px;
+}
+.ai-ex-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: 0.14s;
+}
+.ai-ex-chip:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  color: var(--primary);
+}
+
+/* Intro-Footer: manuell (Ghost) + ausfüllen (Accent-Primär) */
+.ai-foot {
+  justify-content: space-between;
+}
+.ai-manual {
+  padding: 13px 16px;
+  border-radius: var(--r);
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line);
+}
+.ai-manual:hover {
+  color: var(--ink);
+  text-decoration-color: var(--muted);
+}
+.ai-fill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px 22px;
+  border-radius: var(--r);
+  border: none;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 26px -12px color-mix(in srgb, var(--accent) 85%, transparent);
+  transition: transform 0.12s;
+}
+.ai-fill:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.ai-fill:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
