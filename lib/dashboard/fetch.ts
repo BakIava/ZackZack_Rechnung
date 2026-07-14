@@ -6,6 +6,8 @@ import {
   getPaidDocumentAmounts,
   getRecentDocuments,
 } from "@/lib/repositories/documents";
+import { getCustomerName } from "@/lib/customers/utils";
+import type { CustomerSnapshot } from "@/types/customer";
 import type { UiDocumentStatus, DashboardDoc } from "@/types/document";
 
 export interface DashboardData {
@@ -56,11 +58,11 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     ]);
 
   const docs: DashboardDoc[] = recentDocs.map((doc) => {
-    const snapshot = doc.customer_snapshot as { name?: string } | null;
+    const snapshot = doc.customer_snapshot as CustomerSnapshot | null;
     return {
       id: doc.id,
       type: doc.document_type,
-      customer: snapshot?.name ?? "—",
+      customer: getCustomerName(snapshot) || "—",
       number: doc.document_number ?? "",
       amount: doc.total_amount ?? 0,
       date: doc.issue_date ?? "",

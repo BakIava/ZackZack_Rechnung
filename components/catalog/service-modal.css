@@ -1,36 +1,6 @@
-/* service-modal.css — Add / Edit-Modal für eine Katalogleistung. */
-
-.smod-wrap {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.smod-bd {
-  position: absolute;
-  inset: 0;
-  background: rgba(12, 24, 32, 0.45);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  animation: smod-fade 0.2s ease;
-}
-
-.smod {
-  position: relative;
-  width: 520px;
-  max-width: 92%;
-  max-height: 88dvh;
-  background: var(--bg);
-  border-radius: 18px;
-  box-shadow: 0 30px 70px rgba(12, 24, 32, 0.4);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: smod-pop 0.22s cubic-bezier(0.3, 0.8, 0.4, 1);
-}
+/* service-modal.css — Add / Edit-Modal für eine Katalogleistung.
+   Hülle (Backdrop, Karte, Animation) kommt aus der <Modal>-Primitive
+   (components/ui/modal); hier nur der spezifische Inhalt. */
 
 .smod-head {
   display: flex;
@@ -205,14 +175,3 @@
 
 .smod-save:hover { background: color-mix(in srgb, var(--primary) 86%, #000); }
 .smod-save:disabled { opacity: 0.38; cursor: default; }
-
-/* ── Animationen ─────────────────────────────────────────────────────────── */
-@keyframes smod-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes smod-pop {
-  from { transform: scale(0.96); opacity: 0.4; }
-  to   { transform: scale(1);    opacity: 1; }
-}

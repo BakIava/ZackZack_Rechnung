@@ -50,9 +50,14 @@ export function CustomerEditForm({
     // gespeichert werden (später ergänzbar); auf > 250 €-Rechnungen weist der
     // Pflichtangaben-Check in Schritt 3 darauf hin.
     if (!isCompany) {
-      if (!firstname.trim()) setError(t("firstnameRequired"));
-      if (!lastname.trim()) setError(t("lastnameRequired"));
-      return;
+      if (!firstname.trim()) {
+        setError(t("firstnameRequired"));
+        return;
+      }
+      if (!lastname.trim()) {
+        setError(t("lastnameRequired"));
+        return;
+      }
     } else {
       if (!companyName.trim()) {
         setError(t("companyNameRequired"));

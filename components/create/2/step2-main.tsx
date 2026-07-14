@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, FileText, Lock, Plus, ReceiptText, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
+import { Modal } from "@/components/ui";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatMoney } from "@/lib/format";
 import { eurosToCents } from "@/lib/money";
@@ -248,26 +249,29 @@ export function Step2Main({
       </div>
 
       {modalOpen && (
-        <div className="dmodal-wrap">
-          <div className="dmodal-bd" onClick={() => setModalOpen(false)} />
-          <div className="dmodal" role="dialog" aria-modal="true" aria-label={t("addPosition")}>
-            <div className="dmodal-head">
-              <span className="dmodal-title">{t("addPosition")}</span>
-              <button type="button" className="sheet-x" onClick={() => setModalOpen(false)} aria-label={t("close")}>
-                <X size={18} strokeWidth={STROKE} aria-hidden />
-              </button>
-            </div>
-            <div className="dmodal-body">
-              <CatalogPicker
-                locale={locale}
-                services={services}
-                onAddCatalog={addCatalog}
-                onAddFree={addFree}
-                onAddFremd={addFremd}
-              />
-            </div>
+        <Modal
+          open
+          onClose={() => setModalOpen(false)}
+          dir={dir}
+          size="lg"
+          ariaLabel={t("addPosition")}
+        >
+          <div className="dmodal-head">
+            <span className="dmodal-title">{t("addPosition")}</span>
+            <button type="button" className="sheet-x" onClick={() => setModalOpen(false)} aria-label={t("close")}>
+              <X size={18} strokeWidth={STROKE} aria-hidden />
+            </button>
           </div>
-        </div>
+          <div className="dmodal-body">
+            <CatalogPicker
+              locale={locale}
+              services={services}
+              onAddCatalog={addCatalog}
+              onAddFree={addFree}
+              onAddFremd={addFremd}
+            />
+          </div>
+        </Modal>
       )}
 
       {pad && (

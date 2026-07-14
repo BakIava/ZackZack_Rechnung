@@ -67,6 +67,15 @@ export interface UserRow {
   created_at: string;
 }
 
+/** public.ai_usage_daily — atomare KI-Tagesquote pro Auth-User und UTC-Tag */
+export interface AiUsageDailyRow {
+  user_id: string;
+  usage_date: string;
+  request_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 /** public.customers */
 export interface CustomerDbRow {
   id: string;

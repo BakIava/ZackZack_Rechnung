@@ -45,6 +45,14 @@
 }
 
 /* Bestätigungs-Dialog (position: fixed → immer über allem) */
+@keyframes cdm-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes cdm-pop {
+  from { transform: scale(0.96); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}
 .cdm-confirm-overlay {
   position: fixed;
   inset: 0;
@@ -62,7 +70,7 @@
   background: rgba(12, 24, 32, 0.45);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
-  animation: nc-fade .18s ease;
+  animation: cdm-fade .18s ease;
 }
 .cdm-confirm-box {
   position: relative;
@@ -75,7 +83,7 @@
   display: flex;
   flex-direction: column;
   gap: 18px;
-  animation: nc-pop .2s cubic-bezier(.3,.8,.4,1);
+  animation: cdm-pop .2s cubic-bezier(.3,.8,.4,1);
 }
 .cdm-confirm-icon {
   width: 52px;

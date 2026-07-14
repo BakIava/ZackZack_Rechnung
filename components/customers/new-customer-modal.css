@@ -1,47 +1,8 @@
 /* NewCustomerModal.css — „Neuer Kunde“-Modal aus Schritt 1.
+   Hülle (Backdrop, Karte, Animation) kommt aus der <Modal>-Primitive
+   (components/ui/modal); hier nur der spezifische Inhalt.
    Tokens (--primary, --line, --muted …) stammen aus der App-Shell (.zz-dash);
    Layout & Abstände nutzen logische Properties → RTL automatisch. */
-
-.dmodal-wrap {
-  position: absolute;
-  inset: 0;
-  z-index: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.dmodal-bd {
-  position: absolute;
-  inset: 0;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  background: rgba(12, 24, 32, 0.45);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-  animation: nc-fade 0.2s ease;
-}
-.dmodal {
-  position: relative;
-  width: 560px;
-  max-width: 88%;
-  max-height: 80%;
-  background: var(--bg);
-  border-radius: 18px;
-  box-shadow: 0 30px 70px rgba(12, 24, 32, 0.4);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: nc-pop 0.22s cubic-bezier(0.3, 0.8, 0.4, 1);
-}
-@keyframes nc-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes nc-pop {
-  from { transform: scale(0.96); opacity: 0.4; }
-  to { transform: scale(1); opacity: 1; }
-}
 
 .dmodal-head {
   display: flex;
@@ -230,4 +191,93 @@ textarea.f-input {
 }
 .nc-spin {
   animation: nc-spin 0.8s linear infinite;
+}
+
+/* ── KI-Assistenz: Formular-Phase (Status-Banner) ──────────────────────────────
+   Intro-/Lade-Phase liegen in customer-ai-intro.css / customer-ai-loading.css.
+   Werte aus dem Design-Handoff. */
+.zz-modal.dmodal--ai {
+  --zz-modal-w: 580px;
+}
+.dmodal-title .ai-title-spark {
+  display: inline-flex;
+  margin-inline-end: 8px;
+  color: var(--accent-deep);
+  vertical-align: -2px;
+}
+
+/* Status-Banner über dem Formular */
+.ai-banner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  margin-bottom: 16px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+.ai-banner-ic {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-banner-tx {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+}
+.ai-banner--ok {
+  background: var(--ok-bg);
+  color: color-mix(in srgb, var(--ok) 80%, #000);
+}
+.ai-banner--ok .ai-banner-ic {
+  background: var(--ok);
+  color: #fff;
+}
+.ai-banner--warn {
+  background: var(--warn-bg);
+  color: color-mix(in srgb, var(--warn) 82%, #000);
+}
+.ai-banner--warn .ai-banner-ic {
+  background: var(--warn);
+  color: #fff;
+}
+.ai-banner--muted {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.ai-changelink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+  padding: 2px;
+}
+.ai-changelink:hover {
+  opacity: 0.72;
+}
+
+.nc-type-required {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  color: color-mix(in srgb, var(--warn) 82%, #000);
+  font-size: 12px;
+  font-weight: 650;
 }
