@@ -174,6 +174,7 @@
     "ncTitle": "Yeni müşteri",
     "ncSub": "Birkaç alanla eklenir – doğrudan bu fatura için",
     "ncType": "Müşteri türü",
+    "ncTypeRequired": "Lütfen müşteri türünü seç.",
     "ncPrivate": "Bireysel",
     "ncBusiness": "Kurumsal",
     "ncFirstname": "İsim",
@@ -279,15 +280,13 @@
     "ncAiLoadTitle": "Bir saniye …",
     "ncAiLoadSub": "Yapay zeka bilgilerini okuyor ve adresi kontrol ediyor.",
     "ncAiStepName": "İsim & müşteri türü",
-    "ncAiStepAddress": "Adres kontrolü (Mapbox)",
+    "ncAiStepAddress": "Adres kontrolü",
     "ncAiStepContact": "Telefon & e-posta",
-    "ncAiOkBanner": "{count, plural, one {# alan tanındı – lütfen kısaca kontrol et.} other {# alan tanındı – lütfen kısaca kontrol et.}}",
+    "ncAiOkBanner": "Bilgiler otomatik olarak dolduruldu. Lütfen kısaca kontrol et.",
     "ncAiFailBanner": "Maalesef net bir şey tanıyamadık. Lütfen bilgileri kendin gir.",
     "ncAiDailyLimitBanner": "Günlük {limit} yapay zeka kullanım sınırına ulaştın. Lütfen bilgileri kendin gir.",
     "ncAiManualBanner": "Müşteri bilgilerini gir.",
-    "ncAiCorrected": "resmi yazıma uyarlandı",
-    "ncAiChangeInput": "Girişi değiştir",
-    "ncAiBadge": "YZ"
+    "ncAiChangeInput": "Girişi değiştir"
   },
   "Step2": {
     "createTitle": "{type} oluştur",

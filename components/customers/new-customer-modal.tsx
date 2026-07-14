@@ -5,17 +5,16 @@ import {
   Building2,
   Check,
   Loader2,
-  MapPin,
   Sparkles,
   User,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Modal } from "@/components/ui";
 import { createCustomer, updateCustomer } from "@/lib/customers/actions";
 import { runCustomerIntake } from "@/lib/customers/intake-actions";
-import { mapIntakeResult, type IntakeField, type MappedIntake } from "@/lib/customers/intake-fields";
+import { mapIntakeResult, type MappedIntake } from "@/lib/customers/intake-fields";
 import { deriveInitials } from "@/lib/initials";
 import type {
   CustomerInput,
@@ -60,9 +59,8 @@ export function NewCustomerModal({
   const [phase, setPhase] = useState<Phase>(isEdit ? "form" : "intro");
   const [source, setSource] = useState<Source>(isEdit ? "edit" : "manual");
   const [text, setText] = useState("");
-  const intakeRef = useRef<Promise<CustomerIntakeResult> | null>(null);
 
-  const [type, setType] = useState<CustomerType>(
+  const [type, setType] = useState<CustomerType | null>(
     editCustomer?.customer_type ?? "private",
   );
   const [companyName, setCompanyName] = useState(editCustomer?.company_name ?? "");
@@ -75,18 +73,19 @@ export function NewCustomerModal({
   const [phone, setPhone] = useState(editCustomer?.phone ?? "");
   const [email, setEmail] = useState(editCustomer?.email ?? "");
   const [note, setNote] = useState(editCustomer?.notes ?? "");
-  const [found, setFound] = useState<MappedIntake["found"]>({});
-  const [corrected, setCorrected] = useState<MappedIntake["corrected"]>({});
-  const [count, setCount] = useState(0);
   const [dailyLimit, setDailyLimit] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  const isPrivate = type === "private";
   const isCompany = type === "business";
+  const showCompanyName =
+    isCompany || (type === null && companyName.trim().length > 0);
   // Bewusst tolerant: nur der Name ist Pflicht. Die Anschrift kann später ergänzt
   // werden (Entwurf, Adresse noch nicht bekannt). Fehlt sie bei einer Rechnung
   // über 250 €, weist der Pflichtangaben-Check in Schritt 3 darauf hin.
   const ok = (() => {
+    if (type === null) return false;
     if (isCompany) return companyName.trim().length > 0;
     return firstname.trim().length > 0 && lastname.trim().length > 0;
   })();
@@ -108,52 +107,45 @@ export function NewCustomerModal({
     setCity(m.values.city);
     setPhone(m.values.phone);
     setEmail(m.values.email);
-    setCount(m.count);
     if (m.recognized) {
-      setFound(m.found);
-      setCorrected(m.corrected);
       setSource("ai-ok");
     } else {
-      // Nichts Belastbares erkannt → keine KI-Markierungen, manuell weitermachen.
-      setFound({});
-      setCorrected({});
+      // Nichts Belastbares erkannt → manuell weitermachen.
       setSource("ai-fail");
     }
   }
 
-  function startFill() {
-    // Server-Action: Claude-Extraktion + Mapbox-Geocoding. Läuft parallel zur
-    // Lade-Animation und wird in handleRecognized abgewartet.
-    intakeRef.current = runCustomerIntake(text);
+  async function startFill() {
     setPhase("loading");
+    try {
+      const result = await runCustomerIntake(text);
+      handleIntakeResult(result);
+    } catch {
+      // Netzwerk-/Action-Fehler öffnen sicher das manuelle Formular, ohne
+      // vermeintlich erkannte KI-Daten anzuzeigen.
+      setSource("ai-fail");
+      setPhase("form");
+    }
   }
 
-  async function handleRecognized() {
-    const result = await intakeRef.current;
-    if (
-      result?.status === "manual" &&
-      result.reason === "daily_limit_reached"
-    ) {
-      setFound({});
-      setCorrected({});
+  function handleIntakeResult(result: CustomerIntakeResult) {
+    if (result.status === "manual" && result.reason === "daily_limit_reached") {
       setDailyLimit(result.dailyLimit);
       setSource("ai-limit");
       setPhase("form");
       return;
     }
-    if (result) applyIntake(mapIntakeResult(result));
+    applyIntake(mapIntakeResult(result));
     setPhase("form");
   }
 
   function goManual() {
-    setFound({});
-    setCorrected({});
     setSource("manual");
     setPhase("form");
   }
 
   async function submit() {
-    if (!ok || saving) return;
+    if (!ok || saving || type === null) return;
     const trimmedCity = city.trim();
     const trimmedStreet = street.trim();
     const trimmedHouseNo = houseNo.trim();
@@ -210,19 +202,11 @@ export function NewCustomerModal({
     onCreate?.({ ...listItem, id: res.id, isNew: true });
   }
 
-  // Feld-Label mit optionalem „optional"-Zusatz und „KI"-Badge (wenn erkannt).
-  function fieldLabel(field: IntakeField | null, label: string, optional = false): ReactNode {
-    const badge = field ? Boolean(found[field]) : false;
+  function fieldLabel(label: string, optional = false): ReactNode {
     return (
-      <span className={`f-lbl${badge ? " ai-flabel" : ""}`}>
+      <span className="f-lbl">
         {label}
         {optional && <span className="nc-opt">{t("ncOptional")}</span>}
-        {badge && (
-          <span className="ai-badge">
-            <Sparkles size={10} strokeWidth={2.8} aria-hidden />
-            {t("ncAiBadge")}
-          </span>
-        )}
       </span>
     );
   }
@@ -255,7 +239,7 @@ export function NewCustomerModal({
         <CustomerAiIntro value={text} onChange={setText} onFill={startFill} onManual={goManual} />
       )}
 
-      {phase === "loading" && <CustomerAiLoading onDone={handleRecognized} />}
+      {phase === "loading" && <CustomerAiLoading />}
 
       {phase === "form" && (
         <>
@@ -267,7 +251,7 @@ export function NewCustomerModal({
                 <span className="ai-banner-ic">
                   <Check size={16} strokeWidth={3} aria-hidden />
                 </span>
-                <span className="ai-banner-tx">{t("ncAiOkBanner", { count })}</span>
+                <span className="ai-banner-tx">{t("ncAiOkBanner")}</span>
                 <button
                   type="button"
                   className="ai-changelink"
@@ -318,12 +302,12 @@ export function NewCustomerModal({
 
             <div className="f-grid">
               <div className="f-row">
-                {fieldLabel("type", t("ncType"))}
+                {fieldLabel(t("ncType"))}
                 <div className="nc-seg" role="group" aria-label={t("ncType")}>
                   <button
                     type="button"
-                    data-on={isCompany ? "0" : "1"}
-                    aria-pressed={!isCompany}
+                    data-on={isPrivate ? "1" : "0"}
+                    aria-pressed={isPrivate}
                     onClick={() => setType("private")}
                   >
                     <User size={18} strokeWidth={STROKE} aria-hidden />
@@ -339,13 +323,19 @@ export function NewCustomerModal({
                     {t("ncBusiness")}
                   </button>
                 </div>
+                {type === null && (
+                  <span className="nc-type-required" role="alert">
+                    <AlertTriangle size={13} strokeWidth={2.5} aria-hidden />
+                    {t("ncTypeRequired")}
+                  </span>
+                )}
               </div>
 
-              {isCompany && (
+              {showCompanyName && (
                 <label className="f-row">
-                  {fieldLabel("companyName", t("ncBusinessName"))}
+                  {fieldLabel(t("ncBusinessName"))}
                   <input
-                    className={`f-input${found.companyName ? " ai-filled" : ""}`}
+                    className="f-input"
                     autoComplete="name"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
@@ -355,9 +345,9 @@ export function NewCustomerModal({
               )}
 
               <label className="f-row">
-                {fieldLabel("firstname", t("ncFirstname"))}
+                {fieldLabel(t("ncFirstname"))}
                 <input
-                  className={`f-input${found.firstname ? " ai-filled" : ""}`}
+                  className="f-input"
                   autoComplete="given-name"
                   value={firstname}
                   onChange={(e) => setFirstname(e.target.value)}
@@ -366,9 +356,9 @@ export function NewCustomerModal({
               </label>
 
               <label className="f-row">
-                {fieldLabel("lastname", t("ncLastname"))}
+                {fieldLabel(t("ncLastname"))}
                 <input
-                  className={`f-input${found.lastname ? " ai-filled" : ""}`}
+                  className="f-input"
                   autoComplete="family-name"
                   value={lastname}
                   onChange={(e) => setLastname(e.target.value)}
@@ -378,25 +368,19 @@ export function NewCustomerModal({
 
               <div className="f-row two">
                 <label className="f-row">
-                  {fieldLabel("street", t("ncStreet"))}
+                  {fieldLabel(t("ncStreet"))}
                   <input
-                    className={`f-input${corrected.street ? " ai-corr" : found.street ? " ai-filled" : ""}`}
+                    className="f-input"
                     autoComplete="address-line1"
                     value={street}
                     onChange={(e) => setStreet(e.target.value)}
                     placeholder={t("ncStreetPh")}
                   />
-                  {corrected.street && (
-                    <span className="ai-corr-note">
-                      <MapPin size={12} strokeWidth={2.6} aria-hidden />
-                      {t("ncAiCorrected")}
-                    </span>
-                  )}
                 </label>
                 <label className="f-row nc-zip">
-                  {fieldLabel("houseNo", t("ncHouseNo"))}
+                  {fieldLabel(t("ncHouseNo"))}
                   <input
-                    className={`f-input${found.houseNo ? " ai-filled" : ""}`}
+                    className="f-input"
                     autoComplete="address-line2"
                     value={houseNo}
                     onChange={(e) => setHouseNo(e.target.value)}
@@ -407,9 +391,9 @@ export function NewCustomerModal({
 
               <div className="f-row two">
                 <label className="f-row nc-zip">
-                  {fieldLabel("zip", t("ncZip"))}
+                  {fieldLabel(t("ncZip"))}
                   <input
-                    className={`f-input${found.zip ? " ai-filled" : ""}`}
+                    className="f-input"
                     inputMode="numeric"
                     autoComplete="postal-code"
                     value={zip}
@@ -418,28 +402,22 @@ export function NewCustomerModal({
                   />
                 </label>
                 <label className="f-row">
-                  {fieldLabel("city", t("ncCity"))}
+                  {fieldLabel(t("ncCity"))}
                   <input
-                    className={`f-input${corrected.city ? " ai-corr" : found.city ? " ai-filled" : ""}`}
+                    className="f-input"
                     autoComplete="address-level2"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                     placeholder={t("ncCityPh")}
                   />
-                  {corrected.city && (
-                    <span className="ai-corr-note">
-                      <MapPin size={12} strokeWidth={2.6} aria-hidden />
-                      {t("ncAiCorrected")}
-                    </span>
-                  )}
                 </label>
               </div>
 
               <div className="f-row two">
                 <label className="f-row">
-                  {fieldLabel("phone", t("ncPhone"), true)}
+                  {fieldLabel(t("ncPhone"), true)}
                   <input
-                    className={`f-input${found.phone ? " ai-filled" : ""}`}
+                    className="f-input"
                     type="tel"
                     autoComplete="tel"
                     value={phone}
@@ -448,9 +426,9 @@ export function NewCustomerModal({
                   />
                 </label>
                 <label className="f-row">
-                  {fieldLabel("email", t("ncEmail"), true)}
+                  {fieldLabel(t("ncEmail"), true)}
                   <input
-                    className={`f-input${found.email ? " ai-filled" : ""}`}
+                    className="f-input"
                     type="email"
                     autoComplete="email"
                     value={email}
@@ -461,7 +439,7 @@ export function NewCustomerModal({
               </div>
 
               <label className="f-row">
-                {fieldLabel(null, t("ncNote"), true)}
+                {fieldLabel(t("ncNote"), true)}
                 <textarea
                   className="f-input"
                   value={note}

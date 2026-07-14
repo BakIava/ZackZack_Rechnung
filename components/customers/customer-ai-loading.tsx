@@ -5,21 +5,16 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import "./customer-ai-loading.css";
 
-interface CustomerAiLoadingProps {
-  /** Wird aufgerufen, sobald die Erkennungs-Animation durchgelaufen ist. */
-  onDone: () => void;
-}
-
 const STEP_KEYS = ["ncAiStepName", "ncAiStepAddress", "ncAiStepContact"] as const;
-// Getaktete Schritt-Animation (rein kosmetisch); der eigentliche Aufruf läuft
-// parallel und wird in onDone abgewartet.
-const STEP_TIMINGS = [460, 900, 1300, 1650];
+// Rein kosmetische Fortschrittsanzeige. Ihr Timing steuert niemals den Ablauf;
+// der Dialog wechselt weiter, sobald der Server-Request abgeschlossen ist.
+const STEP_TIMINGS = [460, 900, 1300];
 
 /**
  * Lade-Phase des „Neuer Kunde"-Dialogs: pulsierender Orb + drei nacheinander
  * abgehakte Schritte. Chrome (.dmodal-body) kommt aus new-customer-modal.css.
  */
-export function CustomerAiLoading({ onDone }: CustomerAiLoadingProps) {
+export function CustomerAiLoading() {
   const t = useTranslations("Create");
   const [step, setStep] = useState(0);
 
@@ -28,10 +23,9 @@ export function CustomerAiLoading({ onDone }: CustomerAiLoadingProps) {
       setTimeout(() => setStep(1), STEP_TIMINGS[0]),
       setTimeout(() => setStep(2), STEP_TIMINGS[1]),
       setTimeout(() => setStep(3), STEP_TIMINGS[2]),
-      setTimeout(() => onDone(), STEP_TIMINGS[3]),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [onDone]);
+  }, []);
 
   return (
     <div className="dmodal-body">

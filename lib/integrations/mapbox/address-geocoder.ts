@@ -36,6 +36,7 @@ export async function geocodeCustomerAddress(
   if (!accessToken) throw new AddressGeocodingError("configuration");
 
   const params = buildMapboxStructuredParams(customer, accessToken);
+  console.log("geocodeCustomerAddress", params.toString());
   let response: Response;
   try {
     response = await fetch(`${MAPBOX_GEOCODING_URL}?${params.toString()}`, {

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { mapIntakeResult } from "./intake-fields";
 import type { CustomerIntakeResult } from "@/types/customer-intake";
 
-describe("mapIntakeResult – Intake-Ergebnis → Formular/Badges", () => {
-  it("address_matches: übernimmt Geocoding-Treffer und markiert Korrekturen", () => {
+describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
+  it("address_matches: übernimmt den besten Geocoding-Treffer", () => {
     const result: CustomerIntakeResult = {
       status: "address_matches",
       customer: {
@@ -33,14 +33,9 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular/Badges", () => {
     expect(m.recognized).toBe(true);
     expect(m.values.street).toBe("Berger Straße");
     expect(m.values.city).toBe("Frankfurt am Main");
-    expect(m.corrected.street).toBe(true);
-    expect(m.corrected.city).toBe(true);
-    expect(m.found.firstname).toBe(true);
-    expect(m.found.phone).toBe(true);
-    expect(m.count).toBeGreaterThan(0);
   });
 
-  it("manual mit Teildaten: Felder + Badges, aber keine Adresskorrektur", () => {
+  it("manual mit Teildaten: übernimmt alle sicheren Felder", () => {
     const result: CustomerIntakeResult = {
       status: "manual",
       reason: "no_matches",
@@ -60,9 +55,42 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular/Badges", () => {
     const m = mapIntakeResult(result);
     expect(m.recognized).toBe(true);
     expect(m.values.customerType).toBe("business");
-    expect(m.found.companyName).toBe(true);
-    expect(m.found.email).toBe(true);
-    expect(m.corrected.street).toBeUndefined();
+    expect(m.values.companyName).toBe("Müller GmbH");
+    expect(m.values.email).toBe("kontakt@mueller-gmbh.de");
+  });
+
+  it("übernimmt geänderte und ergänzte Hausnummern und Postleitzahlen", () => {
+    const result: CustomerIntakeResult = {
+      status: "address_matches",
+      customer: {
+        customer_type: "private",
+        firstname: "Max",
+        lastname: "Mustermann",
+        company_name: null,
+        street: "Hauptstraße",
+        street_no: "11 b",
+        postcode: null,
+        city: "Mainz",
+        phone: null,
+        email: null,
+      },
+      addresses: [
+        {
+          id: "a1",
+          street: "Hauptstraße",
+          street_no: "11a",
+          postcode: "55116",
+          city: "Mainz",
+          formatted_address: "Hauptstraße 11a, 55116 Mainz",
+        },
+      ],
+    };
+
+    const mapped = mapIntakeResult(result);
+    expect(mapped.values.street).toBe("Hauptstraße");
+    expect(mapped.values.houseNo).toBe("11a");
+    expect(mapped.values.zip).toBe("55116");
+    expect(mapped.values.city).toBe("Mainz");
   });
 
   it("manual ohne Daten → nichts erkannt", () => {
@@ -84,6 +112,6 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular/Badges", () => {
     };
     const m = mapIntakeResult(result);
     expect(m.recognized).toBe(false);
-    expect(m.count).toBe(0);
+    expect(m.values.customerType).toBeNull();
   });
 });

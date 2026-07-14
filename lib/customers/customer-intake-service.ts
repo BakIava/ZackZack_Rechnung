@@ -66,7 +66,9 @@ export async function processCustomerIntake(
 
   let addresses: CustomerAddressCandidate[];
   try {
+    console.log('customer', customer);
     addresses = await dependencies.geocodeCustomerAddress(customer);
+    console.log('addresses', addresses);
   } catch {
     return manual("geocoding_failed", customer);
   }

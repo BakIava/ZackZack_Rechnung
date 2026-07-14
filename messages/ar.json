@@ -174,6 +174,7 @@
     "ncTitle": "عميل جديد",
     "ncSub": "يُضاف بحقول قليلة – مباشرة لهذه الفاتورة",
     "ncType": "نوع العميل",
+    "ncTypeRequired": "يُرجى اختيار نوع العميل.",
     "ncPrivate": "عميل خاص",
     "ncBusiness": "شركة",
     "ncFirstname": "الاسم",
@@ -279,15 +280,13 @@
     "ncAiLoadTitle": "لحظة من فضلك …",
     "ncAiLoadSub": "يقرأ الذكاء الاصطناعي بياناتك ويتحقّق من العنوان.",
     "ncAiStepName": "الاسم ونوع العميل",
-    "ncAiStepAddress": "التحقق من العنوان (Mapbox)",
+    "ncAiStepAddress": "التحقق من العنوان",
     "ncAiStepContact": "الهاتف والبريد",
-    "ncAiOkBanner": "تم التعرّف على {count} حقل — يُرجى المراجعة بسرعة.",
+    "ncAiOkBanner": "تم إدخال البيانات تلقائياً. يُرجى مراجعتها بسرعة.",
     "ncAiFailBanner": "لم نتمكن من التعرّف على شيء مؤكد. يُرجى إدخال البيانات بنفسك.",
     "ncAiDailyLimitBanner": "لقد وصلت إلى الحد اليومي لاستخدام الذكاء الاصطناعي ({limit} مرات). يُرجى إدخال البيانات بنفسك.",
     "ncAiManualBanner": "أدخل بيانات العميل.",
-    "ncAiCorrected": "تم تعديله إلى الكتابة الرسمية",
-    "ncAiChangeInput": "تعديل الإدخال",
-    "ncAiBadge": "ذكاء"
+    "ncAiChangeInput": "تعديل الإدخال"
   },
   "Step2": {
     "createTitle": "إنشاء {type}",
