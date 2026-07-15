@@ -28,8 +28,17 @@ import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
 import { NumberPad, type PadField } from "./number-pad";
 import { PositionCard } from "./position-card";
+import {
+  PositionEditor,
+  type PositionEditorState,
+  type SheetField,
+} from "./position-sheets";
 
 const STROKE = 1.75;
+
+/** Firmen-Standardsatz für die MwSt.-Vorschau. Design-Platzhalter, bis das
+ *  Backend echte Steuerfelder liefert (document_items hat noch keine). */
+const PLACEHOLDER_COMPANY_VAT = 19;
 
 interface Step2MainProps {
   dir: "ltr" | "rtl";
@@ -60,13 +69,39 @@ export function Step2Main({
     name: string;
     initial: string;
   } | null>(null);
+  const [editor, setEditor] = useState<{ itemId: string; field: SheetField } | null>(null);
+  // MwSt.-Sätze pro Position (Design-Platzhalter; noch nicht persistiert).
+  // `null`/fehlend = Firmenstandard.
+  const [vatByItem, setVatByItem] = useState<Record<string, number | null>>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
-  const total = items.reduce((sum, i) => sum + i.totalAmount, 0);
+  const klein = context.isKleinunternehmer;
+  const net = items.reduce((sum, i) => sum + i.totalAmount, 0);
+  // MwSt.-Vorschau (Platzhalter): je Position Satz auflösen, nach Satz gruppieren.
+  const vatGroups = klein
+    ? []
+    : Object.entries(
+        items.reduce<Record<number, number>>((acc, i) => {
+          const rate = vatByItem[i.id] ?? PLACEHOLDER_COMPANY_VAT;
+          acc[rate] = (acc[rate] ?? 0) + Math.round((i.totalAmount * rate) / 100);
+          return acc;
+        }, {}),
+      )
+        .map(([rate, amount]) => ({ rate: Number(rate), amount }))
+        .sort((a, b) => b.rate - a.rate);
+  const vatTotal = vatGroups.reduce((sum, g) => sum + g.amount, 0);
+  const gross = net + vatTotal;
   const docLabel = t(context.docType);
+
+  const activeEditor: PositionEditorState | null = editor
+    ? (() => {
+        const item = items.find((i) => i.id === editor.itemId);
+        return item ? { item, field: editor.field, vat: vatByItem[item.id] ?? null } : null;
+      })()
+    : null;
 
   function run(action: () => Promise<ItemsResult>) {
     setError(null);
@@ -93,6 +128,23 @@ export function Step2Main({
     run(() => addFremdItem(documentId, input));
   };
   const remove = (id: string) => run(() => deleteItem(id));
+
+  const editDesc = (item: DraftItem) => setEditor({ itemId: item.id, field: "desc" });
+  const editUnit = (item: DraftItem) => setEditor({ itemId: item.id, field: "unit" });
+  const editVat = (item: DraftItem) => setEditor({ itemId: item.id, field: "vat" });
+  const commitDesc = (itemId: string, value: string) => {
+    setEditor(null);
+    run(() => updateItem(itemId, { descriptionDe: value }));
+  };
+  const commitUnit = (itemId: string, unit: string) => {
+    setEditor(null);
+    run(() => updateItem(itemId, { unit }));
+  };
+  // MwSt. ist noch nicht persistiert → nur lokaler Design-Platzhalter.
+  const commitVat = (itemId: string, vat: number | null) => {
+    setEditor(null);
+    setVatByItem((m) => ({ ...m, [itemId]: vat }));
+  };
 
   const openPad = (item: DraftItem, field: PadField) => {
     let initial: string;
@@ -212,7 +264,13 @@ export function Step2Main({
                     item={item}
                     index={i}
                     disabled={pending}
+                    vat={vatByItem[item.id] ?? null}
+                    companyVat={PLACEHOLDER_COMPANY_VAT}
+                    klein={klein}
                     onOpenPad={openPad}
+                    onEditDesc={editDesc}
+                    onEditUnit={editUnit}
+                    onEditVat={editVat}
                     onDelete={remove}
                   />
                 ))}
@@ -224,15 +282,31 @@ export function Step2Main({
             <div className="d2-sum-t">{t("summary")}</div>
             <div className="d2-sum-lines">
               <div className="d2-sum-line"><span>{t("positionsWord")}</span><b>{items.length}</b></div>
-              <div className="d2-sum-line"><span>{t("total")} ({t("net")})</span><b>{formatMoney(total)}</b></div>
+              {klein ? (
+                <div className="d2-sum-line"><span>{t("total")} ({t("net")})</span><b>{formatMoney(net)}</b></div>
+              ) : (
+                <>
+                  <div className="d2-sum-line"><span>{t("netSub")}</span><b>{formatMoney(net)}</b></div>
+                  {vatGroups.map((g) => (
+                    <div className="d2-sum-line d2-sum-line--vat" key={g.rate}>
+                      <span>{t("addVat")} {g.rate} %</span>
+                      <b>{formatMoney(g.amount)}</b>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
             <div className="d2-sum-div" />
-            <div className="d2-sum-total"><span className="d2-sum-total-l">{t("total")}</span><span className="d2-sum-total-v">{formatMoney(total)}</span></div>
-            {context.isKleinunternehmer && (
-              <div className="d2-sum-ku">
-                <Lock size={14} strokeWidth={STROKE} aria-hidden />
-                {t("kuNote")}
-              </div>
+            {klein ? (
+              <>
+                <div className="d2-sum-total"><span className="d2-sum-total-l">{t("total")}</span><span className="d2-sum-total-v">{formatMoney(net)}</span></div>
+                <div className="d2-sum-ku">
+                  <Lock size={14} strokeWidth={STROKE} aria-hidden />
+                  {t("kuSumNote")}
+                </div>
+              </>
+            ) : (
+              <div className="d2-sum-total"><span className="d2-sum-total-l">{t("grossTotal")}</span><span className="d2-sum-total-v">{formatMoney(gross)}</span></div>
             )}
             <button
               type="button"
@@ -284,6 +358,15 @@ export function Step2Main({
           onClose={() => setPad(null)}
         />
       )}
+
+      <PositionEditor
+        editor={activeEditor}
+        companyVat={PLACEHOLDER_COMPANY_VAT}
+        onClose={() => setEditor(null)}
+        onCommitDesc={commitDesc}
+        onCommitUnit={commitUnit}
+        onCommitVat={commitVat}
+      />
     </main>
   );
 }

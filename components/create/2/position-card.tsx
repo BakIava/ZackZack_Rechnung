@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, Pencil, Trash2, Truck } from "lucide-react";
+import { ChevronDown, Lock, Pencil, Percent, Trash2, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { markupPercent } from "@/lib/documents/margin";
@@ -13,15 +13,36 @@ interface PositionCardProps {
   item: DraftItem;
   index: number;
   disabled: boolean;
+  /** MwSt.-Satz dieser Position (Design-Platzhalter); `null` = Firmenstandard. */
+  vat: number | null;
+  /** Firmen-Standardsatz (Design-Platzhalter, bis Backend MwSt. liefert). */
+  companyVat: number;
+  /** Kleinunternehmer §19: kein MwSt.-Ausweis, kein VAT-Chip. */
+  klein: boolean;
   onOpenPad: (item: DraftItem, field: PadField) => void;
+  onEditDesc: (item: DraftItem) => void;
+  onEditUnit: (item: DraftItem) => void;
+  onEditVat: (item: DraftItem) => void;
   onDelete: (id: string) => void;
 }
 
-/** Positionskarte (Variante B): „Menge × Preis = Summe". Menge und Preis werden
- *  per Ziffernblock angepasst. Fremdleistungen zeigen den anpassbaren
- *  Verkaufspreis („Kunde zahlt") + internen Block (Einkauf anpassbar, Aufschlag
- *  errechnet) — Einkauf/Marge erreichen niemals das Dokument. */
-export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: PositionCardProps) {
+/** Positionskarte (Variante B): „Menge × Preis = Summe". Bezeichnung, Einheit
+ *  und (bei Regelbesteuerung) MwSt. sind direkt tippbar; Menge und Preis öffnen
+ *  den Ziffernblock. Fremdleistungen zeigen den anpassbaren Verkaufspreis
+ *  („Kunde zahlt") + internen Block — Einkauf/Marge erreichen nie das Dokument. */
+export function PositionCard({
+  item,
+  index,
+  disabled,
+  vat,
+  companyVat,
+  klein,
+  onOpenPad,
+  onEditDesc,
+  onEditUnit,
+  onEditVat,
+  onDelete,
+}: PositionCardProps) {
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
   // Prozentaufschlag exakt aus dem gespeicherten Wert lesen (12,50 % = 1250 bp);
@@ -31,20 +52,30 @@ export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: Pos
       ? item.surcharge / 100
       : markupPercent(item.purchasePrice ?? 0, item.unitPrice);
   const qtyLabel = String(item.amount).replace(".", ",");
+  const vatIsDefault = vat == null;
+  const vatRate = vat ?? companyVat;
 
   return (
     <div className="d2card">
       <div className="d2card-top">
         <span className="d2card-num">{index + 1}</span>
-        <div className="d2card-main">
-          <div className="d2-name">{item.descriptionDe}</div>
+        <button
+          type="button"
+          className="d2title-btn"
+          disabled={disabled}
+          onClick={() => onEditDesc(item)}
+        >
+          <span className="d2-name">
+            {item.descriptionDe}
+            <Pencil size={14} strokeWidth={STROKE} aria-hidden />
+          </span>
           {isFremd && (
-            <div className="p2-fremdtag">
+            <span className="p2-fremdtag">
               <Truck size={13} strokeWidth={STROKE} aria-hidden />
               {t("subcontract")}
-            </div>
+            </span>
           )}
-        </div>
+        </button>
         <button
           type="button"
           className="d2card-del"
@@ -114,7 +145,16 @@ export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: Pos
               <Pencil size={12} strokeWidth={STROKE} aria-hidden />
               {t("quantity")}
             </span>
-            <span className="d2field-v">{qtyLabel} {item.unit}</span>
+            <span className="d2field-v">{qtyLabel}</span>
+          </button>
+          <button
+            type="button"
+            className="d2unit"
+            disabled={disabled}
+            onClick={() => onEditUnit(item)}
+          >
+            {item.unit}
+            <ChevronDown size={14} strokeWidth={STROKE} aria-hidden />
           </button>
           <span className="d2op">×</span>
           <button
@@ -134,6 +174,25 @@ export function PositionCard({ item, index, disabled, onOpenPad, onDelete }: Pos
             <span className="d2-sumlbl">{t("lineSum")}</span>
             <div className="d2-sumval">{formatMoney(item.totalAmount)}</div>
           </div>
+        </div>
+      )}
+
+      {!klein && (
+        <div className="d2vatrow">
+          <button
+            type="button"
+            className="d2vat"
+            data-def={vatIsDefault ? "1" : "0"}
+            disabled={disabled}
+            onClick={() => onEditVat(item)}
+          >
+            <Percent size={13} strokeWidth={STROKE} aria-hidden />
+            <span className="d2vat-l">{t("vat")}</span>
+            <span className="d2vat-v">
+              {vatIsDefault ? t("vatStdOn", { rate: companyVat }) : `${vatRate} %`}
+            </span>
+            <ChevronDown size={13} strokeWidth={STROKE} aria-hidden />
+          </button>
         </div>
       )}
     </div>
