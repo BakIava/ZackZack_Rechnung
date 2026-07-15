@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronLeft, ChevronRight, FileText, Lock, Plus, ReceiptText, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Plus, ReceiptText, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { Modal } from "@/components/ui";
@@ -78,20 +78,17 @@ export function Step2Main({
 
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
-  const klein = context.isKleinunternehmer;
   const net = items.reduce((sum, i) => sum + i.totalAmount, 0);
   // MwSt.-Vorschau (Platzhalter): je Position Satz auflösen, nach Satz gruppieren.
-  const vatGroups = klein
-    ? []
-    : Object.entries(
-        items.reduce<Record<number, number>>((acc, i) => {
-          const rate = vatByItem[i.id] ?? PLACEHOLDER_COMPANY_VAT;
-          acc[rate] = (acc[rate] ?? 0) + Math.round((i.totalAmount * rate) / 100);
-          return acc;
-        }, {}),
-      )
-        .map(([rate, amount]) => ({ rate: Number(rate), amount }))
-        .sort((a, b) => b.rate - a.rate);
+  const vatGroups = Object.entries(
+    items.reduce<Record<number, number>>((acc, i) => {
+      const rate = vatByItem[i.id] ?? PLACEHOLDER_COMPANY_VAT;
+      acc[rate] = (acc[rate] ?? 0) + Math.round((i.totalAmount * rate) / 100);
+      return acc;
+    }, {}),
+  )
+    .map(([rate, amount]) => ({ rate: Number(rate), amount }))
+    .sort((a, b) => b.rate - a.rate);
   const vatTotal = vatGroups.reduce((sum, g) => sum + g.amount, 0);
   const gross = net + vatTotal;
   const docLabel = t(context.docType);
@@ -281,32 +278,16 @@ export function Step2Main({
             <div className="d2-sum-t">{t("summary")}</div>
             <div className="d2-sum-lines">
               <div className="d2-sum-line"><span>{t("positionsWord")}</span><b>{items.length}</b></div>
-              {klein ? (
-                <div className="d2-sum-line"><span>{t("total")} ({t("net")})</span><b>{formatMoney(net)}</b></div>
-              ) : (
-                <>
-                  <div className="d2-sum-line"><span>{t("netSub")}</span><b>{formatMoney(net)}</b></div>
-                  {vatGroups.map((g) => (
-                    <div className="d2-sum-line d2-sum-line--vat" key={g.rate}>
-                      <span>{t("addVat")} {g.rate} %</span>
-                      <b>{formatMoney(g.amount)}</b>
-                    </div>
-                  ))}
-                </>
-              )}
+              <div className="d2-sum-line"><span>{t("netSub")}</span><b>{formatMoney(net)}</b></div>
+              {vatGroups.map((g) => (
+                <div className="d2-sum-line d2-sum-line--vat" key={g.rate}>
+                  <span>{t("addVat")} {g.rate} %</span>
+                  <b>{formatMoney(g.amount)}</b>
+                </div>
+              ))}
             </div>
             <div className="d2-sum-div" />
-            {klein ? (
-              <>
-                <div className="d2-sum-total"><span className="d2-sum-total-l">{t("total")}</span><span className="d2-sum-total-v">{formatMoney(net)}</span></div>
-                <div className="d2-sum-ku">
-                  <Lock size={14} strokeWidth={STROKE} aria-hidden />
-                  {t("kuSumNote")}
-                </div>
-              </>
-            ) : (
-              <div className="d2-sum-total"><span className="d2-sum-total-l">{t("grossTotal")}</span><span className="d2-sum-total-v">{formatMoney(gross)}</span></div>
-            )}
+            <div className="d2-sum-total"><span className="d2-sum-total-l">{t("grossTotal")}</span><span className="d2-sum-total-v">{formatMoney(gross)}</span></div>
             <button
               type="button"
               className="d2-sum-btn"
