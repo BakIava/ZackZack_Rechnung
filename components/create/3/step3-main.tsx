@@ -58,7 +58,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
   const isDraft = preview.status === "draft";
   const isRechnung = preview.docType === "invoice";
   const canFinalize = istFinalisierbar(checks);
-  const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
+  const total = preview.totalAmount;
 
   const customerName = getCustomerName(preview.customer);
   const customerInitials = deriveInitials(preview.customer);
@@ -144,7 +144,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
                 {isRechnung ? t("invoiceAmount") : t("quoteAmount")}
               </div>
               <div className="d3-sum-v">{formatMoney(total)}</div>
-              {preview.isKleinunternehmer && (
+              {preview.isKleinunternehmer && !preview.items.some((item) => item.taxRate > 0) && (
                 <div className="d3-sum-ku">
                   <Lock size={14} strokeWidth={STROKE} aria-hidden />
                   {t("kuNote")}

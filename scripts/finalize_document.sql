@@ -34,6 +34,9 @@ DECLARE
   v_seq        int;
   v_prefix     text;
   v_number     text;
+  v_subtotal   integer;
+  v_tax        integer;
+  v_total      integer;
 BEGIN
   v_company_id := get_user_company_id();
   IF v_company_id IS NULL THEN
@@ -60,6 +63,38 @@ BEGIN
     RAISE EXCEPTION 'issue_date_missing';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM document_items WHERE document_id = p_document_id
+  ) THEN
+    RAISE EXCEPTION 'positions_missing';
+  END IF;
+
+  -- Autoritative Neuberechnung direkt vor dem Festschreiben. Nettobetrag und
+  -- Steuer werden pro Zeile gerundet; die Dokumentbeträge sind reine Summen.
+  WITH calculated AS (
+    SELECT
+      i.id,
+      round(i.unit_price::numeric * i.amount)::integer AS net_amount,
+      i.tax_rate AS rate
+    FROM document_items i
+    WHERE i.document_id = p_document_id
+  )
+  UPDATE document_items i
+  SET total_amount = c.net_amount,
+      tax_rate = c.rate,
+      tax_amount = round(c.net_amount::numeric * c.rate / 100)::integer,
+      gross_amount = c.net_amount + round(c.net_amount::numeric * c.rate / 100)::integer
+  FROM calculated c
+  WHERE c.id = i.id;
+
+  SELECT
+    coalesce(sum(total_amount), 0)::integer,
+    coalesce(sum(tax_amount), 0)::integer,
+    coalesce(sum(gross_amount), 0)::integer
+  INTO v_subtotal, v_tax, v_total
+  FROM document_items
+  WHERE document_id = p_document_id;
+
   v_year := EXTRACT(YEAR FROM v_issue_date)::int;
 
   -- Sequenz erst hier verbrauchen: nie im Entwurf, ausschließlich atomar hier.
@@ -73,9 +108,14 @@ BEGIN
 
   v_number := v_prefix || v_year::text || '-' || lpad(v_seq::text, 3, '0');
 
+  PERFORM set_config('zackzack.finalizing', 'on', true);
+
   UPDATE documents
      SET document_number = v_number,
-         status          = 'finalized'
+         status          = 'finalized',
+         subtotal_amount = v_subtotal,
+         tax_amount      = v_tax,
+         total_amount    = v_total
    WHERE id = p_document_id;
 
   RETURN v_number;

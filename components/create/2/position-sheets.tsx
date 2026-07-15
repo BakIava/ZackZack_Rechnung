@@ -4,12 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FLOW_UNITS } from "@/lib/documents/units";
-import type { DraftItem } from "@/types/document";
+import type { DraftItem, TaxRate } from "@/types/document";
 
 const STROKE = 1.75;
 
-/** Auswählbare MwSt.-Sätze (Design-Platzhalter — noch nicht in der DB abgelegt). */
-export const FLOW_VAT_RATES = [19, 7, 0];
+/** Persistierbare MwSt.-Sätze je Position. */
+export const FLOW_VAT_RATES = [19, 7, 0] as const satisfies readonly TaxRate[];
 
 /** Feld, das der Direkt-Editor gerade bearbeitet (Nicht-Ziffernfelder). */
 export type SheetField = "desc" | "unit" | "vat";
@@ -102,16 +102,16 @@ function UnitSheet({ item, onCommit, onClose }: UnitSheetProps) {
 
 interface VatSheetProps {
   item: DraftItem;
-  vat: number | null;
-  companyVat: number;
-  onCommit: (vat: number | null) => void;
+  vat: TaxRate | null;
+  companyVat: TaxRate;
+  onCommit: (vat: TaxRate | null) => void;
   onClose: () => void;
 }
 
-/** MwSt.-Satz wählen (Design-Platzhalter). „Standard" folgt dem Firmensatz. */
+/** MwSt.-Satz wählen. „Standard" folgt dem eingefrorenen Dokumentstandard. */
 function VatSheet({ item, vat, companyVat, onCommit, onClose }: VatSheetProps) {
   const t = useTranslations("Step2");
-  const options: { key: string; value: number | null; label: string; sub?: string }[] = [
+  const options: { key: string; value: TaxRate | null; label: string; sub?: string }[] = [
     { key: "std", value: null, label: t("vatStdOn", { rate: companyVat }), sub: t("vatStd") },
     ...FLOW_VAT_RATES.map((r) => ({ key: String(r), value: r, label: `${r} %` })),
   ];
@@ -156,16 +156,16 @@ function VatSheet({ item, vat, companyVat, onCommit, onClose }: VatSheetProps) {
 export interface PositionEditorState {
   item: DraftItem;
   field: SheetField;
-  vat: number | null;
+  vat: TaxRate | null;
 }
 
 interface PositionEditorProps {
   editor: PositionEditorState | null;
-  companyVat: number;
+  companyVat: TaxRate;
   onClose: () => void;
   onCommitDesc: (itemId: string, value: string) => void;
   onCommitUnit: (itemId: string, unit: string) => void;
-  onCommitVat: (itemId: string, vat: number | null) => void;
+  onCommitVat: (itemId: string, vat: TaxRate | null) => void;
 }
 
 /** Zentrierter Direkt-Editor für Bezeichnung / Einheit / MwSt. */

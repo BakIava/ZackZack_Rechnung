@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
-import { getCompanyKleinunternehmer } from "@/lib/repositories/companies";
+import { getCompanyTaxSettings } from "@/lib/repositories/companies";
 import { getCustomerSnapshot } from "@/lib/repositories/customers";
 import { countDocumentItems } from "@/lib/repositories/document-items";
 import {
@@ -42,8 +42,12 @@ export async function createDraftDocument(): Promise<
   const reusable = await findReusableDraft(ctx.companyId);
   if (reusable) return { id: reusable };
 
-  const isKleinunternehmer = await getCompanyKleinunternehmer(ctx.companyId);
-  return insertDraftDocument(ctx.companyId, isKleinunternehmer);
+  const taxSettings = await getCompanyTaxSettings(ctx.companyId);
+  return insertDraftDocument(
+    ctx.companyId,
+    taxSettings.isKleinunternehmer,
+    taxSettings.defaultTaxRate,
+  );
 }
 
 /**

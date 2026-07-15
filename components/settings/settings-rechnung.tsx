@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Lock } from "lucide-react";
 import type { CompanySettings } from "@/types/company";
-import { saveKleinunternehmer, savePaymentDays } from "@/lib/settings/actions";
+import { savePaymentDays, saveTaxSettings } from "@/lib/settings/actions";
+import type { TaxRate } from "@/types/database";
 
 const STROKE = 1.75;
 const ZIEL_OPTIONS = ["7", "14", "21", "30"] as const;
+const TAX_RATE_OPTIONS = [19, 7, 0] as const satisfies readonly TaxRate[];
 
 interface SaveBarProps {
   onSave: () => Promise<{ error?: string } | void>;
@@ -62,6 +64,7 @@ interface SettingsRechnungProps {
 export function SettingsRechnung({ company, currentInvoiceNumber }: SettingsRechnungProps) {
   const t = useTranslations("Settings");
   const [klein, setKlein] = useState(company.kleinunternehmer);
+  const [defaultTaxRate, setDefaultTaxRate] = useState<TaxRate>(company.default_tax_rate);
   const [ziel, setZiel] = useState(String(company.payment_days));
 
   return (
@@ -87,8 +90,33 @@ export function SettingsRechnung({ company, currentInvoiceNumber }: SettingsRech
               <i />
             </button>
           </div>
+          <div className="set-f-row">
+            <label className="set-f-lbl" htmlFor="default-tax-rate">
+              {t("defaultTaxRate")}
+            </label>
+            <select
+              id="default-tax-rate"
+              className="set-select"
+              value={klein ? 0 : defaultTaxRate}
+              disabled={klein}
+              aria-describedby="default-tax-rate-hint"
+              onChange={(event) => setDefaultTaxRate(Number(event.target.value) as TaxRate)}
+            >
+              {TAX_RATE_OPTIONS.map((rate) => (
+                <option key={rate} value={rate}>{rate} %</option>
+              ))}
+            </select>
+            <div id="default-tax-rate-hint" className="set-card-s">
+              {t(klein ? "defaultTaxRateKleinHint" : "defaultTaxRateHint")}
+            </div>
+          </div>
         </div>
-        <SaveBar onSave={() => saveKleinunternehmer(klein)} />
+        <SaveBar
+          onSave={() => saveTaxSettings({
+            kleinunternehmer: klein,
+            defaultTaxRate: klein ? 0 : defaultTaxRate,
+          })}
+        />
       </section>
 
       <section className="set-card">

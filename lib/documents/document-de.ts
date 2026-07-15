@@ -26,6 +26,7 @@ export const DOKUMENT_DE = {
   einzelpreis: "Einzelpreis",
   gesamtSpalte: "Gesamt",
   gesamtNetto: "Gesamt (netto)",
+  umsatzsteuer: "Umsatzsteuer",
   rechnungsbetrag: "Rechnungsbetrag",
   angebotssumme: "Angebotssumme",
   /** Exakter §19-Hinweis laut Vorgabe. */

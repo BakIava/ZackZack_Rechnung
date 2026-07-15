@@ -2,8 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import { computeLineTotal, computeUnitPrice } from "./margin";
-import { isDraftDocument, setDraftDocumentTotal } from "@/lib/repositories/documents";
+import { computeUnitPrice } from "./margin";
+import {
+  getDraftTaxConfig,
+  isDraftDocument,
+  setDraftDocumentTotals,
+} from "@/lib/repositories/documents";
 import {
   deleteDocumentItem,
   getDraftItems,
@@ -13,7 +17,6 @@ import {
   insertDocumentItem,
   listItemPositions,
   setItemPosition,
-  sumItemTotals,
   updateDocumentItem,
 } from "@/lib/repositories/document-items";
 import { getServiceSnapshot } from "@/lib/repositories/services";
@@ -22,9 +25,17 @@ import type {
   FreeItemInput,
   FremdItemInput,
   ItemPatch,
+  TaxRate,
 } from "@/types/document";
+import {
+  calculateDocumentTotals,
+  calculateLineAmounts,
+  resolveTaxRate,
+} from "./tax";
 
-export type ItemsResult = { items: DraftItem[]; total: number } | { error: string };
+export type ItemsResult =
+  | { items: DraftItem[]; totals: ReturnType<typeof calculateDocumentTotals> }
+  | { error: string };
 
 async function getCtx() {
   const companyId = await getCurrentCompanyId();
@@ -43,16 +54,31 @@ async function renumber(companyId: string, documentId: string): Promise<void> {
   }
 }
 
-/** document.total_amount = Summe aller Positionen; danach frische Liste liefern. */
+/** Dokument-Summen aus den serverseitig berechneten Zeilenwerten aktualisieren. */
 async function recompute(companyId: string, documentId: string): Promise<ItemsResult> {
-  const total = await sumItemTotals(companyId, documentId);
-  await setDraftDocumentTotal(companyId, documentId, total);
+  const items = await getDraftItems(documentId);
+  const totals = calculateDocumentTotals(
+    items.map((item) => ({
+      netAmount: item.totalAmount,
+      taxRate: item.taxRate,
+      taxAmount: item.taxAmount,
+      grossAmount: item.grossAmount,
+    })),
+  );
+  await setDraftDocumentTotals(companyId, documentId, totals);
   // Router-Cache des gesamten Flow-Layouts invalidieren, damit beim Zurück-
   // navigieren (z. B. Schritt 3 → 2) nicht ein veralteter, positionsloser
   // Server-Render aus dem Client-Cache ausgeliefert wird.
   revalidatePath("/[locale]/create/[document_id]", "layout");
-  const items = await getDraftItems(documentId);
-  return { items, total };
+  return { items, totals };
+}
+
+function lineValues(unitPrice: number, amount: number, taxRate: TaxRate) {
+  try {
+    return calculateLineAmounts(unitPrice, amount, taxRate);
+  } catch {
+    return null;
+  }
 }
 
 /** Position aus dem Katalog übernehmen. Deutscher Begriff wird gespeichert – nie die Übersetzung. */
@@ -67,8 +93,17 @@ export async function addCatalogItem(
   const svc = await getServiceSnapshot(serviceId);
   if (!svc) return { error: "serviceNotFound" };
 
+  const taxConfig = await getDraftTaxConfig(documentId);
+  if (!taxConfig) return { error: "draftNotFound" };
+
   const unitPrice = svc.default_price ?? 0;
   const amount = 1;
+  const taxRate = resolveTaxRate(
+    taxConfig.defaultTaxRate,
+    null,
+  );
+  const line = lineValues(unitPrice, amount, taxRate);
+  if (!line) return { error: "pricingInvalid" };
   const position = await getNextItemPosition(ctx.companyId, documentId);
 
   const { error } = await insertDocumentItem(ctx.companyId, documentId, {
@@ -78,7 +113,11 @@ export async function addCatalogItem(
     amount,
     unit: svc.unit ?? "",
     unitPrice,
-    totalAmount: computeLineTotal(unitPrice, amount),
+    totalAmount: line.netAmount,
+    taxRate: line.taxRate,
+    taxRateOverridden: false,
+    taxAmount: line.taxAmount,
+    grossAmount: line.grossAmount,
   });
   if (error) return { error };
   return recompute(ctx.companyId, documentId);
@@ -94,6 +133,15 @@ export async function addFreeItem(
   if (!(await isDraftDocument(documentId))) return { error: "draftNotFound" };
   if (!input.descriptionDe.trim()) return { error: "descriptionRequired" };
 
+  const taxConfig = await getDraftTaxConfig(documentId);
+  if (!taxConfig) return { error: "draftNotFound" };
+  const taxRate = resolveTaxRate(
+    taxConfig.defaultTaxRate,
+    null,
+  );
+  const line = lineValues(input.unitPrice, input.amount, taxRate);
+  if (!line) return { error: "pricingInvalid" };
+
   const position = await getNextItemPosition(ctx.companyId, documentId);
   const { error } = await insertDocumentItem(ctx.companyId, documentId, {
     serviceId: null,
@@ -102,7 +150,11 @@ export async function addFreeItem(
     amount: input.amount,
     unit: input.unit,
     unitPrice: input.unitPrice,
-    totalAmount: computeLineTotal(input.unitPrice, input.amount),
+    totalAmount: line.netAmount,
+    taxRate: line.taxRate,
+    taxRateOverridden: false,
+    taxAmount: line.taxAmount,
+    grossAmount: line.grossAmount,
   });
   if (error) return { error };
   return recompute(ctx.companyId, documentId);
@@ -117,6 +169,10 @@ export async function addFremdItem(
   if ("error" in ctx) return { error: "notAuthenticated" };
   if (!(await isDraftDocument(documentId))) return { error: "draftNotFound" };
   if (!input.descriptionDe.trim()) return { error: "descriptionRequired" };
+  if (input.purchasePrice < 0) return { error: "pricingInvalid" };
+
+  const taxConfig = await getDraftTaxConfig(documentId);
+  if (!taxConfig) return { error: "draftNotFound" };
 
   const unitPrice = computeUnitPrice(
     input.purchasePrice,
@@ -124,6 +180,12 @@ export async function addFremdItem(
     input.surchargeType,
   );
   const position = await getNextItemPosition(ctx.companyId, documentId);
+  const taxRate = resolveTaxRate(
+    taxConfig.defaultTaxRate,
+    null,
+  );
+  const line = lineValues(unitPrice, input.amount, taxRate);
+  if (!line) return { error: "pricingInvalid" };
   const { error } = await insertDocumentItem(ctx.companyId, documentId, {
     serviceId: null,
     position,
@@ -131,7 +193,11 @@ export async function addFremdItem(
     amount: input.amount,
     unit: input.unit,
     unitPrice,
-    totalAmount: computeLineTotal(unitPrice, input.amount),
+    totalAmount: line.netAmount,
+    taxRate: line.taxRate,
+    taxRateOverridden: false,
+    taxAmount: line.taxAmount,
+    grossAmount: line.grossAmount,
     purchasePrice: input.purchasePrice,
     surcharge: input.surcharge,
     surchargeType: input.surchargeType,
@@ -153,6 +219,12 @@ export async function updateItem(
 
   const documentId = item.documentId;
   if (!(await isDraftDocument(documentId))) return { error: "draftNotFound" };
+  if (patch.descriptionDe !== undefined && !patch.descriptionDe.trim()) {
+    return { error: "descriptionRequired" };
+  }
+
+  const taxConfig = await getDraftTaxConfig(documentId);
+  if (!taxConfig) return { error: "draftNotFound" };
 
   const amount = patch.amount ?? item.amount;
   const purchasePrice =
@@ -166,11 +238,29 @@ export async function updateItem(
   const unitPrice = isFremd
     ? computeUnitPrice(purchasePrice, surcharge ?? 0, surchargeType)
     : patch.unitPrice ?? item.unitPrice;
+  const taxRateOverridden = patch.taxRate !== undefined
+    ? patch.taxRate !== null
+    : item.taxRateOverridden;
+  const overrideRate = taxRateOverridden
+    ? patch.taxRate !== undefined && patch.taxRate !== null
+      ? patch.taxRate
+      : item.taxRate
+    : null;
+  const taxRate = resolveTaxRate(
+    taxConfig.defaultTaxRate,
+    overrideRate,
+  );
+  const line = lineValues(unitPrice, amount, taxRate);
+  if (!line) return { error: "pricingInvalid" };
 
   const update: Record<string, unknown> = {
     amount,
     unit_price: unitPrice,
-    total_amount: computeLineTotal(unitPrice, amount),
+    total_amount: line.netAmount,
+    tax_rate: line.taxRate,
+    tax_rate_overridden: taxRateOverridden,
+    tax_amount: line.taxAmount,
+    gross_amount: line.grossAmount,
     purchase_price: isFremd ? purchasePrice : null,
     surcharge: isFremd ? surcharge : null,
     surcharge_type: isFremd ? surchargeType : null,

@@ -12,7 +12,7 @@ export async function getDocumentItems(documentId: string): Promise<DocumentItem
   const client = createClient();
   const { data } = await client
     .from("document_items")
-    .select("position, description_de, amount, unit, unit_price, total_amount")
+    .select("position, description_de, amount, unit, unit_price, total_amount, tax_rate, tax_amount, gross_amount")
     .eq("document_id", documentId)
     .order("position", { ascending: true });
 
@@ -23,5 +23,8 @@ export async function getDocumentItems(documentId: string): Promise<DocumentItem
     unit: r.unit,
     unitPrice: r.unit_price,
     totalAmount: r.total_amount,
+    taxRate: r.tax_rate,
+    taxAmount: r.tax_amount,
+    grossAmount: r.gross_amount,
   }));
 }

@@ -13,10 +13,10 @@ interface PositionCardProps {
   item: DraftItem;
   index: number;
   disabled: boolean;
-  /** MwSt.-Satz dieser Position (Design-Platzhalter); `null` = Firmenstandard. */
-  vat: number | null;
-  /** Firmen-Standardsatz (Design-Platzhalter, bis Backend MwSt. liefert). */
-  companyVat: number;
+  /** Persistierte Positionsüberschreibung; `null` = Dokumentstandard. */
+  vat: DraftItem["taxRate"] | null;
+  /** Beim Draft eingefrorener Dokumentstandard (bei §19: 0 %). */
+  companyVat: DraftItem["taxRate"];
   onOpenPad: (item: DraftItem, field: PadField) => void;
   onEditDesc: (item: DraftItem) => void;
   onEditUnit: (item: DraftItem) => void;
@@ -25,7 +25,7 @@ interface PositionCardProps {
 }
 
 /** Positionskarte (Variante B): „Menge × Preis = Summe". Bezeichnung, Einheit
- *  und (bei Regelbesteuerung) MwSt. sind direkt tippbar; Menge und Preis öffnen
+ *  und MwSt. sind direkt tippbar; Menge und Preis öffnen
  *  den Ziffernblock. Fremdleistungen zeigen den anpassbaren Verkaufspreis
  *  („Kunde zahlt") + internen Block — Einkauf/Marge erreichen nie das Dokument. */
 export function PositionCard({
@@ -40,10 +40,6 @@ export function PositionCard({
   onEditVat,
   onDelete,
 }: PositionCardProps) {
-  // MwSt.-Chip ist ein reiner Editor-Platzhalter (nicht persistiert, erreicht
-  // nie das Dokument/PDF) und wird bewusst für ALLE Betriebe gezeigt – auch
-  // §19 –, damit die Bedienung sichtbar/testbar ist. Der §19-Hinweis in der
-  // Zusammenfassung bleibt davon unberührt.
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
   // Prozentaufschlag exakt aus dem gespeicherten Wert lesen (12,50 % = 1250 bp);

@@ -24,6 +24,7 @@ import {
   updateItem,
 } from "@/lib/documents/item-actions";
 import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
+import { shouldShowTaxDetails } from "@/lib/documents/tax";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
 import { NumberPad, type PadField } from "./number-pad";
@@ -35,10 +36,6 @@ import {
 } from "./position-sheets";
 
 const STROKE = 1.75;
-
-/** Firmen-Standardsatz für die MwSt.-Vorschau. Design-Platzhalter, bis das
- *  Backend echte Steuerfelder liefert (document_items hat noch keine). */
-const PLACEHOLDER_COMPANY_VAT = 19;
 
 interface Step2MainProps {
   dir: "ltr" | "rtl";
@@ -61,6 +58,7 @@ export function Step2Main({
   const t = useTranslations("Step2");
   const router = useRouter();
   const [items, setItems] = useState<DraftItem[]>(initialItems);
+  const [totals, setTotals] = useState(context.totals);
   const [modalOpen, setModalOpen] = useState(false);
   const [pad, setPad] = useState<{
     itemId: string;
@@ -70,33 +68,20 @@ export function Step2Main({
     initial: string;
   } | null>(null);
   const [editor, setEditor] = useState<{ itemId: string; field: SheetField } | null>(null);
-  // MwSt.-Sätze pro Position (Design-Platzhalter; noch nicht persistiert).
-  // `null`/fehlend = Firmenstandard.
-  const [vatByItem, setVatByItem] = useState<Record<string, number | null>>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
-  const net = items.reduce((sum, i) => sum + i.totalAmount, 0);
-  // MwSt.-Vorschau (Platzhalter): je Position Satz auflösen, nach Satz gruppieren.
-  const vatGroups = Object.entries(
-    items.reduce<Record<number, number>>((acc, i) => {
-      const rate = vatByItem[i.id] ?? PLACEHOLDER_COMPANY_VAT;
-      acc[rate] = (acc[rate] ?? 0) + Math.round((i.totalAmount * rate) / 100);
-      return acc;
-    }, {}),
-  )
-    .map(([rate, amount]) => ({ rate: Number(rate), amount }))
-    .sort((a, b) => b.rate - a.rate);
-  const vatTotal = vatGroups.reduce((sum, g) => sum + g.amount, 0);
-  const gross = net + vatTotal;
   const docLabel = t(context.docType);
+  const showTaxDetails = shouldShowTaxDetails(context.isKleinunternehmer, items);
 
   const activeEditor: PositionEditorState | null = editor
     ? (() => {
         const item = items.find((i) => i.id === editor.itemId);
-        return item ? { item, field: editor.field, vat: vatByItem[item.id] ?? null } : null;
+        return item
+          ? { item, field: editor.field, vat: item.taxRateOverridden ? item.taxRate : null }
+          : null;
       })()
     : null;
 
@@ -109,6 +94,7 @@ export function Step2Main({
         return;
       }
       setItems(res.items);
+      setTotals(res.totals);
     });
   }
 
@@ -137,10 +123,9 @@ export function Step2Main({
     setEditor(null);
     run(() => updateItem(itemId, { unit }));
   };
-  // MwSt. ist noch nicht persistiert → nur lokaler Design-Platzhalter.
-  const commitVat = (itemId: string, vat: number | null) => {
+  const commitVat = (itemId: string, vat: DraftItem["taxRate"] | null) => {
     setEditor(null);
-    setVatByItem((m) => ({ ...m, [itemId]: vat }));
+    run(() => updateItem(itemId, { taxRate: vat }));
   };
 
   const openPad = (item: DraftItem, field: PadField) => {
@@ -261,8 +246,8 @@ export function Step2Main({
                     item={item}
                     index={i}
                     disabled={pending}
-                    vat={vatByItem[item.id] ?? null}
-                    companyVat={PLACEHOLDER_COMPANY_VAT}
+                    vat={item.taxRateOverridden ? item.taxRate : null}
+                    companyVat={context.defaultTaxRate}
                     onOpenPad={openPad}
                     onEditDesc={editDesc}
                     onEditUnit={editUnit}
@@ -278,16 +263,23 @@ export function Step2Main({
             <div className="d2-sum-t">{t("summary")}</div>
             <div className="d2-sum-lines">
               <div className="d2-sum-line"><span>{t("positionsWord")}</span><b>{items.length}</b></div>
-              <div className="d2-sum-line"><span>{t("netSub")}</span><b>{formatMoney(net)}</b></div>
-              {vatGroups.map((g) => (
+              {showTaxDetails && (
+                <div className="d2-sum-line"><span>{t("netSub")}</span><b>{formatMoney(totals.netAmount)}</b></div>
+              )}
+              {showTaxDetails && totals.taxGroups.map((g) => (
                 <div className="d2-sum-line d2-sum-line--vat" key={g.rate}>
                   <span>{t("addVat")} {g.rate} %</span>
-                  <b>{formatMoney(g.amount)}</b>
+                  <b>{formatMoney(g.taxAmount)}</b>
                 </div>
               ))}
             </div>
             <div className="d2-sum-div" />
-            <div className="d2-sum-total"><span className="d2-sum-total-l">{t("grossTotal")}</span><span className="d2-sum-total-v">{formatMoney(gross)}</span></div>
+            <div className="d2-sum-total">
+              <span className="d2-sum-total-l">{t(showTaxDetails ? "grossTotal" : "netSub")}</span>
+              <span className="d2-sum-total-v">
+                {formatMoney(showTaxDetails ? totals.grossAmount : totals.netAmount)}
+              </span>
+            </div>
             <button
               type="button"
               className="d2-sum-btn"
@@ -341,7 +333,7 @@ export function Step2Main({
 
       <PositionEditor
         editor={activeEditor}
-        companyVat={PLACEHOLDER_COMPANY_VAT}
+        companyVat={context.defaultTaxRate}
         onClose={() => setEditor(null)}
         onCommitDesc={commitDesc}
         onCommitUnit={commitUnit}

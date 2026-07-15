@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { updateCompany, uploadCompanyLogo } from "@/lib/repositories/companies";
+import { isTaxRate, resolveDocumentDefaultTaxRate } from "@/lib/documents/tax";
+import type { TaxRate } from "@/types/database";
 
 export interface SettingsActionResult {
   error?: string;
@@ -105,11 +107,23 @@ export async function saveBankverbindung(data: {
   });
 }
 
-export async function saveKleinunternehmer(kleinunternehmer: boolean): Promise<SettingsActionResult> {
+/** Steuerstatus + Standardsatz atomar als Firmenvorgabe speichern. */
+export async function saveTaxSettings(data: {
+  kleinunternehmer: boolean;
+  defaultTaxRate: TaxRate;
+}): Promise<SettingsActionResult> {
+  if (!isTaxRate(data.defaultTaxRate)) return { error: "taxRateInvalid" };
+
   const ctx = await getCompanyId();
   if ("error" in ctx) return ctx;
 
-  return updateCompany(ctx.companyId, { kleinunternehmer });
+  return updateCompany(ctx.companyId, {
+    kleinunternehmer: data.kleinunternehmer,
+    default_tax_rate: resolveDocumentDefaultTaxRate(
+      data.defaultTaxRate,
+      data.kleinunternehmer,
+    ),
+  });
 }
 
 export async function savePaymentDays(paymentDays: number): Promise<SettingsActionResult> {

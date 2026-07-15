@@ -80,8 +80,8 @@ Rechnung und Angebot teilen denselben geführten 3-Schritt-Flow (Kunde → Posit
 ### §19 Kleinunternehmer (Default)
 - §19-Betriebe sind **dauerhaft von der E-Rechnungs-Ausstellungspflicht befreit** → reiner PDF-Export ist zulässig. ZUGFeRD/XRechnung sind **nicht** MVP.
 - `is_kleinunternehmer` wird beim Anlegen des Drafts als **Snapshot** aus den Firmen-Einstellungen übernommen (`documents.is_kleinunternehmer`).
-- Der §19-Hinweis („Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.", exakter Wortlaut in `lib/documents/document-de.ts`) erscheint **automatisch** auf Vorschau und PDF, sobald das Flag gesetzt ist.
-- **Noch nicht implementiert** (Ziel, nicht Ist): MwSt.-Ausweis für Nicht-§19-Betriebe (Opt-in pro Rechnung, Positionen 19 %/7 %, Netto/Steuer/Brutto-Aufschlüsselung). `document_items` hat dafür noch keine Steuerfelder. Nicht ohne ausdrückliche Freigabe bauen.
+- Der §19-Hinweis („Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.", exakter Wortlaut in `lib/documents/document-de.ts`) erscheint **automatisch** auf Vorschau und PDF, wenn das Dokument keine Position mit 7 % oder 19 % enthält.
+- **Implementiert:** Nicht-§19-Betriebe besitzen einen Firmen-Standardsatz (19/7/0 %). Bei §19 ist der Dokumentstandard 0 %, Positionen dürfen aber ausdrücklich auf 7 % oder 19 % überschrieben werden. Positionen speichern Netto, effektiven Satz, Herkunft (Standard/Override), Steuer und Brutto; Berechnung erfolgt serverseitig in `lib/documents/tax.ts` und autoritativ erneut in `finalize_document`. Vorschau/PDF zeigen gemischte Steuergruppen. Migration: `scripts/vat_line_items.sql`.
 
 ### Mehrsprachiger Katalog
 Handwerker wählt die Leistung in seiner Sprache, aufs Dokument kommt **immer der deutsche Begriff**. Tabelle `services`: `description_de` (Pflicht) + `description_tr`/`description_ar`, UI-Modell `KatalogEintrag` (`types/service.ts`), Anzeige über `anzeigeName()` (`lib/katalog/anzeige.ts`). Beim Übernehmen in ein Dokument wird `description_de` als Snapshot in `document_items` kopiert — **Dokument-Rendering liest nie ein übersetztes Feld.**
@@ -110,7 +110,7 @@ Große Buttons, viel Icon/wenig Text, fehlertolerant, geführte Schritte, echte 
 
 ## Phase 2 (bewusst NICHT im MVP)
 
-KI-Eingabe (Sprache/Text → Rechnungsentwurf, Preise nur aus Katalog), OCR für Fremdangebote, Angebotsstatus, Abschlags-/Schlussrechnung, **Mahnungen**, MwSt.-Ausweis für Nicht-§19 (s. o.), §19-Grenzwarnung (25.000 €/100.000 €), ZUGFeRD/XRechnung, SMS-Login, Bankanbindung (PSD2/XS2A), Offline-Schreibpfad mit Sync. **Nicht ohne ausdrückliche Freigabe implementieren.**
+KI-Eingabe (Sprache/Text → Rechnungsentwurf, Preise nur aus Katalog), OCR für Fremdangebote, Angebotsstatus, Abschlags-/Schlussrechnung, **Mahnungen**, §19-Grenzwarnung (25.000 €/100.000 €), ZUGFeRD/XRechnung, SMS-Login, Bankanbindung (PSD2/XS2A), Offline-Schreibpfad mit Sync. **Nicht ohne ausdrückliche Freigabe implementieren.**
 
 Bereits umgesetzt (nicht mehr Phase 2): Zahlungsstatus (bezahlt/überfällig via `paid_at` + Zahlungsziel), PDF-Langzeitarchiv im Storage.
 
@@ -148,7 +148,7 @@ Pages bleiben dünn: `params` auflösen, `setRequestLocale`, Daten über Reposit
 Diese Punkte sind **nicht verhandelbar** und in Tests abgesichert:
 
 1. Dokumentnummern fortlaufend und **lückenlos**, vergeben ausschließlich beim Festschreiben durch `finalize_document` (SQL) — nie beim Anlegen, nie im Client.
-2. §19-Hinweis automatisch auf dem Dokument, sobald `is_kleinunternehmer` gesetzt ist (= keine MwSt. ausgewiesen wird).
+2. §19-Hinweis automatisch auf einem §19-Dokument, solange keine Position ausdrücklich 7 % oder 19 % ausweist.
 3. Pflichtangaben-Check (`dokument-pflicht.ts`) muss vor jeder Finalisierung grün sein.
 4. Einkaufspreis/Marge erscheinen **niemals** im Dokument-DTO (`DocumentItem`), in der Vorschau oder im PDF.
 5. Dokumentsprache **immer Deutsch**, unabhängig von der Bediensprache.

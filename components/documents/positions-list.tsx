@@ -28,6 +28,12 @@ export function PositionsList({ items, totalAmount }: PositionsListProps) {
   const hasMore = items.length > VISIBLE_LIMIT;
   const visibleItems = expanded || !hasMore ? items : items.slice(0, VISIBLE_LIMIT);
   const hiddenCount = items.length - VISIBLE_LIMIT;
+  const netTotal = items.reduce((sum, item) => sum + item.totalAmount, 0);
+  const taxGroups = [...items.reduce((groups, item) => {
+    if (item.taxAmount === 0) return groups;
+    groups.set(item.taxRate, (groups.get(item.taxRate) ?? 0) + item.taxAmount);
+    return groups;
+  }, new Map<number, number>())].sort(([a], [b]) => b - a);
 
   return (
     <div className="hpos">
@@ -37,6 +43,7 @@ export function PositionsList({ items, totalAmount }: PositionsListProps) {
             <div className="hpos-desc">{item.descriptionDe}</div>
             <div className="hpos-qty">
               {item.amount} {item.unit} · {formatMoney(item.unitPrice)}
+              {item.taxAmount > 0 ? ` · ${item.taxRate} %` : ""}
             </div>
           </div>
           <div className="hpos-sum">{formatMoney(item.totalAmount)}</div>
@@ -60,10 +67,22 @@ export function PositionsList({ items, totalAmount }: PositionsListProps) {
 
       <div className="hpos-total">
         <span className="hpos-total-l">
-          {t("total")} <span className="hpos-total-net">{t("mNet")}</span>
+          {t("netTotal")} <span className="hpos-total-net">{t("mNet")}</span>
         </span>
-        <span className="hpos-total-v">{formatMoney(totalAmount)}</span>
+        <span className="hpos-total-v">{formatMoney(netTotal)}</span>
       </div>
+      {taxGroups.map(([rate, amount]) => (
+        <div className="hpos-total" key={rate}>
+          <span className="hpos-total-l">{t("vatRate", { rate })}</span>
+          <span className="hpos-total-v">{formatMoney(amount)}</span>
+        </div>
+      ))}
+      {taxGroups.length > 0 && (
+        <div className="hpos-total">
+          <span className="hpos-total-l">{t("total")}</span>
+          <span className="hpos-total-v">{formatMoney(totalAmount)}</span>
+        </div>
+      )}
     </div>
   );
 }

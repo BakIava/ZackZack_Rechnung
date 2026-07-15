@@ -4,6 +4,7 @@ import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
 import { deriveInitials } from "@/lib/initials";
 import { getCustomerName } from "@/lib/customers/utils";
+import { shouldShowTaxDetails } from "@/lib/documents/tax";
 
 interface DocumentA4Props {
   preview: DocumentPreview;
@@ -29,8 +30,8 @@ function joinTrim(parts: (string | null | undefined)[], sep: string): string {
 export function DocumentA4({ preview, className }: DocumentA4Props) {
   const { company: co, customer: rc, docType, isKleinunternehmer } = preview;
   const isRechnung = docType === "invoice";
-  const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
-
+  const showTaxDetails = shouldShowTaxDetails(isKleinunternehmer, preview.items);
+  const showKleinunternehmerHinweis = isKleinunternehmer && !showTaxDetails;
   const coStreet = joinTrim([co.street, co.streetNo], " ");
   const coCity = joinTrim([co.postcode, co.city], " ");
   const coSenderLine = joinTrim([co.name, coStreet, coCity], " · ");
@@ -141,6 +142,7 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
               <th>{DOKUMENT_DE.bezeichnung}</th>
               <th className="num">{DOKUMENT_DE.menge}</th>
               <th className="num">{DOKUMENT_DE.einzelpreis}</th>
+              {showTaxDetails && <th className="num">{DOKUMENT_DE.umsatzsteuer}</th>}
               <th className="num">{DOKUMENT_DE.gesamtSpalte}</th>
             </tr>
           </thead>
@@ -153,6 +155,7 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
                   {p.amount} {p.unit}
                 </td>
                 <td className="num">{formatMoney(p.unitPrice)}</td>
+                {showTaxDetails && <td className="num">{p.taxRate} %</td>}
                 <td className="num">{formatMoney(p.totalAmount)}</td>
               </tr>
             ))}
@@ -161,18 +164,28 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
 
         <div className="a4-sumwrap">
           <div className="a4-sumbox">
-            <div className="a4-sumline">
-              <span>{DOKUMENT_DE.gesamtNetto}</span>
-              <span className="v">{formatMoney(total)}</span>
-            </div>
+            {showTaxDetails && (
+              <div className="a4-sumline">
+                <span>{DOKUMENT_DE.gesamtNetto}</span>
+                <span className="v">{formatMoney(preview.netAmount)}</span>
+              </div>
+            )}
+            {showTaxDetails && preview.taxGroups.map((group) => (
+              <div className="a4-sumline" key={group.rate}>
+                <span>{DOKUMENT_DE.umsatzsteuer} {group.rate} %</span>
+                <span className="v">{formatMoney(group.taxAmount)}</span>
+              </div>
+            ))}
             <div className="a4-grand">
-              <span className="l">{sumLabel}</span>
-              <span className="v">{formatMoney(total)}</span>
+              <span className="l">{showTaxDetails ? sumLabel : DOKUMENT_DE.gesamtNetto}</span>
+              <span className="v">
+                {formatMoney(showTaxDetails ? preview.totalAmount : preview.netAmount)}
+              </span>
             </div>
           </div>
         </div>
 
-        {isKleinunternehmer && (
+        {showKleinunternehmerHinweis && (
           <div className="a4-vat">
             <ShieldCheck size={16} strokeWidth={STROKE} aria-hidden />
             <span>{DOKUMENT_DE.kleinunternehmerHinweis}</span>

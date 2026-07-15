@@ -46,8 +46,8 @@ function customer(overrides: Partial<PreviewCustomer> = {}): PreviewCustomer {
 
 function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
   const items: DocumentItem[] = [
-    { position: 1, descriptionDe: "Innenanstrich Wohnzimmer", amount: 1, unit: "psch", unitPrice: 48000, totalAmount: 48000 },
-    { position: 2, descriptionDe: "Material (Farbe, Grundierung)", amount: 1, unit: "psch", unitPrice: 9500, totalAmount: 9500 },
+    { position: 1, descriptionDe: "Innenanstrich Wohnzimmer", amount: 1, unit: "psch", unitPrice: 48000, totalAmount: 48000, taxRate: 0, taxAmount: 0, grossAmount: 48000 },
+    { position: 2, descriptionDe: "Material (Farbe, Grundierung)", amount: 1, unit: "psch", unitPrice: 9500, totalAmount: 9500, taxRate: 0, taxAmount: 0, grossAmount: 9500 },
   ];
   return {
     id: "doc-1",
@@ -57,7 +57,11 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
     issueDate: "2026-06-09",
     serviceDate: null,
     isKleinunternehmer: true,
+    defaultTaxRate: 0,
+    netAmount: 57500,
+    taxAmount: 0,
     totalAmount: 57500,
+    taxGroups: [{ rate: 0, netAmount: 57500, taxAmount: 0 }],
     company: company(),
     customer: customer(),
     items,
@@ -76,6 +80,9 @@ describe("buildPdfViewModel – harte Regeln", () => {
 
   it("§19-Kleinunternehmer: Hinweis gesetzt, keine USt.-Aufschlüsselung im Model", () => {
     const vm = buildPdfViewModel(preview({ isKleinunternehmer: true }));
+    expect(vm.showTaxDetails).toBe(false);
+    expect(vm.taxLines).toEqual([]);
+    expect(vm.netTotalText).toContain("575,00");
     expect(vm.showKleinunternehmerHinweis).toBe(true);
     expect(vm.kleinunternehmerHinweis).toBe(
       "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.",
@@ -85,6 +92,38 @@ describe("buildPdfViewModel – harte Regeln", () => {
     expect(serialized).not.toContain("umsatzsteuer:");
     expect(vm).not.toHaveProperty("vatAmount");
     expect(vm).not.toHaveProperty("taxRate");
+  });
+
+  it("§19-Betrieb mit Positionsüberschreibung weist Umsatzsteuer aus", () => {
+    const taxedItem: DocumentItem = {
+      position: 1,
+      descriptionDe: "Malerarbeiten",
+      amount: 1,
+      unit: "psch",
+      unitPrice: 10_000,
+      totalAmount: 10_000,
+      taxRate: 19,
+      taxAmount: 1_900,
+      grossAmount: 11_900,
+    };
+    const vm = buildPdfViewModel(
+      preview({
+        isKleinunternehmer: true,
+        defaultTaxRate: 0,
+        netAmount: 10_000,
+        taxAmount: 1_900,
+        totalAmount: 11_900,
+        taxGroups: [{ rate: 19, netAmount: 10_000, taxAmount: 1_900 }],
+        items: [taxedItem],
+      }),
+    );
+
+    expect(vm.showKleinunternehmerHinweis).toBe(false);
+    expect(vm.showTaxDetails).toBe(true);
+    expect(vm.taxLines).toHaveLength(1);
+    expect(vm.taxLines[0].label).toBe("Umsatzsteuer 19 %");
+    expect(vm.rows[0].taxRateText).toBe("19 %");
+    expect(vm.totalText).toContain("119,00");
   });
 
   it("kein Kleinunternehmer → kein §19-Hinweis", () => {

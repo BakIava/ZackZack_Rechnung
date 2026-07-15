@@ -21,12 +21,14 @@ import type {
   DraftContext,
   DraftDoc,
   FlowDocMeta,
+  TaxRate,
 } from "@/types/document";
 import type { PreviewCompany } from "@/types/company";
 import type { CustomerSnapshot } from "@/types/customer";
 import type { DocumentRow } from "@/types/database";
 import { deriveInitials } from "@/lib/initials";
 import { getCustomerName, toPreviewCustomer } from "../customers/utils";
+import { calculateDocumentTotals } from "@/lib/documents/tax";
 
 /**
  * Alter, ab dem ein positionsloser Entwurf beim Laden der Liste automatisch
@@ -196,7 +198,7 @@ export async function getDraftContext(
   const supabase = await createClient();
   const { data } = await supabase
     .from("documents")
-    .select("document_type, customer_snapshot, is_kleinunternehmer")
+    .select("document_type, customer_snapshot, is_kleinunternehmer, default_tax_rate")
     .eq("id", documentId)
     .eq("company_id", companyId)
     .eq("status", "draft")
@@ -206,13 +208,33 @@ export async function getDraftContext(
 
   const snapshot: CustomerSnapshot = data.customer_snapshot;
   const customerName = getCustomerName(snapshot);
+  const items = await getDraftItemsForTotals(companyId, documentId);
+  const totals = calculateDocumentTotals(items);
 
   return {
     docType: data.document_type,
     customerName,
     customerInitials: deriveInitials(snapshot),
     isKleinunternehmer: Boolean(data.is_kleinunternehmer),
+    defaultTaxRate: (data.default_tax_rate as TaxRate | null) ?? 19,
+    totals,
   };
+}
+
+async function getDraftItemsForTotals(companyId: string, documentId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("document_items")
+    .select("total_amount, tax_rate, tax_amount, gross_amount")
+    .eq("document_id", documentId)
+    .eq("company_id", companyId);
+  return (data ?? []).map((item) => ({
+    netAmount: (item.total_amount as number | null) ?? 0,
+    taxRate: (item.tax_rate as TaxRate | null) ?? 0,
+    taxAmount: (item.tax_amount as number | null) ?? 0,
+    grossAmount:
+      (item.gross_amount as number | null) ?? (item.total_amount as number | null) ?? 0,
+  }));
 }
 
 // Als ein String-Literal (nicht verkettet), sonst kann Supabase die Spalten
@@ -221,7 +243,7 @@ const COMPANY_COLUMNS =
   "name, legal_form, street, street_no, postcode, city, phone, mobile, email, director, steuernummer, ust_id, bank_name, iban, bic, account_holder, logo_url, payment_days";
 
 const DOCUMENT_COLUMNS =
-  "id, document_type, document_number, status, issue_date, service_date, customer_snapshot, total_amount, is_kleinunternehmer";
+  "id, document_type, document_number, status, issue_date, service_date, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate";
 
 function toCompany(row: Record<string, unknown>): PreviewCompany {
   return {
@@ -273,7 +295,7 @@ export const getDocumentPreview = cache(
       supabase.from("companies").select(COMPANY_COLUMNS).eq("id", companyId).maybeSingle(),
       supabase
         .from("document_items")
-        .select("position, description_de, amount, unit, unit_price, total_amount")
+        .select("position, description_de, amount, unit, unit_price, total_amount, tax_rate, tax_amount, gross_amount")
         .eq("document_id", documentId)
         .eq("company_id", companyId)
         .order("position", { ascending: true }),
@@ -287,7 +309,18 @@ export const getDocumentPreview = cache(
       unit: (r.unit as string) ?? "",
       unitPrice: (r.unit_price as number) ?? 0,
       totalAmount: (r.total_amount as number) ?? 0,
+      taxRate: (r.tax_rate as TaxRate | null) ?? 0,
+      taxAmount: (r.tax_amount as number | null) ?? 0,
+      grossAmount: (r.gross_amount as number | null) ?? (r.total_amount as number) ?? 0,
     }));
+    const totals = calculateDocumentTotals(
+      items.map((item) => ({
+        netAmount: item.totalAmount,
+        taxRate: item.taxRate,
+        taxAmount: item.taxAmount,
+        grossAmount: item.grossAmount,
+      })),
+    );
 
     return {
       id: doc.id as string,
@@ -297,7 +330,11 @@ export const getDocumentPreview = cache(
       issueDate: (doc.issue_date as string | null) ?? null,
       serviceDate: (doc.service_date as string | null) ?? null,
       isKleinunternehmer: Boolean(doc.is_kleinunternehmer),
-      totalAmount: (doc.total_amount as number | null) ?? 0,
+      defaultTaxRate: (doc.default_tax_rate as TaxRate | null) ?? 19,
+      totalAmount: totals.grossAmount,
+      netAmount: totals.netAmount,
+      taxAmount: totals.taxAmount,
+      taxGroups: totals.taxGroups,
       company: toCompany(companyRes.data as unknown as Record<string, unknown>),
       customer: toPreviewCustomer(doc.customer_snapshot),
       items,
@@ -349,6 +386,7 @@ export async function findReusableDraft(companyId: string): Promise<string | nul
 export async function insertDraftDocument(
   companyId: string,
   isKleinunternehmer: boolean,
+  defaultTaxRate: TaxRate,
 ): Promise<{ id: string } | { error: string }> {
   const user = await getCurrentUser();
   if (!user) return { error: "notAuthenticated" };
@@ -362,7 +400,10 @@ export async function insertDraftDocument(
       document_type: "invoice",
       status: "draft",
       is_kleinunternehmer: isKleinunternehmer,
+      default_tax_rate: defaultTaxRate,
       customer_snapshot: {},
+      subtotal_amount: 0,
+      tax_amount: 0,
       total_amount: 0,
       // issue_date direkt setzen: Schritt 1 (Kunde) ist überspringbar, das
       // Ausstellungsdatum (§14-Pflichtangabe) darf dabei nicht fehlen. Die
@@ -481,18 +522,43 @@ export async function markDocumentPaid(documentId: string): Promise<{ error?: st
 }
 
 /** documents.total_amount setzen (nur Entwürfe – finalisierte sind eingefroren). */
-export async function setDraftDocumentTotal(
+export async function setDraftDocumentTotals(
   companyId: string,
   documentId: string,
-  total: number,
+  totals: { netAmount: number; taxAmount: number; grossAmount: number },
 ): Promise<void> {
   const supabase = await createClient();
   await supabase
     .from("documents")
-    .update({ total_amount: total })
+    .update({
+      subtotal_amount: totals.netAmount,
+      tax_amount: totals.taxAmount,
+      total_amount: totals.grossAmount,
+    })
     .eq("id", documentId)
     .eq("company_id", companyId)
     .eq("status", "draft");
+}
+
+/** Eingefrorene Steuerkonfiguration eines Entwurfs. */
+export async function getDraftTaxConfig(
+  documentId: string,
+): Promise<{ defaultTaxRate: TaxRate } | null> {
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return null;
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("documents")
+    .select("default_tax_rate")
+    .eq("id", documentId)
+    .eq("company_id", companyId)
+    .eq("status", "draft")
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    defaultTaxRate: (data.default_tax_rate as TaxRate | null) ?? 19,
+  };
 }
 
 /**
