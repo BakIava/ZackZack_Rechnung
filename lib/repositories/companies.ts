@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
 import type { CompanySettings, SettingsData } from "@/types/company";
+import type { TaxRate } from "@/types/database";
+import { resolveDocumentDefaultTaxRate } from "@/lib/documents/tax";
 
 export type GetSettingsResult =
   | { ok: true; data: SettingsData }
@@ -16,7 +18,7 @@ export type GetSettingsResult =
 const COMPANY_COLUMNS =
   "id, name, legal_form, street, street_no, postcode, city, phone, mobile, fax, " +
   "email, director, steuernummer, ust_id, registergericht, handelsregister_nr, " +
-  "kleinunternehmer, bank_name, iban, bic, account_holder, logo_url, payment_days";
+  "kleinunternehmer, default_tax_rate, bank_name, iban, bic, account_holder, logo_url, payment_days";
 
 const COMPANY_COLUMNS_FALLBACK =
   "id, name, legal_form, street, street_no, postcode, city, phone, " +
@@ -27,7 +29,8 @@ const COMPANY_DEFAULTS: Partial<CompanySettings> = {
   fax: null,
   registergericht: null,
   handelsregister_nr: null,
-  payment_days: 14
+  payment_days: 14,
+  default_tax_rate: 19,
 };
 
 /** Vollständige Stammdaten + Auth-E-Mail + aktuelle Rechnungsnummer (Einstellungen). */
@@ -113,15 +116,25 @@ export async function getCompanyNameAndPaymentDays(
   };
 }
 
-/** §19-Default der Firma (Snapshot beim Anlegen eines Entwurfs). */
-export async function getCompanyKleinunternehmer(companyId: string): Promise<boolean> {
+/** Steuerstatus und Standardsatz für den Snapshot eines neuen Dokuments. */
+export async function getCompanyTaxSettings(
+  companyId: string,
+): Promise<{ isKleinunternehmer: boolean; defaultTaxRate: TaxRate }> {
   const supabase = await createClient();
-  const { data: company } = await supabase
+  const { data } = await supabase
     .from("companies")
-    .select("kleinunternehmer")
+    .select("kleinunternehmer, default_tax_rate")
     .eq("id", companyId)
     .maybeSingle();
-  return company?.kleinunternehmer ?? true;
+  const isKleinunternehmer = data?.kleinunternehmer ?? true;
+  const companyDefaultRate = (data?.default_tax_rate as TaxRate | null) ?? 19;
+  return {
+    isKleinunternehmer,
+    defaultTaxRate: resolveDocumentDefaultTaxRate(
+      companyDefaultRate,
+      isKleinunternehmer,
+    ),
+  };
 }
 
 /** Teil-Update der Stammdaten (Patch mit DB-Spaltennamen). */

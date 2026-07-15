@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronLeft, ChevronRight, FileText, Lock, Plus, ReceiptText, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, Plus, ReceiptText, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { Modal } from "@/components/ui";
@@ -24,10 +24,16 @@ import {
   updateItem,
 } from "@/lib/documents/item-actions";
 import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
+import { shouldShowTaxDetails } from "@/lib/documents/tax";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
 import { NumberPad, type PadField } from "./number-pad";
 import { PositionCard } from "./position-card";
+import {
+  PositionEditor,
+  type PositionEditorState,
+  type SheetField,
+} from "./position-sheets";
 
 const STROKE = 1.75;
 
@@ -52,6 +58,7 @@ export function Step2Main({
   const t = useTranslations("Step2");
   const router = useRouter();
   const [items, setItems] = useState<DraftItem[]>(initialItems);
+  const [totals, setTotals] = useState(context.totals);
   const [modalOpen, setModalOpen] = useState(false);
   const [pad, setPad] = useState<{
     itemId: string;
@@ -60,13 +67,23 @@ export function Step2Main({
     name: string;
     initial: string;
   } | null>(null);
+  const [editor, setEditor] = useState<{ itemId: string; field: SheetField } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
-  const total = items.reduce((sum, i) => sum + i.totalAmount, 0);
   const docLabel = t(context.docType);
+  const showTaxDetails = shouldShowTaxDetails(context.isKleinunternehmer, items);
+
+  const activeEditor: PositionEditorState | null = editor
+    ? (() => {
+        const item = items.find((i) => i.id === editor.itemId);
+        return item
+          ? { item, field: editor.field, vat: item.taxRateOverridden ? item.taxRate : null }
+          : null;
+      })()
+    : null;
 
   function run(action: () => Promise<ItemsResult>) {
     setError(null);
@@ -77,6 +94,7 @@ export function Step2Main({
         return;
       }
       setItems(res.items);
+      setTotals(res.totals);
     });
   }
 
@@ -93,6 +111,22 @@ export function Step2Main({
     run(() => addFremdItem(documentId, input));
   };
   const remove = (id: string) => run(() => deleteItem(id));
+
+  const editDesc = (item: DraftItem) => setEditor({ itemId: item.id, field: "desc" });
+  const editUnit = (item: DraftItem) => setEditor({ itemId: item.id, field: "unit" });
+  const editVat = (item: DraftItem) => setEditor({ itemId: item.id, field: "vat" });
+  const commitDesc = (itemId: string, value: string) => {
+    setEditor(null);
+    run(() => updateItem(itemId, { descriptionDe: value }));
+  };
+  const commitUnit = (itemId: string, unit: string) => {
+    setEditor(null);
+    run(() => updateItem(itemId, { unit }));
+  };
+  const commitVat = (itemId: string, vat: DraftItem["taxRate"] | null) => {
+    setEditor(null);
+    run(() => updateItem(itemId, { taxRate: vat }));
+  };
 
   const openPad = (item: DraftItem, field: PadField) => {
     let initial: string;
@@ -212,7 +246,12 @@ export function Step2Main({
                     item={item}
                     index={i}
                     disabled={pending}
+                    vat={item.taxRateOverridden ? item.taxRate : null}
+                    companyVat={context.defaultTaxRate}
                     onOpenPad={openPad}
+                    onEditDesc={editDesc}
+                    onEditUnit={editUnit}
+                    onEditVat={editVat}
                     onDelete={remove}
                   />
                 ))}
@@ -224,16 +263,23 @@ export function Step2Main({
             <div className="d2-sum-t">{t("summary")}</div>
             <div className="d2-sum-lines">
               <div className="d2-sum-line"><span>{t("positionsWord")}</span><b>{items.length}</b></div>
-              <div className="d2-sum-line"><span>{t("total")} ({t("net")})</span><b>{formatMoney(total)}</b></div>
+              {showTaxDetails && (
+                <div className="d2-sum-line"><span>{t("netSub")}</span><b>{formatMoney(totals.netAmount)}</b></div>
+              )}
+              {showTaxDetails && totals.taxGroups.map((g) => (
+                <div className="d2-sum-line d2-sum-line--vat" key={g.rate}>
+                  <span>{t("addVat")} {g.rate} %</span>
+                  <b>{formatMoney(g.taxAmount)}</b>
+                </div>
+              ))}
             </div>
             <div className="d2-sum-div" />
-            <div className="d2-sum-total"><span className="d2-sum-total-l">{t("total")}</span><span className="d2-sum-total-v">{formatMoney(total)}</span></div>
-            {context.isKleinunternehmer && (
-              <div className="d2-sum-ku">
-                <Lock size={14} strokeWidth={STROKE} aria-hidden />
-                {t("kuNote")}
-              </div>
-            )}
+            <div className="d2-sum-total">
+              <span className="d2-sum-total-l">{t(showTaxDetails ? "grossTotal" : "netSub")}</span>
+              <span className="d2-sum-total-v">
+                {formatMoney(showTaxDetails ? totals.grossAmount : totals.netAmount)}
+              </span>
+            </div>
             <button
               type="button"
               className="d2-sum-btn"
@@ -284,6 +330,15 @@ export function Step2Main({
           onClose={() => setPad(null)}
         />
       )}
+
+      <PositionEditor
+        editor={activeEditor}
+        companyVat={context.defaultTaxRate}
+        onClose={() => setEditor(null)}
+        onCommitDesc={commitDesc}
+        onCommitUnit={commitUnit}
+        onCommitVat={commitVat}
+      />
     </main>
   );
 }

@@ -237,6 +237,13 @@
   border-color: var(--primary);
 }
 
+.set-select:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: var(--surface);
+  opacity: 1;
+}
+
 /* ── Speichern-Buttons ────────────────────────────────────────────────────── */
 .set-save {
   display: inline-flex;

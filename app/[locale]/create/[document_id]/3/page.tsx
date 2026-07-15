@@ -23,7 +23,7 @@ export default async function Step3Page({ params }: Step3PageProps) {
 
   // Pflichtangaben-Check serverseitig – blockt Finalisieren bis alles grün ist.
   // Empfängerangaben sind betragsabhängig (Kleinbetragsrechnung bis 250 €).
-  const totalAmountCents = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
+  const totalAmountCents = preview.totalAmount;
   const checks = pruefeDokumentPflicht({
     companyName: preview.company.name,
     companyStreet: preview.company.street,

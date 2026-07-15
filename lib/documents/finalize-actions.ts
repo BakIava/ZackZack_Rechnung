@@ -3,6 +3,7 @@
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { finalizeDocumentRpc, getDocumentPreview } from "@/lib/repositories/documents";
 import { archiveDocumentPdf } from "@/lib/pdf/pdf-storage";
+import { canFinalizePreview } from "./finalize-validation";
 
 export type FinalizeError =
   | "notAuthenticated"
@@ -21,6 +22,7 @@ function mapError(message: string): FinalizeError {
   if (message.includes("not_authenticated")) return "notAuthenticated";
   if (message.includes("document_not_finalizable")) return "notFinalizable";
   if (message.includes("issue_date_missing")) return "issueDateMissing";
+  if (message.includes("positions_missing")) return "notFinalizable";
   return "unknown";
 }
 
@@ -33,6 +35,11 @@ function mapError(message: string): FinalizeError {
 export async function finalizeDocument(documentId: string): Promise<FinalizeResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "notAuthenticated" };
+
+  const draftPreview = await getDocumentPreview(documentId);
+  if (!draftPreview || draftPreview.status !== "draft" || !canFinalizePreview(draftPreview)) {
+    return { error: "notFinalizable" };
+  }
 
   const result = await finalizeDocumentRpc(documentId);
   if ("errorMessage" in result) {

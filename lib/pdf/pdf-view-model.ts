@@ -18,6 +18,7 @@ import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
 import { deriveInitials } from "../initials";
 import { getCustomerName } from "../customers/utils";
+import { shouldShowTaxDetails } from "../documents/tax";
 
 export interface PdfRow {
   position: number;
@@ -25,6 +26,12 @@ export interface PdfRow {
   mengeText: string;
   unitPriceText: string;
   totalText: string;
+  taxRateText: string;
+}
+
+export interface PdfTaxLine {
+  label: string;
+  amountText: string;
 }
 
 export interface PdfViewModel {
@@ -54,6 +61,9 @@ export interface PdfViewModel {
   rows: PdfRow[];
 
   gesamtNettoLabel: string;
+  netTotalText: string;
+  showTaxDetails: boolean;
+  taxLines: PdfTaxLine[];
   sumLabel: string;
   totalText: string;
 
@@ -82,10 +92,9 @@ function joinTrim(parts: (string | null | undefined)[], sep: string): string {
 export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
   const { company: co, customer: rc, docType, isKleinunternehmer } = preview;
   const isRechnung = docType === "invoice";
+  const showTaxDetails = shouldShowTaxDetails(isKleinunternehmer, preview.items);
 
   // Summe strikt aus den Zeilen (Verkaufspreis) — nie aus internen Feldern.
-  const total = preview.items.reduce((sum, p) => sum + p.totalAmount, 0);
-
   const coStreet = joinTrim([co.street, co.streetNo], " ");
   const coCity = joinTrim([co.postcode, co.city], " ");
   const rcStreet = rc ? joinTrim([rc.street, rc.streetNo], " ") : "";
@@ -153,15 +162,24 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
       mengeText: joinTrim([String(p.amount), p.unit], " "),
       unitPriceText: formatMoney(p.unitPrice),
       totalText: formatMoney(p.totalAmount),
+      taxRateText: showTaxDetails ? `${p.taxRate} %` : "",
     })),
 
     gesamtNettoLabel: DOKUMENT_DE.gesamtNetto,
+    netTotalText: formatMoney(preview.netAmount),
+    showTaxDetails,
+    taxLines: showTaxDetails
+      ? preview.taxGroups.map((group) => ({
+          label: `${DOKUMENT_DE.umsatzsteuer} ${group.rate} %`,
+          amountText: formatMoney(group.taxAmount),
+        }))
+      : [],
     sumLabel: isRechnung
       ? DOKUMENT_DE.rechnungsbetrag
       : DOKUMENT_DE.angebotssumme,
-    totalText: formatMoney(total),
+    totalText: formatMoney(preview.totalAmount),
 
-    showKleinunternehmerHinweis: isKleinunternehmer,
+    showKleinunternehmerHinweis: isKleinunternehmer && !showTaxDetails,
     kleinunternehmerHinweis: DOKUMENT_DE.kleinunternehmerHinweis,
 
     paymentText,

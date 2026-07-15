@@ -4,11 +4,24 @@
  * außerhalb von types/.
  */
 
-import type { DocStatus, DocType, SurchargeType } from "./database";
+import type { DocStatus, DocType, SurchargeType, TaxRate } from "./database";
 import type { PreviewCompany } from "./company";
 import type { PreviewCustomer } from "./customer";
 
-export type { DocStatus, DocType, SurchargeType };
+export type { DocStatus, DocType, SurchargeType, TaxRate };
+
+export interface TaxGroup {
+  rate: TaxRate;
+  netAmount: number;
+  taxAmount: number;
+}
+
+export interface DocumentTotals {
+  netAmount: number;
+  taxAmount: number;
+  grossAmount: number;
+  taxGroups: TaxGroup[];
+}
 
 /** Anzeige-Status in der Bediensprache (Dashboard/Dokumentenliste). */
 export type UiDocumentStatus = "bezahlt" | "offen" | "versendet" | "entwurf";
@@ -40,7 +53,10 @@ export interface DocumentItem {
   amount: number;
   unit: string;
   unitPrice: number; // cents
-  totalAmount: number; // cents
+  totalAmount: number; // cents netto
+  taxRate: TaxRate;
+  taxAmount: number; // cents
+  grossAmount: number; // cents
 }
 
 export interface DocumentsPageData {
@@ -85,7 +101,12 @@ export interface DocumentPreview {
   issueDate: string | null; // YYYY-MM-DD
   serviceDate: string | null; // YYYY-MM-DD
   isKleinunternehmer: boolean;
+  defaultTaxRate: TaxRate;
+  /** Bruttobetrag; bei §19 identisch mit netAmount. */
   totalAmount: number; // cents
+  netAmount: number; // cents
+  taxAmount: number; // cents
+  taxGroups: TaxGroup[];
   company: PreviewCompany;
   customer: PreviewCustomer | null;
   items: DocumentItem[];
@@ -108,6 +129,11 @@ export interface DraftItem {
   unit: string;
   unitPrice: number; // cents – Verkaufspreis, geht aufs Dokument
   totalAmount: number; // cents
+  taxRate: TaxRate;
+  /** false = Dokument-/Firmenstandard; true = Positionsüberschreibung. */
+  taxRateOverridden: boolean;
+  taxAmount: number; // cents
+  grossAmount: number; // cents
   purchasePrice: number | null; // cents – intern
   surcharge: number | null; // percent: Basispunkte (1250 = 12,50 %); fixed: cents – intern
   surchargeType: SurchargeType | null; // intern
@@ -119,6 +145,8 @@ export interface DraftContext {
   customerName: string;
   customerInitials: string;
   isKleinunternehmer: boolean;
+  defaultTaxRate: TaxRate;
+  totals: DocumentTotals;
 }
 
 export interface FreeItemInput {
@@ -145,4 +173,6 @@ export interface ItemPatch {
   purchasePrice?: number | null; // cents – intern
   surcharge?: number | null; // intern
   surchargeType?: SurchargeType | null; // intern
+  /** null setzt die Position auf den eingefrorenen Dokumentstandard zurück. */
+  taxRate?: TaxRate | null;
 }

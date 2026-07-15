@@ -27,6 +27,9 @@ export type DocStatus = "draft" | "finalized" | "sent" | "paid" | "cancelled";
 /** document_items.surcharge_type — Fremdleistungs-Aufschlag (strikt intern) */
 export type SurchargeType = "percent" | "fixed";
 
+/** Unterstützte Umsatzsteuersätze in Prozent. */
+export type TaxRate = 0 | 7 | 19;
+
 export type CustomerType = "private" | "business";
 
 /** public.companies */
@@ -49,6 +52,8 @@ export interface CompanyRow {
   handelsregister_nr: string | null;
   /** Kleinunternehmer §19 UStG (NOT NULL, Default true) */
   kleinunternehmer: boolean;
+  /** Standard-USt.-Satz; bleibt auch bei §19 für einen späteren Statuswechsel erhalten. */
+  default_tax_rate: TaxRate;
   bank_name: string | null;
   iban: string | null;
   bic: string | null;
@@ -127,7 +132,11 @@ export interface DocumentRow {
   /** Eingefrorene Empfängerkopie (jsonb, nullable) – nie als Live-Join. */
   customer_snapshot: unknown;
   total_amount: number; // cents, NOT NULL Default 0
+  subtotal_amount: number; // cents netto, NOT NULL Default 0
+  tax_amount: number; // cents, NOT NULL Default 0
   is_kleinunternehmer: boolean;
+  /** Eingefrorener Firmenstandard beim Anlegen des Dokuments. */
+  default_tax_rate: TaxRate;
   created_at: string;
   updated_at: string;
   paid_at: string | null; // ISO timestamp
@@ -149,6 +158,10 @@ export interface DocumentItemRow {
   unit: string | null;
   unit_price: number; // cents – Verkaufspreis
   total_amount: number; // cents
+  tax_rate: TaxRate; // effektiv angewendeter Satz
+  tax_rate_overridden: boolean; // false = Dokumentstandard
+  tax_amount: number; // cents, auf Zeilenebene gerundet
+  gross_amount: number; // cents
   purchase_price: number | null; // cents – intern
   surcharge: number | null; // percent: Basispunkte; fixed: cents – intern
   surcharge_type: SurchargeType | null; // intern

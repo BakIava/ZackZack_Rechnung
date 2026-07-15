@@ -80,21 +80,24 @@ function Parties({ vm }: { vm: PdfViewModel }) {
 }
 
 function ItemsTable({ vm }: { vm: PdfViewModel }) {
+  const showTaxDetails = vm.showTaxDetails;
   return (
     <View>
       <View style={s.tHead}>
         <Text style={[s.tHeadCell, s.cPos]}>{DOKUMENT_DE.pos}</Text>
-        <Text style={[s.tHeadCell, s.cDesc]}>{DOKUMENT_DE.bezeichnung}</Text>
-        <Text style={[s.tHeadCell, s.cQty]}>{DOKUMENT_DE.menge}</Text>
-        <Text style={[s.tHeadCell, s.cPrice]}>{DOKUMENT_DE.einzelpreis}</Text>
+        <Text style={[s.tHeadCell, showTaxDetails ? s.cDesc : s.cDescNoVat]}>{DOKUMENT_DE.bezeichnung}</Text>
+        <Text style={[s.tHeadCell, showTaxDetails ? s.cQty : s.cQtyNoVat]}>{DOKUMENT_DE.menge}</Text>
+        <Text style={[s.tHeadCell, showTaxDetails ? s.cPrice : s.cPriceNoVat]}>{DOKUMENT_DE.einzelpreis}</Text>
+        {showTaxDetails && <Text style={[s.tHeadCell, s.cVat]}>{DOKUMENT_DE.umsatzsteuer}</Text>}
         <Text style={[s.tHeadCell, s.cTotal]}>{DOKUMENT_DE.gesamtSpalte}</Text>
       </View>
       {vm.rows.map((r) => (
         <View key={r.position} style={s.tRow} wrap={false}>
           <Text style={[s.cellText, s.cPos]}>{r.position}</Text>
-          <Text style={[s.cellText, s.cDesc]}>{r.descriptionDe}</Text>
-          <Text style={[s.cellText, s.cQty]}>{r.mengeText}</Text>
-          <Text style={[s.cellText, s.cPrice]}>{r.unitPriceText}</Text>
+          <Text style={[s.cellText, showTaxDetails ? s.cDesc : s.cDescNoVat]}>{r.descriptionDe}</Text>
+          <Text style={[s.cellText, showTaxDetails ? s.cQty : s.cQtyNoVat]}>{r.mengeText}</Text>
+          <Text style={[s.cellText, showTaxDetails ? s.cPrice : s.cPriceNoVat]}>{r.unitPriceText}</Text>
+          {showTaxDetails && <Text style={[s.cellText, s.cVat]}>{r.taxRateText}</Text>}
           <Text style={[s.cellText, s.cTotal]}>{r.totalText}</Text>
         </View>
       ))}
@@ -106,13 +109,25 @@ function Totals({ vm }: { vm: PdfViewModel }) {
   return (
     <View style={s.sumWrap}>
       <View style={s.sumBox}>
-        <View style={s.sumLine}>
-          <Text style={s.sumLineLabel}>{vm.gesamtNettoLabel}</Text>
-          <Text style={s.sumLineVal}>{vm.totalText}</Text>
-        </View>
+        {vm.showTaxDetails && (
+          <View style={s.sumLine}>
+            <Text style={s.sumLineLabel}>{vm.gesamtNettoLabel}</Text>
+            <Text style={s.sumLineVal}>{vm.netTotalText}</Text>
+          </View>
+        )}
+        {vm.taxLines.map((line) => (
+          <View key={line.label} style={s.sumLine}>
+            <Text style={s.sumLineLabel}>{line.label}</Text>
+            <Text style={s.sumLineVal}>{line.amountText}</Text>
+          </View>
+        ))}
         <View style={s.grand}>
-          <Text style={s.grandLabel}>{vm.sumLabel}</Text>
-          <Text style={s.grandVal}>{vm.totalText}</Text>
+          <Text style={s.grandLabel}>
+            {vm.showTaxDetails ? vm.sumLabel : vm.gesamtNettoLabel}
+          </Text>
+          <Text style={s.grandVal}>
+            {vm.showTaxDetails ? vm.totalText : vm.netTotalText}
+          </Text>
         </View>
       </View>
     </View>

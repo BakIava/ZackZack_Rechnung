@@ -6,7 +6,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import type { DraftItem, SurchargeType } from "@/types/document";
+import type { DraftItem, SurchargeType, TaxRate } from "@/types/document";
 
 /** Positionen eines Drafts, sortiert nach position. */
 export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
@@ -17,7 +17,7 @@ export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
   const { data, error } = await supabase
     .from("document_items")
     .select(
-      "id, service_id, position, description_de, amount, unit, unit_price, total_amount, purchase_price, surcharge, surcharge_type",
+      "id, service_id, position, description_de, amount, unit, unit_price, total_amount, tax_rate, tax_rate_overridden, tax_amount, gross_amount, purchase_price, surcharge, surcharge_type",
     )
     .eq("document_id", documentId)
     .eq("company_id", companyId)
@@ -34,12 +34,15 @@ export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
     unit: (r.unit as string) ?? "",
     unitPrice: (r.unit_price as number) ?? 0,
     totalAmount: (r.total_amount as number) ?? 0,
+    taxRate: (r.tax_rate as TaxRate | null) ?? 0,
+    taxRateOverridden: Boolean(r.tax_rate_overridden),
+    taxAmount: (r.tax_amount as number | null) ?? 0,
+    grossAmount: (r.gross_amount as number | null) ?? (r.total_amount as number) ?? 0,
     purchasePrice: (r.purchase_price as number | null) ?? null,
     surcharge: (r.surcharge as number | null) ?? null,
     surchargeType: (r.surcharge_type as DraftItem["surchargeType"]) ?? null,
   }));
 }
-
 /** Welche der übergebenen Dokumente haben mindestens eine Position? */
 export async function getDocumentIdsWithItems(
   companyId: string,
@@ -98,6 +101,10 @@ export async function insertDocumentItem(
     unit: string;
     unitPrice: number;
     totalAmount: number;
+    taxRate: TaxRate;
+    taxRateOverridden: boolean;
+    taxAmount: number;
+    grossAmount: number;
     purchasePrice?: number;
     surcharge?: number;
     surchargeType?: SurchargeType;
@@ -114,6 +121,10 @@ export async function insertDocumentItem(
     unit: item.unit,
     unit_price: item.unitPrice,
     total_amount: item.totalAmount,
+    tax_rate: item.taxRate,
+    tax_rate_overridden: item.taxRateOverridden,
+    tax_amount: item.taxAmount,
+    gross_amount: item.grossAmount,
   };
   if (item.purchasePrice !== undefined) row.purchase_price = item.purchasePrice;
   if (item.surcharge !== undefined) row.surcharge = item.surcharge;
@@ -132,6 +143,8 @@ export async function getItemPricing(itemId: string): Promise<{
   purchasePrice: number | null;
   surcharge: number | null;
   surchargeType: SurchargeType | null;
+  taxRate: TaxRate;
+  taxRateOverridden: boolean;
 } | null> {
   const companyId = await getCurrentCompanyId();
   if (!companyId) return null;
@@ -140,7 +153,7 @@ export async function getItemPricing(itemId: string): Promise<{
   const { data: item } = await supabase
     .from("document_items")
     .select(
-      "document_id, amount, unit_price, purchase_price, surcharge, surcharge_type",
+      "document_id, amount, unit_price, purchase_price, surcharge, surcharge_type, tax_rate, tax_rate_overridden",
     )
     .eq("id", itemId)
     .eq("company_id", companyId)
@@ -154,6 +167,8 @@ export async function getItemPricing(itemId: string): Promise<{
     purchasePrice: (item.purchase_price as number | null) ?? null,
     surcharge: (item.surcharge as number | null) ?? null,
     surchargeType: (item.surcharge_type as SurchargeType | null) ?? null,
+    taxRate: (item.tax_rate as TaxRate | null) ?? 0,
+    taxRateOverridden: Boolean(item.tax_rate_overridden),
   };
 }
 
@@ -230,21 +245,4 @@ export async function setItemPosition(
     .update({ position })
     .eq("id", itemId)
     .eq("company_id", companyId);
-}
-
-/** Summe aller Positionsbeträge eines Dokuments (Cents). */
-export async function sumItemTotals(
-  companyId: string,
-  documentId: string,
-): Promise<number> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("document_items")
-    .select("total_amount")
-    .eq("document_id", documentId)
-    .eq("company_id", companyId);
-  return (data ?? []).reduce(
-    (sum, r) => sum + ((r.total_amount as number | null) ?? 0),
-    0,
-  );
 }

@@ -11,7 +11,11 @@ function base(overrides: Partial<DocumentPreview>): DocumentPreview {
     issueDate: "2026-06-09",
     serviceDate: null,
     isKleinunternehmer: true,
+    defaultTaxRate: 0,
+    netAmount: 0,
+    taxAmount: 0,
     totalAmount: 0,
+    taxGroups: [],
     company: {
       name: "Firma",
       legalForm: null,
