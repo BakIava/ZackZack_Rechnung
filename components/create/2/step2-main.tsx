@@ -266,7 +266,6 @@ export function Step2Main({
                     disabled={pending}
                     vat={vatByItem[item.id] ?? null}
                     companyVat={PLACEHOLDER_COMPANY_VAT}
-                    klein={klein}
                     onOpenPad={openPad}
                     onEditDesc={editDesc}
                     onEditUnit={editUnit}

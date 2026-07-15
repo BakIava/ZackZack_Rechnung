@@ -17,8 +17,6 @@ interface PositionCardProps {
   vat: number | null;
   /** Firmen-Standardsatz (Design-Platzhalter, bis Backend MwSt. liefert). */
   companyVat: number;
-  /** Kleinunternehmer §19: kein MwSt.-Ausweis, kein VAT-Chip. */
-  klein: boolean;
   onOpenPad: (item: DraftItem, field: PadField) => void;
   onEditDesc: (item: DraftItem) => void;
   onEditUnit: (item: DraftItem) => void;
@@ -36,13 +34,16 @@ export function PositionCard({
   disabled,
   vat,
   companyVat,
-  klein,
   onOpenPad,
   onEditDesc,
   onEditUnit,
   onEditVat,
   onDelete,
 }: PositionCardProps) {
+  // MwSt.-Chip ist ein reiner Editor-Platzhalter (nicht persistiert, erreicht
+  // nie das Dokument/PDF) und wird bewusst für ALLE Betriebe gezeigt – auch
+  // §19 –, damit die Bedienung sichtbar/testbar ist. Der §19-Hinweis in der
+  // Zusammenfassung bleibt davon unberührt.
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
   // Prozentaufschlag exakt aus dem gespeicherten Wert lesen (12,50 % = 1250 bp);
@@ -177,24 +178,22 @@ export function PositionCard({
         </div>
       )}
 
-      {!klein && (
-        <div className="d2vatrow">
-          <button
-            type="button"
-            className="d2vat"
-            data-def={vatIsDefault ? "1" : "0"}
-            disabled={disabled}
-            onClick={() => onEditVat(item)}
-          >
-            <Percent size={13} strokeWidth={STROKE} aria-hidden />
-            <span className="d2vat-l">{t("vat")}</span>
-            <span className="d2vat-v">
-              {vatIsDefault ? t("vatStdOn", { rate: companyVat }) : `${vatRate} %`}
-            </span>
-            <ChevronDown size={13} strokeWidth={STROKE} aria-hidden />
-          </button>
-        </div>
-      )}
+      <div className="d2vatrow">
+        <button
+          type="button"
+          className="d2vat"
+          data-def={vatIsDefault ? "1" : "0"}
+          disabled={disabled}
+          onClick={() => onEditVat(item)}
+        >
+          <Percent size={13} strokeWidth={STROKE} aria-hidden />
+          <span className="d2vat-l">{t("vat")}</span>
+          <span className="d2vat-v">
+            {vatIsDefault ? t("vatStdOn", { rate: companyVat }) : `${vatRate} %`}
+          </span>
+          <ChevronDown size={13} strokeWidth={STROKE} aria-hidden />
+        </button>
+      </div>
     </div>
   );
 }
