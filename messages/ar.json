@@ -342,7 +342,18 @@
     "markupFixed": "مبلغ ثابت",
     "itemError": "فشلت العملية. يرجى المحاولة مرة أخرى.",
     "noCatalogResults": "لم يتم العثور على خدمة",
-    "catalogEmpty": "لا توجد خدمات في الكتالوج بعد"
+    "catalogEmpty": "لا توجد خدمات في الكتالوج بعد",
+    "editDescT": "الوصف",
+    "editUnitT": "اختر الوحدة",
+    "editVatT": "ضريبة القيمة المضافة",
+    "descPh": "مثل طلاء الجدران",
+    "vat": "ض.ق.م",
+    "vatStd": "افتراضي",
+    "vatStdOn": "افتراضي ({rate}٪)",
+    "netSub": "المجموع الفرعي (صافي)",
+    "addVat": "+ ض.ق.م",
+    "grossTotal": "الإجمالي (شامل)",
+    "kuSumNote": "لا تُحتسب ضريبة وفقاً للمادة §19"
   },
   "StepHeader": {
     "progress": "الخطوة {step} من {total}"

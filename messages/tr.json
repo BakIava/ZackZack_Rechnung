@@ -342,7 +342,18 @@
     "markupFixed": "Sabit tutar",
     "itemError": "İşlem başarısız. Lütfen tekrar deneyin.",
     "noCatalogResults": "Hizmet bulunamadı",
-    "catalogEmpty": "Katalogda henüz hizmet yok"
+    "catalogEmpty": "Katalogda henüz hizmet yok",
+    "editDescT": "Açıklama",
+    "editUnitT": "Birim seç",
+    "editVatT": "KDV",
+    "descPh": "ör. Duvar boyama",
+    "vat": "KDV",
+    "vatStd": "Standart",
+    "vatStdOn": "Standart (%{rate})",
+    "netSub": "Ara toplam (net)",
+    "addVat": "+ KDV",
+    "grossTotal": "Toplam (brüt)",
+    "kuSumNote": "§19 UStG uyarınca KDV hesaplanmaz"
   },
   "StepHeader": {
     "progress": "Adım {step} / {total}"

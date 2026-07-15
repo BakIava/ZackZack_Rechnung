@@ -342,7 +342,18 @@
     "markupFixed": "Festbetrag",
     "itemError": "Aktion fehlgeschlagen. Bitte erneut versuchen.",
     "noCatalogResults": "Keine Leistung gefunden",
-    "catalogEmpty": "Noch keine Leistungen im Katalog"
+    "catalogEmpty": "Noch keine Leistungen im Katalog",
+    "editDescT": "Bezeichnung",
+    "editUnitT": "Einheit wählen",
+    "editVatT": "Mehrwertsteuer",
+    "descPh": "z. B. Malerarbeiten Wandfläche",
+    "vat": "MwSt.",
+    "vatStd": "Standard",
+    "vatStdOn": "Standard ({rate} %)",
+    "netSub": "Zwischensumme (netto)",
+    "addVat": "zzgl. MwSt",
+    "grossTotal": "Gesamt (brutto)",
+    "kuSumNote": "Keine Umsatzsteuer gemäß §19 UStG"
   },
   "StepHeader": {
     "progress": "Schritt {step} von {total}"
