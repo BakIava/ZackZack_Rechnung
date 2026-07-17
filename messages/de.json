@@ -596,6 +596,20 @@
       "trades_invalid": "Die Gewerk-Auswahl ist ungültig. Bitte wähle erneut.",
       "not_authenticated": "Nicht angemeldet. Bitte melde dich erneut an.",
       "setup_failed": "Die Einrichtung konnte nicht abgeschlossen werden. Bitte versuche es erneut."
+    },
+    "extraction": {
+      "errors": {
+        "not_authenticated": "Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.",
+        "unsupported_file": "Bitte wähle eine PDF-, JPG-, PNG- oder WebP-Datei aus.",
+        "file_too_large": "Die Datei ist zu groß. Erlaubt sind höchstens 10 MB.",
+        "upload_failed": "Die Datei konnte nicht hochgeladen werden. Bitte versuche es erneut.",
+        "invalid_document": "Die Datei konnte nicht sicher gelesen werden. Bitte wähle eine andere Datei.",
+        "no_issuer_found": "Wir konnten den Aussteller nicht eindeutig erkennen. Du kannst die Daten manuell eingeben.",
+        "quota_reached": "Heute wurden bereits zu viele Dokumente geprüft. Bitte gib die Daten manuell ein.",
+        "quota_unavailable": "Die automatische Erkennung ist gerade nicht verfügbar. Bitte versuche es später erneut.",
+        "provider_unavailable": "Die automatische Erkennung ist gerade nicht verfügbar. Bitte versuche es erneut.",
+        "cleanup_failed": "Die Verarbeitung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut."
+      }
     }
   }
 }

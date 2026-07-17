@@ -38,6 +38,22 @@
 .ob-up-opt-s { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .ob-up-opt-aff { color: #b6c0c9; flex-shrink: 0; display: flex; }
 .ob-up-opt:hover .ob-up-opt-aff { color: var(--primary); }
+.ob-file-inputs { display: none; }
+.ob-brand-mark { width: 24px; height: 18px; }
+.ob-upload-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-bottom: 12px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--danger, #b42318) 35%, var(--line));
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--danger, #b42318) 7%, var(--surface));
+  color: var(--danger, #b42318);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.ob-upload-error svg { flex-shrink: 0; margin-top: 1px; }
 
 /* ── Scan-Zustand ──────────────────────────────────────────────────────────── */
 .ob-scan {
@@ -49,6 +65,7 @@
   text-align: center;
   padding: 24px var(--pad) 28px;
 }
+.ob-scan--desktop { padding: 26px 20px 30px; }
 .ob-scan-doc {
   width: 138px;
   height: 184px;

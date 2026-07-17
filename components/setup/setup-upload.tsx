@@ -2,10 +2,11 @@
 
 import "./setup-upload.css";
 import Image from "next/image";
+import { useRef, type ChangeEvent } from "react";
 import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
 import { LangLink, Privacy, ScanDoc, DesktopBar, UpProgress } from "./setup-primitives";
-import { UploadOpts } from "./setup-other-fields";
+import { UploadOpts, type SetupUploadSource } from "./setup-other-fields";
 
 interface UploadProps {
   t: Translations;
@@ -13,12 +14,66 @@ interface UploadProps {
   dir: "ltr" | "rtl";
   isMobile: boolean;
   phase: "upload" | "scanning";
-  onScan: () => void;
+  onFileSelect: (file: File) => void;
   onBack: () => void;
   onManual: () => void;
+  fileName: string;
+  errorMessage: string | null;
 }
 
-export function SetupUpload({ t, lang, dir, isMobile, phase, onScan, onBack, onManual }: UploadProps) {
+export function SetupUpload({
+  t,
+  lang,
+  dir,
+  isMobile,
+  phase,
+  onFileSelect,
+  onBack,
+  onManual,
+  fileName,
+  errorMessage,
+}: UploadProps) {
+  const cameraInput = useRef<HTMLInputElement>(null);
+  const galleryInput = useRef<HTMLInputElement>(null);
+  const pdfInput = useRef<HTMLInputElement>(null);
+
+  const handleChoose = (source: SetupUploadSource) => {
+    if (source === "camera") cameraInput.current?.click();
+    if (source === "gallery") galleryInput.current?.click();
+    if (source === "pdf") pdfInput.current?.click();
+  };
+  const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (file) onFileSelect(file);
+  };
+  const fileInputs = (
+    <div className="ob-file-inputs" aria-hidden="true">
+      <input
+        ref={cameraInput}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        capture="environment"
+        onChange={handleFile}
+        tabIndex={-1}
+      />
+      <input
+        ref={galleryInput}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFile}
+        tabIndex={-1}
+      />
+      <input
+        ref={pdfInput}
+        type="file"
+        accept="application/pdf"
+        onChange={handleFile}
+        tabIndex={-1}
+      />
+    </div>
+  );
+
   if (isMobile) {
     if (phase === "scanning") {
       return (
@@ -29,7 +84,7 @@ export function SetupUpload({ t, lang, dir, isMobile, phase, onScan, onBack, onM
             </button>
             <div className="ob-top-mid">
               <div className="ob-top-brand">
-                <Image src="/assets/zackzack-mark.png" alt="" width={18} height={18} style={{ height: 18, width: "auto" }} />
+                <Image src="/assets/zackzack-mark.png" alt="" width={24} height={18} className="ob-brand-mark" />
                 {t.setup}
               </div>
               <div className="ob-top-sub">{t.setupSub}</div>
@@ -40,7 +95,7 @@ export function SetupUpload({ t, lang, dir, isMobile, phase, onScan, onBack, onM
             <ScanDoc />
             <div className="ob-scan-t">{t.scanT}</div>
             <div className="ob-scan-s">{t.scanS}</div>
-            <div className="ob-scan-file"><SetupIcon name="file" size={15} />{t.scanFile}</div>
+            <div className="ob-scan-file"><SetupIcon name="file" size={15} />{fileName || t.scanFile}</div>
             <div className="ob-scan-dots"><i /><i /><i /></div>
             <LangLink lang={lang} />
           </div>
@@ -56,7 +111,7 @@ export function SetupUpload({ t, lang, dir, isMobile, phase, onScan, onBack, onM
           </button>
           <div className="ob-top-mid">
             <div className="ob-top-brand">
-              <Image src="/assets/zackzack-mark.png" alt="" width={18} height={18} style={{ height: 18, width: "auto" }} />
+              <Image src="/assets/zackzack-mark.png" alt="" width={24} height={18} className="ob-brand-mark" />
               {t.setup}
             </div>
             <div className="ob-top-sub">{t.setupSub}</div>
@@ -71,7 +126,14 @@ export function SetupUpload({ t, lang, dir, isMobile, phase, onScan, onBack, onM
               <div className="ob-intro-s">{t.upIntro}</div>
             </div>
           </div>
-          <UploadOpts t={t} onChoose={onScan} />
+          {errorMessage && (
+            <div className="ob-upload-error" role="alert">
+              <SetupIcon name="alert" size={18} />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+          <UploadOpts t={t} onChoose={handleChoose} />
+          {fileInputs}
           <Privacy t={t} flow />
           <LangLink lang={lang} />
         </div>
@@ -92,10 +154,10 @@ export function SetupUpload({ t, lang, dir, isMobile, phase, onScan, onBack, onM
             </div>
             <UpProgress t={t} upIndex={2} />
             <div className="ob-d-card">
-              <div className="ob-scan" style={{ padding: "26px 20px 30px" }}>
+              <div className="ob-scan ob-scan--desktop">
                 <ScanDoc />
                 <div className="ob-scan-s">{t.scanS}</div>
-                <div className="ob-scan-file"><SetupIcon name="file" size={15} />{t.scanFile}</div>
+                <div className="ob-scan-file"><SetupIcon name="file" size={15} />{fileName || t.scanFile}</div>
                 <div className="ob-scan-dots"><i /><i /><i /></div>
               </div>
             </div>
@@ -117,7 +179,14 @@ export function SetupUpload({ t, lang, dir, isMobile, phase, onScan, onBack, onM
           </div>
           <UpProgress t={t} upIndex={1} />
           <div className="ob-d-card">
-            <UploadOpts t={t} onChoose={onScan} />
+            {errorMessage && (
+              <div className="ob-upload-error" role="alert">
+                <SetupIcon name="alert" size={18} />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+            <UploadOpts t={t} onChoose={handleChoose} />
+            {fileInputs}
             <Privacy t={t} flow />
           </div>
           <div className="ob-d-wfoot">
