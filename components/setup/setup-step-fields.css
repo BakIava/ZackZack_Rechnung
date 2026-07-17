@@ -11,10 +11,21 @@
   border-radius: var(--r);
   border: 2px dashed color-mix(in srgb, var(--primary) 30%, var(--line));
   background: color-mix(in srgb, var(--primary) 4%, var(--surface));
-  cursor: pointer;
   transition: 0.14s;
   width: 100%;
   font-family: inherit;
+}
+.ob-upload-main {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
 }
 .ob-upload:hover {
   border-color: var(--primary);
@@ -46,6 +57,17 @@
   font-size: 12.5px;
   font-weight: 600;
   color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ob-logo-input { display: none; }
+.ob-logo-error {
+  margin-top: 10px;
+  color: #a93226;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: start;
 }
 
 /* ── Logo Vorschau ─────────────────────────────────────────────────────────── */
@@ -59,7 +81,7 @@
   background: var(--surface);
 }
 .ob-logo-thumb {
-  width: 72px;
+  width: 118px;
   height: 72px;
   border-radius: var(--r-sm);
   flex-shrink: 0;

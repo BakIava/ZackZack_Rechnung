@@ -243,7 +243,7 @@ const COMPANY_COLUMNS =
   "name, legal_form, street, street_no, postcode, city, phone, mobile, email, director, steuernummer, ust_id, bank_name, iban, bic, account_holder, logo_url, payment_days";
 
 const DOCUMENT_COLUMNS =
-  "id, document_type, document_number, status, issue_date, service_date, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate";
+  "id, document_type, document_number, status, issue_date, service_date, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured";
 
 function toCompany(row: Record<string, unknown>): PreviewCompany {
   return {
@@ -275,8 +275,7 @@ function toCompany(row: Record<string, unknown>): PreviewCompany {
  * Zugehörigkeit zur eigenen Firma wird geprüft; fremde Dokumente ergeben null.
  * `cache()` dedupliziert den Fetch innerhalb eines Requests.
  */
-export const getDocumentPreview = cache(
-  async (documentId: string): Promise<DocumentPreview | null> => {
+async function loadDocumentPreview(documentId: string): Promise<DocumentPreview | null> {
     const companyId = await getCurrentCompanyId();
     if (!companyId) return null;
 
@@ -322,6 +321,11 @@ export const getDocumentPreview = cache(
       })),
     );
 
+    const company = toCompany(companyRes.data as unknown as Record<string, unknown>);
+    if ((doc.logo_snapshot_captured as boolean | null) === true) {
+      company.logoUrl = (doc.logo_url_snapshot as string | null) ?? null;
+    }
+
     return {
       id: doc.id as string,
       docType: doc.document_type as DocType,
@@ -335,12 +339,20 @@ export const getDocumentPreview = cache(
       netAmount: totals.netAmount,
       taxAmount: totals.taxAmount,
       taxGroups: totals.taxGroups,
-      company: toCompany(companyRes.data as unknown as Record<string, unknown>),
+      company,
       customer: toPreviewCustomer(doc.customer_snapshot),
       items,
     };
-  },
-);
+}
+
+export const getDocumentPreview = cache(loadDocumentPreview);
+
+/** Erzwingt nach einer Mutation einen frischen Read statt des Request-Caches. */
+export async function getDocumentPreviewFresh(
+  documentId: string,
+): Promise<DocumentPreview | null> {
+  return loadDocumentPreview(documentId);
+}
 
 /** Gehört das Dokument der eigenen Firma und ist noch ein Entwurf? */
 export async function isDraftDocument(documentId: string): Promise<boolean> {

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { FileText, X } from "lucide-react";
+import "./zoom-overlay.css";
 
 interface ZoomOverlayProps {
   /** Deutscher Belegtitel (Dokument bleibt LTR/Deutsch). */

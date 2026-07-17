@@ -1,25 +1,32 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { completeOnboardingRpc } from "@/lib/repositories/onboarding";
-import { getCurrentUser } from "@/lib/supabase/auth";
+import { getCurrentCompanyId, getCurrentUser } from "@/lib/supabase/auth";
 import { validateTradeIds } from "@/lib/onboarding/trades";
 import { deleteAllOnboardingUploadsForUser } from "@/lib/repositories/onboarding-uploads";
+import { saveCompanyLogo } from "@/lib/repositories/companies";
+import { prepareCompanyLogo } from "@/lib/company-logo/process";
 import type {
   OnboardingErrorCode,
   SetupFormData,
   SetupValidationErrors,
 } from "@/types/company";
 
-export interface OnboardingResult {
-  error: OnboardingErrorCode;
-  errors?: SetupValidationErrors;
-}
+export type OnboardingResult =
+  | { ok: true; logoUploaded: boolean }
+  | {
+      ok: false;
+      error: OnboardingErrorCode;
+      errors?: SetupValidationErrors;
+      setupCompleted?: boolean;
+    };
 
 export async function completeOnboarding(
   locale: string,
   data: SetupFormData,
-): Promise<OnboardingResult | undefined> {
+  logoFormData?: FormData,
+): Promise<OnboardingResult> {
+  void locale;
   const errors: SetupValidationErrors = {};
 
   if (!data.name.trim()) errors.name = "name_required";
@@ -35,11 +42,21 @@ export async function completeOnboarding(
   }
 
   if (Object.keys(errors).length > 0) {
-    return { error: "required_fields", errors };
+    return { ok: false, error: "required_fields", errors };
   }
 
   const user = await getCurrentUser();
-  if (!user) return { error: "not_authenticated" };
+  if (!user) return { ok: false, error: "not_authenticated" };
+
+  let preparedLogo: Awaited<ReturnType<typeof prepareCompanyLogo>> | null = null;
+  const logoEntry = logoFormData?.get("logo");
+  if (logoEntry !== undefined && logoEntry !== null) {
+    if (!(logoEntry instanceof File)) {
+      return { ok: false, error: "logoFileMissing" };
+    }
+    preparedLogo = await prepareCompanyLogo(logoEntry);
+    if (!preparedLogo.ok) return { ok: false, error: preparedLogo.error };
+  }
   try {
     await deleteAllOnboardingUploadsForUser(user.id);
   } catch {
@@ -47,7 +64,7 @@ export async function completeOnboarding(
   }
 
   if (!tradeValidation.ok) {
-    return { error: "trades_invalid", errors: { trade_ids: "trades_invalid" } };
+    return { ok: false, error: "trades_invalid", errors: { trade_ids: "trades_invalid" } };
   }
 
   const result = await completeOnboardingRpc({
@@ -74,21 +91,37 @@ export async function completeOnboarding(
     trade_ids: tradeValidation.tradeIds,
   });
 
+  let companyId: string | null = result.ok ? result.companyId : null;
   if (!result.ok) {
     if (result.reason === "already_completed") {
-      redirect(`/${locale}/dashboard`);
+      companyId = await getCurrentCompanyId();
     }
     if (result.reason === "not_authenticated") {
-      return { error: "not_authenticated" };
+      return { ok: false, error: "not_authenticated" };
     }
     if (result.reason === "trades_required" || result.reason === "trades_invalid") {
       return {
+        ok: false,
         error: result.reason,
         errors: { trade_ids: result.reason },
       };
     }
-    return { error: "setup_failed" };
+    if (result.reason !== "already_completed") {
+      return { ok: false, error: "setup_failed" };
+    }
   }
 
-  redirect(`/${locale}/dashboard`);
+  if (!companyId) return { ok: false, error: "setup_failed" };
+  if (preparedLogo?.ok) {
+    const uploaded = await saveCompanyLogo(companyId, preparedLogo.logo);
+    if ("error" in uploaded) {
+      return {
+        ok: false,
+        error: "logoUploadFailed",
+        setupCompleted: true,
+      };
+    }
+  }
+
+  return { ok: true, logoUploaded: Boolean(preparedLogo?.ok) };
 }

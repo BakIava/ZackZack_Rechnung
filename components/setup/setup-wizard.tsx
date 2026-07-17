@@ -4,7 +4,7 @@ import Image from "next/image";
 import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang, type Phase } from "./translations";
 import { LangLink, DesktopBar } from "./setup-primitives";
-import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoEmpty, LogoPreview } from "./setup-step-fields";
+import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoField } from "./setup-step-fields";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import type { TradeId } from "@/types/database";
 
@@ -22,11 +22,18 @@ interface WizardProps {
   onFormChange: <K extends keyof SetupFormData>(key: K, value: SetupFormData[K]) => void;
   tradeLabels: Record<TradeId, string>;
   submitting: boolean;
+  logoFile: File | null;
+  logoPreviewUrl: string | null;
+  logoStatusLabel: string;
+  logoErrorMessage: string | null;
+  onLogoSelect: (file: File) => void;
+  onLogoRemove: () => void;
 }
 
 export function SetupWizard({
   t, lang, dir, isMobile, step, setStep, TOTAL, onPhase,
-  formData, errors, onFormChange, tradeLabels, submitting,
+  formData, errors, onFormChange, tradeLabels, submitting, logoFile,
+  logoPreviewUrl, logoStatusLabel, logoErrorMessage, onLogoSelect, onLogoRemove,
 }: WizardProps) {
   const optional = step === 4 || step === 5;
   const isLastStep = step === TOTAL;
@@ -50,9 +57,22 @@ export function SetupWizard({
       step === 2 ? <Step2Fields {...stepProps} /> :
       step === 3 ? <Step3Fields {...stepProps} /> :
       step === 4 ? <Step4Fields {...stepProps} /> :
-      <LogoEmpty t={t} />;
+      <LogoField
+        t={t}
+        file={logoFile}
+        previewUrl={logoPreviewUrl}
+        statusLabel={logoStatusLabel}
+        errorMessage={logoErrorMessage}
+        isMobile
+        onSelect={onLogoSelect}
+        onRemove={onLogoRemove}
+      />;
 
     const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
+    const skip = () => {
+      if (isLastStep) onLogoRemove();
+      advance();
+    };
 
     return (
       <div className="ob-root" dir={dir}>
@@ -118,7 +138,7 @@ export function SetupWizard({
             {!(isLastStep && submitting) && <SetupIcon name="arrowRight" size={20} weight="bold" />}
           </button>
           {optional && (
-            <button className="ob-skip" onClick={advance} disabled={submitting}>
+            <button className="ob-skip" onClick={skip} disabled={submitting}>
               {t.skip} — <b>{t.skipB}</b>
             </button>
           )}
@@ -145,9 +165,22 @@ export function SetupWizard({
     step === 2 ? <Step2Fields {...stepProps} /> :
     step === 3 ? <Step3Fields {...stepProps} /> :
     step === 4 ? <Step4Fields {...stepProps} /> :
-    <LogoPreview t={t} />;
+    <LogoField
+      t={t}
+      file={logoFile}
+      previewUrl={logoPreviewUrl}
+      statusLabel={logoStatusLabel}
+      errorMessage={logoErrorMessage}
+      isMobile={false}
+      onSelect={onLogoSelect}
+      onRemove={onLogoRemove}
+    />;
 
   const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
+  const skip = () => {
+    if (isLastStep) onLogoRemove();
+    advance();
+  };
 
   return (
     <div className="ob-d" dir={dir}>
@@ -205,7 +238,7 @@ export function SetupWizard({
             </button>
             <div className="ob-d-wfoot-r">
               {optional && (
-                <button className="ob-d-skip" onClick={advance} disabled={submitting}>
+                <button className="ob-d-skip" onClick={skip} disabled={submitting}>
                   {t.skip}
                 </button>
               )}

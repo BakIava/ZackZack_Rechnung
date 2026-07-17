@@ -1,0 +1,53 @@
+.a4-zoom-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  flex-direction: column;
+  background: rgba(12, 24, 32, 0.62);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  direction: ltr;
+}
+
+.a4-zoom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.a4-zoom-title {
+  font-size: 15px;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.a4-zoom-x {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.a4-zoom-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 22px 32px;
+}
+
+.a4-zoom-scroll .a4-paper {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}

@@ -27,9 +27,14 @@ export function deriveInitials(props: DeriveInitialsProps | null): string {
   return name ? deriveInitialsFromName(name) : "—";
 }
 
-function deriveInitialsFromName(name: string): string {
+export function deriveInitialsFromName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length > 1)
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
+}
+
+/** Firmenlogo-Fallback; bewusst unabhängig von Empfänger-/Kundendaten. */
+export function deriveCompanyMonogram(companyName: string): string {
+  return companyName.trim() ? deriveInitialsFromName(companyName) : "—";
 }

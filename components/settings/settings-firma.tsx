@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useCallback, useRef, useTransition, type ReactNode, type HTMLAttributes } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Check, Pencil } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
 import type { CompanySettings } from "@/types/company";
 import {
   saveFirmaInhaber,
@@ -12,8 +11,11 @@ import {
   saveSteuer,
   saveKontakt,
   saveBankverbindung,
+  removeLogo,
   uploadLogo,
 } from "@/lib/settings/actions";
+import { COMPANY_LOGO_ACCEPT } from "@/lib/company-logo/constants";
+import { deriveCompanyMonogram } from "@/lib/initials";
 const STROKE = 1.75;
 
 interface SaveBarProps {
@@ -225,7 +227,7 @@ export function SettingsFirma({ company }: SettingsFirmaProps) {
         <Field label={t("lMail")} value={kontakt.email} onChange={upKontakt("email")} type="email" optional />
       </Card>
 
-      <LogoCard logoUrl={company.logo_url} />
+      <LogoCard logoUrl={company.logo_url} companyName={company.name} />
 
       <Card title={t("cBank")} foot={<SaveBar onSave={() => saveBankverbindung(bank)} />}>
         <Field label={t("lKontoinhaber")} value={bank.account_holder} onChange={upBank("account_holder")} />
@@ -239,13 +241,16 @@ export function SettingsFirma({ company }: SettingsFirmaProps) {
 
 interface LogoCardProps {
   logoUrl: string | null;
+  companyName: string;
 }
 
-function LogoCard({ logoUrl: initialLogoUrl }: LogoCardProps) {
+function LogoCard({ logoUrl: initialLogoUrl, companyName }: LogoCardProps) {
   const t = useTranslations("Settings");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl);
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function handlePick() {
@@ -258,6 +263,7 @@ function LogoCard({ logoUrl: initialLogoUrl }: LogoCardProps) {
     if (!file) return;
 
     setError(null);
+    setStatus(null);
     const formData = new FormData();
     formData.set("file", file);
 
@@ -267,33 +273,67 @@ function LogoCard({ logoUrl: initialLogoUrl }: LogoCardProps) {
         setError(t.has(result.error) ? t(result.error) : t("saveError"));
         return;
       }
-      if (result.logoUrl) setLogoUrl(result.logoUrl);
+      if (result.logoUrl) {
+        setLogoUrl(result.logoUrl);
+        setFailedLogoUrl(null);
+        setStatus(t("logoUpdated"));
+      }
+      if (result.warning) setError(t(result.warning));
+    });
+  }
+
+  function handleRemove() {
+    setError(null);
+    setStatus(null);
+    startTransition(async () => {
+      const result = await removeLogo();
+      if (result.error) {
+        setError(t.has(result.error) ? t(result.error) : t("saveError"));
+        return;
+      }
+      if (result.removed) {
+        setLogoUrl(null);
+        setStatus(t("logoRemoved"));
+      }
+      if (result.warning) setError(t(result.warning));
     });
   }
 
   return (
     <Card title={t("cLogo")}>
       <div className="set-logo-row">
-        {logoUrl ? (
+        {logoUrl && failedLogoUrl !== logoUrl ? (
           <div className="set-logo-prev">
-            <Image src={logoUrl} alt="" width={56} height={56} unoptimized />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logoUrl} alt="" onError={() => setFailedLogoUrl(logoUrl)} />
           </div>
         ) : (
-          <div className="set-logo-prev" />
+          <div className="set-logo-prev set-logo-monogram">
+            {deriveCompanyMonogram(companyName)}
+          </div>
         )}
         <div className="set-logo-info">
-          <button className="set-ghost" onClick={handlePick} disabled={pending}>
-            <Pencil size={17} strokeWidth={STROKE} aria-hidden />
-            {pending ? t("saving") : t("replace")}
-          </button>
+          <div className="set-logo-actions">
+            <button className="set-ghost" onClick={handlePick} disabled={pending}>
+              <Pencil size={17} strokeWidth={STROKE} aria-hidden />
+              {pending ? t("saving") : logoUrl ? t("replace") : t("logoAdd")}
+            </button>
+            {logoUrl && (
+              <button className="set-ghost set-ghost--danger" onClick={handleRemove} disabled={pending}>
+                <Trash2 size={17} strokeWidth={STROKE} aria-hidden />
+                {t("remove")}
+              </button>
+            )}
+          </div>
           <div className="set-logo-hint">{t("logoHint")}</div>
+          {status && <div className="set-logo-status" role="status">{status}</div>}
           {error && <div className="set-error">{error}</div>}
         </div>
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/png,image/jpeg,image/svg+xml"
-          style={{ display: "none" }}
+          accept={COMPANY_LOGO_ACCEPT}
+          className="set-file-input"
           onChange={handleFileChange}
         />
       </div>

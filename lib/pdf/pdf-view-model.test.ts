@@ -147,6 +147,17 @@ describe("buildPdfViewModel – harte Regeln", () => {
     expect(vm.recipientCityLine).toBe("10117 Berlin");
   });
 
+  it("bildet das Logo-Monogramm aus der Firma, nie aus dem Empfänger", () => {
+    const vm = buildPdfViewModel(
+      preview({
+        company: company({ name: "Yılmaz Malerbetrieb", logoUrl: null }),
+        customer: customer({ firstname: "Familie", lastname: "Schneider" }),
+      }),
+    );
+    expect(vm.monogram).toBe("YM");
+    expect(vm.monogram).not.toBe("FS");
+  });
+
   it("Rechnung mit Datum → Zahlungsziel; Angebot → keins", () => {
     const rechnung = buildPdfViewModel(preview({ docType: "invoice" }));
     expect(rechnung.paymentText).toContain("Zahlbar innerhalb von 14 Tagen");

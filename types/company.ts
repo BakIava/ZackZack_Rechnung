@@ -75,6 +75,11 @@ export type OnboardingErrorCode =
   | "iban_required"
   | "trades_required"
   | "trades_invalid"
+  | "logoFileMissing"
+  | "logoTypeInvalid"
+  | "logoTooLarge"
+  | "logoContentInvalid"
+  | "logoUploadFailed"
   | "not_authenticated"
   | "setup_failed";
 

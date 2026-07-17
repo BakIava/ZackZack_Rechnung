@@ -53,7 +53,7 @@ export const pdfStyles = StyleSheet.create({
     justifyContent: "center",
   },
   logoText: { fontSize: 16, fontWeight: BOLD, color: "#ffffff" },
-  logoImg: { width: 44, height: 44, objectFit: "contain" },
+  logoImg: { width: 240, height: 64, margin: 4, objectFit: "contain" },
 
   mid: {
     flexDirection: "row",

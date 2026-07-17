@@ -25,6 +25,7 @@ import {
 import { resolveOnboardingDocumentMediaType } from "@/lib/onboarding/extraction-file";
 import { uploadOnboardingDocument } from "@/lib/repositories/onboarding-uploads.client";
 import { emptyOnboardingExtractionStatuses } from "@/lib/onboarding/extraction-validation";
+import { validateCompanyLogoSelection } from "@/lib/company-logo/constants";
 import type {
   OnboardingExtractableField,
   OnboardingExtractionErrorCode,
@@ -37,6 +38,7 @@ export function SetupFlow({
   locale,
   tradeLabels,
   errorMessages,
+  logoMessages,
   extractionErrorMessages,
   onComplete,
   onDashboard,
@@ -55,6 +57,10 @@ export function SetupFlow({
   const [extractionError, setExtractionError] =
     useState<OnboardingExtractionErrorCode | null>(null);
   const [scanFileName, setScanFileName] = useState("");
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<OnboardingErrorCode | null>(null);
+  const [logoUploaded, setLogoUploaded] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -63,6 +69,31 @@ export function SetupFlow({
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
+
+  useEffect(() => {
+    if (!logoFile) {
+      setLogoPreviewUrl(null);
+      return;
+    }
+    const previewUrl = URL.createObjectURL(logoFile);
+    setLogoPreviewUrl(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [logoFile]);
+
+  const handleLogoSelect = (file: File) => {
+    const validationError = validateCompanyLogoSelection(file);
+    if (validationError) {
+      setLogoError(validationError);
+      return;
+    }
+    setLogoFile(file);
+    setLogoError(null);
+  };
+
+  const handleLogoRemove = () => {
+    setLogoFile(null);
+    setLogoError(null);
+  };
 
   const handleFormChange = <K extends keyof SetupFormData>(
     key: K,
@@ -157,14 +188,16 @@ export function SetupFlow({
     if (p === "done") {
       setSubmitting(true);
       setSubmitError(null);
-      const result = await completeOnboarding(locale, formData);
+      const logoFormData = logoFile ? new FormData() : undefined;
+      if (logoFormData && logoFile) logoFormData.set("logo", logoFile);
+      const result = await completeOnboarding(locale, formData, logoFormData);
       setSubmitting(false);
-      if (result?.error) {
+      if (!result.ok) {
         setSubmitError(result.error);
         if (result.errors) setErrors(result.errors);
         return;
       }
-      // redirect already happened server-side; show done as fallback
+      setLogoUploaded(result.logoUploaded);
       setPhase("done");
       return;
     }
@@ -217,7 +250,16 @@ export function SetupFlow({
     );
   }
   if (phase === "done") {
-    return <SetupDone {...shared} onComplete={goComplete} onDashboard={goDash} />;
+    return (
+      <SetupDone
+        {...shared}
+        onComplete={goComplete}
+        onDashboard={goDash}
+        formData={formData}
+        logoUploaded={logoUploaded}
+        logoSkippedLabel={logoMessages.skipped}
+      />
+    );
   }
 
   return (
@@ -238,6 +280,12 @@ export function SetupFlow({
         onFormChange={handleFormChange}
         tradeLabels={tradeLabels}
         submitting={submitting}
+        logoFile={logoFile}
+        logoPreviewUrl={logoPreviewUrl}
+        logoStatusLabel={logoMessages.ready}
+        logoErrorMessage={logoError ? errorMessages[logoError] : null}
+        onLogoSelect={handleLogoSelect}
+        onLogoRemove={handleLogoRemove}
       />
     </>
   );
