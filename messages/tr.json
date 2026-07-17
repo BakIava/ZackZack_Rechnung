@@ -461,11 +461,19 @@
     "lMobil": "Cep telefonu",
     "lFax": "Faks",
     "lMail": "E-posta",
-    "logoHint": "Her faturanın üstünde görünür. PNG, JPG veya SVG, maks. 2 MB.",
+    "logoHint": "PNG, JPG veya SVG, en fazla 2 MB. Kompakt logolar ve geniş kelime logoları tamamen sığdırılır.",
+    "logoAdd": "Logo ekle",
     "replace": "Değiştir",
+    "remove": "Kaldır",
+    "logoUpdated": "Logo kaydedildi.",
+    "logoRemoved": "Logo kaldırıldı. Firma monogramı kullanılacak.",
     "logoFileMissing": "Lütfen bir dosya seçin.",
     "logoTypeInvalid": "Yalnızca PNG, JPG veya SVG.",
     "logoTooLarge": "Dosya çok büyük. Maksimum 2 MB.",
+    "logoContentInvalid": "Görüntü dosyası geçersiz veya güvenli olmayan SVG içeriği barındırıyor.",
+    "logoUploadFailed": "Logo kaydedilemedi. Lütfen tekrar deneyin.",
+    "logoRemoveFailed": "Logo kaldırılamadı. Lütfen tekrar deneyin.",
+    "logoCleanupFailed": "Logo güncellendi ancak eski bir dosya temizlenemedi.",
     "lKontoinhaber": "Hesap sahibi",
     "lIban": "IBAN",
     "lBic": "BIC",
@@ -594,8 +602,17 @@
       "iban_required": "IBAN zorunludur.",
       "trades_required": "En az bir meslek seç.",
       "trades_invalid": "Meslek seçimi geçersiz. Lütfen yeniden seç.",
+      "logo_file_missing": "Lütfen bir logo dosyası seç.",
+      "logo_type_invalid": "Yalnızca PNG, JPG veya SVG kullanılabilir.",
+      "logo_too_large": "Logo çok büyük. En fazla 2 MB olabilir.",
+      "logo_content_invalid": "Görüntü dosyası geçersiz veya güvenli olmayan SVG içeriği barındırıyor.",
+      "logo_upload_failed": "İşletmen kuruldu ancak logo kaydedilemedi. Lütfen yüklemeyi tekrar dene.",
       "not_authenticated": "Oturum açık değil. Lütfen yeniden giriş yap.",
       "setup_failed": "Kurulum tamamlanamadı. Lütfen tekrar dene."
+    },
+    "logo": {
+      "ready": "Yüklemeye hazır",
+      "skipped": "Logosuz"
     },
     "extraction": {
       "errors": {

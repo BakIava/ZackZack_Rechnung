@@ -461,11 +461,19 @@
     "lMobil": "Mobil",
     "lFax": "Fax",
     "lMail": "E-Mail",
-    "logoHint": "Erscheint oben auf jeder Rechnung. PNG, JPG oder SVG, max. 2 MB.",
+    "logoHint": "PNG, JPG oder SVG, maximal 2 MB. Kompakte Logos und breite Wortmarken werden vollständig eingepasst.",
+    "logoAdd": "Logo hinzufügen",
     "replace": "Ersetzen",
+    "remove": "Entfernen",
+    "logoUpdated": "Logo gespeichert.",
+    "logoRemoved": "Logo entfernt. Das Firmen-Monogramm wird verwendet.",
     "logoFileMissing": "Bitte eine Datei auswählen.",
     "logoTypeInvalid": "Nur PNG, JPG oder SVG erlaubt.",
     "logoTooLarge": "Datei zu groß. Maximal 2 MB.",
+    "logoContentInvalid": "Die Bilddatei ist ungültig oder enthält unsichere SVG-Inhalte.",
+    "logoUploadFailed": "Logo konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "logoRemoveFailed": "Logo konnte nicht entfernt werden. Bitte erneut versuchen.",
+    "logoCleanupFailed": "Logo wurde aktualisiert, eine alte Datei konnte aber nicht bereinigt werden.",
     "lKontoinhaber": "Kontoinhaber",
     "lIban": "IBAN",
     "lBic": "BIC",
@@ -594,8 +602,17 @@
       "iban_required": "IBAN ist erforderlich.",
       "trades_required": "Wähle mindestens ein Gewerk aus.",
       "trades_invalid": "Die Gewerk-Auswahl ist ungültig. Bitte wähle erneut.",
+      "logo_file_missing": "Bitte wähle eine Logodatei aus.",
+      "logo_type_invalid": "Nur PNG, JPG oder SVG sind erlaubt.",
+      "logo_too_large": "Das Logo ist zu groß. Maximal 2 MB sind erlaubt.",
+      "logo_content_invalid": "Die Bilddatei ist ungültig oder enthält unsichere SVG-Inhalte.",
+      "logo_upload_failed": "Dein Betrieb wurde eingerichtet, aber das Logo konnte nicht gespeichert werden. Bitte versuche den Upload erneut.",
       "not_authenticated": "Nicht angemeldet. Bitte melde dich erneut an.",
       "setup_failed": "Die Einrichtung konnte nicht abgeschlossen werden. Bitte versuche es erneut."
+    },
+    "logo": {
+      "ready": "Bereit zum Hochladen",
+      "skipped": "Ohne Logo"
     },
     "extraction": {
       "errors": {
