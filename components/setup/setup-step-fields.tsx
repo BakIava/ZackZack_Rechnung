@@ -1,6 +1,7 @@
 "use client";
 
 import "./setup-step-fields.css";
+import { useState } from "react";
 import Image from "next/image";
 import { SetupIcon } from "./setup-icon";
 import { type Translations } from "./translations";
@@ -109,6 +110,57 @@ export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
             />
           </Field>
         </div>
+      </div>
+      <GewerkSelect t={t} />
+    </div>
+  );
+}
+
+// ── GewerkSelect ────────────────────────────────────────────────────────────────
+// Nur Design — die Auswahl wird noch nicht persistiert (Backend folgt).
+
+interface GewerkSelectProps {
+  t: Translations;
+}
+
+function GewerkSelect({ t }: GewerkSelectProps) {
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  return (
+    <div className="ob-gewerk">
+      <div className="ob-gewerk-head">
+        <div className="ob-gewerk-t">
+          {t.gewerk_t}
+          <span className="ob-badge ob-badge--req">{t.req}</span>
+        </div>
+        <div className="ob-gewerk-s">{t.gewerk_s}</div>
+      </div>
+      <div className="ob-trades">
+        {t.trades.map(([id, label]) => {
+          const on = selected.has(id);
+          return (
+            <button
+              type="button"
+              key={id}
+              className="ob-trade"
+              data-active={on ? "true" : "false"}
+              aria-pressed={on}
+              onClick={() => toggle(id)}
+            >
+              <span className="ob-trade-box">
+                <SetupIcon name="check" size={15} weight="bold" />
+              </span>
+              <span className="ob-trade-lbl">{label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
