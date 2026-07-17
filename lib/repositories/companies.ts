@@ -9,6 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
 import type { CompanySettings, SettingsData } from "@/types/company";
 import type { TaxRate } from "@/types/database";
+import type { PreparedCompanyLogo } from "@/lib/company-logo/constants";
 import { resolveDocumentDefaultTaxRate } from "@/lib/documents/tax";
 
 export type GetSettingsResult =
@@ -148,25 +149,110 @@ export async function updateCompany(
   return {};
 }
 
-/**
- * Lädt das Firmenlogo in den öffentlichen Bucket `company-logos` hoch
- * (upsert auf festen Pfad pro Firma) und liefert die öffentliche URL.
- */
-export async function uploadCompanyLogo(
+export const COMPANY_LOGO_BUCKET = "company-logos";
+
+export function companyLogoObjectPath(
   companyId: string,
-  file: File,
-  ext: string,
-): Promise<{ publicUrl: string } | { error: string }> {
+  objectId: string,
+  extension: "png" | "jpg",
+): string {
+  return `${companyId}/${objectId}.${extension}`;
+}
+
+export function companyLogoPathFromUrl(companyId: string, logoUrl: string): string | null {
+  try {
+    const marker = `/storage/v1/object/public/${COMPANY_LOGO_BUCKET}/`;
+    const pathname = decodeURIComponent(new URL(logoUrl).pathname);
+    const markerIndex = pathname.indexOf(marker);
+    if (markerIndex < 0) return null;
+    const path = pathname.slice(markerIndex + marker.length);
+    return path.startsWith(`${companyId}/`) ? path : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getCompanyLogoUrl(companyId: string): Promise<string | null> {
   const supabase = await createClient();
-  const path = `${companyId}/logo.${ext}`;
+  const { data } = await supabase
+    .from("companies")
+    .select("logo_url")
+    .eq("id", companyId)
+    .maybeSingle();
+  return (data?.logo_url as string | null) ?? null;
+}
+
+async function isLogoReferencedByFinalizedDocument(
+  companyId: string,
+  logoUrl: string,
+): Promise<boolean> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("id")
+    .eq("company_id", companyId)
+    .eq("logo_snapshot_captured", true)
+    .eq("logo_url_snapshot", logoUrl)
+    .limit(1)
+    .maybeSingle();
+  // Fail closed: bei einem Lookup-Fehler niemals ein eventuell archiv-relevantes
+  // Logo löschen.
+  return error ? true : Boolean(data);
+}
+
+async function removeUnreferencedLogo(
+  companyId: string,
+  logoUrl: string | null,
+): Promise<{ cleanupFailed?: boolean }> {
+  if (!logoUrl || (await isLogoReferencedByFinalizedDocument(companyId, logoUrl))) {
+    return {};
+  }
+  const path = companyLogoPathFromUrl(companyId, logoUrl);
+  if (!path) return {};
+  const supabase = await createClient();
+  const { error } = await supabase.storage.from(COMPANY_LOGO_BUCKET).remove([path]);
+  return error ? { cleanupFailed: true } : {};
+}
+
+/** Speichert ein geprüftes Logo unter einem unveränderlichen, firmenbezogenen Pfad. */
+export async function saveCompanyLogo(
+  companyId: string,
+  logo: PreparedCompanyLogo,
+): Promise<{ publicUrl: string; cleanupFailed?: boolean } | { error: string }> {
+  const previousUrl = await getCompanyLogoUrl(companyId);
+  const supabase = await createClient();
+  const path = companyLogoObjectPath(companyId, crypto.randomUUID(), logo.extension);
+  const bodyBytes = new Uint8Array(logo.bytes.byteLength);
+  bodyBytes.set(logo.bytes);
+  const body = new Blob([bodyBytes], { type: logo.contentType });
 
   const { error: uploadError } = await supabase.storage
-    .from("company-logos")
-    .upload(path, file, { upsert: true, contentType: file.type });
+    .from(COMPANY_LOGO_BUCKET)
+    .upload(path, body, { upsert: false, contentType: logo.contentType });
   if (uploadError) return { error: uploadError.message };
 
-  const { data: publicUrl } = supabase.storage.from("company-logos").getPublicUrl(path);
-  return { publicUrl: publicUrl.publicUrl };
+  const { data: publicUrlData } = supabase.storage
+    .from(COMPANY_LOGO_BUCKET)
+    .getPublicUrl(path);
+  const publicUrl = publicUrlData.publicUrl;
+  const saveResult = await updateCompany(companyId, { logo_url: publicUrl });
+  if (saveResult.error) {
+    await supabase.storage.from(COMPANY_LOGO_BUCKET).remove([path]);
+    return { error: saveResult.error };
+  }
+
+  const cleanup = await removeUnreferencedLogo(companyId, previousUrl);
+  return { publicUrl, ...cleanup };
+}
+
+/** Entfernt die DB-Verknüpfung und löscht das Objekt, sofern kein Beleg es referenziert. */
+export async function removeCompanyLogo(
+  companyId: string,
+): Promise<{ cleanupFailed?: boolean } | { error: string }> {
+  const previousUrl = await getCompanyLogoUrl(companyId);
+  const saveResult = await updateCompany(companyId, { logo_url: null });
+  if (saveResult.error) return { error: saveResult.error };
+  return removeUnreferencedLogo(companyId, previousUrl);
 }
 
 /** Firma anlegen (Service-Role, nur Onboarding – users-Zeile existiert noch nicht). */

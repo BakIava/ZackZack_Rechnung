@@ -1,46 +1,59 @@
 /**
  * Bereitet das Firmenlogo für die PDF-Einbettung vor. @react-pdf/renderer bettet
- * Rasterbilder (PNG/JPEG) als Data-URL zuverlässig ein; SVG unterstützt <Image>
- * nicht. Deshalb: Rasterlogo → Data-URL, sonst (SVG, Fehler, kein Logo) → null,
- * und die Komponente fällt sauber auf das Firmen-Monogramm zurück.
+ * Rasterbilder (PNG/JPEG) als Data-URL zuverlässig ein. SVG wird deshalb mit
+ * derselben sicheren Logo-Pipeline wie beim Upload serverseitig rasterisiert.
  *
  * Bewusst self-contained: das Logo wird als Bytes eingebettet, nicht per URL zur
  * Renderzeit nachgeladen — so bleibt der Beleg auch offline reproduzierbar.
  */
 
 import type { PdfLogo } from "@/lib/pdf/document-pdf";
+import { COMPANY_LOGO_MAX_BYTES } from "@/lib/company-logo/constants";
+import {
+  prepareCompanyLogoBytes,
+  sniffCompanyLogoInputType,
+} from "@/lib/company-logo/process";
 
-const RASTER_TYPES: Record<string, string> = {
-  "image/png": "image/png",
-  "image/jpeg": "image/jpeg",
-  "image/jpg": "image/jpeg",
-};
-
-/** Erkennt Rasterformate anhand der Magic Bytes (Content-Type ist oft unzuverlässig). */
-function sniffRaster(bytes: Uint8Array): string | null {
-  if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50) return "image/png";
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
-    return "image/jpeg";
+function isConfiguredCompanyLogoUrl(logoUrl: string): boolean {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!supabaseUrl) return false;
+  try {
+    const candidate = new URL(logoUrl);
+    const configured = new URL(supabaseUrl);
+    return (
+      candidate.origin === configured.origin &&
+      candidate.pathname.includes("/storage/v1/object/public/company-logos/")
+    );
+  } catch {
+    return false;
   }
-  return null;
 }
 
 export async function loadPdfLogo(logoUrl: string | null): Promise<PdfLogo | null> {
-  if (!logoUrl) return null;
+  if (!logoUrl || !isConfiguredCompanyLogoUrl(logoUrl)) return null;
 
   try {
     const res = await fetch(logoUrl, { cache: "no-store" });
     if (!res.ok) return null;
+    const contentLength = Number(res.headers.get("content-length") ?? 0);
+    if (contentLength > COMPANY_LOGO_MAX_BYTES) return null;
 
     const buf = new Uint8Array(await res.arrayBuffer());
-    if (buf.byteLength === 0) return null;
+    if (buf.byteLength === 0 || buf.byteLength > COMPANY_LOGO_MAX_BYTES) return null;
 
     const headerType = (res.headers.get("content-type") ?? "").split(";")[0].trim();
-    const mime = RASTER_TYPES[headerType] ?? sniffRaster(buf);
-    if (!mime) return null; // SVG o. Ä. → Monogramm-Fallback
+    const declaredType =
+      headerType === "image/png" ||
+      headerType === "image/jpeg" ||
+      headerType === "image/svg+xml"
+        ? headerType
+        : sniffCompanyLogoInputType(buf);
+    if (!declaredType) return null;
+    const prepared = await prepareCompanyLogoBytes(buf, declaredType);
+    if (!prepared.ok) return null;
 
-    const base64 = Buffer.from(buf).toString("base64");
-    return { dataUrl: `data:${mime};base64,${base64}` };
+    const base64 = Buffer.from(prepared.logo.bytes).toString("base64");
+    return { dataUrl: `data:${prepared.logo.contentType};base64,${base64}` };
   } catch {
     return null;
   }

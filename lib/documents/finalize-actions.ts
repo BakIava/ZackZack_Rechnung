@@ -1,7 +1,11 @@
 "use server";
 
 import { getCurrentUser } from "@/lib/supabase/auth";
-import { finalizeDocumentRpc, getDocumentPreview } from "@/lib/repositories/documents";
+import {
+  finalizeDocumentRpc,
+  getDocumentPreview,
+  getDocumentPreviewFresh,
+} from "@/lib/repositories/documents";
 import { archiveDocumentPdf } from "@/lib/pdf/pdf-storage";
 import { canFinalizePreview } from "./finalize-validation";
 
@@ -52,7 +56,7 @@ export async function finalizeDocument(documentId: string): Promise<FinalizeResu
   // schlägt die Archivierung fehl (z. B. Storage kurz nicht erreichbar), bleibt
   // die Finalisierung gültig; die PDF-Route archiviert beim ersten Abruf nach.
   try {
-    const preview = await getDocumentPreview(documentId);
+    const preview = await getDocumentPreviewFresh(documentId);
     if (preview && preview.status !== "draft") {
       await archiveDocumentPdf(preview);
     }

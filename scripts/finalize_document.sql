@@ -115,7 +115,11 @@ BEGIN
          status          = 'finalized',
          subtotal_amount = v_subtotal,
          tax_amount      = v_tax,
-         total_amount    = v_total
+         total_amount    = v_total,
+         logo_url_snapshot = (
+           SELECT c.logo_url FROM companies c WHERE c.id = v_company_id
+         ),
+         logo_snapshot_captured = true
    WHERE id = p_document_id;
 
   RETURN v_number;

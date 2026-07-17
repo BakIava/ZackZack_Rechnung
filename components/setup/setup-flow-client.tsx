@@ -28,6 +28,11 @@ export function SetupFlowClient({ lang, dir }: Props) {
     iban_required: onboarding("errors.iban_required"),
     trades_required: onboarding("errors.trades_required"),
     trades_invalid: onboarding("errors.trades_invalid"),
+    logoFileMissing: onboarding("errors.logo_file_missing"),
+    logoTypeInvalid: onboarding("errors.logo_type_invalid"),
+    logoTooLarge: onboarding("errors.logo_too_large"),
+    logoContentInvalid: onboarding("errors.logo_content_invalid"),
+    logoUploadFailed: onboarding("errors.logo_upload_failed"),
     not_authenticated: onboarding("errors.not_authenticated"),
     setup_failed: onboarding("errors.setup_failed"),
   };
@@ -51,6 +56,10 @@ export function SetupFlowClient({ lang, dir }: Props) {
       locale={locale}
       tradeLabels={tradeLabels}
       errorMessages={errorMessages}
+      logoMessages={{
+        ready: onboarding("logo.ready"),
+        skipped: onboarding("logo.skipped"),
+      }}
       extractionErrorMessages={extractionErrorMessages}
       // Nach dem Setup direkt einen Draft anlegen und in Schritt 1 starten.
       onComplete={() => startNewDocument()}

@@ -18,7 +18,7 @@ import type { DocumentPreview } from "@/types/document";
 import { buildPdfViewModel, type PdfViewModel } from "@/lib/pdf/pdf-view-model";
 import { pdfStyles as s } from "@/lib/pdf/document-pdf.styles";
 
-/** Vorbereitetes Rasterlogo (Data-URL). SVG/Fehlschlag → null → Monogramm. */
+/** Vorbereitetes Rasterlogo (Data-URL). Fehler → null → Monogramm. */
 export interface PdfLogo {
   dataUrl: string;
 }

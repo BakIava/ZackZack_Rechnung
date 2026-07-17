@@ -1,12 +1,13 @@
 "use client";
 
 import "./setup-step-fields.css";
-import Image from "next/image";
+import { useRef, type ChangeEvent } from "react";
 import { SetupIcon } from "./setup-icon";
 import { type Translations } from "./translations";
 import { Field, TextInput, Seg3, Toggle19 } from "./setup-primitives";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import { TRADE_IDS, type TradeId } from "@/types/database";
+import { COMPANY_LOGO_ACCEPT } from "@/lib/company-logo/constants";
 
 interface StepProps {
   t: Translations;
@@ -326,64 +327,149 @@ export function Step4Fields({ t, formData, errors, onChange }: StepProps) {
   );
 }
 
-// ── LogoEmpty ─────────────────────────────────────────────────────────────────
+// ── LogoField ─────────────────────────────────────────────────────────────────
 
-interface LogoEmptyProps {
+interface LogoFieldProps {
   t: Translations;
+  file: File | null;
+  previewUrl: string | null;
+  statusLabel: string;
+  errorMessage: string | null;
+  isMobile: boolean;
+  onSelect: (file: File) => void;
+  onRemove: () => void;
 }
 
-export function LogoEmpty({ t }: LogoEmptyProps) {
-  return (
-    <div className="ob-form">
-      <button type="button" className="ob-upload">
-        <div className="ob-upload-ic"><SetupIcon name="image" size={26} /></div>
-        <div className="ob-upload-t">{t.uploadT}</div>
-        <div className="ob-upload-s">{t.uploadS}</div>
-        <div className="ob-upload-ways">
-          <span className="ob-upload-way"><SetupIcon name="camera" size={17} />{t.wayCam}</span>
-          <span className="ob-upload-way"><SetupIcon name="image" size={17} />{t.wayGallery}</span>
+export function LogoField({
+  t,
+  file,
+  previewUrl,
+  statusLabel,
+  errorMessage,
+  isMobile,
+  onSelect,
+  onRemove,
+}: LogoFieldProps) {
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0];
+    event.target.value = "";
+    if (selected) onSelect(selected);
+  }
+
+  if (!file || !previewUrl) {
+    return (
+      <div className="ob-form">
+        <div className="ob-upload">
+          <button
+            type="button"
+            className="ob-upload-main"
+            onClick={() => galleryInputRef.current?.click()}
+          >
+            <span className="ob-upload-ic"><SetupIcon name="image" size={26} /></span>
+            <span className="ob-upload-t">{t.uploadT}</span>
+            <span className="ob-upload-s">{t.uploadS}</span>
+          </button>
+          <div className="ob-upload-ways">
+            {isMobile && (
+              <button
+                type="button"
+                className="ob-upload-way"
+                onClick={() => cameraInputRef.current?.click()}
+              >
+                <SetupIcon name="camera" size={17} />{t.wayCam}
+              </button>
+            )}
+            <button
+              type="button"
+              className="ob-upload-way"
+              onClick={() => galleryInputRef.current?.click()}
+            >
+              <SetupIcon name="image" size={17} />{t.wayGallery}
+            </button>
+          </div>
         </div>
-      </button>
-      <div className="ob-note">
-        <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
-        <div className="ob-note-tx">{t.logoNote}</div>
+        <input
+          ref={galleryInputRef}
+          className="ob-logo-input"
+          type="file"
+          accept={COMPANY_LOGO_ACCEPT}
+          onChange={handleChange}
+        />
+        {isMobile && (
+          <input
+            ref={cameraInputRef}
+            className="ob-logo-input"
+            type="file"
+            accept="image/png,image/jpeg"
+            capture="environment"
+            onChange={handleChange}
+          />
+        )}
+        {errorMessage && <div className="ob-logo-error" role="alert">{errorMessage}</div>}
+        <LogoNote t={t} />
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-// ── LogoPreview ───────────────────────────────────────────────────────────────
-
-interface LogoPreviewProps {
-  t: Translations;
-}
-
-export function LogoPreview({ t }: LogoPreviewProps) {
   return (
     <div className="ob-form">
       <div className="ob-logo-pre">
         <div className="ob-logo-thumb">
-          <Image src="/assets/zackzack-mark.png" alt="Logo" width={72} height={72} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={previewUrl} alt="" />
         </div>
         <div className="ob-logo-meta">
-          <div className="ob-logo-name">logo-yilmaz.png</div>
+          <div className="ob-logo-name">{file.name}</div>
           <div className="ob-logo-sub">
-            <SetupIcon name="check" size={13} weight="bold" />{t.uploaded}
+            <SetupIcon name="check" size={13} weight="bold" />{statusLabel}
           </div>
         </div>
         <div className="ob-logo-actions">
-          <button type="button" className="ob-logo-btn" title={t.change}>
+          <button
+            type="button"
+            className="ob-logo-btn"
+            title={t.change}
+            aria-label={t.change}
+            onClick={() => galleryInputRef.current?.click()}
+          >
             <SetupIcon name="pencil" size={16} />
           </button>
-          <button type="button" className="ob-logo-btn del" title={t.remove}>
+          <button
+            type="button"
+            className="ob-logo-btn del"
+            title={t.remove}
+            aria-label={t.remove}
+            onClick={onRemove}
+          >
             <SetupIcon name="trash" size={16} />
           </button>
         </div>
       </div>
-      <div className="ob-note">
-        <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
-        <div className="ob-note-tx">{t.logoNote}</div>
-      </div>
+      <input
+        ref={galleryInputRef}
+        className="ob-logo-input"
+        type="file"
+        accept={COMPANY_LOGO_ACCEPT}
+        onChange={handleChange}
+      />
+      {errorMessage && <div className="ob-logo-error" role="alert">{errorMessage}</div>}
+      <LogoNote t={t} />
+    </div>
+  );
+}
+
+interface LogoNoteProps {
+  t: Translations;
+}
+
+function LogoNote({ t }: LogoNoteProps) {
+  return (
+    <div className="ob-note">
+      <div className="ob-note-ic"><SetupIcon name="info" size={18} /></div>
+      <div className="ob-note-tx">{t.logoNote}</div>
     </div>
   );
 }

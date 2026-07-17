@@ -200,6 +200,10 @@ export interface DocumentRow {
   created_at: string;
   updated_at: string;
   paid_at: string | null; // ISO timestamp
+  /** Beim Finalisieren eingefrorene Logo-URL; spätere Firmenänderungen gelten nur für neue Belege. */
+  logo_url_snapshot: string | null;
+  /** Unterscheidet einen bewusst leeren Snapshot von historischen Zeilen vor der Migration. */
+  logo_snapshot_captured: boolean;
 }
 
 /**

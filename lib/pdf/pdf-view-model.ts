@@ -16,7 +16,7 @@
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
-import { deriveInitials } from "../initials";
+import { deriveCompanyMonogram } from "../initials";
 import { getCustomerName } from "../customers/utils";
 import { shouldShowTaxDetails } from "../documents/tax";
 
@@ -123,12 +123,7 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
 
   return {
     isRechnung,
-    monogram: deriveInitials({
-      firstname: rc?.firstname,
-      lastname: rc?.lastname,
-      company_name: co.name,
-      customerType: rc?.customer_type,
-    }),
+    monogram: deriveCompanyMonogram(co.name),
 
     companyName: co.name,
     companyAddressLine: joinTrim([coStreet, coCity], " · "),

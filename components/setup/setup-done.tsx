@@ -4,6 +4,7 @@ import "./setup-done.css";
 import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
 import { LangLink, DesktopBar } from "./setup-primitives";
+import type { SetupFormData } from "@/types/company";
 
 interface DoneProps {
   t: Translations;
@@ -12,17 +13,34 @@ interface DoneProps {
   isMobile: boolean;
   onComplete: () => void;
   onDashboard: () => void;
+  formData: SetupFormData;
+  logoUploaded: boolean;
+  logoSkippedLabel: string;
 }
 
-export function SetupDone({ t, lang, dir, isMobile, onComplete, onDashboard }: DoneProps) {
+export function SetupDone({
+  t,
+  lang,
+  dir,
+  isMobile,
+  onComplete,
+  onDashboard,
+  formData,
+  logoUploaded,
+  logoSkippedLabel,
+}: DoneProps) {
+  const contact = formData.email || formData.phone || formData.mobile || "—";
+  const bank = formData.iban || "—";
+  const logo = logoUploaded ? t.logoDone : logoSkippedLabel;
+
   if (isMobile) {
     const sumRows = [
-      { ic: "building", lbl: t.sumBetrieb, val: "Yılmaz Malerbetrieb" },
-      { ic: "phone", lbl: t.sumKontakt, val: "mehmet.yilmaz@example.de" },
-      { ic: "idcard", lbl: t.sumSteuer, val: "047/815/08150" },
+      { ic: "building", lbl: t.sumBetrieb, val: formData.name },
+      { ic: "phone", lbl: t.sumKontakt, val: contact },
+      { ic: "idcard", lbl: t.sumSteuer, val: formData.steuernummer },
       { ic: "shieldCheck", lbl: t.sumKu, val: t.kuShort },
-      { ic: "bank", lbl: t.sumBank, val: "DE89 3704 … 0130 00" },
-      { ic: "brush", lbl: t.sumLogo, val: t.logoDone },
+      { ic: "bank", lbl: t.sumBank, val: bank },
+      { ic: "brush", lbl: t.sumLogo, val: logo },
     ];
     return (
       <div className="ob-root" dir={dir}>
@@ -59,12 +77,12 @@ export function SetupDone({ t, lang, dir, isMobile, onComplete, onDashboard }: D
   }
 
   const sumRows = [
-    { lbl: t.sumBetrieb, val: "Yılmaz Malerbetrieb" },
-    { lbl: t.sumKontakt, val: "mehmet.yilmaz@example.de" },
-    { lbl: t.sumSteuer, val: "047/815/08150" },
+    { lbl: t.sumBetrieb, val: formData.name },
+    { lbl: t.sumKontakt, val: contact },
+    { lbl: t.sumSteuer, val: formData.steuernummer },
     { lbl: t.sumKu, val: t.kuShort },
-    { lbl: t.sumBank, val: "DE89 3704 … 0130 00" },
-    { lbl: t.sumLogo, val: t.logoDone },
+    { lbl: t.sumBank, val: bank },
+    { lbl: t.sumLogo, val: logo },
   ];
   return (
     <div className="ob-d" dir={dir}>

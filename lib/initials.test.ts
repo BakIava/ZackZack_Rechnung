@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveInitials } from "./initials";
+import { deriveCompanyMonogram, deriveInitials } from "./initials";
 
 describe("deriveInitials", () => {
   it("unterstützt den DB-Feldnamen für Firmenkunden", () => {
@@ -12,5 +12,9 @@ describe("deriveInitials", () => {
     expect(
       deriveInitials({ customerType: "private", firstname: "Max", lastname: "Mustermann" }),
     ).toBe("MM");
+  });
+
+  it("leitet den Firmen-Fallback ausschließlich aus dem Firmennamen ab", () => {
+    expect(deriveCompanyMonogram("Yılmaz Malerbetrieb")).toBe("YM");
   });
 });

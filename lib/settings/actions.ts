@@ -3,20 +3,19 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import { updateCompany, uploadCompanyLogo } from "@/lib/repositories/companies";
+import {
+  removeCompanyLogo,
+  saveCompanyLogo,
+  updateCompany,
+} from "@/lib/repositories/companies";
 import { isTaxRate, resolveDocumentDefaultTaxRate } from "@/lib/documents/tax";
+import { prepareCompanyLogo } from "@/lib/company-logo/process";
 import type { TaxRate } from "@/types/database";
 
 export interface SettingsActionResult {
   error?: string;
+  warning?: string;
 }
-
-const LOGO_MAX_BYTES = 2 * 1024 * 1024;
-const LOGO_TYPES: Record<string, string> = {
-  "image/png": "png",
-  "image/jpeg": "jpg",
-  "image/svg+xml": "svg",
-};
 
 async function getCompanyId(): Promise<{ companyId: string } | { error: string }> {
   const companyId = await getCurrentCompanyId();
@@ -140,22 +139,29 @@ export async function savePaymentDays(paymentDays: number): Promise<SettingsActi
 export async function uploadLogo(formData: FormData): Promise<SettingsActionResult & { logoUrl?: string }> {
   const file = formData.get("file");
   if (!(file instanceof File)) return { error: "logoFileMissing" };
-
-  const ext = LOGO_TYPES[file.type];
-  if (!ext) return { error: "logoTypeInvalid" };
-  if (file.size > LOGO_MAX_BYTES) return { error: "logoTooLarge" };
+  const prepared = await prepareCompanyLogo(file);
+  if (!prepared.ok) return { error: prepared.error };
 
   const ctx = await getCompanyId();
   if ("error" in ctx) return ctx;
 
-  const uploaded = await uploadCompanyLogo(ctx.companyId, file, ext);
-  if ("error" in uploaded) return { error: uploaded.error };
-  const logoUrl = `${uploaded.publicUrl}?t=${Date.now()}`;
+  const uploaded = await saveCompanyLogo(ctx.companyId, prepared.logo);
+  if ("error" in uploaded) return { error: "logoUploadFailed" };
+  return {
+    logoUrl: uploaded.publicUrl,
+    ...(uploaded.cleanupFailed ? { warning: "logoCleanupFailed" } : {}),
+  };
+}
 
-  const saveResult = await updateCompany(ctx.companyId, { logo_url: logoUrl });
-  if (saveResult.error) return saveResult;
-
-  return { logoUrl };
+export async function removeLogo(): Promise<SettingsActionResult & { removed?: boolean }> {
+  const ctx = await getCompanyId();
+  if ("error" in ctx) return ctx;
+  const removed = await removeCompanyLogo(ctx.companyId);
+  if ("error" in removed) return { error: "logoRemoveFailed" };
+  return {
+    removed: true,
+    ...(removed.cleanupFailed ? { warning: "logoCleanupFailed" } : {}),
+  };
 }
 
 export async function signOutAndRedirect(locale: string): Promise<void> {

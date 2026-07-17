@@ -364,6 +364,11 @@ export const T = {
 
 export type Translations = typeof T[Lang];
 
+export interface SetupLogoMessages {
+  ready: string;
+  skipped: string;
+}
+
 export const LANG_LABEL: Record<Lang, string> = {
   de: "Sprache ändern · Dil · اللغة",
   tr: "Dil · Sprache · اللغة",
@@ -376,6 +381,7 @@ export interface SetupFlowProps {
   locale: string;
   tradeLabels: Record<TradeId, string>;
   errorMessages: Record<OnboardingErrorCode, string>;
+  logoMessages: SetupLogoMessages;
   extractionErrorMessages: Record<OnboardingExtractionErrorCode, string>;
   onComplete?: () => void;
   onDashboard?: () => void;

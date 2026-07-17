@@ -2,9 +2,9 @@ import { ShieldCheck } from "lucide-react";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
-import { deriveInitials } from "@/lib/initials";
 import { getCustomerName } from "@/lib/customers/utils";
 import { shouldShowTaxDetails } from "@/lib/documents/tax";
+import { CompanyLogoMark } from "./company-logo-mark";
 
 interface DocumentA4Props {
   preview: DocumentPreview;
@@ -76,21 +76,7 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
               )}
             </div>
           </div>
-          <div className="a4-logo">
-            {co.logoUrl ? (
-              // Firmenlogo (Supabase-Storage-URL), reine Vorschau – next/image
-              // bräuchte hier zusätzliche Remote-Domain-Konfiguration.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="a4-logo-img" src={co.logoUrl} alt="" />
-            ) : (
-              deriveInitials({
-                firstname: rc?.firstname,
-                lastname: rc?.lastname,
-                company_name: co.name,
-                customerType: rc?.customer_type,
-              })
-            )}
-          </div>
+          <CompanyLogoMark companyName={co.name} logoUrl={co.logoUrl} />
         </div>
 
         <div className="a4-mid">
