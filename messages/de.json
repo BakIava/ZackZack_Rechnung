@@ -312,6 +312,8 @@
     "backspace": "Ziffer löschen",
     "labelLbl": "Bezeichnung",
     "unitLbl": "Einheit",
+    "searchUnit": "Einheit suchen …",
+    "noUnitResults": "Keine Einheit gefunden",
     "internalOnly": "Nur für dich",
     "notOnDoc": "erscheint nicht auf dem Dokument",
     "purchase": "Einkauf",
@@ -396,6 +398,8 @@
     "nameTr": "Türkisch",
     "nameAr": "Arabisch",
     "unitSel": "Einheit",
+    "searchUnit": "Einheit suchen …",
+    "noUnitResults": "Keine Einheit gefunden",
     "addTitle": "Neue Leistung",
     "editTitle": "Leistung bearbeiten",
     "optional": "optional",
@@ -567,5 +571,31 @@
     "selectHint": "Dokument auswählen",
     "selectHintSub": "Wähle links ein Dokument, um Details zu sehen.",
     "kuNote": "Kleinunternehmer §19 · ohne USt."
+  },
+  "Onboarding": {
+    "trades": {
+      "painter": "Maler & Lackierer",
+      "carpenter": "Tischler / Schreiner",
+      "windows_doors": "Fenster & Türen",
+      "electrician": "Elektriker",
+      "tiler": "Fliesenleger",
+      "plumbing_heating": "Sanitär & Heizung",
+      "drywall": "Trockenbau",
+      "flooring": "Bodenleger",
+      "gardening_landscaping": "Garten- & Landschaftsbau",
+      "cleaning": "Reinigung",
+      "other": "Sonstiges"
+    },
+    "errors": {
+      "required_fields": "Bitte fülle alle Pflichtfelder aus.",
+      "name_required": "Firmenname ist erforderlich.",
+      "director_required": "Geschäftsführer ist erforderlich.",
+      "tax_number_required": "Steuernummer ist erforderlich.",
+      "iban_required": "IBAN ist erforderlich.",
+      "trades_required": "Wähle mindestens ein Gewerk aus.",
+      "trades_invalid": "Die Gewerk-Auswahl ist ungültig. Bitte wähle erneut.",
+      "not_authenticated": "Nicht angemeldet. Bitte melde dich erneut an.",
+      "setup_failed": "Die Einrichtung konnte nicht abgeschlossen werden. Bitte versuche es erneut."
+    }
   }
 }

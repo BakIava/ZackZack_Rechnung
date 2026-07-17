@@ -312,6 +312,8 @@
     "backspace": "حذف رقم",
     "labelLbl": "الوصف",
     "unitLbl": "الوحدة",
+    "searchUnit": "ابحث عن وحدة …",
+    "noUnitResults": "لم يتم العثور على وحدة",
     "internalOnly": "لك فقط",
     "notOnDoc": "لا يظهر على المستند",
     "purchase": "الشراء",
@@ -396,6 +398,8 @@
     "nameTr": "التركية",
     "nameAr": "العربية",
     "unitSel": "الوحدة",
+    "searchUnit": "ابحث عن وحدة …",
+    "noUnitResults": "لم يتم العثور على وحدة",
     "addTitle": "خدمة جديدة",
     "editTitle": "تعديل الخدمة",
     "optional": "اختياري",
@@ -567,5 +571,31 @@
     "selectHint": "اختر مستنداً",
     "selectHintSub": "اختر مستنداً من اليسار لعرض التفاصيل.",
     "kuNote": "منشأة صغيرة §19 · بدون ضريبة"
+  },
+  "Onboarding": {
+    "trades": {
+      "painter": "دهان وطلاء",
+      "carpenter": "نجارة",
+      "windows_doors": "نوافذ وأبواب",
+      "electrician": "كهرباء",
+      "tiler": "بلاط",
+      "plumbing_heating": "سباكة وتدفئة",
+      "drywall": "بناء جاف",
+      "flooring": "أرضيات",
+      "gardening_landscaping": "تنسيق حدائق",
+      "cleaning": "تنظيف",
+      "other": "أخرى"
+    },
+    "errors": {
+      "required_fields": "يرجى ملء جميع الحقول الإلزامية.",
+      "name_required": "اسم الشركة مطلوب.",
+      "director_required": "اسم المدير مطلوب.",
+      "tax_number_required": "الرقم الضريبي مطلوب.",
+      "iban_required": "رقم IBAN مطلوب.",
+      "trades_required": "اختر مجال عمل واحداً على الأقل.",
+      "trades_invalid": "اختيار مجال العمل غير صالح. يرجى الاختيار مجدداً.",
+      "not_authenticated": "لم يتم تسجيل الدخول. يرجى تسجيل الدخول مجدداً.",
+      "setup_failed": "تعذر إكمال الإعداد. يرجى المحاولة مرة أخرى."
+    }
   }
 }

@@ -1,5 +1,8 @@
 // ── Types & Translations ──────────────────────────────────────────────────────
 
+import type { OnboardingErrorCode } from "@/types/company";
+import type { TradeId } from "@/types/database";
+
 export type Lang = "de" | "tr" | "ar";
 export type Phase =
   | "welcome"
@@ -40,19 +43,6 @@ export const T = {
     ort: "Ort",
     gewerk_t: "Dein Gewerk",
     gewerk_s: "Wähle aus, welche Arbeiten dein Betrieb macht. Wir bereiten passende Leistungen für dich vor.",
-    trades: [
-      ["maler", "Maler & Lackierer"],
-      ["tischler", "Tischler / Schreiner"],
-      ["fenster", "Fenster & Türen"],
-      ["elektrik", "Elektriker"],
-      ["fliesen", "Fliesenleger"],
-      ["sanitaer", "Sanitär & Heizung"],
-      ["trocken", "Trockenbau"],
-      ["boden", "Bodenleger"],
-      ["garten", "Garten- & Landschaftsbau"],
-      ["reinigung", "Reinigung"],
-      ["sonstiges", "Sonstiges"],
-    ] as [string, string][],
     sc_t: "Kontaktdaten",
     sc_s: "Diese Angaben erscheinen auf deinen Rechnungen.",
     email: "E-Mail",
@@ -168,19 +158,6 @@ export const T = {
     ort: "Şehir",
     gewerk_t: "Mesleğin",
     gewerk_s: "İşletmenin hangi işleri yaptığını seç. Sana uygun hizmetleri hazırlayalım.",
-    trades: [
-      ["maler", "Boyacı & Badanacı"],
-      ["tischler", "Marangoz / Doğramacı"],
-      ["fenster", "Pencere & Kapı"],
-      ["elektrik", "Elektrikçi"],
-      ["fliesen", "Fayansçı"],
-      ["sanitaer", "Tesisat & Isıtma"],
-      ["trocken", "Alçıpan / Kuru duvar"],
-      ["boden", "Zemin döşemeci"],
-      ["garten", "Bahçe & Peyzaj"],
-      ["reinigung", "Temizlik"],
-      ["sonstiges", "Diğer"],
-    ] as [string, string][],
     sc_t: "İletişim bilgileri",
     sc_s: "Bu bilgiler faturalarında görünür.",
     email: "E-posta",
@@ -296,19 +273,6 @@ export const T = {
     ort: "المدينة",
     gewerk_t: "مجال عملك",
     gewerk_s: "اختر الأعمال التي يقوم بها عملك. سنجهّز لك الخدمات المناسبة.",
-    trades: [
-      ["maler", "دهان وطلاء"],
-      ["tischler", "نجارة"],
-      ["fenster", "نوافذ وأبواب"],
-      ["elektrik", "كهرباء"],
-      ["fliesen", "بلاط"],
-      ["sanitaer", "سباكة وتدفئة"],
-      ["trocken", "بناء جاف"],
-      ["boden", "أرضيات"],
-      ["garten", "تنسيق حدائق"],
-      ["reinigung", "تنظيف"],
-      ["sonstiges", "أخرى"],
-    ] as [string, string][],
     sc_t: "بيانات الاتصال",
     sc_s: "تظهر هذه البيانات على فواتيرك.",
     email: "البريد الإلكتروني",
@@ -409,6 +373,8 @@ export interface SetupFlowProps {
   lang?: Lang;
   dir?: "ltr" | "rtl";
   locale: string;
+  tradeLabels: Record<TradeId, string>;
+  errorMessages: Record<OnboardingErrorCode, string>;
   onComplete?: () => void;
   onDashboard?: () => void;
 }

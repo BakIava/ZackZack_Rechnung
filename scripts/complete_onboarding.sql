@@ -1,3 +1,7 @@
+-- Legacy base function. The Gewerke/Starterkatalog backend is installed by
+-- scripts/onboarding_trades_starter_catalog.sql, which can run directly after the
+-- base schema and replaces this function in place. Never run this legacy snippet
+-- after the Gewerke migration, or it would restore the old implementation.
 -- Run this in the Supabase SQL Editor (once, before deploying the onboarding action).
 -- Creates an atomic function that inserts both companies and public.users in a single
 -- transaction so a failed second INSERT never leaves an orphaned company row.

@@ -1,23 +1,24 @@
 "use client";
 
 import "./setup-step-fields.css";
-import { useState } from "react";
 import Image from "next/image";
 import { SetupIcon } from "./setup-icon";
 import { type Translations } from "./translations";
 import { Field, TextInput, Seg3, Toggle19 } from "./setup-primitives";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
+import { TRADE_IDS, type TradeId } from "@/types/database";
 
 interface StepProps {
   t: Translations;
   formData: SetupFormData;
   errors: SetupFormErrors;
-  onChange: (key: keyof SetupFormData, value: string | boolean) => void;
+  onChange: <K extends keyof SetupFormData>(key: K, value: SetupFormData[K]) => void;
+  tradeLabels: Record<TradeId, string>;
 }
 
 // ── Step1Fields ───────────────────────────────────────────────────────────────
 
-export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
+export function Step1Fields({ t, formData, errors, onChange, tradeLabels }: StepProps) {
   const HR_FORMS = new Set(["ek", "gmbh", "ug"]);
   const showHr = HR_FORMS.has(formData.legal_form);
   return (
@@ -111,30 +112,37 @@ export function Step1Fields({ t, formData, errors, onChange }: StepProps) {
           </Field>
         </div>
       </div>
-      <GewerkSelect t={t} />
+      <GewerkSelect
+        t={t}
+        labels={tradeLabels}
+        selected={formData.trade_ids}
+        error={errors.trade_ids}
+        onChange={(tradeIds) => onChange("trade_ids", tradeIds)}
+      />
     </div>
   );
 }
 
 // ── GewerkSelect ────────────────────────────────────────────────────────────────
-// Nur Design — die Auswahl wird noch nicht persistiert (Backend folgt).
-
 interface GewerkSelectProps {
   t: Translations;
+  labels: Record<TradeId, string>;
+  selected: TradeId[];
+  error?: string;
+  onChange: (tradeIds: TradeId[]) => void;
 }
 
-function GewerkSelect({ t }: GewerkSelectProps) {
-  const [selected, setSelected] = useState<Set<string>>(() => new Set());
-  const toggle = (id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+function GewerkSelect({ t, labels, selected, error, onChange }: GewerkSelectProps) {
+  const selectedIds = new Set(selected);
+  const toggle = (id: TradeId) => {
+    if (selectedIds.has(id)) {
+      onChange(selected.filter((tradeId) => tradeId !== id));
+      return;
+    }
+    onChange([...selected, id]);
   };
   return (
-    <div className="ob-gewerk">
+    <div className="ob-gewerk" data-invalid={error ? "true" : "false"}>
       <div className="ob-gewerk-head">
         <div className="ob-gewerk-t">
           {t.gewerk_t}
@@ -143,8 +151,8 @@ function GewerkSelect({ t }: GewerkSelectProps) {
         <div className="ob-gewerk-s">{t.gewerk_s}</div>
       </div>
       <div className="ob-trades">
-        {t.trades.map(([id, label]) => {
-          const on = selected.has(id);
+        {TRADE_IDS.map((id) => {
+          const on = selectedIds.has(id);
           return (
             <button
               type="button"
@@ -157,11 +165,12 @@ function GewerkSelect({ t }: GewerkSelectProps) {
               <span className="ob-trade-box">
                 <SetupIcon name="check" size={15} weight="bold" />
               </span>
-              <span className="ob-trade-lbl">{label}</span>
+              <span className="ob-trade-lbl">{labels[id]}</span>
             </button>
           );
         })}
       </div>
+      {error && <div className="ob-gewerk-error" role="alert">{error}</div>}
     </div>
   );
 }

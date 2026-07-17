@@ -1,76 +1,87 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { deleteCompanyAdmin, insertCompanyAdmin } from "@/lib/repositories/companies";
-import { hasUserProfileAdmin, insertUserProfileAdmin } from "@/lib/repositories/users";
-import type { SetupFormData, SetupFormErrors } from "@/types/company";
+import { completeOnboardingRpc } from "@/lib/repositories/onboarding";
+import { getCurrentUser } from "@/lib/supabase/auth";
+import { validateTradeIds } from "@/lib/onboarding/trades";
+import type {
+  OnboardingErrorCode,
+  SetupFormData,
+  SetupValidationErrors,
+} from "@/types/company";
 
 export interface OnboardingResult {
-  error: string;
-  errors?: SetupFormErrors;
+  error: OnboardingErrorCode;
+  errors?: SetupValidationErrors;
 }
 
 export async function completeOnboarding(
   locale: string,
   data: SetupFormData,
 ): Promise<OnboardingResult | undefined> {
-  const errors: SetupFormErrors = {};
+  const errors: SetupValidationErrors = {};
 
-  if (!data.name.trim()) errors.name = "Firmenname ist erforderlich";
-  if (!data.director.trim()) errors.director = "Geschäftsführer ist erforderlich";
-  if (!data.steuernummer.trim()) errors.steuernummer = "Steuernummer ist erforderlich";
-  if (!data.iban.trim()) errors.iban = "IBAN ist erforderlich";
+  if (!data.name.trim()) errors.name = "name_required";
+  if (!data.director.trim()) errors.director = "director_required";
+  if (!data.steuernummer.trim()) errors.steuernummer = "tax_number_required";
+  if (!data.iban.trim()) errors.iban = "iban_required";
 
-  if (Object.keys(errors).length > 0) {
-    return { error: "Bitte alle Pflichtfelder ausfüllen.", errors };
+  const tradeValidation = validateTradeIds(data.trade_ids);
+  if (!tradeValidation.ok) {
+    errors.trade_ids = tradeValidation.reason === "required"
+      ? "trades_required"
+      : "trades_invalid";
   }
 
-  // Verify the caller is authenticated
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Nicht angemeldet. Bitte neu einloggen." };
+  if (Object.keys(errors).length > 0) {
+    return { error: "required_fields", errors };
+  }
 
-  // Check if already onboarded → just redirect
-  if (await hasUserProfileAdmin(user.id)) redirect(`/${locale}/dashboard`);
+  const user = await getCurrentUser();
+  if (!user) return { error: "not_authenticated" };
 
-  // INSERT company
-  const company = await insertCompanyAdmin({
+  if (!tradeValidation.ok) {
+    return { error: "trades_invalid", errors: { trade_ids: "trades_invalid" } };
+  }
+
+  const result = await completeOnboardingRpc({
+    ...data,
     name: data.name.trim(),
-    legal_form: data.legal_form,
-    director: data.director.trim() || null,
+    legal_form: data.legal_form.trim(),
+    director: data.director.trim(),
     street: data.street.trim(),
     street_no: data.street_no.trim(),
     postcode: data.postcode.trim(),
     city: data.city.trim(),
-    phone: data.phone.trim() || null,
-    mobile: data.mobile.trim() || null,
-    fax: data.fax.trim() || null,
-    email: data.email.trim() || null,
+    handelsregister_nr: data.handelsregister_nr.trim(),
+    registergericht: data.registergericht.trim(),
+    email: data.email.trim(),
+    phone: data.phone.trim(),
+    mobile: data.mobile.trim(),
+    fax: data.fax.trim(),
     steuernummer: data.steuernummer.trim(),
-    ust_id: data.ust_id.trim() || null,
-    registergericht: data.registergericht.trim() || null,
-    handelsregister_nr: data.handelsregister_nr.trim() || null,
-    kleinunternehmer: data.kleinunternehmer,
-    bank_name: data.bank_name.trim() || null,
+    ust_id: data.ust_id.trim(),
     iban: data.iban.trim(),
-    bic: data.bic.trim() || null,
-    account_holder: data.account_holder.trim() || null,
+    bic: data.bic.trim(),
+    bank_name: data.bank_name.trim(),
+    account_holder: data.account_holder.trim(),
+    trade_ids: tradeValidation.tradeIds,
   });
 
-  if ("error" in company) return { error: company.error };
-
-  // INSERT public.users — if this fails, roll back the company row
-  const { error: userErr } = await insertUserProfileAdmin({
-    id: user.id,
-    company_id: company.id,
-    email: user.email,
-  });
-
-  if (userErr) {
-    await deleteCompanyAdmin(company.id);
-    if (userErr.code === "23505") redirect(`/${locale}/dashboard`);
-    return { error: userErr.message };
+  if (!result.ok) {
+    if (result.reason === "already_completed") {
+      redirect(`/${locale}/dashboard`);
+    }
+    if (result.reason === "not_authenticated") {
+      return { error: "not_authenticated" };
+    }
+    if (result.reason === "trades_required" || result.reason === "trades_invalid") {
+      return {
+        error: result.reason,
+        errors: { trade_ids: result.reason },
+      };
+    }
+    return { error: "setup_failed" };
   }
 
   redirect(`/${locale}/dashboard`);

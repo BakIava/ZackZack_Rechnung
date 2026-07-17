@@ -4,13 +4,15 @@ import { useState } from "react";
 import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
+import { UnitPicker } from "@/components/shared/unit-picker";
 import type { KatalogEintrag } from "@/types/service";
+import { withCurrentUnit } from "@/lib/documents/units";
 import "./service-modal.css";
 
 interface ServiceModalProps {
   dir: "ltr" | "rtl";
   item: KatalogEintrag | null;
-  units: string[];
+  units: readonly string[];
   onClose: () => void;
   onSave: (entry: KatalogEintrag) => void;
 }
@@ -42,6 +44,7 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
   const [preisStr, setPreisStr] = useState(
     item && item.preisCents > 0 ? (item.preisCents / 100).toFixed(2).replace(".", ",") : "",
   );
+  const unitOptions = withCurrentUnit(units, item?.einheit);
 
   const ok = de.trim().length > 0 && isPriceValid(preisStr);
 
@@ -130,18 +133,15 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
           {/* Einheit + Preis */}
           <div className="f-row-two">
             <div className="f-row">
-              <label className="f-lbl">{t("unitSel")}</label>
-              <select
-                className="f-select"
+              <label className="f-lbl" htmlFor="service-unit">{t("unitSel")}</label>
+              <UnitPicker
+                id="service-unit"
+                units={unitOptions}
                 value={einheit}
-                onChange={(e) => setEinheit(e.target.value)}
-              >
-                {units.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
+                searchPlaceholder={t("searchUnit")}
+                noResultsLabel={t("noUnitResults")}
+                onChange={setEinheit}
+              />
             </div>
             <div className="f-row">
               <label className="f-lbl">

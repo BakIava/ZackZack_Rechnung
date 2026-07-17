@@ -312,6 +312,8 @@
     "backspace": "Rakamı sil",
     "labelLbl": "Açıklama",
     "unitLbl": "Birim",
+    "searchUnit": "Birim ara …",
+    "noUnitResults": "Birim bulunamadı",
     "internalOnly": "Sadece sana",
     "notOnDoc": "belgede görünmez",
     "purchase": "Alış",
@@ -396,6 +398,8 @@
     "nameTr": "Türkçe",
     "nameAr": "Arapça",
     "unitSel": "Birim",
+    "searchUnit": "Birim ara …",
+    "noUnitResults": "Birim bulunamadı",
     "addTitle": "Yeni hizmet",
     "editTitle": "Hizmeti düzenle",
     "optional": "isteğe bağlı",
@@ -567,5 +571,31 @@
     "selectHint": "Belge seç",
     "selectHintSub": "Detayları görmek için soldan bir belge seç.",
     "kuNote": "Küçük işletme §19 · KDV yok"
+  },
+  "Onboarding": {
+    "trades": {
+      "painter": "Boyacı & Badanacı",
+      "carpenter": "Marangoz / Doğramacı",
+      "windows_doors": "Pencere & Kapı",
+      "electrician": "Elektrikçi",
+      "tiler": "Fayansçı",
+      "plumbing_heating": "Tesisat & Isıtma",
+      "drywall": "Alçıpan / Kuru duvar",
+      "flooring": "Zemin döşemeci",
+      "gardening_landscaping": "Bahçe & Peyzaj",
+      "cleaning": "Temizlik",
+      "other": "Diğer"
+    },
+    "errors": {
+      "required_fields": "Lütfen tüm zorunlu alanları doldur.",
+      "name_required": "Firma adı zorunludur.",
+      "director_required": "Yetkili kişi zorunludur.",
+      "tax_number_required": "Vergi numarası zorunludur.",
+      "iban_required": "IBAN zorunludur.",
+      "trades_required": "En az bir meslek seç.",
+      "trades_invalid": "Meslek seçimi geçersiz. Lütfen yeniden seç.",
+      "not_authenticated": "Oturum açık değil. Lütfen yeniden giriş yap.",
+      "setup_failed": "Kurulum tamamlanamadı. Lütfen tekrar dene."
+    }
   }
 }

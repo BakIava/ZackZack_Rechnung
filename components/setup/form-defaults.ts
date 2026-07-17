@@ -10,6 +10,7 @@ export const INITIAL_FORM_DATA: SetupFormData = {
   city: "",
   handelsregister_nr: "",
   registergericht: "",
+  trade_ids: [],
   email: "",
   phone: "",
   mobile: "",

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, X } from "lucide-react";
+import { Check, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { FLOW_UNITS } from "@/lib/documents/units";
+import { filterUnits, FLOW_UNITS, withCurrentUnit } from "@/lib/documents/units";
 import type { DraftItem, TaxRate } from "@/types/document";
 
 const STROKE = 1.75;
@@ -72,6 +72,9 @@ interface UnitSheetProps {
 /** Einheit wählen: Raster aus den Standard-Einheiten. */
 function UnitSheet({ item, onCommit, onClose }: UnitSheetProps) {
   const t = useTranslations("Step2");
+  const [query, setQuery] = useState("");
+  const unitOptions = withCurrentUnit(FLOW_UNITS, item.unit);
+  const filteredUnits = filterUnits(unitOptions, query);
   return (
     <>
       <div className="zz-sheet-h">
@@ -83,18 +86,33 @@ function UnitSheet({ item, onCommit, onClose }: UnitSheetProps) {
           <X size={18} strokeWidth={STROKE} aria-hidden />
         </button>
       </div>
+      <div className="zz-unit-filter">
+        <Search size={17} strokeWidth={STROKE} aria-hidden />
+        <input
+          type="search"
+          value={query}
+          placeholder={t("searchUnit")}
+          aria-label={t("searchUnit")}
+          autoFocus
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
       <div className="zz-choices zz-choices--grid">
-        {FLOW_UNITS.map((u) => (
-          <button
-            key={u}
-            type="button"
-            className="zz-choice"
-            data-on={item.unit === u ? "1" : "0"}
-            onClick={() => onCommit(u)}
-          >
-            <span className="zz-choice-l">{u}</span>
-          </button>
-        ))}
+        {filteredUnits.length === 0 ? (
+          <div className="zz-unit-empty">{t("noUnitResults")}</div>
+        ) : (
+          filteredUnits.map((u) => (
+            <button
+              key={u}
+              type="button"
+              className="zz-choice"
+              data-on={item.unit === u ? "1" : "0"}
+              onClick={() => onCommit(u)}
+            >
+              <span className="zz-choice-l">{u}</span>
+            </button>
+          ))
+        )}
       </div>
     </>
   );

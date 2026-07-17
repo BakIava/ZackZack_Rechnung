@@ -32,6 +32,23 @@ export type TaxRate = 0 | 7 | 19;
 
 export type CustomerType = "private" | "business";
 
+/** Stabile, sprachunabhängige IDs der im MVP unterstützten Gewerke. */
+export const TRADE_IDS = [
+  "painter",
+  "carpenter",
+  "windows_doors",
+  "electrician",
+  "tiler",
+  "plumbing_heating",
+  "drywall",
+  "flooring",
+  "gardening_landscaping",
+  "cleaning",
+  "other",
+] as const;
+
+export type TradeId = (typeof TRADE_IDS)[number];
+
 /** public.companies */
 export interface CompanyRow {
   id: string;
@@ -111,6 +128,40 @@ export interface ServiceDbRow {
   description_ar: string | null;
   unit: string | null;
   default_price: number | null; // cents
+  /** Herkunft einer kopierten Starterleistung; manuelle Einträge bleiben null. */
+  starter_template_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** public.trades — zentrale technische Gewerk-IDs, Labels bleiben in i18n. */
+export interface TradeRow {
+  id: TradeId;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** public.company_trades — Mehrfachauswahl einer Firma im Onboarding. */
+export interface CompanyTradeRow {
+  company_id: string;
+  trade_id: TradeId;
+  created_at: string;
+}
+
+/** public.service_templates — zentral gepflegte, unveränderlich kopierte Vorlagen. */
+export interface ServiceTemplateRow {
+  id: string;
+  trade_id: TradeId;
+  description_de: string;
+  description_tr: string;
+  description_ar: string;
+  unit: string;
+  category: string | null;
+  sort_order: number;
+  is_active: boolean;
+  template_version: number;
   created_at: string;
   updated_at: string;
 }

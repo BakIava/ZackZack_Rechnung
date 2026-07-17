@@ -2,7 +2,7 @@
  * Firmen-Typen — abgeleitet aus `CompanyRow` (types/database.ts).
  */
 
-import type { CompanyRow } from "./database";
+import type { CompanyRow, TradeId } from "./database";
 
 /** Firmen-Stammdaten der Einstellungen — Spalten wie im SELECT (ohne Timestamps). */
 export type CompanySettings = Omit<CompanyRow, "created_at" | "updated_at">;
@@ -50,6 +50,7 @@ export interface SetupFormData {
   city: string;
   handelsregister_nr: string;
   registergericht: string;
+  trade_ids: TradeId[];
   // Step 2: Kontaktdaten
   email: string;
   phone: string;
@@ -66,4 +67,21 @@ export interface SetupFormData {
   account_holder: string;
 }
 
-export type SetupFormErrors = Partial<Record<keyof SetupFormData, string>>;
+export type OnboardingErrorCode =
+  | "required_fields"
+  | "name_required"
+  | "director_required"
+  | "tax_number_required"
+  | "iban_required"
+  | "trades_required"
+  | "trades_invalid"
+  | "not_authenticated"
+  | "setup_failed";
+
+export type SetupFormErrors = Partial<
+  Record<keyof SetupFormData, string>
+>;
+
+export type SetupValidationErrors = Partial<
+  Record<keyof SetupFormData, OnboardingErrorCode>
+>;
