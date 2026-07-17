@@ -17,6 +17,19 @@ import type {
   SetupValidationErrors,
 } from "@/types/company";
 import { completeOnboarding } from "@/lib/onboarding/actions";
+import {
+  discardUploadedOnboardingDocument,
+  extractUploadedOnboardingDocument,
+  prepareOnboardingUpload,
+} from "@/lib/onboarding/extraction-actions";
+import { resolveOnboardingDocumentMediaType } from "@/lib/onboarding/extraction-file";
+import { uploadOnboardingDocument } from "@/lib/repositories/onboarding-uploads.client";
+import { emptyOnboardingExtractionStatuses } from "@/lib/onboarding/extraction-validation";
+import type {
+  OnboardingExtractableField,
+  OnboardingExtractionErrorCode,
+  OnboardingExtractionStatuses,
+} from "@/types/onboarding-extraction";
 
 export function SetupFlow({
   lang = "de",
@@ -24,6 +37,7 @@ export function SetupFlow({
   locale,
   tradeLabels,
   errorMessages,
+  extractionErrorMessages,
   onComplete,
   onDashboard,
 }: SetupFlowProps) {
@@ -36,6 +50,11 @@ export function SetupFlow({
   const [errors, setErrors] = useState<SetupValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<OnboardingErrorCode | null>(null);
+  const [extractionStatuses, setExtractionStatuses] =
+    useState<OnboardingExtractionStatuses>(emptyOnboardingExtractionStatuses);
+  const [extractionError, setExtractionError] =
+    useState<OnboardingExtractionErrorCode | null>(null);
+  const [scanFileName, setScanFileName] = useState("");
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -45,12 +64,6 @@ export function SetupFlow({
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  useEffect(() => {
-    if (phase !== "scanning") return;
-    const id = setTimeout(() => setPhase("review"), 2400);
-    return () => clearTimeout(id);
-  }, [phase]);
-
   const handleFormChange = <K extends keyof SetupFormData>(
     key: K,
     value: SetupFormData[K],
@@ -58,6 +71,79 @@ export function SetupFlow({
     setFormData((prev: SetupFormData) => ({ ...prev, [key]: value }));
     if (errors[key]) {
       setErrors((prev: SetupValidationErrors) => ({ ...prev, [key]: undefined }));
+    }
+  };
+
+  const handleReviewFormChange = <K extends OnboardingExtractableField>(
+    key: K,
+    value: SetupFormData[K],
+  ) => {
+    handleFormChange(key, value);
+    const present = typeof value === "boolean" ||
+      (typeof value === "string" && value.trim().length > 0);
+    setExtractionStatuses((prev) => ({
+      ...prev,
+      [key]: present ? "found" : "missing",
+    }));
+  };
+
+  const handleOnboardingFile = async (file: File) => {
+    const contentType = resolveOnboardingDocumentMediaType(file.name, file.type);
+    if (!contentType) {
+      setExtractionError("unsupported_file");
+      return;
+    }
+
+    setScanFileName(file.name);
+    setExtractionError(null);
+    setPhase("scanning");
+    let uploadedReference: Parameters<typeof extractUploadedOnboardingDocument>[0] | null = null;
+    try {
+      const prepared = await prepareOnboardingUpload(
+        file.name,
+        contentType,
+        file.size,
+      );
+      if (prepared.status === "error") {
+        setExtractionError(prepared.error);
+        setPhase("upload");
+        return;
+      }
+
+      const uploaded = await uploadOnboardingDocument(prepared.target, file);
+      uploadedReference = {
+        path: prepared.target.path,
+        fileName: prepared.target.fileName,
+        contentType: prepared.target.contentType,
+        size: prepared.target.size,
+      };
+      if (!uploaded) {
+        await discardUploadedOnboardingDocument(uploadedReference);
+        setExtractionError("upload_failed");
+        setPhase("upload");
+        return;
+      }
+
+      const result = await extractUploadedOnboardingDocument(uploadedReference);
+      if (result.status === "error") {
+        setExtractionError(result.error);
+        setPhase("upload");
+        return;
+      }
+
+      setFormData((previous) => ({
+        ...previous,
+        ...result.values,
+        trade_ids: previous.trade_ids,
+      }));
+      setExtractionStatuses(result.statuses);
+      setPhase("review");
+    } catch {
+      if (uploadedReference) {
+        await discardUploadedOnboardingDocument(uploadedReference);
+      }
+      setExtractionError("upload_failed");
+      setPhase("upload");
     }
   };
 
@@ -106,9 +192,11 @@ export function SetupFlow({
       <SetupUpload
         {...shared}
         phase={phase}
-        onScan={() => setPhase("scanning")}
+        onFileSelect={handleOnboardingFile}
         onBack={() => setPhase("entry")}
         onManual={() => { setStep(1); setPhase("wizard"); }}
+        fileName={scanFileName}
+        errorMessage={extractionError ? extractionErrorMessages[extractionError] : null}
       />
     );
   }
@@ -122,6 +210,9 @@ export function SetupFlow({
         }}
         onBack={() => setPhase("upload")}
         submitting={submitting}
+        formData={formData}
+        statuses={extractionStatuses}
+        onFormChange={handleReviewFormChange}
       />
     );
   }

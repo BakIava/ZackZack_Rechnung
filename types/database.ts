@@ -98,6 +98,15 @@ export interface AiUsageDailyRow {
   updated_at: string;
 }
 
+/** public.onboarding_ai_usage_daily — Quote vor Anlage der public.users-Zeile. */
+export interface OnboardingAiUsageDailyRow {
+  user_id: string;
+  usage_date: string;
+  request_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 /** public.customers */
 export interface CustomerDbRow {
   id: string;

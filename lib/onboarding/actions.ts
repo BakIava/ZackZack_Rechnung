@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { completeOnboardingRpc } from "@/lib/repositories/onboarding";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { validateTradeIds } from "@/lib/onboarding/trades";
+import { deleteAllOnboardingUploadsForUser } from "@/lib/repositories/onboarding-uploads";
 import type {
   OnboardingErrorCode,
   SetupFormData,
@@ -39,6 +40,11 @@ export async function completeOnboarding(
 
   const user = await getCurrentUser();
   if (!user) return { error: "not_authenticated" };
+  try {
+    await deleteAllOnboardingUploadsForUser(user.id);
+  } catch {
+    // Best effort: ein Storage-Problem darf den manuellen Setup-Weg nicht sperren.
+  }
 
   if (!tradeValidation.ok) {
     return { error: "trades_invalid", errors: { trade_ids: "trades_invalid" } };

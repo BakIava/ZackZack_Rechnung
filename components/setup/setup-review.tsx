@@ -6,6 +6,11 @@ import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
 import { LangLink, DesktopBar, UpProgress } from "./setup-primitives";
 import { ReviewFields } from "./setup-other-fields";
+import type { SetupFormData } from "@/types/company";
+import type {
+  OnboardingExtractableField,
+  OnboardingExtractionStatuses,
+} from "@/types/onboarding-extraction";
 
 interface ReviewProps {
   t: Translations;
@@ -15,9 +20,26 @@ interface ReviewProps {
   onApply: () => void;
   onBack: () => void;
   submitting?: boolean;
+  formData: SetupFormData;
+  statuses: OnboardingExtractionStatuses;
+  onFormChange: <K extends OnboardingExtractableField>(
+    key: K,
+    value: SetupFormData[K],
+  ) => void;
 }
 
-export function SetupReview({ t, lang, dir, isMobile, onApply, onBack, submitting }: ReviewProps) {
+export function SetupReview({
+  t,
+  lang,
+  dir,
+  isMobile,
+  onApply,
+  onBack,
+  submitting,
+  formData,
+  statuses,
+  onFormChange,
+}: ReviewProps) {
   if (isMobile) {
     return (
       <div className="ob-root" dir={dir}>
@@ -27,7 +49,7 @@ export function SetupReview({ t, lang, dir, isMobile, onApply, onBack, submittin
           </button>
           <div className="ob-top-mid">
             <div className="ob-top-brand">
-              <Image src="/assets/zackzack-mark.png" alt="" width={18} height={18} style={{ height: 18, width: "auto" }} />
+              <Image src="/assets/zackzack-mark.png" alt="" width={24} height={18} className="ob-brand-mark" />
               {t.revTitle}
             </div>
             <div className="ob-top-sub">{t.setupSub}</div>
@@ -42,7 +64,12 @@ export function SetupReview({ t, lang, dir, isMobile, onApply, onBack, submittin
               <div className="ob-review-banner-s">{t.revBannerS}</div>
             </div>
           </div>
-          <ReviewFields t={t} />
+          <ReviewFields
+            t={t}
+            formData={formData}
+            statuses={statuses}
+            onChange={onFormChange}
+          />
         </div>
         <div className="ob-foot">
           <button className="ob-next" onClick={onApply} disabled={submitting}>
@@ -75,7 +102,12 @@ export function SetupReview({ t, lang, dir, isMobile, onApply, onBack, submittin
                 <div className="ob-review-banner-s">{t.revBannerS}</div>
               </div>
             </div>
-            <ReviewFields t={t} />
+            <ReviewFields
+              t={t}
+              formData={formData}
+              statuses={statuses}
+              onChange={onFormChange}
+            />
           </div>
           <div className="ob-d-wfoot">
             <button className="ob-d-back" onClick={onBack}>

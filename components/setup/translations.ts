@@ -1,6 +1,7 @@
 // ── Types & Translations ──────────────────────────────────────────────────────
 
 import type { OnboardingErrorCode } from "@/types/company";
+import type { OnboardingExtractionErrorCode } from "@/types/onboarding-extraction";
 import type { TradeId } from "@/types/database";
 
 export type Lang = "de" | "tr" | "ar";
@@ -102,8 +103,8 @@ export const T = {
     tileManualT: "Manuell eingeben",
     loslegen: "Loslegen",
     tileManualS: "Schritt für Schritt selbst eintragen — dauert keine 2 Minuten.",
-    privacyA: "Die hochgeladene Rechnung nutzen wir nur zur Datenerkennung —",
-    privacyB: "sie wird nicht gespeichert.",
+    privacyA: "Die Datei wird nur zur Datenerkennung verarbeitet —",
+    privacyB: "der temporäre Upload wird danach gelöscht.",
     upTitle: "Rechnung hochladen",
     upIntro: "Wir lesen Firmenname, Adresse, Steuernummer und IBAN automatisch aus.",
     upCam: "Foto aufnehmen",
@@ -217,8 +218,8 @@ export const T = {
     tileManualT: "Manuel gir",
     loslegen: "Başla",
     tileManualS: "Adım adım kendin gir — 2 dakika sürmez.",
-    privacyA: "Yüklenen faturayı yalnızca veri tanıma için kullanıyoruz —",
-    privacyB: "kaydedilmez.",
+    privacyA: "Dosya yalnızca veri tanıma için işlenir —",
+    privacyB: "geçici yükleme daha sonra silinir.",
     upTitle: "Fatura yükle",
     upIntro: "Firma adı, adres, vergi numarası ve IBAN'ı otomatik okuruz.",
     upCam: "Fotoğraf çek",
@@ -332,8 +333,8 @@ export const T = {
     tileManualT: "إدخال يدوي",
     loslegen: "ابدأ الآن",
     tileManualS: "أدخل البيانات خطوة بخطوة — لن يستغرق أكثر من دقيقتين.",
-    privacyA: "نستخدم الفاتورة المرفوعة فقط لاستخراج البيانات —",
-    privacyB: "ولا يتم حفظها.",
+    privacyA: "تُعالج الوثيقة فقط لاستخراج البيانات —",
+    privacyB: "ثم يُحذف الملف المؤقت.",
     upTitle: "رفع فاتورة",
     upIntro: "نستخرج اسم الشركة والعنوان والرقم الضريبي وIBAN تلقائياً.",
     upCam: "التقط صورة",
@@ -375,6 +376,7 @@ export interface SetupFlowProps {
   locale: string;
   tradeLabels: Record<TradeId, string>;
   errorMessages: Record<OnboardingErrorCode, string>;
+  extractionErrorMessages: Record<OnboardingExtractionErrorCode, string>;
   onComplete?: () => void;
   onDashboard?: () => void;
 }
