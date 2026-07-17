@@ -180,19 +180,31 @@ export function Toggle19({ t, checked, onChange }: Toggle19Props) {
   );
 }
 
-// ── ScanDoc ───────────────────────────────────────────────────────────────────
+// ── LoadingOverlay (Status-Design) ──────────────────────────────────────────────
 
-export function ScanDoc() {
+interface LoadingOverlayProps {
+  t: Translations;
+  fileName: string;
+}
+
+export function LoadingOverlay({ t, fileName }: LoadingOverlayProps) {
   return (
-    <div className="ob-scan-doc">
-      <div className="sd-logo" />
-      <div className="sd-line" style={{ top: 38, width: "64%" }} />
-      <div className="sd-line w" style={{ top: 52, width: "40%" }} />
-      <div className="sd-line" style={{ top: 80, width: "82%" }} />
-      <div className="sd-line" style={{ top: 94, width: "70%" }} />
-      <div className="sd-line" style={{ top: 124, width: "52%" }} />
-      <div className="sd-line w" style={{ top: 152, width: "60%" }} />
-      <div className="ob-scan-beam" />
+    <div className="ob-ov" role="status" aria-live="polite">
+      <div className="ob-ov-box">
+        <div className="ob-ov-ring">
+          <span className="ob-ov-spin" />
+          <Image
+            src="/assets/zackzack-mark.png"
+            alt=""
+            width={34}
+            height={34}
+            className="ob-ov-mark"
+          />
+        </div>
+        <div className="ob-ov-t">{t.scanT}</div>
+        <div className="ob-ov-s">{t.scanS}</div>
+        <div className="ob-scan-file"><SetupIcon name="file" size={15} />{fileName || t.scanFile}</div>
+      </div>
     </div>
   );
 }
