@@ -53,7 +53,7 @@ function validPreview(overrides: Partial<DocumentPreview> = {}): DocumentPreview
         position: 1,
         descriptionDe: "Malerarbeiten",
         amount: 1,
-        unit: "Pauschal",
+        unit: "Pauschale",
         unitPrice: 30_000,
         totalAmount: 30_000,
         taxRate: 19,

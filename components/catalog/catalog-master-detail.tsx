@@ -20,6 +20,7 @@ import { katalogToServiceInput } from "@/lib/services/mappers";
 import { createService, updateService, deleteService } from "@/lib/services/actions";
 import type { Locale } from "@/i18n/routing";
 import { formatMoney } from "@/lib/format";
+import { FLOW_UNITS } from "@/lib/documents/units";
 import { ServiceModal } from "./service-modal";
 import "./catalog-master-detail.css";
 
@@ -29,8 +30,6 @@ interface CatalogMasterDetailProps {
 }
 
 const STROKE = 1.75;
-const UNITS = ["m²", "Std.", "Stk.", "lfm", "Pauschal", "kg", "Liter"];
-
 export function CatalogMasterDetail({ dir, initialItems }: CatalogMasterDetailProps) {
   const t = useTranslations("Catalog");
   const locale = useLocale() as Locale;
@@ -234,7 +233,7 @@ export function CatalogMasterDetail({ dir, initialItems }: CatalogMasterDetailPr
         <ServiceModal
           dir={dir}
           item={editItem}
-          units={UNITS}
+          units={FLOW_UNITS}
           onClose={() => {
             setShowModal(false);
             setEditItem(null);

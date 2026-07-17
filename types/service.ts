@@ -6,7 +6,7 @@
  */
 
 import type { Locale } from "@/i18n/routing";
-import type { ServiceDbRow } from "./database";
+import type { ServiceDbRow, ServiceTemplateRow } from "./database";
 
 /** DB-Row des Katalogs (Tabelle `services`). */
 export type ServiceRow = ServiceDbRow;
@@ -28,3 +28,6 @@ export interface KatalogEintrag {
 /** Eingabe für Anlegen/Bearbeiten einer Katalog-Leistung (Feldnamen wie DB). */
 export type ServiceInput = Pick<ServiceDbRow, "description_de"> &
   Partial<Pick<ServiceDbRow, "description_tr" | "description_ar" | "unit" | "default_price">>;
+
+/** Zentrale Startervorlage; Preis und Steuerlogik gehören bewusst nicht dazu. */
+export type ServiceTemplate = ServiceTemplateRow;

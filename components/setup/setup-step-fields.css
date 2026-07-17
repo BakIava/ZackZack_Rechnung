@@ -112,6 +112,17 @@
   padding-top: 22px;
   border-top: 1px solid var(--line);
 }
+.ob-gewerk[data-invalid="true"] .ob-trades {
+  padding: 3px;
+  border: 1px solid #c0392b;
+  border-radius: 12px;
+}
+.ob-gewerk-error {
+  margin-block-start: 8px;
+  color: #a93226;
+  font-size: 13px;
+  font-weight: 600;
+}
 .ob-gewerk-head { margin-bottom: 14px; }
 .ob-gewerk-t {
   display: flex;

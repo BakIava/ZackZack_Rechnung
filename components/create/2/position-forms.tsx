@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Lock, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { UnitPicker } from "@/components/shared/unit-picker";
 import { FLOW_UNITS } from "@/lib/documents/units";
 import {
   computeUnitPrice,
@@ -36,9 +37,14 @@ export function FreeForm({ onAdd }: { onAdd: (input: FreeItemInput) => void }) {
         </div>
         <div className="f-row">
           <label className="f-lbl" htmlFor="ff-unit">{t("unitLbl")}</label>
-          <select id="ff-unit" className="f-select" value={unit} onChange={(e) => setUnit(e.target.value)}>
-            {FLOW_UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
-          </select>
+          <UnitPicker
+            id="ff-unit"
+            units={FLOW_UNITS}
+            value={unit}
+            searchPlaceholder={t("searchUnit")}
+            noResultsLabel={t("noUnitResults")}
+            onChange={setUnit}
+          />
         </div>
       </div>
       <div className="f-row">
@@ -167,7 +173,7 @@ export function FremdForm({ onAdd }: { onAdd: (input: FremdItemInput) => void })
         disabled={!ok}
         onClick={() => onAdd({
           descriptionDe: label.trim(),
-          unit: "Pauschal",
+          unit: "Pauschale",
           amount: 1,
           purchasePrice: purchaseCents,
           surcharge: priceSource === "sale"

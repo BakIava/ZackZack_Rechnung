@@ -10,19 +10,32 @@ import { SetupReview } from "./setup-review";
 import { SetupDone } from "./setup-done";
 import { SetupWizard } from "./setup-wizard";
 import { INITIAL_FORM_DATA } from "./form-defaults";
-import type { SetupFormData, SetupFormErrors } from "@/types/company";
+import type {
+  OnboardingErrorCode,
+  SetupFormData,
+  SetupFormErrors,
+  SetupValidationErrors,
+} from "@/types/company";
 import { completeOnboarding } from "@/lib/onboarding/actions";
 
-export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDashboard }: SetupFlowProps) {
+export function SetupFlow({
+  lang = "de",
+  dir = "ltr",
+  locale,
+  tradeLabels,
+  errorMessages,
+  onComplete,
+  onDashboard,
+}: SetupFlowProps) {
   const t = T[lang];
   const TOTAL = 5;
   const [phase, setPhase] = useState<Phase>("welcome");
   const [step, setStep] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
   const [formData, setFormData] = useState<SetupFormData>(INITIAL_FORM_DATA);
-  const [errors, setErrors] = useState<SetupFormErrors>({});
+  const [errors, setErrors] = useState<SetupValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<OnboardingErrorCode | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -38,10 +51,21 @@ export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDash
     return () => clearTimeout(id);
   }, [phase]);
 
-  const handleFormChange = (key: keyof SetupFormData, value: string | boolean) => {
+  const handleFormChange = <K extends keyof SetupFormData>(
+    key: K,
+    value: SetupFormData[K],
+  ) => {
     setFormData((prev: SetupFormData) => ({ ...prev, [key]: value }));
-    if (errors[key]) setErrors((prev: SetupFormErrors) => ({ ...prev, [key]: undefined }));
+    if (errors[key]) {
+      setErrors((prev: SetupValidationErrors) => ({ ...prev, [key]: undefined }));
+    }
   };
+
+  const displayErrors: SetupFormErrors = {};
+  for (const key of Object.keys(errors) as Array<keyof SetupFormData>) {
+    const errorCode = errors[key];
+    if (errorCode) displayErrors[key] = errorMessages[errorCode];
+  }
 
   const handlePhase = async (p: Phase) => {
     if (p === "done") {
@@ -92,7 +116,10 @@ export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDash
     return (
       <SetupReview
         {...shared}
-        onApply={() => handlePhase("done")}
+        onApply={() => {
+          setStep(1);
+          setPhase("wizard");
+        }}
         onBack={() => setPhase("upload")}
         submitting={submitting}
       />
@@ -106,7 +133,7 @@ export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDash
     <>
       {submitError && (
         <div className="ob-submit-error" role="alert">
-          {submitError}
+          {errorMessages[submitError]}
         </div>
       )}
       <SetupWizard
@@ -116,8 +143,9 @@ export function SetupFlow({ lang = "de", dir = "ltr", locale, onComplete, onDash
         TOTAL={TOTAL}
         onPhase={handlePhase}
         formData={formData}
-        errors={errors}
+        errors={displayErrors}
         onFormChange={handleFormChange}
+        tradeLabels={tradeLabels}
         submitting={submitting}
       />
     </>

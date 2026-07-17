@@ -21,7 +21,7 @@ export async function getServices(): Promise<KatalogEintrag[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("services")
-    .select("id, company_id, description_de, description_tr, description_ar, unit, default_price")
+    .select("id, company_id, description_de, description_tr, description_ar, unit, default_price, starter_template_id")
     .eq("company_id", companyId)
     .order("description_de");
 

@@ -1202,6 +1202,35 @@
 }
 
 /* Auswahl-Sheets (Einheit als Raster / MwSt. als Liste) */
+.zz-unit-filter {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  padding: 0 12px;
+  min-height: 44px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--muted);
+}
+.zz-unit-filter:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 8%, transparent);
+}
+.zz-unit-filter input {
+  min-width: 0;
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14.5px;
+}
+.zz-unit-filter input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
 .zz-choices {
   display: flex;
   flex-direction: column;
@@ -1211,6 +1240,15 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 9px;
+  max-height: 290px;
+  overflow-y: auto;
+}
+.zz-unit-empty {
+  grid-column: 1 / -1;
+  padding: 24px 12px;
+  color: var(--muted);
+  font-size: 13.5px;
+  text-align: center;
 }
 .zz-choice {
   display: flex;

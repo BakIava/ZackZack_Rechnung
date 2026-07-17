@@ -6,6 +6,7 @@ import { type Translations, type Lang, type Phase } from "./translations";
 import { LangLink, DesktopBar } from "./setup-primitives";
 import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoEmpty, LogoPreview } from "./setup-step-fields";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
+import type { TradeId } from "@/types/database";
 
 interface WizardProps {
   t: Translations;
@@ -18,18 +19,19 @@ interface WizardProps {
   onPhase: (p: Phase) => void;
   formData: SetupFormData;
   errors: SetupFormErrors;
-  onFormChange: (key: keyof SetupFormData, value: string | boolean) => void;
+  onFormChange: <K extends keyof SetupFormData>(key: K, value: SetupFormData[K]) => void;
+  tradeLabels: Record<TradeId, string>;
   submitting: boolean;
 }
 
 export function SetupWizard({
   t, lang, dir, isMobile, step, setStep, TOTAL, onPhase,
-  formData, errors, onFormChange, submitting,
+  formData, errors, onFormChange, tradeLabels, submitting,
 }: WizardProps) {
   const optional = step === 4 || step === 5;
   const isLastStep = step === TOTAL;
 
-  const stepProps = { t, formData, errors, onChange: onFormChange };
+  const stepProps = { t, formData, errors, onChange: onFormChange, tradeLabels };
 
   if (isMobile) {
     const stepMeta: Record<number, { ic: string; key: "s1" | "sc" | "s2" | "s3" | "s4" }> = {
