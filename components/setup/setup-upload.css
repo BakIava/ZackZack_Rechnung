@@ -55,73 +55,80 @@
 }
 .ob-upload-error svg { flex-shrink: 0; margin-top: 1px; }
 
-/* ── Scan-Zustand ──────────────────────────────────────────────────────────── */
-.ob-scan {
-  flex: 1;
+/* ── Lade-Overlay (Status-Design) ──────────────────────────────────────────── */
+/* Erscheint über dem Upload-Screen, sobald die PDF hochgeladen ist und der   */
+/* Erkennungs-Prozess läuft: abgedunkelter, unscharfer Hintergrund, die Marke  */
+/* im drehenden Ring. Entspricht dem Baustein „Loading-Overlay".               */
+.ob-ov {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  -webkit-backdrop-filter: blur(7px) saturate(1.1);
+  backdrop-filter: blur(7px) saturate(1.1);
+  animation: ob-ov-in 0.26s ease both;
+}
+@keyframes ob-ov-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ob-ov-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
+  max-width: 320px;
+  padding: 28px 34px;
   text-align: center;
-  padding: 24px var(--pad) 28px;
-}
-.ob-scan--desktop { padding: 26px 20px 30px; }
-.ob-scan-doc {
-  width: 138px;
-  height: 184px;
-  border-radius: 12px;
-  background: #fff;
+  border-radius: var(--r-lg);
+  background: var(--surface);
   border: 1px solid var(--line);
-  box-shadow: 0 18px 38px -16px rgba(2, 51, 92, 0.45);
+  box-shadow: 0 28px 64px -28px rgba(2, 51, 92, 0.55);
+  animation: ob-ov-pop 0.32s cubic-bezier(0.34, 1.32, 0.5, 1) both;
+}
+@keyframes ob-ov-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+.ob-ov-ring {
   position: relative;
-  overflow: hidden;
-  margin-bottom: 26px;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.sd-logo {
+.ob-ov-ring::before {
+  content: "";
   position: absolute;
-  top: 14px;
-  inset-inline-start: 14px;
-  width: 30px;
-  height: 12px;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--accent) 70%, #fff);
+  inset: 0;
+  border-radius: 999px;
+  border: 3px solid color-mix(in srgb, var(--primary) 13%, var(--line));
 }
-.sd-line {
+.ob-ov-spin {
   position: absolute;
-  inset-inline: 14px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--surface-2);
+  inset: 0;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  border-top-color: var(--primary);
+  border-inline-end-color: var(--primary);
+  animation: ob-ov-spin 0.82s linear infinite;
 }
-.sd-line.w { background: color-mix(in srgb, var(--primary) 12%, var(--surface-2)); }
-.ob-scan-beam {
-  position: absolute;
-  inset-inline: 0;
-  height: 40px;
-  top: -40px;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    color-mix(in srgb, var(--primary) 26%, transparent) 55%,
-    transparent
-  );
-  animation: ob-scanbeam 1.7s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+@keyframes ob-ov-spin {
+  to { transform: rotate(360deg); }
 }
-@keyframes ob-scanbeam {
-  0% { top: -40px; }
-  100% { top: 184px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ob-scan-beam { animation: none; top: 72px; }
-  .ob-scan-dots i { animation: none; opacity: 0.7; }
-}
-.ob-scan-t { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
-.ob-scan-s { font-size: 13px; color: var(--muted); margin-top: 7px; line-height: 1.45; max-width: 250px; }
+.ob-ov-mark { width: 34px; height: 34px; object-fit: contain; }
+.ob-ov-t { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
+.ob-ov-s { font-size: 13px; color: var(--muted); line-height: 1.45; max-width: 250px; }
+
 .ob-scan-file {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
   font-size: 12.5px;
   font-weight: 600;
   color: var(--primary);
@@ -130,18 +137,9 @@
   padding: 8px 13px;
   border-radius: 999px;
 }
-.ob-scan-dots { display: flex; gap: 7px; margin-top: 20px; }
-.ob-scan-dots i {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: var(--primary);
-  opacity: 0.3;
-  animation: ob-scandot 1.2s ease-in-out infinite;
-}
-.ob-scan-dots i:nth-child(2) { animation-delay: 0.18s; }
-.ob-scan-dots i:nth-child(3) { animation-delay: 0.36s; }
-@keyframes ob-scandot {
-  0%, 100% { opacity: 0.3; transform: scale(0.85); }
-  50% { opacity: 1; transform: scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-ov { animation: none; }
+  .ob-ov-box { animation: none; }
+  .ob-ov-spin { animation-duration: 2.6s; }
 }

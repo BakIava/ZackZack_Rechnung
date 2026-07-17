@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRef, type ChangeEvent } from "react";
 import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang } from "./translations";
-import { LangLink, Privacy, ScanDoc, DesktopBar, UpProgress } from "./setup-primitives";
+import { LangLink, Privacy, LoadingOverlay, DesktopBar, UpProgress } from "./setup-primitives";
 import { UploadOpts, type SetupUploadSource } from "./setup-other-fields";
 
 interface UploadProps {
@@ -74,39 +74,13 @@ export function SetupUpload({
     </div>
   );
 
-  if (isMobile) {
-    if (phase === "scanning") {
-      return (
-        <div className="ob-root" dir={dir}>
-          <div className="ob-top">
-            <button className="ob-back" disabled>
-              <SetupIcon name="chevronLeft" size={20} />
-            </button>
-            <div className="ob-top-mid">
-              <div className="ob-top-brand">
-                <Image src="/assets/zackzack-mark.png" alt="" width={24} height={18} className="ob-brand-mark" />
-                {t.setup}
-              </div>
-              <div className="ob-top-sub">{t.setupSub}</div>
-            </div>
-            <div className="ob-top-spacer" />
-          </div>
-          <div className="ob-scan">
-            <ScanDoc />
-            <div className="ob-scan-t">{t.scanT}</div>
-            <div className="ob-scan-s">{t.scanS}</div>
-            <div className="ob-scan-file"><SetupIcon name="file" size={15} />{fileName || t.scanFile}</div>
-            <div className="ob-scan-dots"><i /><i /><i /></div>
-            <LangLink lang={lang} />
-          </div>
-        </div>
-      );
-    }
+  const scanning = phase === "scanning";
 
+  if (isMobile) {
     return (
       <div className="ob-root" dir={dir}>
         <div className="ob-top">
-          <button className="ob-back" onClick={onBack}>
+          <button className="ob-back" onClick={onBack} disabled={scanning}>
             <SetupIcon name="chevronLeft" size={20} />
           </button>
           <div className="ob-top-mid">
@@ -118,7 +92,7 @@ export function SetupUpload({
           </div>
           <div className="ob-top-spacer" />
         </div>
-        <div className="ob-body">
+        <div className="ob-body" aria-hidden={scanning}>
           <div className="ob-intro">
             <div className="ob-intro-ic"><SetupIcon name="scan" size={26} /></div>
             <div className="ob-intro-tx">
@@ -137,47 +111,23 @@ export function SetupUpload({
           <Privacy t={t} flow />
           <LangLink lang={lang} />
         </div>
+        {scanning && <LoadingOverlay t={t} fileName={fileName} />}
       </div>
     );
   }
 
   // Desktop upload
-  if (phase === "scanning") {
-    return (
-      <div className="ob-d" dir={dir}>
-        <DesktopBar t={t} />
-        <div className="ob-d-scroll">
-          <div className="ob-d-wrap">
-            <div className="ob-d-head">
-              <div className="ob-d-kicker">{t.tileUploadT}</div>
-              <div className="ob-d-title">{t.scanT}</div>
-            </div>
-            <UpProgress t={t} upIndex={2} />
-            <div className="ob-d-card">
-              <div className="ob-scan ob-scan--desktop">
-                <ScanDoc />
-                <div className="ob-scan-s">{t.scanS}</div>
-                <div className="ob-scan-file"><SetupIcon name="file" size={15} />{fileName || t.scanFile}</div>
-                <div className="ob-scan-dots"><i /><i /><i /></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="ob-d" dir={dir}>
       <DesktopBar t={t} />
-      <div className="ob-d-scroll">
+      <div className="ob-d-scroll" aria-hidden={scanning}>
         <div className="ob-d-wrap">
           <div className="ob-d-head">
             <div className="ob-d-kicker">{t.tileUploadT}</div>
             <div className="ob-d-title">{t.upTitle}</div>
             <div className="ob-d-sub">{t.upIntro}</div>
           </div>
-          <UpProgress t={t} upIndex={1} />
+          <UpProgress t={t} upIndex={scanning ? 2 : 1} />
           <div className="ob-d-card">
             {errorMessage && (
               <div className="ob-upload-error" role="alert">
@@ -190,16 +140,17 @@ export function SetupUpload({
             <Privacy t={t} flow />
           </div>
           <div className="ob-d-wfoot">
-            <button className="ob-d-back" onClick={onBack}>
+            <button className="ob-d-back" onClick={onBack} disabled={scanning}>
               <SetupIcon name="chevronLeft" size={19} />{t.back}
             </button>
             <div className="ob-d-wfoot-r">
-              <button className="ob-d-skip" onClick={onManual}>{t.tileManualT}</button>
+              <button className="ob-d-skip" onClick={onManual} disabled={scanning}>{t.tileManualT}</button>
             </div>
           </div>
           <LangLink lang={lang} />
         </div>
       </div>
+      {scanning && <LoadingOverlay t={t} fileName={fileName} />}
     </div>
   );
 }
