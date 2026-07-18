@@ -5,6 +5,7 @@ import { Check, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { filterUnits, FLOW_UNITS, withCurrentUnit } from "@/lib/documents/units";
 import type { DraftItem, TaxRate } from "@/types/document";
+import "./position-sheets.css";
 
 const STROKE = 1.75;
 

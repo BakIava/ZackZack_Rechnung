@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight, ShieldCheck, Building2, FileText } from "lucide-react";
+import "./settings-recht.css";
 
 const STROKE = 1.75;
 

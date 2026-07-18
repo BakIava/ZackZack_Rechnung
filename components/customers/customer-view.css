@@ -1,0 +1,203 @@
+.cdm-dhead { display: flex; flex-direction: column; gap: 16px; padding: 24px 30px 20px; border-bottom: 1px solid var(--line); background: var(--surface); }
+
+.cdm-dhead-top { display: flex; align-items: center; gap: 16px; }
+
+.cdm-dav { width: 64px; height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 21px; background: var(--primary); color: #fff; border-radius: 999px; box-shadow: 0 8px 20px -8px rgba(15, 42, 63, .5); }
+
+.cdm-dav--firma { border-radius: var(--r); }
+
+.cdm-dtitle { flex: 1; min-width: 0; }
+
+.cdm-dname { font-size: 23px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cdm-daddr { font-size: 14px; color: var(--muted); margin-top: 5px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cdm-dactions { display: flex; align-items: center; gap: 10px; }
+
+.cdm-dbtn { display: inline-flex; align-items: center; gap: 9px; padding: 13px 20px; border: none; border-radius: var(--r); background: var(--primary); color: #fff; font-family: inherit; font-size: 14.5px; font-weight: 650; cursor: pointer; box-shadow: 0 10px 22px -12px rgba(15, 42, 63, .6); transition: transform .12s; white-space: nowrap; }
+
+.cdm-dbtn:hover { transform: translateY(-1px); }
+
+.cdm-dbtn--ghost { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); box-shadow: none; }
+
+.cdm-dbtn--ghost:hover { border-color: #c3ccd4; }
+
+.cdm-dicon { width: 46px; height: 46px; border-radius: var(--r); border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+
+.cdm-dicon:hover { border-color: #c3ccd4; }
+
+.cdm-dscroll { flex: 1; overflow-y: auto; padding: 26px 34px 34px; }
+
+.cdm-dscroll::-webkit-scrollbar { width: 10px; }
+
+.cdm-dscroll::-webkit-scrollbar-thumb { background: rgba(15, 42, 63, .16); border-radius: 6px; border: 3px solid transparent; background-clip: content-box; }
+
+.cdm-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+
+.cdm-field { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: flex; align-items: center; gap: 13px; }
+
+.cdm-field-ic { width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--r-sm); background: var(--surface-2); color: var(--primary); display: flex; align-items: center; justify-content: center; }
+
+.cdm-field-body { min-width: 0; }
+
+.cdm-field-lbl { display: block; font-size: 12px; color: var(--muted); }
+
+.cdm-field-val { display: block; font-size: 15px; font-weight: 600; margin-top: 2px; word-break: break-word; }
+
+.cdm-note { grid-column: 1 / -1; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--surface)); border-radius: var(--r); padding: 14px 16px; display: flex; gap: 13px; align-items: flex-start; }
+
+.cdm-note .cdm-field-ic { background: var(--accent); color: var(--accent-ink); }
+
+.cdm-note-lbl { display: block; font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--accent-deep); }
+
+.cdm-note-val { display: block; font-size: 15px; font-weight: 500; margin-top: 2px; word-break: break-word; }
+
+.cdm-sec { font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 22px 0 12px; }
+
+/* Dokumenttabelle — bewusst identisch zur Dashboard-Tabelle (.dtable/.dtr/.drow),
+   nur ohne Kunden-Spalte (im Kunden-Detail redundant). */
+
+.cdm-table { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
+
+.cdm-tr { display: grid; grid-template-columns: 116px 1.6fr 110px 120px 120px; align-items: center; gap: 14px; padding: 0 22px; }
+
+.cdm-thead { height: 44px; background: var(--bg); border-bottom: 1px solid var(--line); }
+
+.cdm-th { font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+
+.cdm-drow { height: 66px; border-bottom: 1px solid var(--line); cursor: pointer; transition: .12s; text-decoration: none; color: inherit; }
+
+.cdm-drow:last-child { border-bottom: none; }
+
+.cdm-drow:hover { background: color-mix(in srgb, var(--primary) 3%, var(--surface)); }
+
+.cdm-tdoc { display: flex; align-items: center; gap: 11px; }
+
+.cdm-tdoc-ic { width: 38px; height: 38px; border-radius: var(--r-sm); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+
+.cdm-tchip { font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
+
+.cdm-tno { font-size: 15px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cdm-tdate { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.cdm-tamount { font-size: 15.5px; font-weight: 700; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+
+
+
+/* customer-detail.css — Edit-Modus und Leer-Zustand im Kunden-Detail-Panel */
+
+.cdm-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted);
+  padding: 40px;
+  text-align: center;
+}
+
+.cdm-empty-title {
+  font-size: 17px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.cdm-empty-sub {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Löschen-Button im Header */
+
+.cdm-del-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 15px;
+  border: 1.5px solid #fecaca;
+  border-radius: var(--r-sm);
+  background: #fef2f2;
+  color: #dc2626;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: .13s;
+}
+
+.cdm-del-header-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.cdm-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cdm-confirm-bd {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(12, 24, 32, 0.45);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: cdm-fade .18s ease;
+}
+
+.cdm-confirm-box {
+  position: relative;
+  width: 380px;
+  max-width: 90%;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(12, 24, 32, 0.35);
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: cdm-pop .2s cubic-bezier(.3,.8,.4,1);
+}
+
+.cdm-confirm-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: #fef2f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.cdm-confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.cdm-confirm-msg {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.cdm-confirm-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}

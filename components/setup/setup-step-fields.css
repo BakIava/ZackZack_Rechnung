@@ -1,6 +1,7 @@
 /* SetupStepFields — Logo-Upload, Logo-Vorschau, Detected-Badge */
 
 /* ── Logo Upload Button ────────────────────────────────────────────────────── */
+
 .ob-upload {
   display: flex;
   flex-direction: column;
@@ -15,6 +16,7 @@
   width: 100%;
   font-family: inherit;
 }
+
 .ob-upload-main {
   display: flex;
   width: 100%;
@@ -27,10 +29,12 @@
   cursor: pointer;
   font: inherit;
 }
+
 .ob-upload:hover {
   border-color: var(--primary);
   background: color-mix(in srgb, var(--primary) 7%, var(--surface));
 }
+
 .ob-upload-ic {
   width: 56px;
   height: 56px;
@@ -43,9 +47,13 @@
   box-shadow: 0 4px 14px -6px rgba(2, 51, 92, 0.4), inset 0 0 0 1px var(--line);
   margin-bottom: 4px;
 }
+
 .ob-upload-t { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+
 .ob-upload-s { font-size: 12.5px; color: var(--muted); }
+
 .ob-upload-ways { display: flex; gap: 9px; margin-top: 10px; }
+
 .ob-upload-way {
   display: inline-flex;
   align-items: center;
@@ -62,6 +70,7 @@
 }
 
 .ob-logo-input { display: none; }
+
 .ob-logo-error {
   margin-top: 10px;
   color: #a93226;
@@ -71,6 +80,7 @@
 }
 
 /* ── Logo Vorschau ─────────────────────────────────────────────────────────── */
+
 .ob-logo-pre {
   display: flex;
   align-items: center;
@@ -80,6 +90,7 @@
   border: 1.5px solid var(--line);
   background: var(--surface);
 }
+
 .ob-logo-thumb {
   width: 118px;
   height: 72px;
@@ -92,8 +103,11 @@
   overflow: hidden;
   box-shadow: inset 0 0 0 1px var(--line);
 }
+
 .ob-logo-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 9px; }
+
 .ob-logo-meta { flex: 1; min-width: 0; }
+
 .ob-logo-name {
   font-size: 14.5px;
   font-weight: 650;
@@ -102,6 +116,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .ob-logo-sub {
   font-size: 12px;
   color: var(--ok);
@@ -111,7 +126,9 @@
   gap: 5px;
   margin-top: 3px;
 }
+
 .ob-logo-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+
 .ob-logo-btn {
   width: 38px;
   height: 38px;
@@ -125,27 +142,34 @@
   cursor: pointer;
   transition: 0.14s;
 }
+
 .ob-logo-btn:hover { color: var(--ink); border-color: #c3ccd4; }
+
 .ob-logo-btn.del:hover { color: #c0392b; border-color: #e3b5ae; background: #fbeeec; }
 
 /* ── Gewerk-Auswahl (Abschnitt in Schritt 1) ───────────────────────────────── */
+
 .ob-gewerk {
   margin-top: 22px;
   padding-top: 22px;
   border-top: 1px solid var(--line);
 }
+
 .ob-gewerk[data-invalid="true"] .ob-trades {
   padding: 3px;
   border: 1px solid #c0392b;
   border-radius: 12px;
 }
+
 .ob-gewerk-error {
   margin-block-start: 8px;
   color: #a93226;
   font-size: 13px;
   font-weight: 600;
 }
+
 .ob-gewerk-head { margin-bottom: 14px; }
+
 .ob-gewerk-t {
   display: flex;
   align-items: center;
@@ -155,6 +179,7 @@
   letter-spacing: -0.01em;
   color: var(--primary);
 }
+
 .ob-gewerk-s {
   font-size: 13.5px;
   color: var(--muted);
@@ -162,11 +187,13 @@
   margin-top: 5px;
   text-wrap: pretty;
 }
+
 .ob-trades {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 11px;
 }
+
 .ob-trade {
   display: flex;
   align-items: center;
@@ -181,7 +208,9 @@
   transition: 0.14s;
   font-family: inherit;
 }
+
 .ob-trade:hover { border-color: #c3ccd4; background: var(--surface-2); }
+
 .ob-trade-box {
   width: 24px;
   height: 24px;
@@ -195,43 +224,32 @@
   color: transparent;
   transition: 0.14s;
 }
+
 .ob-trade-lbl {
   font-size: 14.5px;
   font-weight: 600;
   line-height: 1.25;
   color: var(--ink);
 }
+
 .ob-trade[data-active="true"] {
   border-color: var(--primary);
   background: color-mix(in srgb, var(--primary) 7%, var(--surface));
   box-shadow: 0 0 0 1px var(--primary);
 }
+
 .ob-trade[data-active="true"]:hover {
   background: color-mix(in srgb, var(--primary) 10%, var(--surface));
 }
+
 .ob-trade[data-active="true"] .ob-trade-box {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
 }
+
 .ob-trade[data-active="true"] .ob-trade-lbl { color: var(--primary); }
 
 @media (max-width: 560px) {
   .ob-trades { grid-template-columns: repeat(2, 1fr); }
 }
-
-/* ── Detected / Todo Badge (ReviewFields) ──────────────────────────────────── */
-.ob-detected {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 2px 8px 2px 6px;
-  border-radius: 999px;
-  background: var(--ok-bg);
-  color: var(--ok);
-  white-space: nowrap;
-}
-.ob-detected--todo { background: var(--warn-bg); color: var(--warn); padding-inline: 8px; }

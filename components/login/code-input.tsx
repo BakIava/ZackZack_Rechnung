@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { useTranslations } from "next-intl";
+import "./code-input.css";
 
 interface CodeInputProps {
   value: string[];

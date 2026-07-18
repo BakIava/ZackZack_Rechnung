@@ -50,8 +50,6 @@
   color: #fff;
   box-shadow: 0 6px 16px -8px rgba(2, 51, 92, 0.6);
 }
-.ob-entry-tile-tx { flex: 1; min-width: 0; }
-.ob-entry-tile-t { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ob-entry-tile-s { font-size: 13px; color: var(--muted); line-height: 1.4; margin-top: 4px; }
 .ob-entry-tile-aff { color: #b6c0c9; flex-shrink: 0; display: flex; }
 .ob-entry-tile:hover .ob-entry-tile-aff { color: var(--primary); }

@@ -4,6 +4,7 @@ import { Download, Loader2, Mail, MessageCircle, TriangleAlert } from "lucide-re
 import { useTranslations } from "next-intl";
 import type { DocumentPreview } from "@/types/document";
 import { useShareDocument, type ShareChannel } from "./use-share-document";
+import "./share-buttons.css";
 
 interface ShareButtonsProps {
   preview: DocumentPreview;

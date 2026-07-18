@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { updateCustomer, deleteCustomer } from "@/lib/customers/actions";
 import type { CustomerRow } from "@/types/customer";
-import "./customer-detail.css";
+import "./customer-edit-form.css";
 
 const STROKE = 1.75;
 

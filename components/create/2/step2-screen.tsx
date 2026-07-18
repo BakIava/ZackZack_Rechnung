@@ -4,7 +4,6 @@ import type { KatalogEintrag } from "@/types/service";
 import type { DraftContext, DraftItem } from "@/types/document";
 import { Step2Main } from "./step2-main";
 import "@/components/layout/app-shell.css";
-import "./step2.css";
 
 interface Step2ScreenProps {
   dir: "ltr" | "rtl";

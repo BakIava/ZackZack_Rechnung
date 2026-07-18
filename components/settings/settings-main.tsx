@@ -9,6 +9,7 @@ import { SettingsBedienung } from "./settings-bedienung";
 import { SettingsKonto } from "./settings-konto";
 import { SettingsRecht } from "./settings-recht";
 import type { SettingsData } from "@/types/company";
+import "./settings-main.css";
 
 interface SettingsMainProps {
   dir: "ltr" | "rtl";

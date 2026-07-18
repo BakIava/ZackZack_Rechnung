@@ -22,7 +22,7 @@ import { startNewDocument } from "@/lib/documents/draft-actions";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { deriveInitials } from "@/lib/initials";
 import type { CustomerRow, CustomerDocRow } from "@/types/customer";
-import "./customer-detail.css";
+import "./customer-view.css";
 
 const STROKE = 1.75;
 

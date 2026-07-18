@@ -20,6 +20,10 @@ const rows = [...seed.matchAll(rowPattern)].map((match) => ({
   sortOrder: Number(match[7]),
 }));
 
+const recommendedPrices = [...seed.matchAll(
+  /WHEN '([0-9a-f-]+)' THEN (\d+)/g,
+)].map((match) => ({ id: match[1], cents: Number(match[2]) }));
+
 describe("reviewed starter catalog seed", () => {
   it("contains the complete reviewed templates for every MVP trade", () => {
     const expectedCounts: Record<TradeId, number> = {
@@ -83,9 +87,17 @@ describe("reviewed starter catalog seed", () => {
     expect(seed).not.toContain("Zaunmontagedemontage");
   });
 
-  it("is rerunnable without prices or tax fields", () => {
+  it("is rerunnable with prices but without tax fields", () => {
     expect(seed).toContain("ON CONFLICT (id) DO UPDATE SET");
-    expect(seed).not.toContain("default_price");
+    expect(seed).toContain("default_price");
     expect(seed).not.toContain("tax_rate");
+  });
+
+  it("assigns every starter template a positive net price recommendation", () => {
+    expect(recommendedPrices).toHaveLength(rows.length);
+    expect(new Set(recommendedPrices.map((price) => price.id))).toEqual(
+      new Set(rows.map((row) => row.id)),
+    );
+    expect(recommendedPrices.every((price) => price.cents > 0)).toBe(true);
   });
 });

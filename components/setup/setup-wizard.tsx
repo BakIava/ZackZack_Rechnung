@@ -7,6 +7,7 @@ import { LangLink, DesktopBar } from "./setup-primitives";
 import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoField } from "./setup-step-fields";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import type { TradeId } from "@/types/database";
+import "./setup-wizard.css";
 
 interface WizardProps {
   t: Translations;
@@ -191,6 +192,7 @@ export function SetupWizard({
             <div className="ob-d-kicker">{t.dKicker}</div>
             <div className="ob-d-title">{t.dTitle}</div>
             <div className="ob-d-sub">{t.dSub}</div>
+            <LangLink lang={lang} />
           </div>
 
           <div className="ob-d-steps">
@@ -251,7 +253,6 @@ export function SetupWizard({
               </button>
             </div>
           </div>
-          <LangLink lang={lang} />
         </div>
       </div>
     </div>

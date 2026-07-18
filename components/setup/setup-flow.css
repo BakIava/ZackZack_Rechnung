@@ -2,6 +2,7 @@
    Alle anderen Setup-Komponenten importieren ihre eigene CSS-Datei. */
 
 /* ── Tokens ────────────────────────────────────────────────────────────────── */
+
 .ob-root,
 .ob-d {
   --r: 14px;
@@ -27,6 +28,7 @@
 }
 
 /* ── Mobil Root ────────────────────────────────────────────────────────────── */
+
 .ob-root {
   height: 100%;
   display: flex;
@@ -35,12 +37,14 @@
   color: var(--ink);
   font-family: var(--ui-font);
 }
+
 .ob-root * {
   font-family: var(--ui-font);
   box-sizing: border-box;
 }
 
 /* ── Kopf ──────────────────────────────────────────────────────────────────── */
+
 .ob-top {
   display: flex;
   align-items: center;
@@ -49,6 +53,7 @@
   padding: 12px var(--pad) 0;
   flex-shrink: 0;
 }
+
 .ob-back {
   width: 40px;
   height: 40px;
@@ -63,9 +68,13 @@
   flex-shrink: 0;
   transition: 0.14s;
 }
+
 .ob-back:hover { border-color: #c3ccd4; }
+
 .ob-back:disabled { opacity: 0.35; cursor: default; }
+
 .ob-top-mid { text-align: center; flex: 1; min-width: 0; }
+
 .ob-top-brand {
   display: inline-flex;
   align-items: center;
@@ -76,11 +85,15 @@
   color: var(--primary);
   white-space: nowrap;
 }
+
 .ob-top-brand img { height: 18px; width: auto; }
+
 .ob-top-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+
 .ob-top-spacer { width: 40px; flex-shrink: 0; }
 
 /* ── Desktop Root ──────────────────────────────────────────────────────────── */
+
 .ob-d {
   height: 100%;
   display: flex;
@@ -89,33 +102,24 @@
   color: var(--ink);
   font-family: var(--ui-font);
 }
+
 .ob-d * { font-family: var(--ui-font); box-sizing: border-box; }
 
-.ob-d-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 16px 30px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
-  flex-shrink: 0;
-}
-.ob-d-brand { display: flex; align-items: center; gap: 11px; }
-.ob-d-brand img { height: 26px; width: auto; }
-.ob-d-help { font-size: 13px; font-weight: 600; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
-
 .ob-d-scroll { flex: 1; overflow-y: auto; padding: 34px 30px 30px; }
+
 .ob-d-scroll::-webkit-scrollbar { width: 10px; }
+
 .ob-d-scroll::-webkit-scrollbar-thumb {
   background: rgba(15, 42, 63, 0.16);
   border-radius: 6px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
+
 .ob-d-wrap { max-width: 640px; margin: 0 auto; }
 
 .ob-d-head { text-align: center; margin-bottom: 26px; }
+
 .ob-d-kicker {
   font-size: 12px;
   font-weight: 700;
@@ -123,34 +127,13 @@
   text-transform: uppercase;
   color: var(--accent-deep);
 }
+
 .ob-d-title { font-size: 28px; font-weight: 750; letter-spacing: -0.02em; margin: 8px 0 6px; }
+
 .ob-d-sub { font-size: 14.5px; color: var(--muted); line-height: 1.5; max-width: 480px; margin: 0 auto; }
 
-/* Desktop Schritt-Indikator (geteilt: Wizard + UpProgress) */
-.ob-d-steps { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 22px 0 30px; }
-.ob-d-step { display: flex; align-items: center; gap: 9px; }
-.ob-d-step-dot {
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  background: var(--surface);
-  border: 1.5px solid var(--line);
-  color: var(--muted);
-}
-.ob-d-step[data-state="done"] .ob-d-step-dot { background: var(--ok); border-color: var(--ok); color: #fff; }
-.ob-d-step[data-state="now"] .ob-d-step-dot { background: var(--primary); border-color: var(--primary); color: #fff; }
-.ob-d-step-lbl { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
-.ob-d-step[data-state="now"] .ob-d-step-lbl,
-.ob-d-step[data-state="done"] .ob-d-step-lbl { color: var(--ink); }
-.ob-d-step-line { width: 26px; height: 2px; border-radius: 2px; background: var(--line); }
-.ob-d-step-line[data-state="done"] { background: var(--ok); }
-
 /* Desktop Karte + Section-Kopf (Wizard + Upload + Review) */
+
 .ob-d-card {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -159,25 +142,9 @@
   margin-bottom: 18px;
   box-shadow: 0 1px 2px rgba(15, 42, 63, 0.04);
 }
-.ob-d-sechead { display: flex; align-items: center; gap: 13px; margin-bottom: 20px; }
-.ob-d-secnum {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 750;
-  background: var(--primary);
-  color: #fff;
-}
-.ob-d-sectx { flex: 1; min-width: 0; }
-.ob-d-sect { font-size: 17px; font-weight: 700; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
-.ob-d-secs { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
 
 /* Desktop Button */
+
 .ob-d-btn {
   display: inline-flex;
   align-items: center;
@@ -195,14 +162,13 @@
   color: var(--primary-ink);
   box-shadow: 0 12px 26px -12px rgba(15, 42, 63, 0.7);
 }
-.ob-d-btn:hover { transform: translateY(-1px); }
-.ob-d-btn--accent { background: var(--accent); color: var(--accent-ink); box-shadow: 0 14px 28px -12px rgba(251, 98, 2, 0.55); }
 
-/* Desktop Wizard Footer */
-.ob-d-step.is-done { cursor: pointer; }
-.ob-d-step.is-done:hover .ob-d-step-lbl { color: var(--primary); }
+.ob-d-btn:hover { transform: translateY(-1px); }
+
 .ob-d-wfoot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 24px; }
+
 .ob-d-wfoot-r { display: flex; align-items: center; gap: 18px; }
+
 .ob-d-back {
   display: inline-flex;
   align-items: center;
@@ -219,7 +185,9 @@
   cursor: pointer;
   transition: 0.14s;
 }
+
 .ob-d-back:hover { border-color: #c3ccd4; transform: translateY(-1px); }
+
 .ob-d-skip {
   background: none;
   border: none;
@@ -231,15 +199,18 @@
   padding: 6px 2px;
   transition: 0.14s;
 }
+
 .ob-d-skip:hover { color: var(--ink); }
 
 /* RTL: Pfeile spiegeln */
+
 [dir="rtl"] .ob-back svg,
 [dir="rtl"] .ob-next svg,
 [dir="rtl"] .ob-d-btn svg,
 [dir="rtl"] .ob-entry-tile-aff svg,
 [dir="rtl"] .ob-up-opt-aff svg,
 [dir="rtl"] .ob-d-back svg { transform: scaleX(-1); }
+
 [dir="rtl"] .ob-done-check svg,
 [dir="rtl"] .ob-sum-check svg,
 [dir="rtl"] .ob-inp-aff svg,
@@ -247,11 +218,13 @@
 [dir="rtl"] .ob-review-banner-ic svg { transform: none; }
 
 /* spinner animation for loading state */
+
 @keyframes ob-spin { to { transform: rotate(360deg); } }
+
 .ob-icon-spin { animation: ob-spin 0.8s linear infinite; display: inline-flex; }
 
-
 /* submit error banner */
+
 .ob-submit-error {
   position: fixed;
   top: 0;

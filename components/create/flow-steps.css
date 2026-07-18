@@ -1,0 +1,173 @@
+/* KundeStep.css — Schritt 1 (Kunde) des geführten Flows.
+   Tokens (--primary, --line, --muted …) stammen aus der App-Shell (.zz-dash);
+   Layout & Abstände nutzen logische Properties → RTL automatisch. */
+
+/* Kopfzeile: Zurück, Titel, Schrittanzeige */
+
+.dflow-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 26px;
+}
+
+.dflow-head > div:not(.dsteps2) {
+  flex-shrink: 0;
+}
+
+.dflow-back {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: 0.14s;
+}
+
+.dflow-back:hover {
+  border-color: #c3ccd4;
+}
+
+.dflow-title {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.dflow-sub {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Schrittanzeige 1 · 2 · 3 */
+
+.dsteps2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-inline-start: auto;
+}
+
+.dstep2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.dstep2-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.dstep2--active .dstep2-dot {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.dstep2-lbl {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.dstep2--active .dstep2-lbl {
+  color: var(--ink);
+}
+
+.dstep2-line {
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+
+
+/* step2.css — Schritt 2 (Positionen), Desktop.
+   Tokens kommen aus globals.css (zz-*-Scopes). Logische Properties → RTL
+   automatisch. Kein komponentenspezifisches CSS in app.css. */
+
+/* ── Flow-Kopf + Schritt-Indikator ───────────────────────────────────────── */
+
+.dflow-headings {
+  flex-shrink: 0;
+}
+
+.dstep2-dot--done {
+  background: var(--ok);
+  color: #fff;
+  border-color: var(--ok);
+}
+
+.dstep2-line--done {
+  background: var(--ok);
+}
+
+/* ── Kontext-Chips (Dokumenttyp + Kunde) ─────────────────────────────────── */
+
+.d2-ctx {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.p2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.p2-chip .p2-av {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.p2-chip--mode {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+
+
+/* ── Flow-Kopf (Zurück + Titel + Schritt-Indikator) ───────────────────────── */
+
+/* ── Kontext-Chips (Dokumenttyp + Kunde) ──────────────────────────────────── */

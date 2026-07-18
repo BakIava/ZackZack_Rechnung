@@ -27,6 +27,7 @@ import { ShareButtons } from "./share-buttons";
 import { ZoomOverlay } from "./zoom-overlay";
 import { getCustomerName } from "@/lib/customers/utils";
 import { deriveInitials } from "@/lib/initials";
+import "./step3-main.css";
 
 interface Step3MainProps {
   dir: "ltr" | "rtl";

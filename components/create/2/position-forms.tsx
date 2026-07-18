@@ -12,6 +12,7 @@ import {
 } from "@/lib/documents/margin";
 import type { FreeItemInput, FremdItemInput } from "@/types/document";
 import { eurosToCents } from "@/lib/money";
+import "./position-forms.css";
 
 const STROKE = 1.75;
 

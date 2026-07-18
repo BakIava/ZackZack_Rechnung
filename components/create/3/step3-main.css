@@ -1,0 +1,277 @@
+@media (max-width: 880px) {
+  .zz-create .dapp {
+    min-width: 880px;
+  }
+}
+
+/* ── Zwei-Spalten-Layout: A4 links, Aktionen rechts ───────────────────────── */
+
+.d3-wrap {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 26px;
+  align-items: start;
+}
+
+.d3-doctop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.d3-doctop-t {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.d3-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: 0.14s;
+}
+
+.d3-zoom:hover {
+  border-color: #c3ccd4;
+}
+
+.d3-docstage {
+  background: #e7ebef;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  background-image: radial-gradient(circle at 1px 1px, rgba(15, 42, 63, 0.06) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+
+.d3-side {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.d3-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px;
+}
+
+.d3-card.has-issue {
+  border-color: var(--bad-line);
+  box-shadow: 0 0 0 1px var(--bad-line);
+}
+
+.d3-sumcard {
+  background: linear-gradient(155deg, var(--primary-2), var(--primary));
+  color: #fff;
+  border-radius: var(--r-lg);
+  padding: 22px;
+  box-shadow: 0 16px 34px -18px rgba(15, 42, 63, 0.7);
+}
+
+.d3-sum-l {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 600;
+}
+
+.d3-sum-v {
+  font-size: 34px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
+}
+
+.d3-sum-ku {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.74);
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  line-height: 1.4;
+}
+
+.d3-actcard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.d3-pdfbtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--r);
+  border: none;
+  font-family: inherit;
+  font-size: 16.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.15s;
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 12px 26px -12px rgba(251, 98, 2, 0.6);
+}
+
+.d3-pdfbtn:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.d3-pdfbtn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.d3-back {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.d3-back:hover {
+  color: var(--ink);
+  border-color: #c3ccd4;
+}
+
+.locknote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #b23a1e;
+}
+
+.check-badge.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.check-head-s.ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.check-tick.ok {
+  background: var(--ok);
+  color: #fff;
+}
+
+/* „Fertig" ist nach der Finalisierung sekundär (Teilen ist die Hauptaktion). */
+
+.d3-back--done {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ok);
+}
+
+.d3-back--done:hover {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 40%, var(--line));
+}
+
+.share-success {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--ok-bg);
+  border: 1px solid color-mix(in srgb, var(--ok) 28%, var(--surface));
+  border-radius: var(--r);
+  padding: 13px 14px;
+}
+
+.share-success-ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--ok);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.share-success-t {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #14603f;
+}
+
+.share-success-s {
+  font-size: 12.5px;
+  color: #2e7d55;
+  margin-top: 1px;
+}
+
+.share-via {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Auf engen Breiten Aktionen unter die Vorschau stapeln. */
+
+@media (max-width: 1100px) {
+  .d3-wrap {
+    grid-template-columns: 1fr;
+  }
+  .d3-side {
+    position: static;
+  }
+}
+
+
+
+/* A4-Beleg: immer Deutsch und LTR, unabhängig von der Bediensprache. */
+
+.d3-docstage .a4-paper {
+  width: 100%;
+  max-width: 600px;
+}

@@ -109,3 +109,5 @@
 }
 .ob-d-done-cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 20px; }
 @media (max-width: 560px) { .ob-d-done-sum { grid-template-columns: 1fr; } }
+
+.ob-d-btn--accent { background: var(--accent); color: var(--accent-ink); box-shadow: 0 14px 28px -12px rgba(251, 98, 2, 0.55); }

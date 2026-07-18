@@ -16,6 +16,7 @@ import {
 } from "@/lib/settings/actions";
 import { COMPANY_LOGO_ACCEPT } from "@/lib/company-logo/constants";
 import { deriveCompanyMonogram } from "@/lib/initials";
+import "./settings-firma.css";
 const STROKE = 1.75;
 
 interface SaveBarProps {

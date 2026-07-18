@@ -6,6 +6,7 @@ import { formatMoney, formatPercent } from "@/lib/format";
 import { markupPercent } from "@/lib/documents/margin";
 import type { DraftItem } from "@/types/document";
 import type { PadField } from "./number-pad";
+import "./position-card.css";
 
 const STROKE = 1.75;
 

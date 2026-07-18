@@ -29,6 +29,7 @@ import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
 import { NumberPad, type PadField } from "./number-pad";
 import { PositionCard } from "./position-card";
+import "./step2-main.css";
 import {
   PositionEditor,
   type PositionEditorState,
@@ -300,6 +301,7 @@ export function Step2Main({
           onClose={() => setModalOpen(false)}
           dir={dir}
           size="lg"
+          className="zz-modal--positions"
           ariaLabel={t("addPosition")}
         >
           <div className="dmodal-head">

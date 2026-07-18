@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { Mail, KeyRound, ShieldCheck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import "./brand-panel.css";
 
 export type LoginScreen = "email" | "code" | "success";
 

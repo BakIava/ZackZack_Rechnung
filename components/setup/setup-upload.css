@@ -55,6 +55,92 @@
 }
 .ob-upload-error svg { flex-shrink: 0; margin-top: 1px; }
 
+/* Ausgewählte Datei vor dem Scan bestätigen */
+.ob-selected-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ob-selected-file {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  padding: 14px;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 25%, var(--line));
+  border-radius: var(--r);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+.ob-selected-file-ic {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 15%, var(--line));
+}
+.ob-selected-file-tx {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.ob-selected-file-lbl {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.ob-selected-file-name {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ob-selected-file-change {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px 4px;
+}
+.ob-selected-file-change:hover { text-decoration: underline; }
+.ob-upload-continue {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: var(--r-lg);
+  background: var(--primary);
+  color: var(--primary-ink);
+  box-shadow: 0 12px 26px -12px rgba(2, 51, 92, 0.65);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 700;
+  padding: 14px 22px;
+  transition: 0.14s;
+}
+.ob-upload-continue:hover { transform: translateY(-1px); }
+[dir="rtl"] .ob-upload-continue svg { transform: scaleX(-1); }
+
+@media (max-width: 420px) {
+  .ob-selected-file { align-items: flex-start; }
+  .ob-selected-file-change { padding-block: 4px; }
+}
+
 /* ── Scan-Zustand ──────────────────────────────────────────────────────────── */
 .ob-scan {
   flex: 1;

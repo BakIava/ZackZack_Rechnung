@@ -11,6 +11,7 @@ import {
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import "./sidebar-nav.css";
 
 interface NavEntry {
   id: string;

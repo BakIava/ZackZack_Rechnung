@@ -167,6 +167,7 @@ export interface ServiceTemplateRow {
   description_tr: string;
   description_ar: string;
   unit: string;
+  default_price: number;
   category: string | null;
   sort_order: number;
   is_active: boolean;

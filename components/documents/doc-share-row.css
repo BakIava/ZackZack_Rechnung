@@ -1,0 +1,76 @@
+/* Share-Buttons */
+
+.hshare {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.hshare-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 6px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--ink);
+  transition: 0.14s;
+  text-decoration: none;
+}
+
+.hshare-btn:hover {
+  transform: translateY(-1px);
+  border-color: #c3ccd4;
+  box-shadow: 0 10px 20px -14px rgba(12, 24, 32, 0.5);
+}
+
+.hshare-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.hshare-btn.wa .hshare-ic { background: #25d366; }
+
+.hshare-btn.mail .hshare-ic { background: var(--info); }
+
+.hshare-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.hshare-spin {
+  animation: hpos-spin 0.75s linear infinite;
+}
+
+/* ── Teilen-Hinweis (Fehler / Download-Fallback) ──────────────────────────── */
+
+.dshare-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--muted);
+}
+
+.dshare-note--err {
+  color: #c0392b;
+}
+
+@keyframes hpos-spin {
+  to { transform: rotate(360deg); }
+}

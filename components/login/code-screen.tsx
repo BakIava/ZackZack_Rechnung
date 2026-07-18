@@ -1,6 +1,7 @@
 import { Mail, RefreshCw, AlertTriangle, Check, Pencil } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CodeInput } from "./code-input";
+import "./code-screen.css";
 
 interface CodeScreenProps {
   email: string;

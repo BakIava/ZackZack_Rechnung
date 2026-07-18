@@ -9,6 +9,7 @@ import type { KatalogEintrag } from "@/types/service";
 import type { FreeItemInput, FremdItemInput } from "@/types/document";
 import { formatMoney } from "@/lib/format";
 import { FreeForm, FremdForm } from "./position-forms";
+import "./catalog-picker.css";
 
 const STROKE = 1.75;
 
@@ -101,9 +102,9 @@ export function CatalogPicker({
                     <b>{c.de}</b>
                   </span>
                 </span>
-                <span className="cat-price">
+                <span className="picker-price">
                   {formatMoney(c.preisCents)}
-                  <span className="cat-price-unit">/{c.einheit}</span>
+                  <span className="picker-price-unit">/{c.einheit}</span>
                 </span>
                 <span className="cat-add">
                   <Plus size={18} strokeWidth={2.4} color="#fff" aria-hidden />

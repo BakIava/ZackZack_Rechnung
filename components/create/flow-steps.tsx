@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FLOW_STEPS } from "@/lib/documents/flow-steps";
+import "./flow-steps.css";
 
 interface FlowStepsProps {
   /** Aktueller Schritt (1-basiert). Kleinere Schritte gelten als erledigt. */

@@ -9,7 +9,7 @@ import { EmailScreen } from "./email-screen";
 import { CodeScreen } from "./code-screen";
 import { SuccessScreen } from "./success-screen";
 import { sendLoginCode, verifyLoginCode } from "@/lib/auth/actions";
-import "./login.css";
+import "./login-flow.css";
 
 interface LoginFlowProps {
   dir: "ltr" | "rtl";

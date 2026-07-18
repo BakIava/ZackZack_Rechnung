@@ -1,6 +1,7 @@
 import { Mail, KeyRound, ShieldCheck, ArrowRight, ChevronRight, AlertTriangle } from "lucide-react";
 import { Fragment } from "react";
 import { useTranslations } from "next-intl";
+import "./email-screen.css";
 
 interface EmailScreenProps {
   email: string;

@@ -121,7 +121,7 @@ export function CatalogMasterDetail({ dir, initialItems }: CatalogMasterDetailPr
               {query && (
                 <button
                   type="button"
-                  className="dsearch-clear"
+                  className="catalog-search-clear"
                   onClick={() => setQuery("")}
                   aria-label="Suche löschen"
                 >
@@ -131,7 +131,7 @@ export function CatalogMasterDetail({ dir, initialItems }: CatalogMasterDetailPr
             </div>
             <button
               type="button"
-              className="dbtn"
+              className="catalog-new-button"
               onClick={() => {
                 setEditItem(null);
                 setShowModal(true);

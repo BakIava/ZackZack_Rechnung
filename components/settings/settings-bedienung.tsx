@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { Check, Globe } from "lucide-react";
+import "./settings-bedienung.css";
 
 const STROKE = 1.75;
 

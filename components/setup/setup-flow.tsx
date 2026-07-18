@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "./setup.css";
 import { T, type Lang, type Phase, type SetupFlowProps } from "./translations";
 import { SetupWelcome } from "./setup-welcome";
 import { SetupEntry } from "./setup-entry";
@@ -26,6 +25,7 @@ import { resolveOnboardingDocumentMediaType } from "@/lib/onboarding/extraction-
 import { uploadOnboardingDocument } from "@/lib/repositories/onboarding-uploads.client";
 import { emptyOnboardingExtractionStatuses } from "@/lib/onboarding/extraction-validation";
 import { validateCompanyLogoSelection } from "@/lib/company-logo/constants";
+import "./setup-flow.css";
 import type {
   OnboardingExtractableField,
   OnboardingExtractionErrorCode,
@@ -56,6 +56,7 @@ export function SetupFlow({
     useState<OnboardingExtractionStatuses>(emptyOnboardingExtractionStatuses);
   const [extractionError, setExtractionError] =
     useState<OnboardingExtractionErrorCode | null>(null);
+  const [scanFile, setScanFile] = useState<File | null>(null);
   const [scanFileName, setScanFileName] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
@@ -118,22 +119,42 @@ export function SetupFlow({
     }));
   };
 
-  const handleOnboardingFile = async (file: File) => {
+  const handleOnboardingFileSelect = (file: File) => {
     const contentType = resolveOnboardingDocumentMediaType(file.name, file.type);
+    if (!contentType) {
+      setScanFile(null);
+      setScanFileName("");
+      setExtractionError("unsupported_file");
+      return;
+    }
+
+    setScanFile(file);
+    setScanFileName(file.name);
+    setExtractionError(null);
+  };
+
+  const clearOnboardingFile = () => {
+    setScanFile(null);
+    setScanFileName("");
+    setExtractionError(null);
+  };
+
+  const handleOnboardingScan = async () => {
+    if (!scanFile) return;
+
+    const contentType = resolveOnboardingDocumentMediaType(scanFile.name, scanFile.type);
     if (!contentType) {
       setExtractionError("unsupported_file");
       return;
     }
 
-    setScanFileName(file.name);
-    setExtractionError(null);
     setPhase("scanning");
     let uploadedReference: Parameters<typeof extractUploadedOnboardingDocument>[0] | null = null;
     try {
       const prepared = await prepareOnboardingUpload(
-        file.name,
+        scanFile.name,
         contentType,
-        file.size,
+        scanFile.size,
       );
       if (prepared.status === "error") {
         setExtractionError(prepared.error);
@@ -141,7 +162,7 @@ export function SetupFlow({
         return;
       }
 
-      const uploaded = await uploadOnboardingDocument(prepared.target, file);
+      const uploaded = await uploadOnboardingDocument(prepared.target, scanFile);
       uploadedReference = {
         path: prepared.target.path,
         fileName: prepared.target.fileName,
@@ -225,9 +246,11 @@ export function SetupFlow({
       <SetupUpload
         {...shared}
         phase={phase}
-        onFileSelect={handleOnboardingFile}
-        onBack={() => setPhase("entry")}
-        onManual={() => { setStep(1); setPhase("wizard"); }}
+        onFileSelect={handleOnboardingFileSelect}
+        onFileClear={clearOnboardingFile}
+        onContinue={() => void handleOnboardingScan()}
+        onBack={() => { clearOnboardingFile(); setPhase("entry"); }}
+        onManual={() => { clearOnboardingFile(); setStep(1); setPhase("wizard"); }}
         fileName={scanFileName}
         errorMessage={extractionError ? extractionErrorMessages[extractionError] : null}
       />

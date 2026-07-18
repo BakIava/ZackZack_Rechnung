@@ -172,3 +172,47 @@
   background: var(--draft-bg);
   color: var(--draft);
 }
+
+/* settings.css — Token-Scope für Einstellungen.
+   Shell-Klassen (.dapp, .dside, .dmain, .dtopbar, .dscroll) kommen aus components/layout/app-shell.css bzw. sidebar.css; Tokens aus globals.css.
+   Logische Properties → RTL automatisch. */
+
+.zz-settings {
+  /* Screen-Abweichung vom gemeinsamen Token-Set (globals.css) */
+  --r-lg: min(calc(var(--r) * 1.4), 26px);
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  font-family: var(--ui-font);
+  color: var(--ink);
+}
+
+@media (max-width: 880px) {
+  .zz-settings {
+    overflow: auto;
+  }
+}
+
+
+
+/* customers.css — Kunden · Desktop-Master-Detail (Liste links, Detail rechts).
+   Tokens sind auf .zz-cust gekapselt (gleiche Philosophie wie .zz-dash), damit
+   der Screen unabhängig vom globalen Theme stabil rendert. Die geteilten
+   Shell-Klassen (.dapp, .dmain, .dside, .pill, .iconbtn) kommen aus components/layout/app-shell.css bzw. sidebar.css; Tokens aus globals.css.
+   Logische Properties → RTL automatisch. */
+
+.zz-cust {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  font-family: var(--ui-font);
+  color: var(--ink);
+}
+
+/* Auf schmalen Screens nicht stauchen — Sidebar + Master bleiben nutzbar. */
+
+@media (max-width: 880px) {
+  .zz-cust {
+    overflow: auto;
+  }
+}
