@@ -2,11 +2,9 @@
 
 import {
   AlertTriangle,
-  Building2,
   Check,
   Loader2,
   Sparkles,
-  User,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -25,6 +23,7 @@ import type { CustomerIntakeResult } from "@/types/customer-intake";
 import type { CustomerType } from "@/types/database";
 import { CustomerAiIntro } from "./customer-ai-intro";
 import { CustomerAiLoading } from "./customer-ai-loading";
+import { CustomerTypeSelector } from "./customer-type-selector";
 import "./new-customer-modal.css";
 
 interface NewCustomerModalProps {
@@ -77,7 +76,6 @@ export function NewCustomerModal({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const isPrivate = type === "private";
   const isCompany = type === "business";
   const showCompanyName =
     isCompany || (type === null && companyName.trim().length > 0);
@@ -303,26 +301,13 @@ export function NewCustomerModal({
             <div className="f-grid">
               <div className="f-row">
                 {fieldLabel(t("ncType"))}
-                <div className="nc-seg" role="group" aria-label={t("ncType")}>
-                  <button
-                    type="button"
-                    data-on={isPrivate ? "1" : "0"}
-                    aria-pressed={isPrivate}
-                    onClick={() => setType("private")}
-                  >
-                    <User size={18} strokeWidth={STROKE} aria-hidden />
-                    {t("ncPrivate")}
-                  </button>
-                  <button
-                    type="button"
-                    data-on={isCompany ? "1" : "0"}
-                    aria-pressed={isCompany}
-                    onClick={() => setType("business")}
-                  >
-                    <Building2 size={18} strokeWidth={STROKE} aria-hidden />
-                    {t("ncBusiness")}
-                  </button>
-                </div>
+                <CustomerTypeSelector
+                  value={type}
+                  privateLabel={t("ncPrivate")}
+                  businessLabel={t("ncBusiness")}
+                  ariaLabel={t("ncType")}
+                  onChange={setType}
+                />
                 {type === null && (
                   <span className="nc-type-required" role="alert">
                     <AlertTriangle size={13} strokeWidth={2.5} aria-hidden />

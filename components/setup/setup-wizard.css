@@ -22,10 +22,18 @@
 
 .ob-d-step[data-state="now"] .ob-d-step-dot { background: var(--primary); border-color: var(--primary); color: #fff; }
 
+.ob-d-step[data-state="error"] .ob-d-step-dot {
+  background: #cf4b3c;
+  border-color: #cf4b3c;
+  color: #fff;
+}
+
 .ob-d-step-lbl { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
 
 .ob-d-step[data-state="now"] .ob-d-step-lbl,
 .ob-d-step[data-state="done"] .ob-d-step-lbl { color: var(--ink); }
+
+.ob-d-step[data-state="error"] .ob-d-step-lbl { color: #a93428; }
 
 .ob-d-step-line { width: 26px; height: 2px; border-radius: 2px; background: var(--line); }
 

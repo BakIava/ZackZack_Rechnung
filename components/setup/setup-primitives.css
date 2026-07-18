@@ -30,6 +30,7 @@
 }
 .ob-prog-seg[data-state="done"] i { width: 100%; background: var(--ok); }
 .ob-prog-seg[data-state="now"] i { width: 100%; }
+.ob-prog-seg[data-state="error"] i { width: 100%; background: #cf4b3c; }
 
 /* ── Scroll-Körper ─────────────────────────────────────────────────────────── */
 .ob-body {
@@ -197,6 +198,7 @@
   color: var(--primary);
   box-shadow: inset 0 0 0 1px var(--primary);
 }
+.ob-seg3.is-error button { border-color: #cf4b3c; }
 
 /* ── HR-Felder Einblend-Animation ───────────────────────────────────────────── */
 .ob-hr-fields {

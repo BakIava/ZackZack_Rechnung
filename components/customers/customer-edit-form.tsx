@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Building2, Trash2, User, X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { updateCustomer, deleteCustomer } from "@/lib/customers/actions";
 import type { CustomerRow } from "@/types/customer";
+import { CustomerTypeSelector } from "./customer-type-selector";
 import "./customer-edit-form.css";
 
 const STROKE = 1.75;
@@ -108,26 +109,13 @@ export function CustomerEditForm({
         <div className="cdm-edit-grid">
           <div className="f-row">
             <span className="f-lbl">{t("typeLbl")}</span>
-            <div className="nc-seg" role="group" aria-label={t("typeLbl")}>
-              <button
-                type="button"
-                data-on={isCompany ? "0" : "1"}
-                aria-pressed={!isCompany}
-                onClick={() => setCustomerType("private")}
-              >
-                <User size={18} strokeWidth={STROKE} aria-hidden />
-                {t("privateLbl")}
-              </button>
-              <button
-                type="button"
-                data-on={isCompany ? "1" : "0"}
-                aria-pressed={isCompany}
-                onClick={() => setCustomerType("business")}
-              >
-                <Building2 size={18} strokeWidth={STROKE} aria-hidden />
-                {t("businessLbl")}
-              </button>
-            </div>
+            <CustomerTypeSelector
+              value={customerType}
+              privateLabel={t("privateLbl")}
+              businessLabel={t("businessLbl")}
+              ariaLabel={t("typeLbl")}
+              onChange={setCustomerType}
+            />
           </div>
 
           <label className="f-row cdm-edit-full">

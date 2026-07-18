@@ -46,6 +46,7 @@ export function Privacy({ t, flow }: PrivacyProps) {
 
 interface FieldProps {
   label: string;
+  fieldName?: string;
   req?: boolean;
   badge?: ReactNode;
   hint?: ReactNode;
@@ -54,9 +55,9 @@ interface FieldProps {
   children: ReactNode;
 }
 
-export function Field({ label, req, badge, hint, error, todo, children }: FieldProps) {
+export function Field({ fieldName, label, req, badge, hint, error, todo, children }: FieldProps) {
   return (
-    <div className="ob-field">
+    <div className="ob-field" data-setup-field={fieldName}>
       <label className="ob-field-lbl">
         {label}
         {req && <span className="req">*</span>}
@@ -64,7 +65,9 @@ export function Field({ label, req, badge, hint, error, todo, children }: FieldP
       </label>
       {children}
       {error ? (
-        <div className="ob-err"><SetupIcon name="alert" size={14} />{error}</div>
+        <div className="ob-err" id={fieldName ? `${fieldName}-error` : undefined} role="alert">
+          <SetupIcon name="alert" size={14} />{error}
+        </div>
       ) : todo ? (
         <div className="ob-hint ob-hint--todo"><SetupIcon name="alert" size={13} />{todo}</div>
       ) : hint ? (
@@ -100,6 +103,8 @@ export function TextInput({ value, placeholder, valid, error, mono, dir, name, o
         placeholder={placeholder}
         dir={dir}
         name={name}
+        aria-invalid={error || undefined}
+        aria-describedby={error && name ? `${name}-error` : undefined}
       />
       {valid && (
         <span className="ob-inp-aff ob-inp-aff--ok">
@@ -122,16 +127,20 @@ interface Seg3Props {
   value: string | null;
   onChange?: (val: string) => void;
   wrap?: boolean;
+  error?: boolean;
 }
 
-export function Seg3({ options, value, onChange, wrap }: Seg3Props) {
+export function Seg3({ options, value, onChange, wrap, error }: Seg3Props) {
   const [sel, setSel] = useState<string | null>(value);
   const handleClick = (id: string) => {
     setSel(id);
     onChange?.(id);
   };
   return (
-    <div className={"ob-seg3" + (wrap ? " ob-seg3--wrap" : "")}>
+    <div
+      className={"ob-seg3" + (wrap ? " ob-seg3--wrap" : "") + (error ? " is-error" : "")}
+      aria-invalid={error || undefined}
+    >
       {options.map(([id, label]) => (
         <button
           key={id}

@@ -1,0 +1,34 @@
+.ob-validation-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #f3b8b0;
+  border-radius: var(--r);
+  background: #fff2f0;
+  color: #9f3025;
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: start;
+}
+
+.ob-validation-summary-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #cf4b3c;
+  color: #fff;
+}
+
+.ob-d-wrap > .ob-validation-summary {
+  margin-top: 16px;
+}
+
+.ob-validation-summary + .ob-d-wfoot {
+  margin-top: 12px;
+}

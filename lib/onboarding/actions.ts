@@ -6,6 +6,7 @@ import { validateTradeIds } from "@/lib/onboarding/trades";
 import { deleteAllOnboardingUploadsForUser } from "@/lib/repositories/onboarding-uploads";
 import { saveCompanyLogo } from "@/lib/repositories/companies";
 import { prepareCompanyLogo } from "@/lib/company-logo/process";
+import { validateSetupForm } from "@/lib/onboarding/validation";
 import type {
   OnboardingErrorCode,
   SetupFormData,
@@ -27,12 +28,7 @@ export async function completeOnboarding(
   logoFormData?: FormData,
 ): Promise<OnboardingResult> {
   void locale;
-  const errors: SetupValidationErrors = {};
-
-  if (!data.name.trim()) errors.name = "name_required";
-  if (!data.director.trim()) errors.director = "director_required";
-  if (!data.steuernummer.trim()) errors.steuernummer = "tax_number_required";
-  if (!data.iban.trim()) errors.iban = "iban_required";
+  const errors: SetupValidationErrors = validateSetupForm(data);
 
   const tradeValidation = validateTradeIds(data.trade_ids);
   if (!tradeValidation.ok) {
@@ -64,7 +60,17 @@ export async function completeOnboarding(
   }
 
   if (!tradeValidation.ok) {
-    return { ok: false, error: "trades_invalid", errors: { trade_ids: "trades_invalid" } };
+    return {
+      ok: false,
+      error: tradeValidation.reason === "required"
+        ? "trades_required"
+        : "trades_invalid",
+      errors: {
+        trade_ids: tradeValidation.reason === "required"
+          ? "trades_required"
+          : "trades_invalid",
+      },
+    };
   }
 
   const result = await completeOnboardingRpc({

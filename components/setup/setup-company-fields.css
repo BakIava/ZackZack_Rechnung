@@ -1,0 +1,107 @@
+.ob-gewerk {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.ob-gewerk[data-invalid="true"] .ob-trades {
+  padding: 3px;
+  border: 1px solid #c0392b;
+  border-radius: 12px;
+}
+
+.ob-gewerk-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 8px;
+  color: #a93226;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ob-gewerk-head { margin-bottom: 14px; }
+
+.ob-gewerk-t {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--primary);
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ob-gewerk-s {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+.ob-trades {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 11px;
+}
+
+.ob-trade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  padding: 15px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: 0.14s;
+}
+
+.ob-trade:hover { border-color: #c3ccd4; background: var(--surface-2); }
+
+.ob-trade-box {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #c3ccd4;
+  border-radius: 7px;
+  background: var(--surface);
+  color: transparent;
+  transition: 0.14s;
+}
+
+.ob-trade-lbl {
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.ob-trade[data-active="true"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface));
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.ob-trade[data-active="true"]:hover {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.ob-trade[data-active="true"] .ob-trade-box {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.ob-trade[data-active="true"] .ob-trade-lbl { color: var(--primary); }
+
+@media (max-width: 560px) {
+  .ob-trades { grid-template-columns: repeat(2, 1fr); }
+}

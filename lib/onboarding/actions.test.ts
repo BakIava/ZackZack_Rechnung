@@ -65,6 +65,29 @@ beforeEach(() => {
 });
 
 describe("completeOnboarding logo flow", () => {
+  it("meldet konkrete Pflichtfelder einschließlich der IBAN", async () => {
+    const result = await completeOnboarding("de", {
+      ...form,
+      name: "",
+      street: "",
+      iban: "",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: "required_fields",
+      errors: {
+        name: "name_required",
+        street: "street_required",
+        iban: "iban_required",
+      },
+    });
+    expect(h.completeOnboardingRpc).not.toHaveBeenCalled();
+
+    await completeOnboarding("de", { ...form, iban: "" });
+    expect(h.completeOnboardingRpc).not.toHaveBeenCalled();
+  });
+
   it("legt zuerst die Firma an und speichert danach das vorgemerkte Logo", async () => {
     const logoData = new FormData();
     logoData.set("logo", new File(["svg"], "logo.svg", { type: "image/svg+xml" }));

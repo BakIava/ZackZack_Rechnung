@@ -9,27 +9,14 @@ import { SetupReview } from "./setup-review";
 import { SetupDone } from "./setup-done";
 import { SetupWizard } from "./setup-wizard";
 import { INITIAL_FORM_DATA } from "./form-defaults";
-import type {
-  OnboardingErrorCode,
-  SetupFormData,
-  SetupFormErrors,
-  SetupValidationErrors,
-} from "@/types/company";
+import type { OnboardingErrorCode, SetupFormData } from "@/types/company";
 import { completeOnboarding } from "@/lib/onboarding/actions";
-import {
-  discardUploadedOnboardingDocument,
-  extractUploadedOnboardingDocument,
-  prepareOnboardingUpload,
-} from "@/lib/onboarding/extraction-actions";
-import { resolveOnboardingDocumentMediaType } from "@/lib/onboarding/extraction-file";
-import { uploadOnboardingDocument } from "@/lib/repositories/onboarding-uploads.client";
-import { emptyOnboardingExtractionStatuses } from "@/lib/onboarding/extraction-validation";
 import { validateCompanyLogoSelection } from "@/lib/company-logo/constants";
+import { useSetupValidation } from "./use-setup-validation";
+import { useOnboardingDocumentScan } from "./use-onboarding-document-scan";
 import "./setup-flow.css";
 import type {
   OnboardingExtractableField,
-  OnboardingExtractionErrorCode,
-  OnboardingExtractionStatuses,
 } from "@/types/onboarding-extraction";
 
 export function SetupFlow({
@@ -49,15 +36,7 @@ export function SetupFlow({
   const [step, setStep] = useState(1);
   const [isMobile, setIsMobile] = useState(false);
   const [formData, setFormData] = useState<SetupFormData>(INITIAL_FORM_DATA);
-  const [errors, setErrors] = useState<SetupValidationErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<OnboardingErrorCode | null>(null);
-  const [extractionStatuses, setExtractionStatuses] =
-    useState<OnboardingExtractionStatuses>(emptyOnboardingExtractionStatuses);
-  const [extractionError, setExtractionError] =
-    useState<OnboardingExtractionErrorCode | null>(null);
-  const [scanFile, setScanFile] = useState<File | null>(null);
-  const [scanFileName, setScanFileName] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [logoError, setLogoError] = useState<OnboardingErrorCode | null>(null);
@@ -96,15 +75,32 @@ export function SetupFlow({
     setLogoError(null);
   };
 
-  const handleFormChange = <K extends keyof SetupFormData>(
-    key: K,
-    value: SetupFormData[K],
-  ) => {
-    setFormData((prev: SetupFormData) => ({ ...prev, [key]: value }));
-    if (errors[key]) {
-      setErrors((prev: SetupValidationErrors) => ({ ...prev, [key]: undefined }));
-    }
-  };
+  const {
+    displayErrors,
+    errorSteps,
+    errorCount,
+    submitErrorMessage,
+    clearSubmitError,
+    handleFormChange,
+    handleSubmissionError,
+    validateCurrentStep,
+  } = useSetupValidation({
+    phase,
+    step,
+    formData,
+    errorMessages,
+    setFormData,
+    setStep,
+  });
+  const {
+    statuses: extractionStatuses,
+    setStatuses: setExtractionStatuses,
+    error: extractionError,
+    fileName: scanFileName,
+    handleFileSelect: handleOnboardingFileSelect,
+    clearFile: clearOnboardingFile,
+    handleScan: handleOnboardingScan,
+  } = useOnboardingDocumentScan({ setFormData, setPhase });
 
   const handleReviewFormChange = <K extends OnboardingExtractableField>(
     key: K,
@@ -119,103 +115,16 @@ export function SetupFlow({
     }));
   };
 
-  const handleOnboardingFileSelect = (file: File) => {
-    const contentType = resolveOnboardingDocumentMediaType(file.name, file.type);
-    if (!contentType) {
-      setScanFile(null);
-      setScanFileName("");
-      setExtractionError("unsupported_file");
-      return;
-    }
-
-    setScanFile(file);
-    setScanFileName(file.name);
-    setExtractionError(null);
-  };
-
-  const clearOnboardingFile = () => {
-    setScanFile(null);
-    setScanFileName("");
-    setExtractionError(null);
-  };
-
-  const handleOnboardingScan = async () => {
-    if (!scanFile) return;
-
-    const contentType = resolveOnboardingDocumentMediaType(scanFile.name, scanFile.type);
-    if (!contentType) {
-      setExtractionError("unsupported_file");
-      return;
-    }
-
-    setPhase("scanning");
-    let uploadedReference: Parameters<typeof extractUploadedOnboardingDocument>[0] | null = null;
-    try {
-      const prepared = await prepareOnboardingUpload(
-        scanFile.name,
-        contentType,
-        scanFile.size,
-      );
-      if (prepared.status === "error") {
-        setExtractionError(prepared.error);
-        setPhase("upload");
-        return;
-      }
-
-      const uploaded = await uploadOnboardingDocument(prepared.target, scanFile);
-      uploadedReference = {
-        path: prepared.target.path,
-        fileName: prepared.target.fileName,
-        contentType: prepared.target.contentType,
-        size: prepared.target.size,
-      };
-      if (!uploaded) {
-        await discardUploadedOnboardingDocument(uploadedReference);
-        setExtractionError("upload_failed");
-        setPhase("upload");
-        return;
-      }
-
-      const result = await extractUploadedOnboardingDocument(uploadedReference);
-      if (result.status === "error") {
-        setExtractionError(result.error);
-        setPhase("upload");
-        return;
-      }
-
-      setFormData((previous) => ({
-        ...previous,
-        ...result.values,
-        trade_ids: previous.trade_ids,
-      }));
-      setExtractionStatuses(result.statuses);
-      setPhase("review");
-    } catch {
-      if (uploadedReference) {
-        await discardUploadedOnboardingDocument(uploadedReference);
-      }
-      setExtractionError("upload_failed");
-      setPhase("upload");
-    }
-  };
-
-  const displayErrors: SetupFormErrors = {};
-  for (const key of Object.keys(errors) as Array<keyof SetupFormData>) {
-    const errorCode = errors[key];
-    if (errorCode) displayErrors[key] = errorMessages[errorCode];
-  }
-
   const handlePhase = async (p: Phase) => {
     if (p === "done") {
       setSubmitting(true);
-      setSubmitError(null);
+      clearSubmitError();
       const logoFormData = logoFile ? new FormData() : undefined;
       if (logoFormData && logoFile) logoFormData.set("logo", logoFile);
       const result = await completeOnboarding(locale, formData, logoFormData);
       setSubmitting(false);
       if (!result.ok) {
-        setSubmitError(result.error);
-        if (result.errors) setErrors(result.errors);
+        handleSubmissionError(result.error, result.errors);
         return;
       }
       setLogoUploaded(result.logoUploaded);
@@ -223,6 +132,16 @@ export function SetupFlow({
       return;
     }
     setPhase(p);
+  };
+
+  const handleAdvance = async () => {
+    if (!validateCurrentStep()) return;
+
+    if (step === TOTAL) {
+      await handlePhase("done");
+      return;
+    }
+    setStep(step + 1);
   };
 
   const shared = { t, lang: lang as Lang, dir: dir as "ltr" | "rtl", isMobile };
@@ -286,20 +205,18 @@ export function SetupFlow({
   }
 
   return (
-    <>
-      {submitError && (
-        <div className="ob-submit-error" role="alert">
-          {errorMessages[submitError]}
-        </div>
-      )}
       <SetupWizard
         {...shared}
         step={step}
         setStep={setStep}
+        onAdvance={() => void handleAdvance()}
         TOTAL={TOTAL}
         onPhase={handlePhase}
         formData={formData}
         errors={displayErrors}
+        errorSteps={errorSteps}
+        errorCount={errorCount}
+        submitErrorMessage={submitErrorMessage}
         onFormChange={handleFormChange}
         tradeLabels={tradeLabels}
         submitting={submitting}
@@ -310,6 +227,5 @@ export function SetupFlow({
         onLogoSelect={handleLogoSelect}
         onLogoRemove={handleLogoRemove}
       />
-    </>
   );
 }

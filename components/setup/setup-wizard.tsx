@@ -4,9 +4,13 @@ import Image from "next/image";
 import { SetupIcon } from "./setup-icon";
 import { type Translations, type Lang, type Phase } from "./translations";
 import { LangLink, DesktopBar } from "./setup-primitives";
-import { Step1Fields, Step2Fields, Step3Fields, Step4Fields, LogoField } from "./setup-step-fields";
+import { Step2Fields, Step3Fields, Step4Fields } from "./setup-step-fields";
+import { SetupCompanyFields } from "./setup-company-fields";
+import { SetupLogoField } from "./setup-logo-field";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import type { TradeId } from "@/types/database";
+import type { SetupStep } from "@/lib/onboarding/validation";
+import { SetupValidationSummary } from "./setup-validation-summary";
 import "./setup-wizard.css";
 
 interface WizardProps {
@@ -16,10 +20,14 @@ interface WizardProps {
   isMobile: boolean;
   step: number;
   setStep: (n: number) => void;
+  onAdvance: () => void;
   TOTAL: number;
   onPhase: (p: Phase) => void;
   formData: SetupFormData;
   errors: SetupFormErrors;
+  errorSteps: SetupStep[];
+  errorCount: number;
+  submitErrorMessage: string | null;
   onFormChange: <K extends keyof SetupFormData>(key: K, value: SetupFormData[K]) => void;
   tradeLabels: Record<TradeId, string>;
   submitting: boolean;
@@ -32,11 +40,12 @@ interface WizardProps {
 }
 
 export function SetupWizard({
-  t, lang, dir, isMobile, step, setStep, TOTAL, onPhase,
-  formData, errors, onFormChange, tradeLabels, submitting, logoFile,
+  t, lang, dir, isMobile, step, setStep, onAdvance, TOTAL, onPhase,
+  formData, errors, errorSteps, errorCount, submitErrorMessage,
+  onFormChange, tradeLabels, submitting, logoFile,
   logoPreviewUrl, logoStatusLabel, logoErrorMessage, onLogoSelect, onLogoRemove,
 }: WizardProps) {
-  const optional = step === 4 || step === 5;
+  const optional = step === 2 || step === 5;
   const isLastStep = step === TOTAL;
 
   const stepProps = { t, formData, errors, onChange: onFormChange, tradeLabels };
@@ -54,11 +63,11 @@ export function SetupWizard({
     const subKey = `${meta.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
     const stepBody =
-      step === 1 ? <Step1Fields {...stepProps} /> :
+      step === 1 ? <SetupCompanyFields {...stepProps} /> :
       step === 2 ? <Step2Fields {...stepProps} /> :
       step === 3 ? <Step3Fields {...stepProps} /> :
       step === 4 ? <Step4Fields {...stepProps} /> :
-      <LogoField
+      <SetupLogoField
         t={t}
         file={logoFile}
         previewUrl={logoPreviewUrl}
@@ -69,7 +78,7 @@ export function SetupWizard({
         onRemove={onLogoRemove}
       />;
 
-    const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
+    const advance = onAdvance;
     const skip = () => {
       if (isLastStep) onLogoRemove();
       advance();
@@ -104,7 +113,14 @@ export function SetupWizard({
           </div>
           <div className="ob-prog-bar">
             {Array.from({ length: TOTAL }).map((_, i) => {
-              const state = i + 1 < step ? "done" : i + 1 === step ? "now" : "off";
+              const numberedStep = (i + 1) as SetupStep;
+              const state = errorSteps.includes(numberedStep)
+                ? "error"
+                : i + 1 < step
+                  ? "done"
+                  : i + 1 === step
+                    ? "now"
+                    : "off";
               return (
                 <span key={i} className="ob-prog-seg" data-state={state}>
                   <i />
@@ -131,6 +147,11 @@ export function SetupWizard({
         </div>
 
         <div className="ob-foot">
+          <SetupValidationSummary
+            t={t}
+            errorCount={errorCount}
+            submitErrorMessage={submitErrorMessage}
+          />
           <button className="ob-next" onClick={advance} disabled={isLastStep && submitting}>
             {isLastStep && submitting
               ? <span className="ob-icon-spin"><SetupIcon name="spinner" size={20} /></span>
@@ -152,9 +173,9 @@ export function SetupWizard({
   // Desktop wizard
   const sections: Record<number, { key: "s1" | "sc" | "s2" | "s3" | "s4"; req: boolean }> = {
     1: { key: "s1", req: true },
-    2: { key: "sc", req: true },
+    2: { key: "sc", req: false },
     3: { key: "s2", req: true },
-    4: { key: "s3", req: false },
+    4: { key: "s3", req: true },
     5: { key: "s4", req: false },
   };
   const cur = sections[step];
@@ -162,11 +183,11 @@ export function SetupWizard({
   const subKey = `${cur.key}_s` as "s1_s" | "sc_s" | "s2_s" | "s3_s" | "s4_s";
 
   const stepBodyDesktop =
-    step === 1 ? <Step1Fields {...stepProps} /> :
+    step === 1 ? <SetupCompanyFields {...stepProps} /> :
     step === 2 ? <Step2Fields {...stepProps} /> :
     step === 3 ? <Step3Fields {...stepProps} /> :
     step === 4 ? <Step4Fields {...stepProps} /> :
-    <LogoField
+    <SetupLogoField
       t={t}
       file={logoFile}
       previewUrl={logoPreviewUrl}
@@ -177,7 +198,7 @@ export function SetupWizard({
       onRemove={onLogoRemove}
     />;
 
-  const advance = () => (isLastStep ? onPhase("done") : setStep(step + 1));
+  const advance = onAdvance;
   const skip = () => {
     if (isLastStep) onLogoRemove();
     advance();
@@ -199,16 +220,22 @@ export function SetupWizard({
             {t.progNames.map((nm, i) => {
               const n = i + 1;
               const isDone = n < step;
-              const state = isDone ? "done" : n === step ? "now" : "off";
+              const hasError = errorSteps.includes(n as SetupStep);
+              const state = hasError ? "error" : isDone ? "done" : n === step ? "now" : "off";
               return (
                 <span key={i} style={{ display: "contents" }}>
                   <div
                     className={"ob-d-step" + (isDone ? " is-done" : "")}
                     data-state={state}
+                    title={hasError ? t.stepMissing : undefined}
                     onClick={() => { if (isDone) setStep(n); }}
                   >
                     <div className="ob-d-step-dot">
-                      {isDone ? <SetupIcon name="check" size={15} weight="bold" /> : n}
+                      {hasError
+                        ? <SetupIcon name="alert" size={15} weight="bold" />
+                        : isDone
+                          ? <SetupIcon name="check" size={15} weight="bold" />
+                          : n}
                     </div>
                     <div className="ob-d-step-lbl">{nm}</div>
                   </div>
@@ -234,6 +261,11 @@ export function SetupWizard({
             {stepBodyDesktop}
           </div>
 
+          <SetupValidationSummary
+            t={t}
+            errorCount={errorCount}
+            submitErrorMessage={submitErrorMessage}
+          />
           <div className="ob-d-wfoot">
             <button className="ob-d-back" onClick={() => (step === 1 ? onPhase("entry") : setStep(step - 1))}>
               <SetupIcon name="chevronLeft" size={19} />{t.back}
