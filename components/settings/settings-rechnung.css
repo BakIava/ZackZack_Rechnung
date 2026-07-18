@@ -1,0 +1,117 @@
+/* ── Toggle (§19) ─────────────────────────────────────────────────────────── */
+
+.set-togglerow {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.set-togglerow-txt {
+  flex: 1;
+  min-width: 0;
+}
+
+.set-togglerow-t {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.set-togglerow-s {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+.set-switch {
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  background: #cbd3db;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.18s;
+  flex-shrink: 0;
+  border: none;
+  padding: 0;
+  margin-top: 1px;
+}
+
+.set-switch[data-on="1"] {
+  background: var(--ok);
+}
+
+.set-switch i {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #fff;
+  transition: inset-inline-start 0.18s;
+  box-shadow: 0 1px 3px rgba(12, 24, 32, 0.3);
+}
+
+.set-switch[data-on="1"] i {
+  inset-inline-start: 23px;
+}
+
+/* ── Nummernkreis (gesperrt) ──────────────────────────────────────────────── */
+
+.set-locked {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+}
+
+.set-locked-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.set-locked-txt {
+  flex: 1;
+  min-width: 0;
+}
+
+.set-locked-k {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.set-locked-v {
+  font-size: 17px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.set-locked-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 4px 10px;
+  flex-shrink: 0;
+}

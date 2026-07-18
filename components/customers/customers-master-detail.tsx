@@ -10,6 +10,7 @@ import { deriveInitials } from "@/lib/initials";
 import { NewCustomerModal } from "./new-customer-modal";
 import { CustomerDetail, CustomerDetailEmpty } from "./customer-detail";
 import { sortedDocs } from "./customer-view";
+import "./customers-master-detail.css";
 
 interface CustomersMasterDetailProps {
   dir: "ltr" | "rtl";

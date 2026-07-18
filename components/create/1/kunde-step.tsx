@@ -26,8 +26,8 @@ import {
 } from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/new-customer-modal";
 import { FlowSteps } from "../flow-steps";
-import "./kunde-step.css";
 import type { DocType } from "@/types/document";
+import "./kunde-step.css";
 
 interface KundeStepProps {
   dir: "ltr" | "rtl";
@@ -254,7 +254,7 @@ export function KundeStep({
               <span className="dcust-body">
                 <span className="dcust-name">
                   {c.companyName ? c.companyName + " " : ""}
-                  {c.firstname + " " + c.lastname}
+                  {c.firstname && c.lastname ? c.firstname + " " + c.lastname : ""}
                   {c.isNew && (
                     <span className="dcust-badge">
                       <Check size={11} strokeWidth={STROKE_BOLD} aria-hidden />
@@ -363,7 +363,7 @@ export function KundeStep({
         </div>
         <button
           type="button"
-          className="dbtn"
+          className="step1-next-button"
           disabled={saving}
           onClick={handleWeiter}
         >

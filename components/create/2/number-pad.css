@@ -1,0 +1,140 @@
+.d2pad-bd {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(12, 24, 32, 0.42);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: zz-fade 0.2s ease;
+}
+
+.d2pad {
+  width: 100%;
+  max-width: 520px;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  padding: 22px 24px 28px;
+  box-shadow: 0 -20px 50px -20px rgba(0, 0, 0, 0.4);
+  animation: zz-pad-up 0.24s cubic-bezier(0.3, 0.8, 0.4, 1);
+}
+
+@keyframes zz-pad-up {
+  from {
+    transform: translateY(16px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.d2pad-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.d2pad-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.d2pad-x {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.d2pad-x:hover {
+  color: var(--ink);
+}
+
+.d2pad-disp {
+  height: 66px;
+  border: 2px solid var(--primary);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 16px;
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.d2pad-disp:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+}
+
+.d2pad-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  text-align: end;
+  padding: 0;
+}
+
+.d2pad-unit {
+  flex-shrink: 0;
+  margin-inline-start: 8px;
+}
+
+.d2pad-keys {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.d2pad-key {
+  height: 62px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.1s;
+}
+
+.d2pad-key:hover {
+  background: var(--surface-2);
+}
+
+.d2pad-key--ok {
+  grid-column: span 3;
+  background: var(--ok);
+  color: #fff;
+  border-color: var(--ok);
+  font-size: 18px;
+  gap: 8px;
+}
+
+.d2pad-key--ok:hover {
+  background: var(--ok);
+  filter: brightness(1.05);
+}

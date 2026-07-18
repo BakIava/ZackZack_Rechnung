@@ -11,7 +11,7 @@
 
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
-import "./lang-select.css";
+import "./page.css";
 
 type LangCode = "de" | "tr" | "ar";
 

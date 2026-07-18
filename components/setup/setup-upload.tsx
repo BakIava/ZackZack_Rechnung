@@ -15,6 +15,8 @@ interface UploadProps {
   isMobile: boolean;
   phase: "upload" | "scanning";
   onFileSelect: (file: File) => void;
+  onFileClear: () => void;
+  onContinue: () => void;
   onBack: () => void;
   onManual: () => void;
   fileName: string;
@@ -28,6 +30,8 @@ export function SetupUpload({
   isMobile,
   phase,
   onFileSelect,
+  onFileClear,
+  onContinue,
   onBack,
   onManual,
   fileName,
@@ -73,6 +77,25 @@ export function SetupUpload({
       />
     </div>
   );
+  const selectedFile = fileName ? (
+    <div className="ob-selected-upload">
+      <div className="ob-selected-file">
+        <span className="ob-selected-file-ic">
+          <SetupIcon name="file" size={22} />
+        </span>
+        <span className="ob-selected-file-tx">
+          <span className="ob-selected-file-lbl">{t.uploaded}</span>
+          <span className="ob-selected-file-name" title={fileName}>{fileName}</span>
+        </span>
+        <button type="button" className="ob-selected-file-change" onClick={onFileClear}>
+          {t.change}
+        </button>
+      </div>
+      <button type="button" className="ob-upload-continue" onClick={onContinue}>
+        {t.next}<SetupIcon name="chevronRight" size={19} />
+      </button>
+    </div>
+  ) : null;
 
   if (isMobile) {
     if (phase === "scanning") {
@@ -132,7 +155,7 @@ export function SetupUpload({
               <span>{errorMessage}</span>
             </div>
           )}
-          <UploadOpts t={t} onChoose={handleChoose} />
+          {selectedFile ?? <UploadOpts t={t} onChoose={handleChoose} />}
           {fileInputs}
           <Privacy t={t} flow />
           <LangLink lang={lang} />
@@ -185,7 +208,7 @@ export function SetupUpload({
                 <span>{errorMessage}</span>
               </div>
             )}
-            <UploadOpts t={t} onChoose={handleChoose} />
+            {selectedFile ?? <UploadOpts t={t} onChoose={handleChoose} />}
             {fileInputs}
             <Privacy t={t} flow />
           </div>

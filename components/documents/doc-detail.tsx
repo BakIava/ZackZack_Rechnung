@@ -21,7 +21,7 @@ import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocShareRow } from "./doc-share-row";
 import { PositionsList } from "./positions-list";
-import "./documents-main.css";
+import "./doc-detail.css";
 
 const STROKE = 1.75;
 

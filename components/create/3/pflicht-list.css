@@ -1,0 +1,107 @@
+/* ── Pflichtangaben-Check ──────────────────────────────────────────────────── */
+
+.check-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+.check-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.check-badge.bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+.check-head-t {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.check-head-s {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.check-head-s.bad {
+  color: var(--bad);
+  font-weight: 600;
+}
+
+.check-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.check-row:first-child {
+  border-top: none;
+  padding-top: 2px;
+}
+
+.check-tick {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.check-tick.bad {
+  background: var(--bad);
+  color: #fff;
+}
+
+.check-lbl {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 550;
+  color: var(--ink);
+}
+
+.check-row.bad .check-lbl {
+  color: #a5331f;
+  font-weight: 600;
+}
+
+.check-fix {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.check-fix:hover {
+  background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+}

@@ -1,0 +1,68 @@
+.hpos-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.hpos-row:last-of-type {
+  border-bottom: none;
+}
+
+.hpos-desc {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 0;
+}
+
+.hpos-qty {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hpos-sum {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hpos-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px 13px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hpos-more:hover {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+/* ── Positions-Zeile Body ─────────────────────────────────────────────────── */
+
+.hpos-row-body {
+  min-width: 0;
+}
+
+/* ── Positions-Total Net-Label ────────────────────────────────────────────── */
+
+.hpos-total-net {
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 11px;
+}

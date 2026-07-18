@@ -1,10 +1,10 @@
 import { getTranslations } from "next-intl/server";
-import "./sidebar.css";
 import { SidebarLangLink } from "./sidebar-lang-link";
 import { SidebarNav } from "./sidebar-nav";
 import { getCompanyNameAndDirector } from "@/lib/repositories/companies";
 import { countCustomers } from "@/lib/repositories/customers";
 import { countServices } from "@/lib/repositories/services";
+import "./sidebar.css";
 
 function toInitials(name: string): string {
   return name

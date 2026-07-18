@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { deriveCompanyMonogram } from "@/lib/initials";
+import "./company-logo-mark.css";
 
 interface CompanyLogoMarkProps {
   companyName: string;

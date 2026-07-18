@@ -1,11 +1,11 @@
 import { ShieldCheck } from "lucide-react";
-import "./document-a4.css";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
 import { getCustomerName } from "@/lib/customers/utils";
 import { shouldShowTaxDetails } from "@/lib/documents/tax";
 import { CompanyLogoMark } from "./company-logo-mark";
+import "./document-a4.css";
 
 interface DocumentA4Props {
   preview: DocumentPreview;

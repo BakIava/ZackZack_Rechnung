@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.service_templates (
   description_tr  text NOT NULL,
   description_ar  text NOT NULL,
   unit            text NOT NULL,
+  default_price   integer NOT NULL DEFAULT 0,
   category        text,
   sort_order      integer NOT NULL DEFAULT 0,
   is_active       boolean NOT NULL DEFAULT true,
@@ -59,6 +60,11 @@ CREATE TABLE IF NOT EXISTS public.service_templates (
   CONSTRAINT service_templates_version_positive
     CHECK (template_version > 0)
 );
+
+-- Makes the migration safe for installations where the template table already
+-- exists from an earlier version.
+ALTER TABLE public.service_templates
+  ADD COLUMN IF NOT EXISTS default_price integer NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_service_templates_active_trade_sort
   ON public.service_templates(trade_id, sort_order, id)
@@ -217,7 +223,7 @@ BEGIN
     template.description_tr,
     template.description_ar,
     template.unit,
-    NULL,
+    template.default_price,
     template.id
   FROM public.service_templates template
   WHERE template.is_active

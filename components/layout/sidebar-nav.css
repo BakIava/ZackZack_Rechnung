@@ -1,0 +1,68 @@
+.dnav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dnav-lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  padding: 8px 12px 6px;
+}
+
+.dnav-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 13px;
+  border-radius: var(--r-sm);
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: 0.14s;
+  width: 100%;
+  text-align: start;
+  position: relative;
+  text-decoration: none;
+}
+
+.dnav-item > span:not(.dnav-count) {
+  white-space: nowrap;
+}
+
+.dnav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.dnav-item[data-on="1"] {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  font-weight: 600;
+}
+
+.dnav-item[data-on="1"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.dnav-count {
+  margin-inline-start: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}

@@ -169,13 +169,13 @@ export function DocumentsMain({
               placeholder={t("search")}
             />
             {query && (
-              <button className="dsearch-clear" onClick={() => setQuery("")}>
+              <button className="documents-search-clear" onClick={() => setQuery("")}>
                 <X size={16} strokeWidth={STROKE} />
               </button>
             )}
           </div>
           <form action={startNewDocument} className="contents">
-            <button type="submit" className="dbtn">
+            <button type="submit" className="documents-new-button">
               <Plus size={19} strokeWidth={2.5} />
               {t("newBtn")}
             </button>

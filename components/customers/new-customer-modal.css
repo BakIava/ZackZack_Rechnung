@@ -4,18 +4,20 @@
    Tokens (--primary, --line, --muted …) stammen aus der App-Shell (.zz-dash);
    Layout & Abstände nutzen logische Properties → RTL automatisch. */
 
-.dmodal-head {
+.dmodal--ai .dmodal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px 12px;
 }
-.dmodal-title {
+
+.dmodal--ai .dmodal-title {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.sheet-x {
+
+.dmodal--ai .sheet-x {
   width: 36px;
   height: 36px;
   border-radius: 999px;
@@ -27,9 +29,11 @@
   justify-content: center;
   cursor: pointer;
 }
-.sheet-x:hover {
+
+.dmodal--ai .sheet-x:hover {
   background: color-mix(in srgb, var(--surface-2) 80%, var(--ink) 8%);
 }
+
 .dmodal-sub {
   padding: 0 22px 14px;
   margin-top: -6px;
@@ -37,11 +41,13 @@
   color: var(--muted);
   line-height: 1.45;
 }
-.dmodal-body {
+
+.dmodal--ai .dmodal-body {
   flex: 1;
   overflow-y: auto;
   padding: 4px 22px 22px;
 }
+
 .dmodal-foot {
   display: flex;
   align-items: center;
@@ -50,6 +56,7 @@
   border-top: 1px solid var(--line);
   background: var(--surface);
 }
+
 .dmodal-foot .nc-cancel {
   padding: 14px 20px;
   border-radius: var(--r);
@@ -62,9 +69,11 @@
   cursor: pointer;
   transition: border-color 0.14s;
 }
+
 .dmodal-foot .nc-cancel:hover {
   border-color: var(--muted);
 }
+
 .dmodal-foot .nc-create {
   flex: 1;
   display: flex;
@@ -83,9 +92,11 @@
   box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--primary) 70%, transparent);
   transition: 0.15s;
 }
+
 .dmodal-foot .nc-create:not(:disabled):hover {
   transform: translateY(-1px);
 }
+
 .dmodal-foot .nc-create:disabled {
   background: var(--surface-2);
   color: var(--muted);
@@ -94,33 +105,40 @@
 }
 
 /* Formularraster */
-.f-grid {
+
+.dmodal--ai .f-grid {
   display: flex;
   flex-direction: column;
   gap: 13px;
   padding-top: 2px;
 }
-.f-row {
+
+.dmodal--ai .f-row {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.f-row.two {
+
+.dmodal--ai .f-row.two {
   flex-direction: row;
   gap: 10px;
 }
-.f-row.two > * {
+
+.dmodal--ai .f-row.two > * {
   flex: 1;
 }
-.f-row.two > .nc-zip {
+
+.dmodal--ai .f-row.two > .nc-zip {
   flex: 0.48;
 }
-.f-lbl {
+
+.dmodal--ai .f-lbl {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--muted);
 }
-.f-input {
+
+.dmodal--ai .f-input {
   width: 100%;
   box-sizing: border-box;
   border: 1.5px solid var(--line);
@@ -133,46 +151,22 @@
   outline: none;
   transition: 0.14s;
 }
-.f-input:focus {
+
+.dmodal--ai .f-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(15, 42, 63, 0.07);
 }
-.f-input::placeholder {
+
+.dmodal--ai .f-input::placeholder {
   color: var(--muted);
 }
-textarea.f-input {
+
+.dmodal--ai textarea.f-input {
   resize: vertical;
   min-height: 62px;
   line-height: 1.45;
 }
 
-/* Kundenart-Umschalter (Privat / Firma) */
-.nc-seg {
-  display: flex;
-  gap: 9px;
-}
-.nc-seg button {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  padding: 14px;
-  border-radius: var(--r);
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  font-family: inherit;
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--ink);
-  cursor: pointer;
-  transition: 0.12s;
-}
-.nc-seg button[data-on="1"] {
-  border-color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 7%, var(--surface));
-  color: var(--primary);
-}
 .nc-opt {
   font-weight: 500;
   color: var(--muted);
@@ -189,6 +183,7 @@ textarea.f-input {
 @keyframes nc-spin {
   to { transform: rotate(360deg); }
 }
+
 .nc-spin {
   animation: nc-spin 0.8s linear infinite;
 }
@@ -196,10 +191,12 @@ textarea.f-input {
 /* ── KI-Assistenz: Formular-Phase (Status-Banner) ──────────────────────────────
    Intro-/Lade-Phase liegen in customer-ai-intro.css / customer-ai-loading.css.
    Werte aus dem Design-Handoff. */
+
 .zz-modal.dmodal--ai {
   --zz-modal-w: 580px;
 }
-.dmodal-title .ai-title-spark {
+
+.dmodal--ai .dmodal-title .ai-title-spark {
   display: inline-flex;
   margin-inline-end: 8px;
   color: var(--accent-deep);
@@ -207,6 +204,7 @@ textarea.f-input {
 }
 
 /* Status-Banner über dem Formular */
+
 .ai-banner {
   display: flex;
   align-items: center;
@@ -217,6 +215,7 @@ textarea.f-input {
   font-size: 13.5px;
   line-height: 1.4;
 }
+
 .ai-banner-ic {
   width: 26px;
   height: 26px;
@@ -226,31 +225,38 @@ textarea.f-input {
   align-items: center;
   justify-content: center;
 }
+
 .ai-banner-tx {
   flex: 1;
   min-width: 0;
   font-weight: 600;
 }
+
 .ai-banner--ok {
   background: var(--ok-bg);
   color: color-mix(in srgb, var(--ok) 80%, #000);
 }
+
 .ai-banner--ok .ai-banner-ic {
   background: var(--ok);
   color: #fff;
 }
+
 .ai-banner--warn {
   background: var(--warn-bg);
   color: color-mix(in srgb, var(--warn) 82%, #000);
 }
+
 .ai-banner--warn .ai-banner-ic {
   background: var(--warn);
   color: #fff;
 }
+
 .ai-banner--muted {
   background: var(--surface-2);
   color: var(--muted);
 }
+
 .ai-changelink {
   display: inline-flex;
   align-items: center;
@@ -268,6 +274,7 @@ textarea.f-input {
   white-space: nowrap;
   padding: 2px;
 }
+
 .ai-changelink:hover {
   opacity: 0.72;
 }

@@ -72,6 +72,7 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
       onClose={onClose}
       dir={dir}
       size="md"
+      className="smod"
       ariaLabel={isNew ? t("addTitle") : t("editTitle")}
     >
       <div className="smod-head">

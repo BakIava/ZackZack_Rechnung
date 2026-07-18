@@ -1,0 +1,354 @@
+/* ── Layout: Tabelle + Zusammenfassung ───────────────────────────────────── */
+
+.d2-wrap {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 26px;
+  align-items: start;
+}
+
+.d2-add {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 18px 22px;
+  border-radius: var(--r-lg);
+  border: 1.5px dashed var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  cursor: pointer;
+  font-family: inherit;
+  text-align: start;
+  margin-bottom: 18px;
+  transition: 0.14s;
+  color: var(--primary);
+}
+
+.d2-add:hover {
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+}
+
+.d2-add-ic {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-sm);
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.d2-add-txt {
+  flex: 1;
+  min-width: 0;
+}
+
+.d2-add-t {
+  display: block;
+  font-size: 16.5px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.d2-add-s {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── Positionskarten (Variante B: Menge × Preis = Summe) ─────────────────── */
+
+.d2cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Ziffernblock-Overlay (Variante B) ───────────────────────────────────── */
+
+@keyframes zz-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Fehlermeldung bei fehlgeschlagener Positions-Aktion */
+
+.d2-error {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: #fbeeec;
+  border: 1px solid #e3b5ae;
+  color: #a1180f;
+  font-size: 13.5px;
+}
+
+/* ── Zusammenfassungs-Panel (sticky) ─────────────────────────────────────── */
+
+.d2-sumpanel {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.d2-sum-t {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.d2-sum-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.d2-sum-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.d2-sum-line b {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.d2-sum-div {
+  height: 1px;
+  background: var(--line);
+}
+
+.d2-sum-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.d2-sum-total-l {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.d2-sum-total-v {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.d2-sum-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  border-radius: var(--r);
+  border: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+  background: var(--primary);
+  color: var(--primary-ink);
+  box-shadow: 0 12px 26px -12px rgba(15, 42, 63, 0.7);
+}
+
+.d2-sum-btn:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.d2-back {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.d2-back:hover {
+  color: var(--ink);
+  border-color: #c3ccd4;
+}
+
+/* ── Leerzustand ─────────────────────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 40px 20px;
+}
+
+.empty--boxed {
+  border: 1px dashed var(--line);
+  border-radius: var(--r-lg);
+}
+
+.empty-t {
+  font-weight: 650;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+/* ── Katalog-Modal ───────────────────────────────────────────────────────────
+   Hülle (Backdrop, Karte, Animation) kommt aus der <Modal>-Primitive
+   (components/ui/modal); hier nur der spezifische Inhalt. */
+
+.zz-modal--positions .dmodal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 12px;
+}
+
+.zz-modal--positions .dmodal-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.zz-modal--positions .dmodal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 22px 22px;
+}
+
+.zz-modal--positions .sheet-x {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.picker-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.picker-price-unit {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Formulare (Frei / Fremd) */
+
+.zz-modal--positions .f-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding-top: 2px;
+}
+
+.zz-modal--positions .f-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zz-modal--positions .f-row.two {
+  flex-direction: row;
+  gap: 10px;
+}
+
+.zz-modal--positions .f-row.two > * {
+  flex: 1;
+}
+
+.zz-modal--positions .f-lbl {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.zz-modal--positions .f-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  padding: 13px 14px;
+  font-family: inherit;
+  font-size: 15.5px;
+  color: var(--ink);
+  outline: none;
+}
+
+.zz-modal--positions .f-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(15, 42, 63, 0.07);
+}
+
+.zz-modal--positions .f-input::placeholder {
+  color: var(--muted);
+}
+
+.zz-modal--positions .f-affix {
+  position: relative;
+}
+
+.zz-modal--positions .f-affix .f-input {
+  padding-inline-end: 38px;
+}
+
+.zz-modal--positions .f-unit {
+  position: absolute;
+  inset-inline-end: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.zz-modal--positions .f-compute-input .f-input {
+  font-size: 18px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+/* MwSt.-Gruppen in der Zusammenfassung leicht eingerückt. */
+
+.d2-sum-line--vat span:first-child {
+  padding-inline-start: 12px;
+}
+
+/* Auf schmalen Screens Tabelle/Panel stapeln. */
+
+@media (max-width: 980px) {
+  .d2-wrap {
+    grid-template-columns: 1fr;
+  }
+}

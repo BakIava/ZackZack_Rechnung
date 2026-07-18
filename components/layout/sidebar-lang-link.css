@@ -1,0 +1,43 @@
+.dside-lang-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dside-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 8px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.dside-lang:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.dside-lang-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  direction: ltr;
+}
+
+.dside-lang-txt b {
+  font-weight: 600;
+}
+
+.dside-lang-txt i {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.4);
+}

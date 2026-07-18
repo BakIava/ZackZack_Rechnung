@@ -1,6 +1,5 @@
 "use client";
 
-import "./setup-step-fields.css";
 import { useRef, type ChangeEvent } from "react";
 import { SetupIcon } from "./setup-icon";
 import { type Translations } from "./translations";
@@ -8,6 +7,7 @@ import { Field, TextInput, Seg3, Toggle19 } from "./setup-primitives";
 import type { SetupFormData, SetupFormErrors } from "@/types/company";
 import { TRADE_IDS, type TradeId } from "@/types/database";
 import { COMPANY_LOGO_ACCEPT } from "@/lib/company-logo/constants";
+import "./setup-step-fields.css";
 
 interface StepProps {
   t: Translations;

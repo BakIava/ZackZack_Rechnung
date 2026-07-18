@@ -1,0 +1,56 @@
+/* ── Rechtliches ──────────────────────────────────────────────────────────── */
+
+.set-linklist {
+  display: flex;
+  flex-direction: column;
+}
+
+.set-linkrow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 2px;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  width: 100%;
+  font-family: inherit;
+  text-align: start;
+  transition: 0.12s;
+}
+
+.set-linkrow:first-child {
+  border-top: none;
+}
+
+.set-linkrow:hover {
+  padding-inline-start: 6px;
+}
+
+.set-linkrow-ic {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.set-linkrow-t {
+  flex: 1;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.set-linkrow-chev {
+  color: var(--muted);
+  flex-shrink: 0;
+}

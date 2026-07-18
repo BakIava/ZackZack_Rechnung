@@ -2,12 +2,12 @@
 
 import { Download, Loader2, Mail, MessageCircle, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
+import "./doc-share-row.css";
 import {
   useShareDocument,
   type ShareChannel,
   type ShareTarget,
 } from "@/components/create/3/use-share-document";
-import "./documents-main.css";
 
 const STROKE = 1.75;
 

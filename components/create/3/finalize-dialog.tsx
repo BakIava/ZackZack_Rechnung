@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
+import "./finalize-dialog.css";
 
 interface FinalizeDialogProps {
   onConfirm: () => void;

@@ -7,6 +7,7 @@ import { Check, Lock } from "lucide-react";
 import type { CompanySettings } from "@/types/company";
 import { savePaymentDays, saveTaxSettings } from "@/lib/settings/actions";
 import type { TaxRate } from "@/types/database";
+import "./settings-rechnung.css";
 
 const STROKE = 1.75;
 const ZIEL_OPTIONS = ["7", "14", "21", "30"] as const;

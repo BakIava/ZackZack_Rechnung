@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { DocumentItem } from "@/types/document";
 import { formatMoney } from "@/lib/format";
+import "./positions-list.css";
 
 const STROKE = 1.75;
 /** Ab dieser Positionsanzahl wird der Rest hinter "Mehr anzeigen" versteckt. */

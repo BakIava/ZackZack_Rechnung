@@ -107,7 +107,7 @@
 .ob-row2 { display: flex; gap: 11px; }
 .ob-row2 > * { min-width: 0; }
 .ob-row2 .ob-grow { flex: 1; }
-.ob-row2 .ob-plz { width: 116px; flex-shrink: 0; }
+.ob-row2 .ob-plz { width: 164px; flex-shrink: 0; }
 .ob-row2 .ob-hnr { width: 104px; flex-shrink: 0; }
 
 /* ── Input ─────────────────────────────────────────────────────────────────── */
@@ -365,3 +365,20 @@
 }
 .ob-d-wrap .ob-lang-link,
 .ob-d-done .ob-lang-link { margin-top: 18px; }
+
+.ob-d-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 30px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.ob-d-brand { display: flex; align-items: center; gap: 11px; }
+
+.ob-d-brand img { height: 26px; width: auto; }
+
+.ob-d-help { font-size: 13px; font-weight: 600; color: var(--muted); display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }

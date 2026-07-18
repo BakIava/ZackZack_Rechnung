@@ -1,6 +1,5 @@
 "use client";
 
-import "./setup-step-fields.css";
 import { SetupIcon } from "./setup-icon";
 import { type Translations } from "./translations";
 import { Field, Seg3, TextInput } from "./setup-primitives";
@@ -9,6 +8,7 @@ import type {
   OnboardingExtractionStatuses,
 } from "@/types/onboarding-extraction";
 import type { SetupFormData } from "@/types/company";
+import "./setup-other-fields.css";
 
 // ── EntryTiles ────────────────────────────────────────────────────────────────
 

@@ -39,14 +39,14 @@ describe("starter catalog onboarding migration", () => {
       migration.indexOf("CREATE TABLE IF NOT EXISTS public.service_templates"),
       migration.indexOf("CREATE INDEX IF NOT EXISTS idx_service_templates_active_trade_sort"),
     );
-    expect(templateTable).not.toContain("default_price");
+    expect(templateTable).toContain("default_price");
     expect(templateTable).not.toContain("tax_rate");
 
     const serviceCopy = migration.slice(
       migration.indexOf("INSERT INTO public.services"),
       migration.indexOf("RETURN v_company_id"),
     );
-    expect(serviceCopy).toMatch(/default_price,[\s\S]*?starter_template_id[\s\S]*?template\.unit,\s+NULL,\s+template\.id/);
+    expect(serviceCopy).toMatch(/default_price,[\s\S]*?starter_template_id[\s\S]*?template\.unit,\s+template\.default_price,\s+template\.id/);
     expect(serviceCopy).not.toContain("tax_rate");
   });
 

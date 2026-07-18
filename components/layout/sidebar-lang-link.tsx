@@ -3,6 +3,7 @@
 import { Globe } from "lucide-react";
 import NextLink from "next/link";
 import { usePathname } from "@/i18n/navigation";
+import "./sidebar-lang-link.css";
 
 /** Sprach-Link in der Sidebar.
  *  Führt zur lokalefreien Route /language (außerhalb von [locale]) und merkt

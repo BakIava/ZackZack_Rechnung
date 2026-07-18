@@ -1,0 +1,306 @@
+@media (max-width: 880px) {
+  .zz-settings .dapp {
+    min-width: 880px;
+  }
+}
+
+/* ── Einstellungen-Layout ─────────────────────────────────────────────────── */
+
+.set-wrap {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr);
+  gap: 34px;
+  align-items: start;
+}
+
+/* Sektions-Navigation (links, sticky) */
+
+.set-nav {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.set-nav-lbl {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 2px 13px 8px;
+}
+
+.set-navitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  border-radius: var(--r-sm);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: start;
+  transition: 0.14s;
+  position: relative;
+}
+
+.set-navitem:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.set-navitem[data-on="1"] {
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.set-navitem[data-on="1"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+[dir="rtl"] .set-navitem[data-on="1"]::before {
+  border-radius: 3px 0 0 3px;
+}
+
+/* Inhaltsbereich */
+
+.set-pane {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.set-sec-head {
+  margin-bottom: 4px;
+}
+
+.set-sec-t {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.set-sec-s {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ── Karte ────────────────────────────────────────────────────────────────── */
+
+.set-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.set-card-h {
+  padding: 17px 22px 0;
+}
+
+.set-card-htop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.set-card-t {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.set-card-s {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+.set-card-b {
+  padding: 16px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.set-card-f {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 13px 22px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 55%, var(--surface));
+}
+
+/* ── Formularzellen (f-row / f-lbl / f-input) ────────────────────────────── */
+
+.set-f-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.set-f-lbl {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.set-select {
+  width: 100%;
+  padding: 10px 13px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14.5px;
+  outline: none;
+  cursor: pointer;
+}
+
+.set-select:focus {
+  border-color: var(--primary);
+}
+
+.set-select:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: var(--surface);
+  opacity: 1;
+}
+
+/* ── Speichern-Buttons ────────────────────────────────────────────────────── */
+
+.set-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.14s;
+}
+
+.set-save:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--primary) 70%, transparent);
+}
+
+.set-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ok);
+  animation: setfade 0.2s ease;
+}
+
+.set-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.set-error {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger, #d4393c);
+  animation: setfade 0.2s ease;
+}
+
+@keyframes setfade {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.set-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: 0.14s;
+}
+
+.set-ghost:hover {
+  border-color: #c3ccd4;
+}
+
+/* ── Danger Zone ──────────────────────────────────────────────────────────── */
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 1000px) {
+  .zz-settings .dside {
+    width: 78px;
+    padding-inline-start: 11px;
+    padding-inline-end: 11px;
+  }
+  .zz-settings .dside-name,
+  .zz-settings .dnav-item > span:not(.dnav-count),
+  .zz-settings .dnav-count,
+  .zz-settings .dnav-lbl,
+  .zz-settings .dside-uname,
+  .zz-settings .dside-lang-txt { display: none; }
+  .zz-settings .dnav-item,
+  .zz-settings .dside-brand,
+  .zz-settings .dside-user,
+  .zz-settings .dside-lang { justify-content: center; }
+  .zz-settings .dnav-item { padding-inline: 0; }
+}
+
+@media (max-width: 840px) {
+  .zz-settings .dscroll { padding: 24px 22px 36px; }
+  .set-wrap { grid-template-columns: 1fr; gap: 18px; }
+  .set-nav { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; scrollbar-width: none; }
+  .set-nav::-webkit-scrollbar { display: none; }
+  .set-nav-lbl { display: none; }
+  .set-navitem { white-space: nowrap; flex-shrink: 0; }
+  .set-navitem[data-on="1"]::before { display: none; }
+}
+
+@media (max-width: 560px) {
+  .zz-settings .dtopbar { padding: 16px; }
+  .zz-settings .dscroll { padding: 18px 16px 30px; }
+}

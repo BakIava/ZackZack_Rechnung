@@ -1,0 +1,22 @@
+/* step3.css — Schritt 3 (Vorschau & Versand), Desktop.
+   Tokens auf .zz-create gekapselt (wie .zz-dash beim Dashboard). Sidebar- und
+   Shell-Styles kommen aus components/layout/app-shell.css. Logische
+   Properties → RTL automatisch. A4-Beleg bleibt immer LTR/Deutsch. */
+
+.zz-create {
+  /* Screen-Abweichung vom gemeinsamen Token-Set (globals.css) */
+  --bad: #c0392b;  --bad-bg: #fbeeec; --bad-line: #e7bcb3;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  font-family: var(--ui-font);
+  color: var(--ink);
+}
+
+/* Auf schmalen Screens nicht stauchen — horizontal scrollen wie das Dashboard. */
+
+@media (max-width: 880px) {
+  .zz-create {
+    overflow: auto;
+  }
+}

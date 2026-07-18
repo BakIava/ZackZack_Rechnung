@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { LogOut, Trash2, X } from "lucide-react";
 import { signOutAndRedirect } from "@/lib/settings/actions";
+import "./settings-konto.css";
 
 const STROKE = 1.75;
 

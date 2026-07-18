@@ -28,6 +28,7 @@
   color: var(--ink);
   font-family: var(--ui-font);
 }
+
 .ls-root * {
   font-family: var(--ui-font);
   box-sizing: border-box;
@@ -42,11 +43,13 @@
   padding: clamp(18px, 5vw, 30px) clamp(20px, 6vw, 30px) 22px;
   scrollbar-width: none;
 }
+
 .ls-body::-webkit-scrollbar {
   display: none;
 }
 
 /* ── Markenkopf ───────────────────────────────────────────────────────────── */
+
 .ls-brand {
   display: flex;
   flex-direction: column;
@@ -55,10 +58,12 @@
   text-align: center;
   padding: clamp(10px, 3vw, 22px) 0 clamp(18px, 4vw, 26px);
 }
+
 .ls-mark {
   height: 84px;
   width: auto;
 }
+
 .ls-prompt {
   display: inline-flex;
   align-items: center;
@@ -74,14 +79,17 @@
   color: var(--muted);
   box-shadow: 0 1px 2px rgba(15, 42, 63, 0.04);
 }
+
 .ls-prompt .ls-globe {
   color: var(--primary);
   display: flex;
   flex-shrink: 0;
 }
+
 .ls-prompt .ls-seg {
   white-space: nowrap;
 }
+
 .ls-prompt .ls-dot {
   width: 4px;
   height: 4px;
@@ -91,6 +99,7 @@
 }
 
 /* ── Kachel-Container ─────────────────────────────────────────────────────── */
+
 .ls-tiles {
   display: flex;
   flex-direction: column;
@@ -98,6 +107,7 @@
 }
 
 /* ── Kachel (mobil: horizontal) ───────────────────────────────────────────── */
+
 .ls-tile {
   position: relative;
   display: flex;
@@ -118,20 +128,24 @@
     transform 0.12s,
     background 0.14s;
 }
+
 .ls-tile:hover {
   border-color: color-mix(in srgb, var(--primary) 40%, var(--line));
   box-shadow: 0 10px 24px -16px rgba(15, 42, 63, 0.45);
   transform: translateY(-1px);
 }
+
 .ls-tile:active {
   transform: scale(0.992);
 }
+
 .ls-tile:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--primary) 30%, transparent);
   outline-offset: 2px;
 }
 
 /* ausgewählter Zustand — farbiger Rand + getönter Grund + Häkchen */
+
 .ls-tile[data-sel="1"] {
   border-color: var(--primary);
   border-width: 2px;
@@ -140,7 +154,9 @@
     0 0 0 1px var(--primary),
     0 14px 30px -16px rgba(15, 42, 63, 0.5);
 }
+
 /* nicht gewählte Kacheln treten beim Auswählen leicht zurück */
+
 .ls-tiles[data-haspick="1"] .ls-tile:not([data-sel="1"]) {
   opacity: 0.62;
 }
@@ -156,17 +172,20 @@
   display: block;
   overflow: hidden;
 }
+
 .ls-flag svg {
   display: block;
   width: 100%;
   height: 100%;
 }
+
 .ls-tile-body {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
 }
+
 .ls-tile-name {
   display: block;
   font-size: 20px;
@@ -175,6 +194,7 @@
   line-height: 1.15;
   color: var(--ink);
 }
+
 .ls-tile-hint {
   display: block;
   font-size: 13.5px;
@@ -185,6 +205,7 @@
 }
 
 /* Affordanz rechts: Chevron (offen) bzw. Häkchen (gewählt) */
+
 .ls-tile-aff {
   width: 30px;
   height: 30px;
@@ -196,21 +217,27 @@
   color: #b6c0c9;
   transition: 0.14s;
 }
+
 .ls-tile-aff .ls-aff-check {
   display: none;
 }
+
 .ls-tile[data-sel="1"] .ls-tile-aff .ls-aff-chevron {
   display: none;
 }
+
 .ls-tile[data-sel="1"] .ls-tile-aff .ls-aff-check {
   display: flex;
 }
+
 [dir="rtl"] .ls-tile-aff .ls-aff-chevron svg {
   transform: scaleX(-1);
 }
+
 .ls-tile:hover .ls-tile-aff {
   color: var(--primary);
 }
+
 .ls-tile[data-sel="1"] .ls-tile-aff {
   background: var(--primary);
   color: #fff;
@@ -218,6 +245,7 @@
 }
 
 /* ── Dokumentsprache-Hinweis ──────────────────────────────────────────────── */
+
 .ls-note {
   display: flex;
   align-items: flex-start;
@@ -229,6 +257,7 @@
   border-radius: var(--r);
   text-align: start;
 }
+
 .ls-note-ic {
   width: 38px;
   height: 38px;
@@ -241,22 +270,26 @@
   color: var(--primary);
   box-shadow: inset 0 0 0 1px var(--line);
 }
+
 .ls-note-body {
   min-width: 0;
   flex: 1;
 }
+
 .ls-note-head {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.005em;
 }
+
 .ls-note-lines {
   margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
+
 .ls-note-line {
   display: flex;
   align-items: center;
@@ -265,6 +298,7 @@
   color: var(--muted);
   line-height: 1.3;
 }
+
 .ls-note-line .ls-fd {
   width: 15px;
   height: 15px;
@@ -272,6 +306,7 @@
   flex-shrink: 0;
   box-shadow: inset 0 0 0 0.5px rgba(15, 42, 63, 0.15);
 }
+
 .ls-fd--de {
   background: linear-gradient(
     #1a1a1a 0 33.3%,
@@ -279,14 +314,17 @@
     #f4c500 66.6% 100%
   );
 }
+
 .ls-fd--tr {
   background: #e30a17;
 }
+
 .ls-fd--ar {
   background: #1f6b4c;
 }
 
 /* Mini-Fußnote (vertrauensbildend, sprachneutral) */
+
 .ls-foot {
   display: flex;
   align-items: center;
@@ -296,12 +334,14 @@
   font-size: 11.5px;
   color: var(--muted);
 }
+
 .ls-foot svg {
   color: var(--primary);
   flex-shrink: 0;
 }
 
 /* ── Desktop-Layout: zentriert, drei vertikale Kacheln, max ~600px ─────────── */
+
 @media (min-width: 720px) {
   .ls-body {
     justify-content: center;

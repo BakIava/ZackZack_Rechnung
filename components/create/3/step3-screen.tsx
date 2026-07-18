@@ -4,7 +4,7 @@ import type { DocumentPreview } from "@/types/document";
 import { Step3Main } from "./step3-main";
 // Gemeinsame Shell-Styles (Scope-Fläche, Sidebar+Main-Split, Topbar).
 import "@/components/layout/app-shell.css";
-import "./step3.css";
+import "./step3-screen.css";
 
 interface Step3ScreenProps {
   dir: "ltr" | "rtl";
