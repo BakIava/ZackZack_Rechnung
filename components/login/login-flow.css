@@ -2,6 +2,30 @@
    Tokens sind auf .lg-root gekapselt, damit der Screen unabhängig vom globalen
    Theme stabil rendert. Logische Properties → RTL automatisch. */
 
+/* Auth-Wrapper: umschließt Willkommen / Sperrbildschirm / Login / Registrierung.
+   Die Marken-/Flächentokens werden hier zusätzlich bereitgestellt, damit die
+   Vollflächen-Screens (außerhalb von .lg-root) dieselben Werte nutzen. */
+.auth {
+  --primary: #02335c;
+  --accent: #fb6202;
+  --accent-deep: #d85402;
+  --accent-ink: #ffffff;
+  --r: 14px;
+  --r-lg: min(calc(var(--r) * 1.5), 24px);
+  --ui-font: var(--font-hanken), var(--font-plex-arabic), system-ui, sans-serif;
+
+  position: fixed; inset: 0; font-family: var(--ui-font);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .auth[data-phase="login"] .lg-brand-head { animation: authRecv .5s ease .06s backwards; }
+  .auth[data-phase="login"] .lg-form { animation: authFormIn .55s ease .1s backwards; }
+}
+
+@keyframes authRecv { from { opacity: 0; transform: translateY(-12px); } }
+
+@keyframes authFormIn { from { opacity: 0; transform: translateY(10px); } }
+
 .lg-root {
   /* Marken-/Flächentokens (aus dem Design-Handoff) */
   --primary: #02335c;

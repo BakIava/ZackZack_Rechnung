@@ -1,0 +1,36 @@
+/* register-screen.css — Zugriffsanfrage (Firmenname / Telefon / E-Mail).
+   Nutzt die Formular-Primitives der Anmeldung (.lg-card/.lg-input/.lg-btn). */
+
+.reg-note {
+  display: flex; align-items: center; gap: 9px; margin: 0 0 22px;
+  padding: 11px 15px; border-radius: var(--r);
+  background: color-mix(in srgb, var(--accent) 10%, #fff);
+  color: var(--accent-deep); font-size: 13.5px; font-weight: 500; line-height: 1.4;
+}
+
+.reg-note svg { flex-shrink: 0; color: var(--accent); }
+
+.reg-field-gap { margin-top: 18px; }
+
+.reg-back {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; margin-top: 16px; padding: 12px; border: none; background: transparent;
+  border-radius: var(--r); font-family: inherit; font-size: 14.5px; font-weight: 600;
+  color: var(--muted); cursor: pointer; transition: .12s;
+}
+
+.reg-back:hover { background: var(--surface-2); color: var(--ink); }
+
+.lg-root[dir="rtl"] .reg-back svg { transform: scaleX(-1); }
+
+.reg-sent {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px;
+}
+
+.reg-sent .lg-check {
+  width: 88px; height: 88px; border-radius: 999px; margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--ok-bg); color: var(--ok);
+}
+
+.reg-sent-text { margin: 0 0 26px; }
