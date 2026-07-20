@@ -1,0 +1,80 @@
+/* lock-screen.css — Sperrbildschirm bei gültiger Session (ein Klick entsperrt).
+   Teilt den Marken-Hintergrund des Willkommensscreens. Tokens vom .auth-Scope. */
+
+.auth-lock {
+  position: fixed; inset: 0; z-index: 10; color: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: var(--ui-font);
+  cursor: pointer; transition: opacity .4s ease;
+}
+
+.auth-lock.is-leaving { opacity: 0; pointer-events: none; }
+
+.al-bg {
+  position: absolute; inset: 0; z-index: 0; background: var(--primary);
+  background-image:
+    radial-gradient(120% 82% at 84% 6%, rgba(255, 255, 255, .10), transparent 60%),
+    radial-gradient(95% 72% at 8% 104%, rgba(0, 0, 0, .24), transparent 56%);
+}
+
+.al-bg::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, .038) 0 2px, transparent 2px 24px);
+  -webkit-mask-image: radial-gradient(72% 62% at 50% 45%, #000, transparent 78%);
+  mask-image: radial-gradient(72% 62% at 50% 45%, #000, transparent 78%);
+}
+
+.al-top {
+  position: absolute; z-index: 1; top: clamp(30px, 5vh, 54px); inset-inline: 0;
+  display: flex; justify-content: center;
+}
+
+.al-mark { height: 40px; width: auto; opacity: .92; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, .3)); }
+
+.al-center {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+
+.al-avatar {
+  width: 108px; height: 108px; border-radius: 999px; margin-bottom: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; font-weight: 700; letter-spacing: .02em; color: #fff;
+  background: rgba(255, 255, 255, .10);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .36), 0 18px 40px -18px rgba(0, 0, 0, .6);
+}
+
+.al-name { font-size: clamp(24px, 2.6vw, 30px); font-weight: 600; letter-spacing: -.02em; }
+
+.al-company { font-size: 15.5px; color: rgba(255, 255, 255, .72); margin-top: 6px; }
+
+.al-unlock {
+  display: inline-flex; align-items: center; gap: 11px; margin-top: 34px;
+  height: 58px; padding: 0 40px; border: none; border-radius: 999px;
+  background: #fff; color: var(--primary); font-family: inherit; font-size: 17px; font-weight: 650;
+  cursor: pointer; box-shadow: 0 16px 34px -16px rgba(0, 0, 0, .6); transition: .14s;
+}
+
+.al-unlock:hover { transform: translateY(-2px); box-shadow: 0 22px 44px -18px rgba(0, 0, 0, .6); }
+
+.al-hint { margin-top: 18px; font-size: 13px; color: rgba(255, 255, 255, .55); }
+
+.al-switch {
+  position: absolute; z-index: 1; bottom: clamp(26px, 4vh, 44px); inset-inline: 0; margin-inline: auto;
+  width: fit-content; border: none; background: transparent; color: rgba(255, 255, 255, .72);
+  font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  padding: 10px 16px; border-radius: 999px;
+}
+
+.al-switch:hover { color: #fff; background: rgba(255, 255, 255, .08); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .al-center > * { animation: alRecv .5s ease backwards; }
+  .al-avatar { animation-delay: .02s; }
+  .al-name { animation-delay: .08s; }
+  .al-company { animation-delay: .12s; }
+  .al-unlock { animation-delay: .18s; }
+  .al-hint { animation-delay: .24s; }
+}
+
+@keyframes alRecv { from { opacity: 0; transform: translateY(-12px); } }

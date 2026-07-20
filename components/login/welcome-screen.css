@@ -1,0 +1,106 @@
+/* welcome-screen.css — Vorgelagerter Willkommensscreen (Anmelden / Registrieren).
+   Marken-Hintergrund, zwei große Aktionen, Sprachpills unten. RTL über logische
+   Properties. Tokens (--primary, --r-lg, --accent …) kommen vom .auth-Scope. */
+
+.auth-welcome {
+  position: fixed; inset: 0; z-index: 10; color: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: var(--ui-font);
+  transition: opacity .45s ease;
+}
+
+.aw-bg {
+  position: absolute; inset: 0; z-index: 0; background: var(--primary);
+  background-image:
+    radial-gradient(120% 82% at 84% 6%, rgba(255, 255, 255, .10), transparent 60%),
+    radial-gradient(95% 72% at 8% 104%, rgba(0, 0, 0, .24), transparent 56%);
+  transition: opacity .5s ease;
+}
+
+.aw-bg::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, .038) 0 2px, transparent 2px 24px);
+  -webkit-mask-image: radial-gradient(72% 62% at 50% 45%, #000, transparent 78%);
+  mask-image: radial-gradient(72% 62% at 50% 45%, #000, transparent 78%);
+}
+
+.aw-content {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+
+.aw-logo {
+  display: flex; align-items: center; gap: 23px; margin-bottom: 30px;
+  transform-origin: center top;
+  transition: transform .6s cubic-bezier(.55, 0, .2, 1), opacity .5s ease;
+}
+
+.aw-logo .zz-word { direction: ltr; }
+
+.aw-logo .zz-mark { height: 72px; width: auto; filter: drop-shadow(0 8px 22px rgba(0, 0, 0, .34)); }
+
+.aw-logo .zz-word b { font-size: 34px; }
+
+.aw-logo .zz-word span { font-size: 19px; letter-spacing: .34em; margin-top: 8px; color: rgba(255, 255, 255, .72); }
+
+.aw-slogan {
+  font-size: clamp(17px, 1.9vw, 21px); font-weight: 500; line-height: 1.42;
+  color: rgba(255, 255, 255, .82); max-width: 26ch; margin: 0 0 40px; text-wrap: balance;
+  transition: opacity .3s ease, transform .3s ease;
+}
+
+.aw-actions {
+  display: flex; flex-direction: column; gap: 14px; width: min(340px, 82vw);
+  transition: opacity .3s ease, transform .3s ease;
+}
+
+.aw-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  height: 60px; border-radius: var(--r-lg); font-family: inherit; font-size: 17.5px;
+  font-weight: 650; cursor: pointer; transition: .14s; border: 2px solid transparent;
+}
+
+.aw-btn--primary { background: #fff; color: var(--primary); box-shadow: 0 16px 34px -16px rgba(0, 0, 0, .6); }
+
+.aw-btn--primary:hover { transform: translateY(-2px); box-shadow: 0 22px 42px -18px rgba(0, 0, 0, .6); }
+
+.aw-btn--ghost { background: rgba(255, 255, 255, .06); color: #fff; border-color: rgba(255, 255, 255, .42); }
+
+.aw-btn--ghost:hover { background: rgba(255, 255, 255, .13); border-color: rgba(255, 255, 255, .7); }
+
+.auth[dir="rtl"] .aw-btn svg { transform: scaleX(-1); }
+
+.aw-langs {
+  position: absolute; z-index: 1; bottom: clamp(26px, 4vh, 44px); inset-inline: 0;
+  display: flex; justify-content: center; gap: 8px; transition: opacity .3s ease;
+}
+
+.aw-lang {
+  border: 1.5px solid rgba(255, 255, 255, .24); background: rgba(255, 255, 255, .05);
+  color: rgba(255, 255, 255, .82); border-radius: 999px; padding: 8px 16px;
+  font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  text-decoration: none; transition: .12s;
+}
+
+.aw-lang:hover { border-color: rgba(255, 255, 255, .5); color: #fff; }
+
+.aw-lang[data-on="1"] { background: #fff; color: var(--primary); border-color: #fff; }
+
+/* Verlassen → Login: Logo hebt sich, Inhalt & Hintergrund blenden aus. */
+.auth-welcome.is-leaving { opacity: 0; pointer-events: none; }
+
+.auth-welcome.is-leaving .aw-bg { opacity: 0; }
+
+.auth-welcome.is-leaving .aw-logo { transform: translateY(-7vh) scale(.6); opacity: 0; }
+
+.auth-welcome.is-leaving .aw-slogan { opacity: 0; transform: translateY(10px); }
+
+.auth-welcome.is-leaving .aw-actions { opacity: 0; transform: translateY(16px); }
+
+.auth-welcome.is-leaving .aw-langs { opacity: 0; }
+
+@media (max-width: 560px) {
+  .aw-logo .zz-mark { height: 58px; }
+  .aw-logo .zz-word b { font-size: 27px; }
+  .aw-logo { gap: 18px; }
+}

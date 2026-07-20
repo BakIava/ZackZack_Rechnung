@@ -2,6 +2,34 @@
    Tokens sind auf .lg-root gekapselt, damit der Screen unabhängig vom globalen
    Theme stabil rendert. Logische Properties → RTL automatisch. */
 
+/* Auth-Wrapper: umschließt Willkommen / Sperrbildschirm / Login / Registrierung.
+   Die Marken-/Flächentokens werden hier zusätzlich bereitgestellt, damit die
+   Vollflächen-Screens (außerhalb von .lg-root) dieselben Werte nutzen. */
+.auth {
+  --primary: #02335c;
+  --accent: #fb6202;
+  --accent-deep: #d85402;
+  --accent-ink: #ffffff;
+  --r: 14px;
+  --r-lg: min(calc(var(--r) * 1.5), 24px);
+  --ui-font: var(--font-hanken), var(--font-plex-arabic), system-ui, sans-serif;
+
+  position: fixed; inset: 0; font-family: var(--ui-font);
+}
+
+/* Eingangs-Animation läuft WÄHREND des Übergangs (data-phase noch "welcome",
+   Shell erscheint bereits unter dem ausblendenden Willkommensscreen). Sie darf
+   NICHT an data-phase="login" hängen — sonst spielt sie erneut ab, sobald nach
+   dem Übergang auf "login" umgeschaltet wird (sichtbares Wiederholen/Verzögern). */
+@media (prefers-reduced-motion: no-preference) {
+  .auth[data-phase="welcome"] .lg-brand-head { animation: authRecv .5s ease .06s backwards; }
+  .auth[data-phase="welcome"] .lg-form { animation: authFormIn .55s ease .1s backwards; }
+}
+
+@keyframes authRecv { from { opacity: 0; transform: translateY(-12px); } }
+
+@keyframes authFormIn { from { opacity: 0; transform: translateY(10px); } }
+
 .lg-root {
   /* Marken-/Flächentokens (aus dem Design-Handoff) */
   --primary: #02335c;
@@ -22,6 +50,11 @@
   font-family: var(--ui-font); color: var(--ink);
   background: var(--surface);
   overflow: auto;
+  /* Scrollbar-Rinne dauerhaft reservieren: Sonst ändert ein (auch nur während
+     der Eingangs-Animation durch translateY kurz auftauchender) vertikaler
+     Scrollbalken die Inhaltsbreite, wodurch die fr-Spalten neu aufgeteilt
+     werden und das Links/Rechts-Verhältnis am Ende ruckartig springt. */
+  scrollbar-gutter: stable;
 }
 
 .lg-root[dir="rtl"] .zz-word { direction: ltr; text-align: start; }
