@@ -17,9 +17,13 @@
   position: fixed; inset: 0; font-family: var(--ui-font);
 }
 
+/* Eingangs-Animation läuft WÄHREND des Übergangs (data-phase noch "welcome",
+   Shell erscheint bereits unter dem ausblendenden Willkommensscreen). Sie darf
+   NICHT an data-phase="login" hängen — sonst spielt sie erneut ab, sobald nach
+   dem Übergang auf "login" umgeschaltet wird (sichtbares Wiederholen/Verzögern). */
 @media (prefers-reduced-motion: no-preference) {
-  .auth[data-phase="login"] .lg-brand-head { animation: authRecv .5s ease .06s backwards; }
-  .auth[data-phase="login"] .lg-form { animation: authFormIn .55s ease .1s backwards; }
+  .auth[data-phase="welcome"] .lg-brand-head { animation: authRecv .5s ease .06s backwards; }
+  .auth[data-phase="welcome"] .lg-form { animation: authFormIn .55s ease .1s backwards; }
 }
 
 @keyframes authRecv { from { opacity: 0; transform: translateY(-12px); } }
