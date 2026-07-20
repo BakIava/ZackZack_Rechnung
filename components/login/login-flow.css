@@ -50,6 +50,11 @@
   font-family: var(--ui-font); color: var(--ink);
   background: var(--surface);
   overflow: auto;
+  /* Scrollbar-Rinne dauerhaft reservieren: Sonst ändert ein (auch nur während
+     der Eingangs-Animation durch translateY kurz auftauchender) vertikaler
+     Scrollbalken die Inhaltsbreite, wodurch die fr-Spalten neu aufgeteilt
+     werden und das Links/Rechts-Verhältnis am Ende ruckartig springt. */
+  scrollbar-gutter: stable;
 }
 
 .lg-root[dir="rtl"] .zz-word { direction: ltr; text-align: start; }
