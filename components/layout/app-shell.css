@@ -173,6 +173,31 @@
   color: var(--draft);
 }
 
+.pill--gueltig, .pill--umgewandelt {
+  color: #14603f;
+  background: #eaf8f0;
+}
+
+.pill--in_anpassung {
+  color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.pill--ersetzt {
+  color: var(--info);
+  background: var(--info-bg);
+}
+
+.pill--abgelaufen {
+  color: #a5331f;
+  background: #fff0ec;
+}
+
+.pill--storniert {
+  color: #5d6670;
+  background: #eef1f4;
+}
+
 /* settings.css — Token-Scope für Einstellungen.
    Shell-Klassen (.dapp, .dside, .dmain, .dtopbar, .dscroll) kommen aus components/layout/app-shell.css bzw. sidebar.css; Tokens aus globals.css.
    Logische Properties → RTL automatisch. */

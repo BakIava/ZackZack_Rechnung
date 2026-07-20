@@ -50,6 +50,18 @@
   margin-top: 8px;
 }
 
+.fin-expired-warning {
+  margin-block-start: 14px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 8%, white);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: start;
+}
+
 .fin-actions {
   display: flex;
   gap: 10px;
