@@ -7,7 +7,7 @@ import {
   getDraftTaxConfig,
   isDraftDocument,
   setDraftDocumentTotals,
-} from "@/lib/repositories/documents";
+} from "@/lib/repositories/document-drafts";
 import {
   deleteDocumentItem,
   getDraftItems,

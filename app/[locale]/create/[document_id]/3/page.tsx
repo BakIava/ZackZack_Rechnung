@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Step3Screen } from "@/components/create/3/step3-screen";
-import { getDocumentPreview } from "@/lib/repositories/documents";
+import { getDocumentPreview } from "@/lib/repositories/document-previews";
 import { pruefeDokumentPflicht } from "@/lib/legal/dokument-pflicht";
 import { isRtlLocale } from "@/i18n/routing";
 import { getCustomerName } from "@/lib/customers/utils";
@@ -25,6 +25,7 @@ export default async function Step3Page({ params }: Step3PageProps) {
   // Empfängerangaben sind betragsabhängig (Kleinbetragsrechnung bis 250 €).
   const totalAmountCents = preview.totalAmount;
   const checks = pruefeDokumentPflicht({
+    docType: preview.docType,
     companyName: preview.company.name,
     companyStreet: preview.company.street,
     companyPostcode: preview.company.postcode,
@@ -32,6 +33,7 @@ export default async function Step3Page({ params }: Step3PageProps) {
     companySteuernummer: preview.company.steuernummer,
     companyUstId: preview.company.ustId,
     issueDate: preview.issueDate,
+    validUntil: preview.validUntil,
     itemCount: preview.items.length,
     totalAmountCents,
     customerName: getCustomerName(preview.customer),

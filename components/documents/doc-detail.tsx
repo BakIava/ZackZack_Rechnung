@@ -21,6 +21,11 @@ import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocShareRow } from "./doc-share-row";
 import { PositionsList } from "./positions-list";
+import { QuoteActions } from "./quote-actions";
+import {
+  getDocumentStatusMessageKey,
+  getDocumentUiStatus,
+} from "@/lib/documents/document-display-status";
 import "./doc-detail.css";
 
 const STROKE = 1.75;
@@ -31,17 +36,14 @@ function addDays(isoDate: string, days: number): string {
   return d.toISOString().split("T")[0];
 }
 
-function getDisplayStatus(doc: DocumentListItem) {
-  if (doc.paidAt) return "bezahlt" as const;
-  if (doc.status === "sent") return "versendet" as const;
-  if (doc.status === "finalized") return "offen" as const;
-  return "entwurf" as const;
-}
-
 function getPillDotClass(doc: DocumentListItem): string {
   if (doc.paidAt) return "ok";
   if (doc.isOverdue) return "over";
-  const s = getDisplayStatus(doc);
+  const s = getDocumentUiStatus(doc);
+  if (s === "gueltig" || s === "bezahlt" || s === "umgewandelt") return "ok";
+  if (s === "abgelaufen") return "over";
+  if (s === "in_anpassung") return "warn";
+  if (s === "ersetzt") return "info";
   return s === "offen" ? "warn" : s === "versendet" ? "info" : "draft";
 }
 
@@ -67,6 +69,7 @@ export function DocDetail({
   dir,
 }: DocDetailProps) {
   const t = useTranslations("Documents");
+  const statusT = useTranslations("DocumentStatus");
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
 
   if (!doc) {
@@ -81,7 +84,7 @@ export function DocDetail({
     );
   }
 
-  const displayStatus = getDisplayStatus(doc);
+  const displayStatus = getDocumentUiStatus(doc);
   const dueDate = addDays(doc.issueDate, paymentDays);
 
   type BannerCls = "ok" | "warn" | "over" | "info" | "draft";
@@ -93,7 +96,42 @@ export function DocDetail({
   }
 
   let banner: Banner;
-  if (doc.paidAt) {
+  if (doc.type === "quote" && displayStatus === "umgewandelt") {
+    banner = {
+      cls: "ok",
+      Icon: ReceiptText,
+      title: t("bConvertedT"),
+      sub: t("bConvertedS"),
+    };
+  } else if (doc.type === "quote" && displayStatus === "in_anpassung") {
+    banner = {
+      cls: "warn",
+      Icon: Pencil,
+      title: statusT("adjusting"),
+      sub: t("bAdjustingS"),
+    };
+  } else if (doc.type === "quote" && displayStatus === "ersetzt") {
+    banner = {
+      cls: "info",
+      Icon: Copy,
+      title: statusT("replaced"),
+      sub: t("bReplacedS"),
+    };
+  } else if (doc.type === "quote" && displayStatus === "abgelaufen") {
+    banner = {
+      cls: "over",
+      Icon: AlertTriangle,
+      title: t("bExpiredT"),
+      sub: doc.validUntil ? formatDateDE(doc.validUntil) : "—",
+    };
+  } else if (doc.type === "quote" && displayStatus === "gueltig") {
+    banner = {
+      cls: "ok",
+      Icon: Check,
+      title: t("bValidT"),
+      sub: doc.validUntil ? formatDateDE(doc.validUntil) : "—",
+    };
+  } else if (doc.paidAt) {
     banner = { cls: "ok", Icon: Check, title: t("bPaidT"), sub: formatDateDE(doc.paidAt) };
   } else if (doc.isOverdue) {
     banner = {
@@ -120,15 +158,12 @@ export function DocDetail({
     banner = { cls: "draft", Icon: Pencil, title: t("bDraftT"), sub: t("bDraftS") };
   }
 
-  const statusLabel = {
-    bezahlt: t("sBezahlt"),
-    offen: t("sOffen"),
-    versendet: t("sVersendet"),
-    entwurf: t("sEntwurf"),
-  }[displayStatus];
+  const statusLabel = statusT(getDocumentStatusMessageKey(displayStatus));
 
   const canMarkPaid =
-    doc.paidAt === null && (doc.status === "finalized" || doc.status === "sent");
+    doc.type === "invoice"
+    && doc.paidAt === null
+    && (doc.status === "finalized" || doc.status === "sent");
 
   const shareTarget: ShareTarget = {
     documentId: doc.id,
@@ -196,6 +231,14 @@ export function DocDetail({
                 </div>
               </div>
             ))}
+          {doc.type === "quote" && doc.validUntil && (
+            <div className="hmeta-cell">
+              <div className="hmeta-k">{t("mValid")}</div>
+              <div className={`hmeta-v${displayStatus === "abgelaufen" ? " warn" : ""}`}>
+                {formatDateDE(doc.validUntil)}
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -238,10 +281,15 @@ export function DocDetail({
           </Link>
         )}
 
+        {doc.type === "quote" && doc.status !== "draft" && (
+          <QuoteActions doc={doc} />
+        )}
+
         <DocShareRow target={shareTarget} />
 
         <div className="hsecondary">
-          {(displayStatus === "bezahlt" || displayStatus === "versendet" || doc.isOverdue) && (
+          {doc.type === "invoice"
+            && (displayStatus === "bezahlt" || displayStatus === "versendet" || doc.isOverdue) && (
             <button className="hbtn-ghost">
               <Copy size={17} strokeWidth={STROKE} />
               {t("aDuplicate")}

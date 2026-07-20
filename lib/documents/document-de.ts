@@ -8,6 +8,7 @@
  */
 
 import { formatDateDE } from "@/lib/format";
+import type { DocType } from "@/types/document";
 
 export const DOKUMENT_DE = {
   rechnung: "Rechnung",
@@ -16,6 +17,7 @@ export const DOKUMENT_DE = {
   angebotNr: "Angebots-Nr.",
   datum: "Datum",
   leistungsdatum: "Leistungsdatum",
+  gueltigBis: "Gültig bis",
   steuerNr: "Steuernummer",
   ustId: "USt-IdNr.",
   empfaengerRechnung: "Rechnungsempfänger",
@@ -35,11 +37,19 @@ export const DOKUMENT_DE = {
   bankverbindung: "Bankverbindung",
   iban: "IBAN",
   bic: "BIC",
-  danke: "Vielen Dank für Ihren Auftrag.",
+  rechnungAbschluss: "Vielen Dank für Ihren Auftrag.",
+  angebotAbschluss: "Wir freuen uns auf Ihren Auftrag.",
   kontakt: "Kontakt",
   inhaber: "Inhaber",
   bankUndSteuer: "Bank & Steuer",
 } as const;
+
+/** Dokumenttypgerechter Abschlusstext – Angebote setzen keinen Auftrag voraus. */
+export function dokumentAbschlussText(docType: DocType): string {
+  return docType === "invoice"
+    ? DOKUMENT_DE.rechnungAbschluss
+    : DOKUMENT_DE.angebotAbschluss;
+}
 
 function addDaysIso(isoDate: string, days: number): string {
   const d = new Date(isoDate);

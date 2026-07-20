@@ -17,7 +17,12 @@
 -- Das Jahr stammt aus issue_date (NICHT aus now()), damit die Nummer konsistent
 -- zum ausgewiesenen Rechnungsdatum bleibt.
 
-CREATE OR REPLACE FUNCTION public.finalize_document(p_document_id uuid)
+DROP FUNCTION IF EXISTS public.finalize_document(uuid);
+
+CREATE OR REPLACE FUNCTION public.finalize_document(
+  p_document_id uuid,
+  p_confirm_expired_quote boolean DEFAULT false
+)
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -37,6 +42,8 @@ DECLARE
   v_subtotal   integer;
   v_tax        integer;
   v_total      integer;
+  v_valid_until date;
+  v_today       date := timezone('Europe/Berlin', now())::date;
 BEGIN
   v_company_id := get_user_company_id();
   IF v_company_id IS NULL THEN
@@ -47,8 +54,8 @@ BEGIN
   -- gleichzeitige Aufrufe auf DASSELBE Dokument: der zweite sieht danach
   -- status='finalized', findet die Zeile nicht mehr und schlägt sauber fehl
   -- (verhindert Doppel-Finalisierung).
-  SELECT document_type, issue_date
-    INTO v_type, v_issue_date
+  SELECT document_type, issue_date, valid_until
+    INTO v_type, v_issue_date, v_valid_until
   FROM documents
   WHERE id = p_document_id
     AND company_id = v_company_id
@@ -61,6 +68,23 @@ BEGIN
 
   IF v_issue_date IS NULL THEN
     RAISE EXCEPTION 'issue_date_missing';
+  END IF;
+
+  IF v_type = 'quote' AND v_valid_until IS NULL THEN
+    RAISE EXCEPTION 'valid_until_missing';
+  END IF;
+
+  IF v_type = 'quote' AND v_valid_until < v_issue_date THEN
+    RAISE EXCEPTION 'valid_until_before_issue_date';
+  END IF;
+
+  IF v_type = 'quote' AND v_valid_until < v_today
+     AND NOT p_confirm_expired_quote THEN
+    RAISE EXCEPTION 'expired_quote_confirmation_required';
+  END IF;
+
+  IF v_type = 'invoice' AND v_valid_until IS NOT NULL THEN
+    RAISE EXCEPTION 'invoice_has_valid_until';
   END IF;
 
   IF NOT EXISTS (
@@ -128,5 +152,5 @@ $$;
 
 -- Nur eingeloggte Nutzer dürfen finalisieren; die Funktion prüft die
 -- Firmenzugehörigkeit intern über get_user_company_id().
-REVOKE ALL ON FUNCTION public.finalize_document(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.finalize_document(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.finalize_document(uuid, boolean) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.finalize_document(uuid, boolean) TO authenticated;

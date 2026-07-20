@@ -6,6 +6,7 @@ import type { DocumentPreview } from "@/types/document";
 export function canFinalizePreview(preview: DocumentPreview): boolean {
   return istFinalisierbar(
     pruefeDokumentPflicht({
+      docType: preview.docType,
       companyName: preview.company.name,
       companyStreet: preview.company.street,
       companyPostcode: preview.company.postcode,
@@ -13,6 +14,7 @@ export function canFinalizePreview(preview: DocumentPreview): boolean {
       companySteuernummer: preview.company.steuernummer,
       companyUstId: preview.company.ustId,
       issueDate: preview.issueDate,
+      validUntil: preview.validUntil,
       itemCount: preview.items.length,
       totalAmountCents: preview.totalAmount,
       customerName: getCustomerName(preview.customer),

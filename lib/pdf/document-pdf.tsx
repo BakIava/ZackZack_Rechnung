@@ -73,6 +73,9 @@ function Parties({ vm }: { vm: PdfViewModel }) {
         {vm.serviceDateValue && (
           <MetaRow label={DOKUMENT_DE.leistungsdatum} value={vm.serviceDateValue} />
         )}
+        {vm.validUntilValue && (
+          <MetaRow label={DOKUMENT_DE.gueltigBis} value={vm.validUntilValue} />
+        )}
         {/* <MetaRow label={vm.steuerLabel} value={vm.steuerValue} /> */}
       </View>
     </View>
@@ -185,7 +188,7 @@ export function DocumentPdf({ preview, logo }: DocumentPdfProps) {
           </View>
         )}
 
-        <Text style={s.thanks}>{DOKUMENT_DE.danke}</Text>
+        <Text style={s.thanks}>{vm.closingText}</Text>
         <Footer vm={vm} />
       </Page>
     </Document>

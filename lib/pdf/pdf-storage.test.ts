@@ -41,6 +41,7 @@ const preview: DocumentPreview = {
   documentNumber: "R-2026-041",
   issueDate: "2026-06-09",
   serviceDate: null,
+  validUntil: null,
   isKleinunternehmer: true,
   defaultTaxRate: 0,
   netAmount: 0,
@@ -69,6 +70,8 @@ const preview: DocumentPreview = {
   },
   customer: null,
   items: [],
+  convertedInvoiceId: null,
+  basedOnQuoteId: null,
 };
 
 beforeEach(() => {

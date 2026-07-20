@@ -9,6 +9,7 @@ interface FinalizeDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   pending: boolean;
+  expiredQuote: boolean;
 }
 
 const STROKE = 1.75;
@@ -18,7 +19,12 @@ const STROKE = 1.75;
  * hin, dass das Dokument danach unveränderbar ist und eine endgültige Nummer
  * erhält. Escape/Backdrop brechen ab; der Bestätigen-Button hat initialen Fokus.
  */
-export function FinalizeDialog({ onConfirm, onCancel, pending }: FinalizeDialogProps) {
+export function FinalizeDialog({
+  onConfirm,
+  onCancel,
+  pending,
+  expiredQuote,
+}: FinalizeDialogProps) {
   const t = useTranslations("Create");
   const confirmRef = useRef<HTMLButtonElement>(null);
 
@@ -53,6 +59,11 @@ export function FinalizeDialog({ onConfirm, onCancel, pending }: FinalizeDialogP
           {t("finalizeConfirmTitle")}
         </div>
         <div className="fin-card-b">{t("finalizeConfirmBody")}</div>
+        {expiredQuote && (
+          <div className="fin-expired-warning" role="alert">
+            {t("finalizeExpiredQuoteWarning")}
+          </div>
+        )}
         <div className="fin-actions">
           <button
             type="button"
