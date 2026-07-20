@@ -1,11 +1,11 @@
 "use server";
 
 import { getCurrentUser } from "@/lib/supabase/auth";
+import { finalizeDocumentRpc } from "@/lib/repositories/documents";
 import {
-  finalizeDocumentRpc,
   getDocumentPreview,
   getDocumentPreviewFresh,
-} from "@/lib/repositories/documents";
+} from "@/lib/repositories/document-previews";
 import { archiveDocumentPdf } from "@/lib/pdf/pdf-storage";
 import { canFinalizePreview } from "./finalize-validation";
 
@@ -13,6 +13,9 @@ export type FinalizeError =
   | "notAuthenticated"
   | "notFinalizable"
   | "issueDateMissing"
+  | "validUntilMissing"
+  | "validUntilInvalid"
+  | "expiredConfirmationRequired"
   | "unknown";
 
 export type FinalizeResult = { number: string } | { error: FinalizeError };
@@ -27,6 +30,11 @@ function mapError(message: string): FinalizeError {
   if (message.includes("document_not_finalizable")) return "notFinalizable";
   if (message.includes("issue_date_missing")) return "issueDateMissing";
   if (message.includes("positions_missing")) return "notFinalizable";
+  if (message.includes("valid_until_missing")) return "validUntilMissing";
+  if (message.includes("valid_until_before_issue_date")) return "validUntilInvalid";
+  if (message.includes("expired_quote_confirmation_required")) {
+    return "expiredConfirmationRequired";
+  }
   return "unknown";
 }
 
@@ -36,7 +44,10 @@ function mapError(message: string): FinalizeError {
  * Client erzeugt. Doppel-Finalisierung / fremde Dokumente schlagen dort sauber
  * fehl und landen hier als Fehlercode.
  */
-export async function finalizeDocument(documentId: string): Promise<FinalizeResult> {
+export async function finalizeDocument(
+  documentId: string,
+  confirmExpiredQuote = false,
+): Promise<FinalizeResult> {
   const user = await getCurrentUser();
   if (!user) return { error: "notAuthenticated" };
 
@@ -45,7 +56,7 @@ export async function finalizeDocument(documentId: string): Promise<FinalizeResu
     return { error: "notFinalizable" };
   }
 
-  const result = await finalizeDocumentRpc(documentId);
+  const result = await finalizeDocumentRpc(documentId, confirmExpiredQuote);
   if ("errorMessage" in result) {
     console.error("[finalizeDocument] rpc failed:", result.errorMessage);
     return { error: mapError(result.errorMessage) };

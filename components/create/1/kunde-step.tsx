@@ -23,10 +23,13 @@ import {
   deleteDraftIfEmpty,
   updateDraftCustomer,
   updateDraftDocumentType,
+  updateDraftValidUntil,
 } from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/new-customer-modal";
 import { FlowSteps } from "../flow-steps";
 import type { DocType } from "@/types/document";
+import { addOneCalendarMonth } from "@/lib/documents/document-dates";
+import { QuoteValidityField } from "./quote-validity-field";
 import "./kunde-step.css";
 
 interface KundeStepProps {
@@ -35,6 +38,9 @@ interface KundeStepProps {
   documentId: string;
   initialCustomerId?: string | null;
   initialDocType?: DocType;
+  issueDate: string;
+  initialValidUntil: string | null;
+  documentTypeLocked: boolean;
 }
 
 const STROKE = 1.75;
@@ -46,6 +52,9 @@ export function KundeStep({
   documentId,
   initialCustomerId = null,
   initialDocType = "invoice",
+  issueDate,
+  initialValidUntil,
+  documentTypeLocked,
 }: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
@@ -56,6 +65,11 @@ export function KundeStep({
     () => searchParams.get("fix") === "customer",
   );
   const [docType, setDocType] = useState<DocType>(initialDocType);
+  const [validUntil, setValidUntil] = useState(
+    initialValidUntil ?? (issueDate ? addOneCalendarMonth(issueDate) : ""),
+  );
+  const [validitySaving, setValiditySaving] = useState(false);
+  const [validityError, setValidityError] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<string | null>(initialCustomerId);
@@ -111,9 +125,23 @@ export function KundeStep({
   }
 
   function handleDocType(next: DocType) {
+    if (documentTypeLocked) return;
     setDocType(next);
     // Dokumenttyp direkt in den Draft schreiben (optimistisch, fire-and-forget).
     void updateDraftDocumentType(documentId, next);
+  }
+
+  async function handleValidUntil(next: string) {
+    setValidUntil(next);
+    setValidityError(null);
+    if (!next) {
+      setValidityError(t("validUntilRequired"));
+      return;
+    }
+    setValiditySaving(true);
+    const result = await updateDraftValidUntil(documentId, next);
+    setValiditySaving(false);
+    if (result.error) setValidityError(t("validUntilInvalid"));
   }
 
   async function handleWeiter() {
@@ -169,6 +197,7 @@ export function KundeStep({
               className="seg--gold"
               data-on={docType === "invoice" ? "1" : "0"}
               aria-pressed={docType === "invoice"}
+              disabled={documentTypeLocked}
               onClick={() => handleDocType("invoice")}
             >
               <ReceiptText size={20} strokeWidth={STROKE} aria-hidden />
@@ -179,6 +208,7 @@ export function KundeStep({
               className="seg--gold"
               data-on={docType === "quote" ? "1" : "0"}
               aria-pressed={docType === "quote"}
+              disabled={documentTypeLocked}
               onClick={() => handleDocType("quote")}
             >
               <FileText size={20} strokeWidth={STROKE} aria-hidden />
@@ -186,6 +216,18 @@ export function KundeStep({
             </button>
           </div>
         </div>
+
+        {docType === "quote" && (
+          <QuoteValidityField
+            label={t("validUntil")}
+            hint={documentTypeLocked ? t("documentTypeLocked") : t("validUntilHint")}
+            errorText={validityError}
+            issueDate={issueDate}
+            value={validUntil}
+            saving={validitySaving}
+            onChange={handleValidUntil}
+          />
+        )}
 
         <div className="dsearch2">
           <Search

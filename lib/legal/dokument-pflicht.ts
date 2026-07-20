@@ -14,22 +14,28 @@
  * Für Angebote gilt dieselbe Prüfung – das Zahlungsziel ist keine Pflichtangabe.
  */
 
+import type { DocType } from "@/types/document";
+import { isValidQuoteDateRange } from "@/lib/documents/document-dates";
+
 /** Kleinbetragsrechnung-Grenze (§ 33 UStDV): 250,00 € brutto in Cent. */
 export const KLEINBETRAG_LIMIT_CENTS = 25_000;
 
 /** Wo eine fehlende Angabe ergänzt wird – steuert den Korrigieren-Link. */
-export type PflichtLocation = "settings" | "customer" | "positions";
+export type PflichtLocation = "settings" | "customer" | "positions" | "validity";
 
 export type PflichtFeld =
   | "companyName"
   | "companyAddress"
   | "companySteuer"
   | "issueDate"
+  | "validUntil"
   | "positions"
   | "customerName"
   | "customerAddress";
 
 export interface DokumentPflichtInput {
+  /** Ohne Angabe aus Rueckwaertskompatibilitaet als Rechnung behandelt. */
+  docType?: DocType;
   companyName: string | null;
   companyStreet: string | null;
   companyPostcode: string | null;
@@ -38,6 +44,7 @@ export interface DokumentPflichtInput {
   companyUstId: string | null;
   /** issue_date des Dokuments (YYYY-MM-DD) oder null. */
   issueDate: string | null;
+  validUntil?: string | null;
   itemCount: number;
   /** Dokumentbetrag in Cent (brutto). Steuert die Empfänger-Pflicht. */
   totalAmountCents: number;
@@ -69,6 +76,7 @@ function mk(feld: PflichtFeld, location: PflichtLocation, ok: boolean): PflichtC
  * offene Punkte liefert `offeneMaengel`.
  */
 export function pruefeDokumentPflicht(input: DokumentPflichtInput): PflichtCheck[] {
+  const isQuote = input.docType === "quote";
   const checks: PflichtCheck[] = [
     mk("companyName", "settings", gefuellt(input.companyName)),
     mk(
@@ -88,8 +96,19 @@ export function pruefeDokumentPflicht(input: DokumentPflichtInput): PflichtCheck
     mk("positions", "positions", input.itemCount >= 1),
   ];
 
-  // Empfänger nur oberhalb der Kleinbetragsgrenze verpflichtend (§ 33 UStDV).
-  if (input.totalAmountCents > KLEINBETRAG_LIMIT_CENTS) {
+  if (isQuote) {
+    checks.push(
+      mk(
+        "validUntil",
+        "validity",
+        isValidQuoteDateRange(input.issueDate, input.validUntil ?? null),
+      ),
+    );
+  }
+
+  // Angebote brauchen immer einen eindeutigen Adressaten. Die 250-Euro-Ausnahme
+  // gilt nur fuer Kleinbetragsrechnungen, nicht fuer Angebote.
+  if (isQuote || input.totalAmountCents > KLEINBETRAG_LIMIT_CENTS) {
     checks.push(mk("customerName", "customer", gefuellt(input.customerName)));
     checks.push(
       mk(

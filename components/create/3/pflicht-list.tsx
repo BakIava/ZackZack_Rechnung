@@ -24,6 +24,7 @@ const FELD_LABEL_KEY: Record<PflichtFeld, string> = {
   customerName: "pfCustomerName",
   customerAddress: "pfCustomerAddress",
   issueDate: "pfIssueDate",
+  validUntil: "pfValidUntil",
   positions: "pfPositions",
 };
 
@@ -31,6 +32,7 @@ const LOCATION_LABEL_KEY: Record<PflichtLocation, string> = {
   settings: "fixInSettings",
   customer: "fixAtCustomer",
   positions: "fixAtPositions",
+  validity: "fixAtValidity",
 };
 
 function fixHref(location: PflichtLocation, documentId: string): string {
@@ -43,6 +45,8 @@ function fixHref(location: PflichtLocation, documentId: string): string {
       return `/create/${documentId}/1?fix=customer`;
     case "positions":
       return `/create/${documentId}/2`;
+    case "validity":
+      return `/create/${documentId}/1`;
   }
 }
 

@@ -56,6 +56,7 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
     documentNumber: "R-2026-041",
     issueDate: "2026-06-09",
     serviceDate: null,
+    validUntil: null,
     isKleinunternehmer: true,
     defaultTaxRate: 0,
     netAmount: 57500,
@@ -65,6 +66,8 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
     company: company(),
     customer: customer(),
     items,
+    convertedInvoiceId: null,
+    basedOnQuoteId: null,
     ...overrides,
   };
 }
@@ -162,10 +165,16 @@ describe("buildPdfViewModel – harte Regeln", () => {
     const rechnung = buildPdfViewModel(preview({ docType: "invoice" }));
     expect(rechnung.paymentText).toContain("Zahlbar innerhalb von 14 Tagen");
     expect(rechnung.bankLine).toContain("IBAN");
+    expect(rechnung.closingText).toBe("Vielen Dank für Ihren Auftrag.");
 
-    const angebot = buildPdfViewModel(preview({ docType: "quote" }));
+    const angebot = buildPdfViewModel(preview({
+      docType: "quote",
+      validUntil: "2026-07-09",
+    }));
     expect(angebot.paymentText).toBeNull();
     expect(angebot.sumLabel).toBe("Angebotssumme");
+    expect(angebot.validUntilValue).toBe("09.07.2026");
+    expect(angebot.closingText).toBe("Wir freuen uns auf Ihren Auftrag.");
   });
 
   it("nutzt Steuernummer, sonst USt-IdNr.", () => {

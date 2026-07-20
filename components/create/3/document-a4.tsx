@@ -1,6 +1,10 @@
 import { ShieldCheck } from "lucide-react";
 import { formatDateDE, formatMoney } from "@/lib/format";
-import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
+import {
+  DOKUMENT_DE,
+  dokumentAbschlussText,
+  zahlungszielText,
+} from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
 import { getCustomerName } from "@/lib/customers/utils";
 import { shouldShowTaxDetails } from "@/lib/documents/tax";
@@ -114,6 +118,12 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
                 <span className="v">{formatDateDE(preview.serviceDate)}</span>
               </div>
             )}
+            {!isRechnung && preview.validUntil && (
+              <div className="a4-meta-row">
+                <span className="k">{DOKUMENT_DE.gueltigBis}</span>
+                <span className="v">{formatDateDE(preview.validUntil)}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -197,7 +207,7 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
           </div>
         )}
 
-        <div className="a4-thanks">{DOKUMENT_DE.danke}</div>
+        <div className="a4-thanks">{dokumentAbschlussText(preview.docType)}</div>
 
         <div className="a4-foot">
           <div>

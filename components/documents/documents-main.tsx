@@ -20,6 +20,10 @@ import { startNewDocument } from "@/lib/documents/draft-actions";
 import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { DocDetail } from "./doc-detail";
+import {
+  getDocumentStatusMessageKey,
+  getDocumentUiStatus,
+} from "@/lib/documents/document-display-status";
 import "./documents-main.css";
 
 interface DocumentsMainProps {
@@ -43,17 +47,10 @@ const STATUS_DOT_CLASS: Record<string, string> = {
   entwurf: "draft",
 };
 
-function getDisplayStatus(doc: DocumentListItem) {
-  if (doc.status === "paid") return "bezahlt" as const;
-  if (doc.status === "sent") return "versendet" as const;
-  if (doc.status === "finalized") return "offen" as const;
-  return "entwurf" as const;
-}
-
 function matchesStatusFilter(doc: DocumentListItem, f: StatusFilter): boolean {
-  if (f === "offen") return doc.paidAt === null && (doc.status === "finalized" || doc.status === "sent");
-  if (f === "bezahlt") return doc.paidAt !== null;
-  if (f === "versendet") return doc.status === "sent";
+  if (f === "offen") return doc.type === "invoice" && doc.paidAt === null && (doc.status === "finalized" || doc.status === "sent");
+  if (f === "bezahlt") return doc.type === "invoice" && doc.paidAt !== null;
+  if (f === "versendet") return doc.type === "invoice" && doc.status === "sent";
   if (f === "entwurf") return doc.status === "draft";
   return true;
 }
@@ -66,6 +63,7 @@ export function DocumentsMain({
   initialSelectedId = null,
 }: DocumentsMainProps) {
   const t = useTranslations("Documents");
+  const statusT = useTranslations("DocumentStatus");
   const router = useRouter();
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
 
@@ -102,14 +100,18 @@ export function DocumentsMain({
 
   // ── Stat cards (computed from loaded data, no extra DB calls) ───────────────
   const openDocs = documents.filter(
-    (d) => d.paidAt === null && (d.status === "finalized" || d.status === "sent"),
+    (d) => d.type === "invoice"
+      && d.paidAt === null
+      && (d.status === "finalized" || d.status === "sent"),
   );
   const openSum = openDocs.reduce((s, d) => s + d.totalAmount, 0);
 
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
   const paidDocs = documents.filter(
-    (d) => d.paidAt !== null && new Date(d.paidAt) > ninetyDaysAgo,
+    (d) => d.type === "invoice"
+      && d.paidAt !== null
+      && new Date(d.paidAt) > ninetyDaysAgo,
   );
   const paidSum = paidDocs.reduce((s, d) => s + d.totalAmount, 0);
 
@@ -121,8 +123,8 @@ export function DocumentsMain({
   // ── Filter badge counts ──────────────────────────────────────────────────────
   const counts = {
     offen: openDocs.length,
-    bezahlt: documents.filter((d) => d.paidAt !== null).length,
-    versendet: documents.filter((d) => d.status === "sent").length,
+    bezahlt: documents.filter((d) => d.type === "invoice" && d.paidAt !== null).length,
+    versendet: documents.filter((d) => d.type === "invoice" && d.status === "sent").length,
     entwurf: documents.filter((d) => d.status === "draft").length,
   };
 
@@ -147,10 +149,10 @@ export function DocumentsMain({
   ];
 
   const statusFilters: { id: Exclude<StatusFilter, "all">; label: string }[] = [
-    { id: "offen", label: t("sOffen") },
-    { id: "bezahlt", label: t("sBezahlt") },
-    { id: "versendet", label: t("sVersendet") },
-    { id: "entwurf", label: t("sEntwurf") },
+    { id: "offen", label: statusT("open") },
+    { id: "bezahlt", label: statusT("paid") },
+    { id: "versendet", label: statusT("sent") },
+    { id: "entwurf", label: statusT("draft") },
   ];
 
   return (
@@ -271,13 +273,10 @@ export function DocumentsMain({
             ) : (
               <div className="hlist">
                 {filtered.map((d) => {
-                  const displayStatus = getDisplayStatus(d);
-                  const statusLabel = {
-                    bezahlt: t("sBezahlt"),
-                    offen: t("sOffen"),
-                    versendet: t("sVersendet"),
-                    entwurf: t("sEntwurf"),
-                  }[displayStatus];
+                  const displayStatus = getDocumentUiStatus(d);
+                  const statusLabel = statusT(
+                    getDocumentStatusMessageKey(displayStatus),
+                  );
 
                   return (
                     <button

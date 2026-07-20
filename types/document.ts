@@ -4,11 +4,17 @@
  * außerhalb von types/.
  */
 
-import type { DocStatus, DocType, SurchargeType, TaxRate } from "./database";
+import type {
+  DocStatus,
+  DocType,
+  DocumentRelationType,
+  SurchargeType,
+  TaxRate,
+} from "./database";
 import type { PreviewCompany } from "./company";
 import type { PreviewCustomer } from "./customer";
 
-export type { DocStatus, DocType, SurchargeType, TaxRate };
+export type { DocStatus, DocType, DocumentRelationType, SurchargeType, TaxRate };
 
 export interface TaxGroup {
   rate: TaxRate;
@@ -24,7 +30,27 @@ export interface DocumentTotals {
 }
 
 /** Anzeige-Status in der Bediensprache (Dashboard/Dokumentenliste). */
-export type UiDocumentStatus = "bezahlt" | "offen" | "versendet" | "entwurf";
+export type UiDocumentStatus =
+  | "bezahlt"
+  | "offen"
+  | "versendet"
+  | "entwurf"
+  | "gueltig"
+  | "in_anpassung"
+  | "ersetzt"
+  | "abgelaufen"
+  | "umgewandelt"
+  | "storniert";
+
+/** Fachlicher Anzeigezustand eines Angebots; kein DB-Status. */
+export type QuoteDisplayStatus =
+  | "draft"
+  | "valid"
+  | "adjusting"
+  | "replaced"
+  | "expired"
+  | "converted"
+  | "cancelled";
 
 /** Zeile der Dokumentenliste. */
 export interface DocumentListItem {
@@ -38,9 +64,14 @@ export interface DocumentListItem {
   customerPhone: string | null;
   status: DocStatus;
   issueDate: string; // YYYY-MM-DD
+  validUntil: string | null; // nur quote
   totalAmount: number; // cents
   paidAt: string | null; // ISO timestamp
   isOverdue: boolean;
+  convertedInvoiceId: string | null;
+  basedOnQuoteId: string | null;
+  replacementQuoteId: string | null;
+  replacementQuoteStatus: DocStatus | null;
 }
 
 /**
@@ -70,8 +101,12 @@ export interface DocumentsPageData {
 export interface DraftDoc {
   id: string;
   docType: DocType;
+  issueDate: string;
   /** documents.customer_id – null, solange noch kein Kunde gewählt ist */
   customerId: string | null;
+  validUntil: string | null;
+  /** Verknuepfte Workflow-Drafts duerfen ihren Dokumenttyp nicht wechseln. */
+  documentTypeLocked: boolean;
 }
 
 /** Leichtgewichtiger Zugehörigkeits-/Status-Check für die Flow-Guards. */
@@ -100,6 +135,7 @@ export interface DocumentPreview {
   documentNumber: string | null;
   issueDate: string | null; // YYYY-MM-DD
   serviceDate: string | null; // YYYY-MM-DD
+  validUntil: string | null; // YYYY-MM-DD, nur Angebot
   isKleinunternehmer: boolean;
   defaultTaxRate: TaxRate;
   /** Bruttobetrag; bei §19 identisch mit netAmount. */
@@ -110,7 +146,34 @@ export interface DocumentPreview {
   company: PreviewCompany;
   customer: PreviewCustomer | null;
   items: DocumentItem[];
+  convertedInvoiceId: string | null;
+  basedOnQuoteId: string | null;
 }
+
+/** Leichte, unveränderbare Dokumentverknüpfung für Anzeige und Workflows. */
+export interface DocumentRelationInfo {
+  sourceDocumentId: string;
+  targetDocumentId: string;
+  targetDocumentStatus: DocStatus;
+  relationType: DocumentRelationType;
+}
+
+export interface QuoteConversionPreview {
+  quoteId: string;
+  existingInvoiceId: string | null;
+  quoteTotal: number;
+  invoiceTotal: number;
+  validUntil: string;
+  isExpired: boolean;
+}
+
+export type QuoteWorkflowError =
+  | "notAuthenticated"
+  | "quoteNotConvertible"
+  | "quoteNotAdjustable"
+  | "expiredConfirmationRequired"
+  | "conversionPreviewStale"
+  | "unknown";
 
 /**
  * Eine Position eines Draft-Dokuments (Zeile in document_items).

@@ -14,7 +14,11 @@
  */
 
 import { formatDateDE, formatMoney } from "@/lib/format";
-import { DOKUMENT_DE, zahlungszielText } from "@/lib/documents/document-de";
+import {
+  DOKUMENT_DE,
+  dokumentAbschlussText,
+  zahlungszielText,
+} from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
 import { deriveCompanyMonogram } from "../initials";
 import { getCustomerName } from "../customers/utils";
@@ -54,6 +58,7 @@ export interface PdfViewModel {
   isDraftNumber: boolean;
   dateValue: string;
   serviceDateValue: string | null;
+  validUntilValue: string | null;
   steuerLabel: string;
   steuerValue: string;
 
@@ -73,6 +78,7 @@ export interface PdfViewModel {
   /** Nur bei Rechnung mit Ausstellungsdatum. */
   paymentText: string | null;
   bankLine: string | null;
+  closingText: string;
 
   footerCompanyName: string;
   footerOwnerLine: string | null;
@@ -147,6 +153,9 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
     serviceDateValue: preview.serviceDate
       ? formatDateDE(preview.serviceDate)
       : null,
+    validUntilValue: !isRechnung && preview.validUntil
+      ? formatDateDE(preview.validUntil)
+      : null,
     steuerLabel,
     steuerValue,
 
@@ -179,6 +188,7 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
 
     paymentText,
     bankLine,
+    closingText: dokumentAbschlussText(docType),
 
     footerCompanyName: co.name,
     footerOwnerLine: co.director

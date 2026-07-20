@@ -3,16 +3,20 @@
  * Keine erneute Felddefinition außerhalb dieser Datei.
  */
 
-import type { CustomerDbRow, CustomerType, DocType } from "./database";
+import type { CustomerDbRow, CustomerType, DocStatus, DocType } from "./database";
 
 /** Dokument-Zeile im Kunden-Detail (Join `customers → documents`). */
 export interface CustomerDocRow {
   id: string;
   document_type: DocType;
   document_number: string | null;
-  status: string;
+  status: DocStatus;
   total_amount: number;
   issue_date: string;
+  valid_until: string | null;
+  converted_invoice_id?: string | null;
+  replacement_quote_id?: string | null;
+  replacement_quote_status?: DocStatus | null;
 }
 
 /** Kundenliste inkl. Dokumente-Join (Kunden-Seite) — Spalten wie im SELECT. */
