@@ -27,6 +27,7 @@ import { ShareButtons } from "./share-buttons";
 import { ZoomOverlay } from "./zoom-overlay";
 import { getCustomerName } from "@/lib/customers/utils";
 import { deriveInitials } from "@/lib/initials";
+import { isPastDate } from "@/lib/documents/document-dates";
 import "./step3-main.css";
 
 interface Step3MainProps {
@@ -41,6 +42,9 @@ const ERROR_KEY: Record<FinalizeError, string> = {
   notAuthenticated: "errNotAuthenticated",
   notFinalizable: "errNotFinalizable",
   issueDateMissing: "errIssueDate",
+  validUntilMissing: "errValidUntilMissing",
+  validUntilInvalid: "errValidUntilInvalid",
+  expiredConfirmationRequired: "errExpiredConfirmation",
   unknown: "errUnknown",
 };
 
@@ -59,6 +63,9 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
   const isDraft = preview.status === "draft";
   const isRechnung = preview.docType === "invoice";
   const canFinalize = istFinalisierbar(checks);
+  const expiredQuote = !isRechnung
+    && Boolean(preview.validUntil)
+    && isPastDate(preview.validUntil as string);
   const total = preview.totalAmount;
 
   const customerName = getCustomerName(preview.customer);
@@ -75,7 +82,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
   function handleConfirm() {
     setErrorCode(null);
     startTransition(async () => {
-      const res = await finalizeDocument(preview.id);
+      const res = await finalizeDocument(preview.id, expiredQuote);
       if ("error" in res) {
         setErrorCode(res.error);
         setConfirmOpen(false);
@@ -218,6 +225,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
           onConfirm={handleConfirm}
           onCancel={() => setConfirmOpen(false)}
           pending={pending}
+          expiredQuote={expiredQuote}
         />
       )}
     </main>

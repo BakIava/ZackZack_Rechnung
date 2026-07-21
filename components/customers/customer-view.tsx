@@ -18,10 +18,17 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { deleteCustomer } from "@/lib/customers/actions";
-import { startNewDocument } from "@/lib/documents/draft-actions";
+import {
+  startNewInvoiceForCustomer,
+  startNewQuoteForCustomer,
+} from "@/lib/documents/draft-actions";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { deriveInitials } from "@/lib/initials";
 import type { CustomerRow, CustomerDocRow } from "@/types/customer";
+import {
+  getDocumentStatusMessageKey,
+  getDocumentUiStatus,
+} from "@/lib/documents/document-display-status";
 import "./customer-view.css";
 
 const STROKE = 1.75;
@@ -30,41 +37,6 @@ const FIRMA_RE = /\b(GmbH|KG|AG|OHG|GbR|e\.V\.|UG|SE|Inc|Ltd|LLC)\b/i;
 
 export function isFirma(name: string): boolean {
   return FIRMA_RE.test(name);
-}
-
-function docStatusToKey(status: string): string {
-  switch (status) {
-    case "draft":
-      return "statusEntwurf";
-    case "finalized":
-      return "statusOffen";
-    case "sent":
-      return "statusVersendet";
-    case "paid":
-      return "statusBezahlt";
-    case "accepted":
-      return "statusAngenommen";
-    case "quote":
-      return "statusAngebot";
-    default:
-      return "statusEntwurf";
-  }
-}
-
-function docStatusToPill(status: string): string {
-  switch (status) {
-    case "finalized":
-    case "sent":
-      return "versendet";
-    case "paid":
-      return "bezahlt";
-    case "accepted":
-      return "angenommen";
-    case "quote":
-      return "angebot";
-    default:
-      return "entwurf";
-  }
 }
 
 function streetDisplay(row: CustomerRow): string {
@@ -207,7 +179,7 @@ export function CustomerView({ customer, onEdit, onMutated }: CustomerViewProps)
           </button>
         </div>
         <div className="cdm-dactions">
-          <form action={startNewDocument} className="contents">
+          <form action={startNewInvoiceForCustomer.bind(null, customer.id)} className="contents">
             <button type="submit" className="cdm-dbtn">
               <ReceiptText
                 size={19}
@@ -218,7 +190,7 @@ export function CustomerView({ customer, onEdit, onMutated }: CustomerViewProps)
               {t("newInvoiceFor")}
             </button>
           </form>
-          <form action={startNewDocument} className="contents">
+          <form action={startNewQuoteForCustomer.bind(null, customer.id)} className="contents">
             <button type="submit" className="cdm-dbtn cdm-dbtn--ghost">
               <FileText size={18} strokeWidth={STROKE} aria-hidden />
               {t("newQuoteFor")}
@@ -303,10 +275,19 @@ interface DocRowProps {
 
 function DocRow({ doc }: DocRowProps) {
   const t = useTranslations("Customers");
+  const statusT = useTranslations("DocumentStatus");
   const TypeIcon = doc.document_type === "invoice" ? ReceiptText : FileText;
   const typeLabel = doc.document_type === "invoice" ? t("invoice") : t("quote");
-  const statusKey = docStatusToKey(doc.status) as Parameters<typeof t>[0];
-  const pillVariant = docStatusToPill(doc.status);
+  const displayStatus = getDocumentUiStatus({
+    type: doc.document_type,
+    status: doc.status,
+    validUntil: doc.valid_until,
+    convertedInvoiceId: doc.converted_invoice_id ?? null,
+    replacementQuoteId: doc.replacement_quote_id ?? null,
+    replacementQuoteStatus: doc.replacement_quote_status ?? null,
+    paidAt: doc.status === "paid" ? "paid" : null,
+  });
+  const pillVariant = displayStatus;
   const docId = doc.document_number ?? "-";
 
   return (
@@ -323,7 +304,7 @@ function DocRow({ doc }: DocRowProps) {
       <span className="cdm-tstatus num">
         <span className={`pill pill--${pillVariant}`}>
           <i />
-          {t(statusKey)}
+          {statusT(getDocumentStatusMessageKey(displayStatus))}
         </span>
       </span>
     </Link>

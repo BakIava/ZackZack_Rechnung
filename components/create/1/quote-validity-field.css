@@ -1,0 +1,59 @@
+.quote-validity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-block: 12px 18px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--primary) 5%, white);
+}
+
+.quote-validity-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  color: var(--primary);
+  background: white;
+}
+
+.quote-validity-body {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  text-align: start;
+}
+
+.quote-validity-label { font-weight: 750; color: var(--ink); }
+.quote-validity-hint { font-size: 12px; color: var(--muted); }
+
+.quote-validity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quote-validity-control input {
+  min-block-size: 44px;
+  padding-inline: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
+.quote-validity-control input[aria-invalid="true"] { border-color: var(--danger); }
+.quote-validity-spinner { animation: quote-validity-spin 0.8s linear infinite; }
+
+@keyframes quote-validity-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 700px) {
+  .quote-validity { align-items: flex-start; flex-wrap: wrap; }
+  .quote-validity-control { inline-size: 100%; padding-inline-start: 54px; }
+  .quote-validity-control input { flex: 1; }
+}

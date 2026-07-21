@@ -1,4 +1,4 @@
-import { getDocumentPreview } from "@/lib/repositories/documents";
+import { getDocumentPreview } from "@/lib/repositories/document-previews";
 import { pdfFileName } from "@/lib/pdf/pdf-filename";
 import { getOrArchiveDocumentPdf } from "@/lib/pdf/pdf-storage";
 

@@ -17,6 +17,7 @@ import type {
   FlowCustomer,
 } from "@/types/customer";
 import type { CustomerType } from "@/types/database";
+import { getDocumentRelations } from "./document-relations";
 
 /** Kundenliste inkl. Dokumente-Join (Kunden-Seite), neueste zuerst. */
 export async function getCustomers(): Promise<CustomerRow[]> {
@@ -28,13 +29,33 @@ export async function getCustomers(): Promise<CustomerRow[]> {
     .from("customers")
     .select(
       `id, customer_type, company_name, firstname, lastname, street, street_no, postcode, city, email, phone, notes, customer_number, created_at,
-       documents ( id, document_type, document_number, status, total_amount, issue_date )`,
+       documents ( id, document_type, document_number, status, total_amount, issue_date, valid_until )`,
     )
     .eq("company_id", companyId)
     .order("created_at", { ascending: false });
 
   if (error || !data) return [];
-  return data as CustomerRow[];
+  const rows = data as CustomerRow[];
+  const documentIds = rows.flatMap((customer) => customer.documents.map((doc) => doc.id));
+  const relations = await getDocumentRelations(companyId, documentIds);
+  return rows.map((customer) => ({
+    ...customer,
+    documents: customer.documents.map((doc) => ({
+      ...doc,
+      converted_invoice_id: relations.find(
+        (relation) => relation.sourceDocumentId === doc.id
+          && relation.relationType === "converted_to_invoice",
+      )?.targetDocumentId ?? null,
+      replacement_quote_id: relations.find(
+        (relation) => relation.sourceDocumentId === doc.id
+          && relation.relationType === "based_on_quote",
+      )?.targetDocumentId ?? null,
+      replacement_quote_status: relations.find(
+        (relation) => relation.sourceDocumentId === doc.id
+          && relation.relationType === "based_on_quote",
+      )?.targetDocumentStatus ?? null,
+    })),
+  }));
 }
 
 /** Schlanke Auswahlliste für Schritt 1 (Kundenauswahl), alphabetisch. */

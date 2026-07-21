@@ -12,9 +12,11 @@ import {
   getDraftIssueDate,
   insertDraftDocument,
   setDraftDocumentType,
+  setDraftQuoteValidUntil,
   updateDraftCustomerSnapshot,
-} from "@/lib/repositories/documents";
+} from "@/lib/repositories/document-drafts";
 import type { DocType } from "@/types/document";
+import { isValidQuoteDateRange } from "./document-dates";
 
 async function getCompanyCtx() {
   const user = await getCurrentUser();
@@ -67,6 +69,41 @@ export async function updateDraftDocumentType(
   docType: DocType,
 ): Promise<{ error?: string }> {
   return setDraftDocumentType(documentId, docType);
+}
+
+async function startDocumentForCustomer(customerId: string, docType: DocType): Promise<void> {
+  const res = await createDraftDocument();
+  const locale = await getLocale();
+  if ("error" in res) redirect(`/${locale}/documents`);
+
+  const [typeResult, customerResult] = await Promise.all([
+    setDraftDocumentType(res.id, docType),
+    updateDraftCustomer(res.id, customerId),
+  ]);
+  if (typeResult.error || customerResult.error) {
+    redirect(`/${locale}/create/${res.id}/1`);
+  }
+  redirect(`/${locale}/create/${res.id}/2`);
+}
+
+export async function startNewInvoiceForCustomer(customerId: string): Promise<void> {
+  return startDocumentForCustomer(customerId, "invoice");
+}
+
+export async function startNewQuoteForCustomer(customerId: string): Promise<void> {
+  return startDocumentForCustomer(customerId, "quote");
+}
+
+export async function updateDraftValidUntil(
+  documentId: string,
+  validUntil: string,
+): Promise<{ error?: string }> {
+  const draft = await getDraftIssueDate(documentId);
+  if (!draft) return { error: "draftNotFound" };
+  if (!isValidQuoteDateRange(draft.issueDate, validUntil)) {
+    return { error: "validUntilInvalid" };
+  }
+  return setDraftQuoteValidUntil(documentId, validUntil);
 }
 
 /**

@@ -5,10 +5,11 @@ import {
   getOpenDocumentAmounts,
   getPaidDocumentAmounts,
   getRecentDocuments,
-} from "@/lib/repositories/documents";
+} from "@/lib/repositories/document-dashboard";
 import { getCustomerName } from "@/lib/customers/utils";
 import type { CustomerSnapshot } from "@/types/customer";
-import type { UiDocumentStatus, DashboardDoc } from "@/types/document";
+import type { DashboardDoc } from "@/types/document";
+import { getDocumentUiStatus } from "@/lib/documents/document-display-status";
 
 export interface DashboardData {
   companyName: string;
@@ -20,19 +21,6 @@ export interface DashboardData {
   openCount: number;
   openSumCents: number;
   paidSumCents: number;
-}
-
-function mapStatus(dbStatus: string): UiDocumentStatus {
-  switch (dbStatus) {
-    case "paid":
-      return "bezahlt";
-    case "sent":
-      return "versendet";
-    case "draft":
-      return "entwurf";
-    default:
-      return "offen"; // "finalized" and "cancelled" treated as offen for display
-  }
 }
 
 function toInitials(name: string): string {
@@ -66,7 +54,15 @@ export async function fetchDashboardData(): Promise<DashboardData> {
       number: doc.document_number ?? "",
       amount: doc.total_amount ?? 0,
       date: doc.issue_date ?? "",
-      status: mapStatus(doc.status),
+      status: getDocumentUiStatus({
+        type: doc.document_type,
+        status: doc.status,
+        validUntil: doc.valid_until,
+        convertedInvoiceId: doc.converted_invoice_id,
+        replacementQuoteId: doc.replacement_quote_id,
+        replacementQuoteStatus: doc.replacement_quote_status,
+        paidAt: doc.status === "paid" ? "paid" : null,
+      }),
     };
   });
 

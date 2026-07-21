@@ -10,6 +10,7 @@ function validPreview(overrides: Partial<DocumentPreview> = {}): DocumentPreview
     documentNumber: null,
     issueDate: "2026-07-15",
     serviceDate: null,
+    validUntil: null,
     isKleinunternehmer: false,
     defaultTaxRate: 19,
     netAmount: 30_000,
@@ -61,6 +62,8 @@ function validPreview(overrides: Partial<DocumentPreview> = {}): DocumentPreview
         grossAmount: 35_700,
       },
     ],
+    convertedInvoiceId: null,
+    basedOnQuoteId: null,
     ...overrides,
   };
 }
@@ -74,7 +77,11 @@ describe("serverseitige Finalisierungsprüfung", () => {
     };
 
     expect(canFinalizePreview(validPreview({ company }))).toBe(true);
-    expect(canFinalizePreview(validPreview({ docType: "quote", company }))).toBe(true);
+    expect(canFinalizePreview(validPreview({
+      docType: "quote",
+      company,
+      validUntil: "2026-08-15",
+    }))).toBe(true);
     expect(
       canFinalizePreview(validPreview({
         company: { ...company, ustId: "  " },
@@ -108,5 +115,25 @@ describe("serverseitige Finalisierungsprüfung", () => {
 
   it("blockiert Dokumente ohne Positionen auch bei direktem Action-Aufruf", () => {
     expect(canFinalizePreview(validPreview({ items: [] }))).toBe(false);
+  });
+
+  it("verlangt bei Angeboten immer Empfaenger und Gueltigkeitsdatum", () => {
+    expect(canFinalizePreview(validPreview({
+      docType: "quote",
+      validUntil: "2026-08-15",
+      customer: null,
+    }))).toBe(false);
+    expect(canFinalizePreview(validPreview({
+      docType: "quote",
+      validUntil: null,
+    }))).toBe(false);
+  });
+
+  it("laesst ein bereits abgelaufenes, aber konsistentes Datum bis zur Warnbestaetigung zu", () => {
+    expect(canFinalizePreview(validPreview({
+      docType: "quote",
+      issueDate: "2026-06-01",
+      validUntil: "2026-06-30",
+    }))).toBe(true);
   });
 });

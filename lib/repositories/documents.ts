@@ -1,57 +1,46 @@
 /**
- * Repository `documents` — einzige Stelle mit Supabase-Zugriff auf die Tabelle
- * `documents` inkl. RPC `finalize_document`. Positionszeilen liegen im
- * Schwester-Repository `document-items`, Firmen-/Kundenreads werden von dort
- * komponiert (`companies`, `customers`).
+ * Zentrale Dokumentabfragen für Liste und Flow-Metadaten sowie Statuswechsel.
+ * Entwurfs-, Vorschau- und Dashboard-Zugriffe liegen in spezialisierten
+ * Schwester-Repositories.
  */
 
 import { cache } from "react";
+import { getCustomerName } from "@/lib/customers/utils";
+import { todayInGermany } from "@/lib/documents/document-dates";
+import { calculateDocumentTotals } from "@/lib/documents/tax";
+import { deriveInitials } from "@/lib/initials";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
-import { getCompanyNameAndPaymentDays } from "./companies";
-import { getCustomersByIds } from "./customers";
-import { getDocumentIdsWithItems } from "./document-items";
+import type { CustomerSnapshot } from "@/types/customer";
 import type {
   DocStatus,
-  DocType,
-  DocumentItem,
   DocumentListItem,
-  DocumentPreview,
   DocumentsPageData,
   DraftContext,
   DraftDoc,
   FlowDocMeta,
   TaxRate,
 } from "@/types/document";
-import type { PreviewCompany } from "@/types/company";
-import type { CustomerSnapshot } from "@/types/customer";
-import type { DocumentRow } from "@/types/database";
-import { deriveInitials } from "@/lib/initials";
-import { getCustomerName, toPreviewCustomer } from "../customers/utils";
-import { calculateDocumentTotals } from "@/lib/documents/tax";
+import { getCompanyNameAndPaymentDays } from "./companies";
+import { getCustomersByIds } from "./customers";
+import { getDocumentIdsWithItems } from "./document-items";
+import {
+  getDocumentRelations,
+  getDocumentRelationsForOne,
+} from "./document-relations";
 
-/**
- * Alter, ab dem ein positionsloser Entwurf beim Laden der Liste automatisch
- * aufgeräumt wird. Der Puffer schützt einen gerade angelegten Entwurf davor,
- * bei einem kurzen Abstecher in die Dokumentenliste gelöscht zu werden.
- */
 const EMPTY_DRAFT_MAX_AGE_MS = 30 * 60 * 1000;
 
 function addDays(isoDate: string, days: number): string {
-  const d = new Date(isoDate);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().split("T")[0];
+  const date = new Date(isoDate);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split("T")[0];
 }
 
-/**
- * Räumt verwaiste, positionslose Entwürfe der Firma auf: Ein Entwurf ohne
- * document_items hat keinen Wert. Nur Entwürfe, die älter als der Puffer sind,
- * werden gelöscht – aktive/gerade angelegte bleiben unangetastet.
- */
+/** Räumt alte, positionslose Entwürfe der eigenen Firma auf. */
 async function deleteEmptyDrafts(companyId: string): Promise<void> {
   const supabase = await createClient();
   const cutoff = new Date(Date.now() - EMPTY_DRAFT_MAX_AGE_MS).toISOString();
-
   const { data: drafts, error } = await supabase
     .from("documents")
     .select("id")
@@ -60,9 +49,8 @@ async function deleteEmptyDrafts(companyId: string): Promise<void> {
     .lt("created_at", cutoff);
   if (error || !drafts || drafts.length === 0) return;
 
-  const draftIds = drafts.map((d) => d.id as string);
+  const draftIds = drafts.map((draft) => draft.id as string);
   const hasItems = await getDocumentIdsWithItems(companyId, draftIds);
-
   const emptyIds = draftIds.filter((id) => !hasItems.has(id));
   if (emptyIds.length === 0) return;
 
@@ -79,17 +67,11 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   if (!companyId) return { documents: [], paymentDays: 14, companyName: "" };
 
   const supabase = await createClient();
-
-  // Die Aufräumaktion für verwaiste Entwürfe läuft nebenläufig zum eigentlichen
-  // Laden der Liste, statt sie davor zu blockieren. Sie betrifft nur leere,
-  // >30 Min alte Drafts; taucht ausnahmsweise einmal einer in der Liste auf,
-  // ist er beim nächsten Laden verschwunden – dafür entfällt der sequentielle
-  // Latenz-Aufschlag von 2–3 Roundtrips bei jedem Öffnen der Dokumentenliste.
   const [docsRes, company] = await Promise.all([
     supabase
       .from("documents")
       .select(
-        "id, document_type, document_number, status, issue_date, total_amount, paid_at, customer_id, customer_snapshot",
+        "id, document_type, document_number, status, issue_date, valid_until, total_amount, paid_at, customer_id, customer_snapshot",
       )
       .eq("company_id", companyId)
       .order("issue_date", { ascending: false }),
@@ -98,45 +80,67 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   ]);
 
   const { name: companyName, paymentDays } = company;
-  const today = new Date().toISOString().split("T")[0];
-  const customerIds = (docsRes.data?.map((d) => d.customer_id as string | null).filter(Boolean) ?? []) as string[];
+  const today = todayInGermany();
+  const customerIds = (docsRes.data
+    ?.map((document) => document.customer_id as string | null)
+    .filter(Boolean) ?? []) as string[];
   const customers = await getCustomersByIds(customerIds);
+  const docRows = docsRes.data ?? [];
+  const relations = await getDocumentRelations(
+    companyId,
+    docRows.map((document) => document.id as string),
+  );
 
-  const documents: DocumentListItem[] = (docsRes.data ?? []).map((doc) => {
-    const snapshot = doc.customer_snapshot as CustomerSnapshot | null;
-    const status = doc.status as DocumentListItem["status"];
-    const paidAt = doc.paid_at as string | null;
-    const customer = customers.find((c) => c.id === doc.customer_id);
-
+  const documents: DocumentListItem[] = docRows.map((document) => {
+    const snapshot = document.customer_snapshot as CustomerSnapshot | null;
+    const status = document.status as DocumentListItem["status"];
+    const paidAt = document.paid_at as string | null;
+    const customer = customers.find((item) => item.id === document.customer_id);
     const isOverdue =
       paidAt === null &&
+      document.document_type === "invoice" &&
       (status === "finalized" || status === "sent") &&
-      addDays(doc.issue_date, paymentDays) < today;
+      addDays(document.issue_date, paymentDays) < today;
+    const conversion = relations.find(
+      (relation) =>
+        relation.sourceDocumentId === document.id &&
+        relation.relationType === "converted_to_invoice",
+    );
+    const basis = relations.find(
+      (relation) =>
+        relation.targetDocumentId === document.id &&
+        relation.relationType === "based_on_quote",
+    );
+    const replacement = relations.find(
+      (relation) =>
+        relation.sourceDocumentId === document.id &&
+        relation.relationType === "based_on_quote",
+    );
 
     return {
-      id: doc.id,
-      type: doc.document_type as DocumentListItem["type"],
-      documentNumber: doc.document_number ?? "",
+      id: document.id,
+      type: document.document_type as DocumentListItem["type"],
+      documentNumber: document.document_number ?? "",
       customerName: getCustomerName(customer ?? snapshot) || "—",
       customerEmail: customer?.email ?? snapshot?.email ?? null,
       customerPhone: customer?.phone ?? snapshot?.phone ?? null,
       status,
-      issueDate: doc.issue_date,
-      totalAmount: doc.total_amount ?? 0,
+      issueDate: document.issue_date,
+      validUntil: (document.valid_until as string | null) ?? null,
+      totalAmount: document.total_amount ?? 0,
       paidAt,
       isOverdue,
+      convertedInvoiceId: conversion?.targetDocumentId ?? null,
+      basedOnQuoteId: basis?.sourceDocumentId ?? null,
+      replacementQuoteId: replacement?.targetDocumentId ?? null,
+      replacementQuoteStatus: replacement?.targetDocumentStatus ?? null,
     };
   });
 
   return { documents, paymentDays, companyName };
 }
 
-/**
- * Leichtgewichtiger Zugehörigkeits-/Status-Check für den Flow-Layout-Guard und
- * die Schritt-1/2-Weichen: liefert Status & Typ eines EIGENEN Dokuments,
- * unabhängig vom Status (draft, finalized, …). Fremde/nicht existierende
- * Dokumente ergeben null. `cache()` dedupliziert den Fetch pro Request.
- */
+/** Status und Typ eines eigenen Dokuments für den Flow-Guard. */
 export const getFlowDocMeta = cache(
   async (documentId: string): Promise<FlowDocMeta | null> => {
     const companyId = await getCurrentCompanyId();
@@ -159,11 +163,7 @@ export const getFlowDocMeta = cache(
   },
 );
 
-/**
- * Lädt einen Draft und validiert Zugehörigkeit (eigene Firma + status='draft').
- * `cache()` dedupliziert den Fetch innerhalb eines Requests, sodass Layout und
- * Seite denselben Draft nur einmal aus der DB lesen.
- */
+/** Lädt einen eigenen Dokumententwurf und seine leichte Herkunftsverknüpfung. */
 export const getDraft = cache(
   async (documentId: string): Promise<DraftDoc | null> => {
     const companyId = await getCurrentCompanyId();
@@ -172,23 +172,28 @@ export const getDraft = cache(
     const supabase = await createClient();
     const { data } = await supabase
       .from("documents")
-      .select("id, document_type, customer_id")
+      .select("id, document_type, customer_id, issue_date, valid_until")
       .eq("id", documentId)
       .eq("company_id", companyId)
       .eq("status", "draft")
       .maybeSingle();
-
     if (!data) return null;
 
+    const relations = await getDocumentRelationsForOne(companyId, data.id as string);
     return {
       id: data.id as string,
       docType: data.document_type,
+      issueDate: (data.issue_date as string | null) ?? todayInGermany(),
       customerId: (data.customer_id as string | null) ?? null,
+      validUntil: (data.valid_until as string | null) ?? null,
+      documentTypeLocked: relations.some(
+        (relation) => relation.targetDocumentId === data.id,
+      ),
     };
   },
 );
 
-/** Kopf-Kontext des Drafts (Typ, Kunde, §19) für Schritt 2. */
+/** Kopf-Kontext des Drafts für Schritt 2. */
 export async function getDraftContext(
   documentId: string,
 ): Promise<DraftContext | null> {
@@ -203,21 +208,17 @@ export async function getDraftContext(
     .eq("company_id", companyId)
     .eq("status", "draft")
     .maybeSingle();
-
   if (!data) return null;
 
   const snapshot: CustomerSnapshot = data.customer_snapshot;
-  const customerName = getCustomerName(snapshot);
   const items = await getDraftItemsForTotals(companyId, documentId);
-  const totals = calculateDocumentTotals(items);
-
   return {
     docType: data.document_type,
-    customerName,
+    customerName: getCustomerName(snapshot),
     customerInitials: deriveInitials(snapshot),
     isKleinunternehmer: Boolean(data.is_kleinunternehmer),
     defaultTaxRate: (data.default_tax_rate as TaxRate | null) ?? 19,
-    totals,
+    totals: calculateDocumentTotals(items),
   };
 }
 
@@ -233,420 +234,47 @@ async function getDraftItemsForTotals(companyId: string, documentId: string) {
     taxRate: (item.tax_rate as TaxRate | null) ?? 0,
     taxAmount: (item.tax_amount as number | null) ?? 0,
     grossAmount:
-      (item.gross_amount as number | null) ?? (item.total_amount as number | null) ?? 0,
+      (item.gross_amount as number | null) ??
+      (item.total_amount as number | null) ??
+      0,
   }));
 }
 
-// Als ein String-Literal (nicht verkettet), sonst kann Supabase die Spalten
-// nicht typisieren und die Zeile wird zu GenericStringError.
-const COMPANY_COLUMNS =
-  "name, legal_form, street, street_no, postcode, city, phone, mobile, email, director, steuernummer, ust_id, bank_name, iban, bic, account_holder, logo_url, payment_days";
-
-const DOCUMENT_COLUMNS =
-  "id, document_type, document_number, status, issue_date, service_date, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured";
-
-function toCompany(row: Record<string, unknown>): PreviewCompany {
-  return {
-    name: (row.name as string) ?? "",
-    legalForm: (row.legal_form as string | null) ?? null,
-    street: (row.street as string | null) ?? null,
-    streetNo: (row.street_no as string | null) ?? null,
-    postcode: (row.postcode as string | null) ?? null,
-    city: (row.city as string | null) ?? null,
-    phone: (row.phone as string | null) ?? null,
-    mobile: (row.mobile as string | null) ?? null,
-    email: (row.email as string | null) ?? null,
-    director: (row.director as string | null) ?? null,
-    steuernummer: (row.steuernummer as string | null) ?? null,
-    ustId: (row.ust_id as string | null) ?? null,
-    bankName: (row.bank_name as string | null) ?? null,
-    iban: (row.iban as string | null) ?? null,
-    bic: (row.bic as string | null) ?? null,
-    accountHolder: (row.account_holder as string | null) ?? null,
-    logoUrl: (row.logo_url as string | null) ?? null,
-    paymentDays: (row.payment_days as number | null) ?? 14,
-  };
-}
-
-/**
- * Lädt ein Dokument vollständig für die Vorschau (Kopf, Empfänger-Snapshot,
- * Positionen). Anders als getDraft ist hier JEDER Status erlaubt – ein
- * finalisiertes Dokument bleibt in Schritt 3 im Ansichtsmodus aufrufbar. Die
- * Zugehörigkeit zur eigenen Firma wird geprüft; fremde Dokumente ergeben null.
- * `cache()` dedupliziert den Fetch innerhalb eines Requests.
- */
-async function loadDocumentPreview(documentId: string): Promise<DocumentPreview | null> {
-    const companyId = await getCurrentCompanyId();
-    if (!companyId) return null;
-
-    const supabase = await createClient();
-
-    const { data: docRow } = await supabase
-      .from("documents")
-      .select(DOCUMENT_COLUMNS)
-      .eq("id", documentId)
-      .eq("company_id", companyId)
-      .maybeSingle();
-    if (!docRow) return null;
-    const doc = docRow;
-
-    const [companyRes, itemsRes] = await Promise.all([
-      supabase.from("companies").select(COMPANY_COLUMNS).eq("id", companyId).maybeSingle(),
-      supabase
-        .from("document_items")
-        .select("position, description_de, amount, unit, unit_price, total_amount, tax_rate, tax_amount, gross_amount")
-        .eq("document_id", documentId)
-        .eq("company_id", companyId)
-        .order("position", { ascending: true }),
-    ]);
-    if (!companyRes.data) return null;
-
-    const items: DocumentItem[] = (itemsRes.data ?? []).map((r) => ({
-      position: r.position as number,
-      descriptionDe: (r.description_de as string) ?? "",
-      amount: Number(r.amount ?? 0),
-      unit: (r.unit as string) ?? "",
-      unitPrice: (r.unit_price as number) ?? 0,
-      totalAmount: (r.total_amount as number) ?? 0,
-      taxRate: (r.tax_rate as TaxRate | null) ?? 0,
-      taxAmount: (r.tax_amount as number | null) ?? 0,
-      grossAmount: (r.gross_amount as number | null) ?? (r.total_amount as number) ?? 0,
-    }));
-    const totals = calculateDocumentTotals(
-      items.map((item) => ({
-        netAmount: item.totalAmount,
-        taxRate: item.taxRate,
-        taxAmount: item.taxAmount,
-        grossAmount: item.grossAmount,
-      })),
-    );
-
-    const company = toCompany(companyRes.data as unknown as Record<string, unknown>);
-    if ((doc.logo_snapshot_captured as boolean | null) === true) {
-      company.logoUrl = (doc.logo_url_snapshot as string | null) ?? null;
-    }
-
-    return {
-      id: doc.id as string,
-      docType: doc.document_type as DocType,
-      status: doc.status as DocStatus,
-      documentNumber: (doc.document_number as string | null) ?? null,
-      issueDate: (doc.issue_date as string | null) ?? null,
-      serviceDate: (doc.service_date as string | null) ?? null,
-      isKleinunternehmer: Boolean(doc.is_kleinunternehmer),
-      defaultTaxRate: (doc.default_tax_rate as TaxRate | null) ?? 19,
-      totalAmount: totals.grossAmount,
-      netAmount: totals.netAmount,
-      taxAmount: totals.taxAmount,
-      taxGroups: totals.taxGroups,
-      company,
-      customer: toPreviewCustomer(doc.customer_snapshot),
-      items,
-    };
-}
-
-export const getDocumentPreview = cache(loadDocumentPreview);
-
-/** Erzwingt nach einer Mutation einen frischen Read statt des Request-Caches. */
-export async function getDocumentPreviewFresh(
+/** Eine Rechnung als bezahlt markieren. Angebote sind ausgeschlossen. */
+export async function markDocumentPaid(
   documentId: string,
-): Promise<DocumentPreview | null> {
-  return loadDocumentPreview(documentId);
-}
-
-/** Gehört das Dokument der eigenen Firma und ist noch ein Entwurf? */
-export async function isDraftDocument(documentId: string): Promise<boolean> {
+): Promise<{ error?: string }> {
   const companyId = await getCurrentCompanyId();
-  if (!companyId) return false;
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("documents")
-    .select("id")
-    .eq("id", documentId)
-    .eq("company_id", companyId)
-    .eq("status", "draft")
-    .maybeSingle();
-  return Boolean(data);
-}
-
-/**
- * Neuesten leeren Entwurf (ohne Positionen) der Firma finden – falls vorhanden.
- * Verhindert, dass „Neue Rechnung" bei jedem Klick Duplikate anlegt.
- */
-export async function findReusableDraft(companyId: string): Promise<string | null> {
-  const supabase = await createClient();
-  const { data: drafts } = await supabase
-    .from("documents")
-    .select("id")
-    .eq("company_id", companyId)
-    .eq("status", "draft")
-    .order("created_at", { ascending: false });
-  if (!drafts || drafts.length === 0) return null;
-
-  const ids = drafts.map((d) => d.id as string);
-  const hasItems = await getDocumentIdsWithItems(companyId, ids);
-
-  const reusable = drafts.find((d) => !hasItems.has(d.id as string));
-  return reusable ? (reusable.id as string) : null;
-}
-
-/**
- * Legt einen neuen Entwurf an (ohne Nummer – die wird erst bei der
- * Finalisierung vergeben) und gibt dessen id zurück.
- */
-export async function insertDraftDocument(
-  companyId: string,
-  isKleinunternehmer: boolean,
-  defaultTaxRate: TaxRate,
-): Promise<{ id: string } | { error: string }> {
-  const user = await getCurrentUser();
-  if (!user) return { error: "notAuthenticated" };
+  if (!companyId) return { error: "notAuthenticated" };
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("documents")
-    .insert({
-      company_id: companyId,
-      created_by: user.id,
-      document_type: "invoice",
-      status: "draft",
-      is_kleinunternehmer: isKleinunternehmer,
-      default_tax_rate: defaultTaxRate,
-      customer_snapshot: {},
-      subtotal_amount: 0,
-      tax_amount: 0,
-      total_amount: 0,
-      // issue_date direkt setzen: Schritt 1 (Kunde) ist überspringbar, das
-      // Ausstellungsdatum (§14-Pflichtangabe) darf dabei nicht fehlen. Die
-      // Kundenwahl überschreibt es nicht (updateDraftCustomer setzt nur, wenn leer).
-      issue_date: new Date().toISOString().split("T")[0],
-    })
+    .update({ status: "paid", paid_at: new Date().toISOString() })
+    .eq("id", documentId)
+    .eq("company_id", companyId)
+    .eq("document_type", "invoice")
+    .in("status", ["finalized", "sent"])
     .select("id")
-    .single();
-
-  if (error || !data) {
-    console.error("[insertDraftDocument] insert failed:", error);
-    return { error: error?.message ?? "unknown" };
-  }
-  return { id: data.id as string };
-}
-
-/** Dokumenttyp direkt in den Draft schreiben (Schalter in Schritt 1). */
-export async function setDraftDocumentType(
-  documentId: string,
-  docType: DocType,
-): Promise<{ error?: string }> {
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return { error: "notAuthenticated" };
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("documents")
-    .update({ document_type: docType })
-    .eq("id", documentId)
-    .eq("company_id", companyId)
-    .eq("status", "draft");
-
-  if (error) return { error: error.message };
-  return {};
-}
-
-/** issue_date des Drafts lesen (null = Draft nicht gefunden/fremd). */
-export async function getDraftIssueDate(
-  documentId: string,
-): Promise<{ issueDate: DocumentRow["issue_date"] } | null> {
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return null;
-
-  const supabase = await createClient();
-  const { data: doc } = await supabase
-    .from("documents")
-    .select("issue_date")
-    .eq("id", documentId)
-    .eq("company_id", companyId)
-    .eq("status", "draft")
     .maybeSingle();
-  if (!doc) return null;
-  return { issueDate: (doc.issue_date as string | null) ?? null };
-}
-
-/** Kundenwahl festschreiben: customer_id + eingefrorener Snapshot (+ ggf. issue_date). */
-export async function updateDraftCustomerSnapshot(
-  documentId: string,
-  customerId: string,
-  snapshot: CustomerSnapshot,
-  issueDate?: string,
-): Promise<{ error?: string }> {
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return { error: "notAuthenticated" };
-
-  const update: {
-    customer_id: string;
-    customer_snapshot: CustomerSnapshot;
-    issue_date?: string;
-  } = { customer_id: customerId, customer_snapshot: snapshot };
-  if (issueDate !== undefined) update.issue_date = issueDate;
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("documents")
-    .update(update)
-    .eq("id", documentId)
-    .eq("company_id", companyId)
-    .eq("status", "draft");
-
   if (error) return { error: error.message };
+  if (!data) return { error: "invoiceNotPayable" };
   return {};
 }
 
-/** Entwurf löschen (nur eigener, nur status='draft'). */
-export async function deleteDraftDocument(documentId: string): Promise<void> {
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return;
-
-  const supabase = await createClient();
-  await supabase
-    .from("documents")
-    .delete()
-    .eq("id", documentId)
-    .eq("company_id", companyId)
-    .eq("status", "draft");
-}
-
-/** Dokument als bezahlt markieren (setzt status + paid_at). */
-export async function markDocumentPaid(documentId: string): Promise<{ error?: string }> {
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return { error: "notAuthenticated" };
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("documents")
-    .update({
-      status: "paid",
-      paid_at: new Date().toISOString()
-    })
-    .eq("id", documentId)
-    .eq("company_id", companyId);
-
-  if (error) return { error: error.message };
-  return {};
-}
-
-/** documents.total_amount setzen (nur Entwürfe – finalisierte sind eingefroren). */
-export async function setDraftDocumentTotals(
-  companyId: string,
-  documentId: string,
-  totals: { netAmount: number; taxAmount: number; grossAmount: number },
-): Promise<void> {
-  const supabase = await createClient();
-  await supabase
-    .from("documents")
-    .update({
-      subtotal_amount: totals.netAmount,
-      tax_amount: totals.taxAmount,
-      total_amount: totals.grossAmount,
-    })
-    .eq("id", documentId)
-    .eq("company_id", companyId)
-    .eq("status", "draft");
-}
-
-/** Eingefrorene Steuerkonfiguration eines Entwurfs. */
-export async function getDraftTaxConfig(
-  documentId: string,
-): Promise<{ defaultTaxRate: TaxRate } | null> {
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return null;
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("documents")
-    .select("default_tax_rate")
-    .eq("id", documentId)
-    .eq("company_id", companyId)
-    .eq("status", "draft")
-    .maybeSingle();
-  if (!data) return null;
-  return {
-    defaultTaxRate: (data.default_tax_rate as TaxRate | null) ?? 19,
-  };
-}
-
-/**
- * RPC `finalize_document`: Nummernvergabe + Statuswechsel laufen atomar in der
- * SQL-Funktion (SECURITY DEFINER). Die Nummer wird NIE im Client erzeugt.
- * Liefert die vergebene Nummer oder die rohe Postgres-Fehlermeldung.
- */
+/** Atomare Finalisierung und Nummernvergabe über die SQL-Funktion. */
 export async function finalizeDocumentRpc(
   documentId: string,
+  confirmExpiredQuote = false,
 ): Promise<{ number: string } | { errorMessage: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("finalize_document", {
     p_document_id: documentId,
+    p_confirm_expired_quote: confirmExpiredQuote,
   });
-
   if (error) return { errorMessage: error.message };
   if (typeof data !== "string" || data.length === 0) {
     return { errorMessage: "unknown" };
   }
   return { number: data };
-}
-
-/** Die 5 zuletzt angelegten Dokumente (RLS-scoped, Dashboard). */
-export async function getRecentDocuments(limit: number): Promise<
-  Array<
-    Pick<
-      DocumentRow,
-      | "id"
-      | "document_type"
-      | "document_number"
-      | "status"
-      | "total_amount"
-      | "issue_date"
-      | "customer_snapshot"
-    >
-  >
-> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("documents")
-    .select(
-      "id, document_type, document_number, status, total_amount, issue_date, customer_snapshot",
-    )
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  return (data ?? []) as Array<
-    Pick<
-      DocumentRow,
-      | "id"
-      | "document_type"
-      | "document_number"
-      | "status"
-      | "total_amount"
-      | "issue_date"
-      | "customer_snapshot"
-    >
-  >;
-}
-
-/** Beträge aller offenen (finalisiert/versendet, unbezahlt) Dokumente (RLS-scoped). */
-export async function getOpenDocumentAmounts(): Promise<Array<{ total_amount: number | null }>> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("documents")
-    .select("total_amount")
-    .is("paid_at", null)
-    .in("status", ["finalized", "sent"]);
-  return data ?? [];
-}
-
-/** Beträge aller bezahlten Dokumente (RLS-scoped). */
-export async function getPaidDocumentAmounts(): Promise<Array<{ total_amount: number | null }>> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("documents")
-    .select("total_amount")
-    .not("paid_at", "is", null);
-  return data ?? [];
 }

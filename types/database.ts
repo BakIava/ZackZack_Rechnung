@@ -24,6 +24,9 @@ export type DocType = "invoice" | "quote";
 /** documents.status (document_status_enum) */
 export type DocStatus = "draft" | "finalized" | "sent" | "paid" | "cancelled";
 
+/** document_relations.relation_type */
+export type DocumentRelationType = "converted_to_invoice" | "based_on_quote";
+
 /** document_items.surcharge_type — Fremdleistungs-Aufschlag (strikt intern) */
 export type SurchargeType = "percent" | "fixed";
 
@@ -190,6 +193,8 @@ export interface DocumentRow {
   status: DocStatus;
   issue_date: string | null; // date, YYYY-MM-DD
   service_date: string | null; // date, YYYY-MM-DD
+  /** Nur fuer Angebote; Standard = ein Kalendermonat ab issue_date. */
+  valid_until: string | null; // date, YYYY-MM-DD
   /** Eingefrorene Empfängerkopie (jsonb, nullable) – nie als Live-Join. */
   customer_snapshot: unknown;
   total_amount: number; // cents, NOT NULL Default 0
@@ -243,4 +248,14 @@ export interface NumberSequenceRow {
   document_type: DocType;
   year: number;
   last_number: number;
+}
+
+/** public.document_relations — unveraenderbare Herkunfts-/Umwandlungslinks. */
+export interface DocumentRelationRow {
+  id: string;
+  company_id: string;
+  source_document_id: string;
+  target_document_id: string;
+  relation_type: DocumentRelationType;
+  created_at: string;
 }

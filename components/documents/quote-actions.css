@@ -1,0 +1,24 @@
+.quote-detail-actions { display: grid; gap: 10px; }
+.quote-adjust-button { inline-size: 100%; justify-content: center; }
+.quote-action-spinner { animation: quote-action-spin 0.8s linear infinite; }
+.quote-action-error { color: var(--danger); font-size: 13px; font-weight: 650; text-align: start; }
+
+.quote-convert-overlay { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px; }
+.quote-convert-backdrop { position: absolute; inset: 0; border: 0; background: rgb(15 42 63 / 58%); }
+.quote-convert-dialog { position: relative; z-index: 1; inline-size: min(520px, 100%); padding: 28px; border-radius: 18px; background: white; box-shadow: 0 24px 70px rgb(15 42 63 / 25%); text-align: start; }
+.quote-convert-close { position: absolute; inset-block-start: 14px; inset-inline-end: 14px; display: grid; place-items: center; inline-size: 36px; block-size: 36px; border: 0; border-radius: 9px; background: var(--soft); }
+.quote-convert-icon { display: grid; place-items: center; inline-size: 48px; block-size: 48px; border-radius: 13px; color: white; background: var(--primary); }
+.quote-convert-dialog h2 { margin-block: 16px 6px; color: var(--ink); font-size: 22px; }
+.quote-convert-dialog p { margin: 0; color: var(--muted); }
+.quote-convert-comparison { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; margin-block: 20px; padding: 16px; border-radius: 12px; background: var(--soft); }
+.quote-convert-comparison span { display: grid; gap: 3px; text-align: center; }
+.quote-convert-comparison small { color: var(--muted); }
+.quote-convert-comparison b { color: var(--ink); font-size: 18px; }
+.quote-tax-change, .quote-expired-confirm { display: flex; align-items: flex-start; gap: 9px; margin-block-start: 10px; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 650; }
+.quote-tax-change { color: #8a5a12; background: #fff7e8; }
+.quote-expired-confirm { color: #a5331f; background: #fff0ec; }
+.quote-convert-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-block-start: 22px; }
+.quote-convert-buttons button { min-block-size: 44px; padding-inline: 18px; border: 1px solid var(--line); border-radius: 10px; background: white; font: inherit; font-weight: 700; }
+.quote-convert-buttons .primary { border-color: var(--primary); color: white; background: var(--primary); }
+
+@keyframes quote-action-spin { to { transform: rotate(360deg); } }

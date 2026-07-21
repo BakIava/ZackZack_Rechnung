@@ -9,11 +9,12 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import type { DashboardDoc, UiDocumentStatus } from "@/types/document";
+import type { DashboardDoc } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import type { DashboardData } from "@/lib/dashboard/fetch";
 import "./dashboard-main.css";
 import { startNewDocument } from "@/lib/documents/draft-actions";
+import { getDocumentStatusMessageKey } from "@/lib/documents/document-display-status";
 
 interface DashboardMainProps {
   dir: "ltr" | "rtl";
@@ -22,16 +23,10 @@ interface DashboardMainProps {
 
 const STROKE = 1.75;
 
-const STATUS_KEY: Record<UiDocumentStatus, string> = {
-  bezahlt: "statusBezahlt",
-  offen: "statusOffen",
-  versendet: "statusVersendet",
-  entwurf: "statusEntwurf",
-};
-
 /** Hauptbereich des Dashboards: Topbar, Hero-CTA, Überblick, letzte Dokumente. */
 export async function DashboardMain({ dir, data }: DashboardMainProps) {
   const t = await getTranslations("Dashboard");
+  const statusT = await getTranslations("DocumentStatus");
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
   const firstName =
     data.director.split(/\s+/)[0] || data.companyName.split(/\s+/)[0];
@@ -137,7 +132,7 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
                 key={doc.id}
                 doc={doc}
                 typeLabel={t(doc.type)}
-                statusLabel={t(STATUS_KEY[doc.status])}
+                statusLabel={statusT(getDocumentStatusMessageKey(doc.status))}
               />
             ))}
           </div>
