@@ -13,6 +13,7 @@ export type CompleteOnboardingRepositoryResult =
       reason:
         | "already_completed"
         | "not_authenticated"
+        | "tax_id_required"
         | "trades_required"
         | "trades_invalid"
         | "database_error";
@@ -24,6 +25,9 @@ function mapOnboardingDatabaseError(message: string): CompleteOnboardingReposito
   }
   if (message.includes("onboarding_not_authenticated")) {
     return { ok: false, reason: "not_authenticated" };
+  }
+  if (message.includes("onboarding_tax_id_required")) {
+    return { ok: false, reason: "tax_id_required" };
   }
   if (message.includes("onboarding_trades_required")) {
     return { ok: false, reason: "trades_required" };

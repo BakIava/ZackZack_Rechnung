@@ -3,7 +3,7 @@ import { mapIntakeResult } from "./intake-fields";
 import type { CustomerIntakeResult } from "@/types/customer-intake";
 
 describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
-  it("address_matches: übernimmt den besten Geocoding-Treffer", () => {
+  it("address_matches: behält die erkannte Adresse bei", () => {
     const result: CustomerIntakeResult = {
       status: "address_matches",
       customer: {
@@ -31,8 +31,8 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
     };
     const m = mapIntakeResult(result);
     expect(m.recognized).toBe(true);
-    expect(m.values.street).toBe("Berger Straße");
-    expect(m.values.city).toBe("Frankfurt am Main");
+    expect(m.values.street).toBe("berger str");
+    expect(m.values.city).toBe("frankfurt");
   });
 
   it("manual mit Teildaten: übernimmt alle sicheren Felder", () => {
@@ -59,7 +59,7 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
     expect(m.values.email).toBe("kontakt@mueller-gmbh.de");
   });
 
-  it("übernimmt geänderte und ergänzte Hausnummern und Postleitzahlen", () => {
+  it("ergänzt nur fehlende Adressfelder aus Mapbox", () => {
     const result: CustomerIntakeResult = {
       status: "address_matches",
       customer: {
@@ -68,7 +68,7 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
         lastname: "Mustermann",
         company_name: null,
         street: "Hauptstraße",
-        street_no: "11 b",
+        street_no: null,
         postcode: null,
         city: "Mainz",
         phone: null,
@@ -91,6 +91,40 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
     expect(mapped.values.houseNo).toBe("11a");
     expect(mapped.values.zip).toBe("55116");
     expect(mapped.values.city).toBe("Mainz");
+  });
+
+  it("behält Ort, PLZ und Hausnummer bei einem abweichenden Mapbox-Treffer", () => {
+    const result: CustomerIntakeResult = {
+      status: "address_matches",
+      customer: {
+        customer_type: "business",
+        firstname: null,
+        lastname: null,
+        company_name: "Müller GmbH",
+        street: "Industriestr",
+        street_no: "8",
+        postcode: "63065",
+        city: "Offenbach",
+        phone: "069 887654",
+        email: "kontakt@mueller-gmbh.de",
+      },
+      addresses: [
+        {
+          id: "a1",
+          street: "Industriestraße",
+          street_no: "8",
+          postcode: "63165",
+          city: "Mühlheim am Main",
+          formatted_address: "Industriestraße 8, 63165 Mühlheim am Main",
+        },
+      ],
+    };
+
+    const mapped = mapIntakeResult(result);
+    expect(mapped.values.street).toBe("Industriestr");
+    expect(mapped.values.houseNo).toBe("8");
+    expect(mapped.values.zip).toBe("63065");
+    expect(mapped.values.city).toBe("Offenbach");
   });
 
   it("manual ohne Daten → nichts erkannt", () => {

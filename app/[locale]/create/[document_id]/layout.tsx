@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { getFlowDocMeta } from "@/lib/repositories/documents";
+import { ActivityTracker } from "@/components/shared/activity-tracker";
 import "@/components/layout/app-shell.css";
 
 // Draft-Validierung + Redirect sind pro Request – nie statisch vorrendern.
@@ -39,5 +40,10 @@ export default async function CreateLayout({ children, params }: CreateLayoutPro
   const meta = await getFlowDocMeta(document_id);
   if (!meta) redirect(`/${locale}/documents`);
 
-  return <div className={`${hanken.variable} ${plexArabic.variable}`}>{children}</div>;
+  return (
+    <div className={`${hanken.variable} ${plexArabic.variable}`}>
+      <ActivityTracker locale={locale} />
+      {children}
+    </div>
+  );
 }

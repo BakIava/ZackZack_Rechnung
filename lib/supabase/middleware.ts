@@ -1,10 +1,22 @@
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+
+interface SessionUpdate {
+  response: NextResponse;
+  user: User | null;
+  hasCompletedSetup: boolean;
+}
+
+interface SessionOptions {
+  includeSetupStatus?: boolean;
+}
 
 export async function updateSession(
   request: NextRequest,
   response: NextResponse = NextResponse.next({ request }),
-) {
+  { includeSetupStatus = false }: SessionOptions = {},
+): Promise<SessionUpdate> {
   let supabaseResponse = response;
 
   const supabase = createServerClient(
@@ -29,7 +41,19 @@ export async function updateSession(
   );
 
   // Refreshes the auth session if expired – required for Server Components.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return supabaseResponse;
+  let hasCompletedSetup = false;
+  if (user && includeSetupStatus) {
+    const { data } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+    hasCompletedSetup = Boolean(data);
+  }
+
+  return { response: supabaseResponse, user, hasCompletedSetup };
 }

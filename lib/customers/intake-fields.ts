@@ -28,7 +28,8 @@ function str(value: string | null | undefined): string {
 /**
  * Übersetzt das Ergebnis der Kundeneingabe-Server-Action
  * ({@link CustomerIntakeResult}) in die Formular-Sicht des Dialogs. Bei
- * `address_matches` wird der beste Geocoding-Treffer übernommen.
+ * `address_matches` ergänzt der beste Geocoding-Treffer ausschließlich
+ * fehlende Adressfelder; die von der KI erkannten Angaben bleiben maßgeblich.
  */
 export function mapIntakeResult(result: CustomerIntakeResult): MappedIntake {
   const c = result.customer;
@@ -46,10 +47,10 @@ export function mapIntakeResult(result: CustomerIntakeResult): MappedIntake {
   };
   if (result.status === "address_matches" && result.addresses.length > 0) {
     const best = result.addresses[0];
-    if (best.street !== null) values.street = best.street;
-    if (best.street_no !== null) values.houseNo = best.street_no;
-    if (best.postcode !== null) values.zip = best.postcode;
-    if (best.city !== null) values.city = best.city;
+    if (!values.street && best.street !== null) values.street = best.street;
+    if (!values.houseNo && best.street_no !== null) values.houseNo = best.street_no;
+    if (!values.zip && best.postcode !== null) values.zip = best.postcode;
+    if (!values.city && best.city !== null) values.city = best.city;
   }
 
   const recognized = [

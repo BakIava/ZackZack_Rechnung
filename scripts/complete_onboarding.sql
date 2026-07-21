@@ -24,6 +24,11 @@ BEGIN
 
   SELECT email INTO v_email FROM auth.users WHERE id = v_user_id;
 
+  IF COALESCE(btrim(company_data->>'steuernummer'), '') = ''
+     AND COALESCE(btrim(company_data->>'ust_id'), '') = '' THEN
+    RAISE EXCEPTION 'onboarding_tax_id_required';
+  END IF;
+
   v_company_id := gen_random_uuid();
 
   INSERT INTO companies (

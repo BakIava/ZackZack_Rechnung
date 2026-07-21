@@ -34,6 +34,9 @@ export default async function Step1Page({ params }: Step1PageProps) {
   const initialCustomerId = draft?.customerId ?? null;
   const initialIssueDate = draft?.issueDate ?? "";
   const initialValidUntil = draft?.validUntil ?? null;
+  const initialServiceDate = draft?.serviceDate ?? null;
+  const initialServicePeriodStart = draft?.servicePeriodStart ?? null;
+  const initialServicePeriodEnd = draft?.servicePeriodEnd ?? null;
   const documentTypeLocked = draft?.documentTypeLocked ?? false;
 
   return (
@@ -48,6 +51,9 @@ export default async function Step1Page({ params }: Step1PageProps) {
           initialDocType={initialDocType}
           issueDate={initialIssueDate}
           initialValidUntil={initialValidUntil}
+          initialServiceDate={initialServiceDate}
+          initialServicePeriodStart={initialServicePeriodStart}
+          initialServicePeriodEnd={initialServicePeriodEnd}
           documentTypeLocked={documentTypeLocked}
         />
       </div>

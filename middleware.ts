@@ -2,10 +2,73 @@ import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { updateSession } from "@/lib/supabase/middleware";
+import {
+  INACTIVITY_TIMEOUT_MS,
+  isLocaleAppPath,
+  LAST_ACTIVITY_COOKIE,
+  SESSION_LOCK_COOKIE,
+} from "@/lib/auth/session-lock";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
 const SUPPORTED_LOCALES: readonly string[] = routing.locales;
+function copySessionCookies(from: NextResponse, to: NextResponse) {
+  from.cookies.getAll().forEach((cookie) => to.cookies.set(cookie));
+  return to;
+}
+
+function loginRedirect(request: NextRequest, locale: string, sessionResponse: NextResponse) {
+  return copySessionCookies(
+    sessionResponse,
+    NextResponse.redirect(new URL(`/${locale}/login`, request.url)),
+  );
+}
+
+function dashboardRedirect(request: NextRequest, locale: string, sessionResponse: NextResponse) {
+  return copySessionCookies(
+    sessionResponse,
+    NextResponse.redirect(new URL(`/${locale}/dashboard`, request.url)),
+  );
+}
+
+function setupRedirect(request: NextRequest, locale: string, sessionResponse: NextResponse) {
+  return copySessionCookies(
+    sessionResponse,
+    NextResponse.redirect(new URL(`/${locale}/setup`, request.url)),
+  );
+}
+
+function lockRedirect(
+  request: NextRequest,
+  locale: string,
+  sessionResponse: NextResponse,
+  nextPath: string,
+) {
+  const target = new URL(`/${locale}/login`, request.url);
+  target.searchParams.set("unlock", "1");
+  target.searchParams.set("next", nextPath);
+  const response = copySessionCookies(sessionResponse, NextResponse.redirect(target));
+  response.cookies.set(SESSION_LOCK_COOKIE, "1", {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax",
+  });
+  return response;
+}
+
+function isInactive(request: NextRequest): boolean {
+  const lastActivity = Number(request.cookies.get(LAST_ACTIVITY_COOKIE)?.value);
+  return Number.isFinite(lastActivity)
+    && lastActivity > 0
+    && Date.now() - lastActivity >= INACTIVITY_TIMEOUT_MS;
+}
+
+function unauthorizedApiResponse(sessionResponse: NextResponse) {
+  return copySessionCookies(
+    sessionResponse,
+    NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+  );
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,14 +76,15 @@ export async function middleware(request: NextRequest) {
   // Sprachauswahl liegt bewusst ohne Locale-Präfix und bleibt immer erreichbar.
   // next-intl würde hier sonst eine Locale erzwingen.
   if (pathname === "/language") {
-    return updateSession(request);
+    return (await updateSession(request)).response;
   }
 
   // API-Routen sind sprachneutral. next-intl (localePrefix: "always") würde
   // /api/... sonst auf /de/api/... umleiten → 404 (die Route liegt unter /api).
   // Session trotzdem frisch halten, damit der Handler den Nutzer kennt.
-  if (pathname.startsWith("/api")) {
-    return updateSession(request);
+  if (pathname === "/api" || pathname.startsWith("/api/")) {
+    const session = await updateSession(request);
+    return session.user ? session.response : unauthorizedApiResponse(session.response);
   }
 
   // Root-Gate: ohne gültige Sprache zur Sprachauswahl, sonst direkt zum Login.
@@ -34,13 +98,77 @@ export async function middleware(request: NextRequest) {
   }
 
   const intlResponse = intlMiddleware(request);
-  return updateSession(request, intlResponse);
+  const locale = pathname.split("/")[1];
+  const isSetupPath = SUPPORTED_LOCALES.includes(locale)
+    && (pathname === `/${locale}/setup` || pathname.startsWith(`/${locale}/setup/`));
+  const isLoginPath = pathname === `/${locale}/login` || pathname === `/${locale}/login/`;
+  const isLocaleHome = pathname === `/${locale}` || pathname === `/${locale}/`;
+  const isUnlockPath = isLoginPath && request.nextUrl.searchParams.get("unlock") === "1";
+  const requestedNextPath = request.nextUrl.searchParams.get("next");
+  const session = await updateSession(request, intlResponse, {
+    includeSetupStatus: isSetupPath || isLoginPath || isLocaleHome,
+  });
+
+  if (SUPPORTED_LOCALES.includes(locale)) {
+    // Der locale-Einstieg ist kein eigener Screen: angemeldete Nutzer gehen
+    // direkt ins Dashboard, alle anderen zum Login.
+    if (isLocaleHome) {
+      if (!session.user) return loginRedirect(request, locale, session.response);
+
+      const defaultPath = session.hasCompletedSetup
+        ? `/${locale}/dashboard`
+        : `/${locale}/setup`;
+      const hasSessionLock = request.cookies.get(SESSION_LOCK_COOKIE)?.value === "1";
+      if (hasSessionLock || isInactive(request)) {
+        return lockRedirect(request, locale, session.response, defaultPath);
+      }
+      return session.hasCompletedSetup
+        ? dashboardRedirect(request, locale, session.response)
+        : setupRedirect(request, locale, session.response);
+    }
+
+    if (!isLoginPath && !session.user) {
+      return loginRedirect(request, locale, session.response);
+    }
+
+    if (session.user) {
+      const defaultPath = session.hasCompletedSetup
+        ? `/${locale}/dashboard`
+        : `/${locale}/setup`;
+      const hasSessionLock = request.cookies.get(SESSION_LOCK_COOKIE)?.value === "1";
+
+      if (isLoginPath) {
+        if (hasSessionLock && isUnlockPath) return session.response;
+        if (hasSessionLock || isInactive(request)) {
+          const lockNextPath = isUnlockPath && isLocaleAppPath(requestedNextPath, locale)
+            ? requestedNextPath
+            : defaultPath;
+          return lockRedirect(request, locale, session.response, lockNextPath);
+        }
+        return session.hasCompletedSetup
+          ? dashboardRedirect(request, locale, session.response)
+          : setupRedirect(request, locale, session.response);
+      }
+
+      if (hasSessionLock || isInactive(request)) {
+        const nextPath = `${pathname}${request.nextUrl.search}`;
+        return lockRedirect(request, locale, session.response, nextPath);
+      }
+    }
+
+    if (isSetupPath && session.hasCompletedSetup) {
+      return dashboardRedirect(request, locale, session.response);
+    }
+  }
+
+  return session.response;
 }
 
 export const config = {
   matcher: [
     "/",
     "/language",
+    "/api/:path*",
     "/(de|tr|ar)/:path*",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|js|json)$).*)",
   ],

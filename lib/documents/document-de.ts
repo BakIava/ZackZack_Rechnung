@@ -8,7 +8,7 @@
  */
 
 import { formatDateDE } from "@/lib/format";
-import type { DocType } from "@/types/document";
+import type { DocType, ServiceTimingInput } from "@/types/document";
 
 export const DOKUMENT_DE = {
   rechnung: "Rechnung",
@@ -17,6 +17,7 @@ export const DOKUMENT_DE = {
   angebotNr: "Angebots-Nr.",
   datum: "Datum",
   leistungsdatum: "Leistungsdatum",
+  leistungszeitraum: "Leistungszeitraum",
   gueltigBis: "Gültig bis",
   steuerNr: "Steuernummer",
   ustId: "USt-IdNr.",
@@ -43,6 +44,31 @@ export const DOKUMENT_DE = {
   inhaber: "Inhaber",
   bankUndSteuer: "Bank & Steuer",
 } as const;
+
+export function leistungszeitraumText(startIso: string, endIso: string): string {
+  return `${formatDateDE(startIso)} – ${formatDateDE(endIso)}`;
+}
+
+export function serviceTimingDisplay(
+  timing: ServiceTimingInput,
+): { label: string; value: string } | null {
+  if (timing.serviceDate) {
+    return {
+      label: DOKUMENT_DE.leistungsdatum,
+      value: formatDateDE(timing.serviceDate),
+    };
+  }
+  if (timing.servicePeriodStart && timing.servicePeriodEnd) {
+    return {
+      label: DOKUMENT_DE.leistungszeitraum,
+      value: leistungszeitraumText(
+        timing.servicePeriodStart,
+        timing.servicePeriodEnd,
+      ),
+    };
+  }
+  return null;
+}
 
 /** Dokumenttypgerechter Abschlusstext – Angebote setzen keinen Auftrag voraus. */
 export function dokumentAbschlussText(docType: DocType): string {

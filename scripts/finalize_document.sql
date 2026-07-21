@@ -70,6 +70,21 @@ BEGIN
     RAISE EXCEPTION 'issue_date_missing';
   END IF;
 
+  -- § 14 Abs. 4 Nr. 2 UStG: Steuernummer ODER USt-IdNr. muss vorhanden sein.
+  -- Die Prüfung liegt auch hier, damit ein direkter RPC-Aufruf die UI-Validierung
+  -- nicht umgehen kann.
+  IF NOT EXISTS (
+    SELECT 1
+    FROM companies c
+    WHERE c.id = v_company_id
+      AND (
+        NULLIF(btrim(c.steuernummer), '') IS NOT NULL
+        OR NULLIF(btrim(c.ust_id), '') IS NOT NULL
+      )
+  ) THEN
+    RAISE EXCEPTION 'company_tax_id_missing';
+  END IF;
+
   IF v_type = 'quote' AND v_valid_until IS NULL THEN
     RAISE EXCEPTION 'valid_until_missing';
   END IF;

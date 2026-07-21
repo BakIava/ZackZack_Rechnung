@@ -98,6 +98,10 @@
   padding: 10px 12px;
 }
 
+.hmeta-cell--wide {
+  grid-column: 1 / -1;
+}
+
 .hmeta-k {
   font-size: 11px;
   color: var(--muted);

@@ -64,6 +64,9 @@ export interface DocumentListItem {
   customerPhone: string | null;
   status: DocStatus;
   issueDate: string; // YYYY-MM-DD
+  serviceDate: string | null; // YYYY-MM-DD
+  servicePeriodStart: string | null; // YYYY-MM-DD
+  servicePeriodEnd: string | null; // YYYY-MM-DD
   validUntil: string | null; // nur quote
   totalAmount: number; // cents
   paidAt: string | null; // ISO timestamp
@@ -102,6 +105,9 @@ export interface DraftDoc {
   id: string;
   docType: DocType;
   issueDate: string;
+  serviceDate: string | null;
+  servicePeriodStart: string | null;
+  servicePeriodEnd: string | null;
   /** documents.customer_id – null, solange noch kein Kunde gewählt ist */
   customerId: string | null;
   validUntil: string | null;
@@ -135,6 +141,8 @@ export interface DocumentPreview {
   documentNumber: string | null;
   issueDate: string | null; // YYYY-MM-DD
   serviceDate: string | null; // YYYY-MM-DD
+  servicePeriodStart: string | null; // YYYY-MM-DD
+  servicePeriodEnd: string | null; // YYYY-MM-DD
   validUntil: string | null; // YYYY-MM-DD, nur Angebot
   isKleinunternehmer: boolean;
   defaultTaxRate: TaxRate;
@@ -148,6 +156,15 @@ export interface DocumentPreview {
   items: DocumentItem[];
   convertedInvoiceId: string | null;
   basedOnQuoteId: string | null;
+}
+
+export type ServiceTimingMode = "none" | "date" | "period";
+
+/** Vollstaendige, gegenseitig ausschliessende Leistungsangabe eines Dokuments. */
+export interface ServiceTimingInput {
+  serviceDate: string | null;
+  servicePeriodStart: string | null;
+  servicePeriodEnd: string | null;
 }
 
 /** Leichte, unveränderbare Dokumentverknüpfung für Anzeige und Workflows. */

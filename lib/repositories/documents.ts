@@ -71,7 +71,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
     supabase
       .from("documents")
       .select(
-        "id, document_type, document_number, status, issue_date, valid_until, total_amount, paid_at, customer_id, customer_snapshot",
+        "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, valid_until, total_amount, paid_at, customer_id, customer_snapshot",
       )
       .eq("company_id", companyId)
       .order("issue_date", { ascending: false }),
@@ -84,12 +84,14 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
   const customerIds = (docsRes.data
     ?.map((document) => document.customer_id as string | null)
     .filter(Boolean) ?? []) as string[];
-  const customers = await getCustomersByIds(customerIds);
   const docRows = docsRes.data ?? [];
-  const relations = await getDocumentRelations(
-    companyId,
-    docRows.map((document) => document.id as string),
-  );
+  const [customers, relations] = await Promise.all([
+    getCustomersByIds(customerIds),
+    getDocumentRelations(
+      companyId,
+      docRows.map((document) => document.id as string),
+    ),
+  ]);
 
   const documents: DocumentListItem[] = docRows.map((document) => {
     const snapshot = document.customer_snapshot as CustomerSnapshot | null;
@@ -126,6 +128,9 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       customerPhone: customer?.phone ?? snapshot?.phone ?? null,
       status,
       issueDate: document.issue_date,
+      serviceDate: (document.service_date as string | null) ?? null,
+      servicePeriodStart: (document.service_period_start as string | null) ?? null,
+      servicePeriodEnd: (document.service_period_end as string | null) ?? null,
       validUntil: (document.valid_until as string | null) ?? null,
       totalAmount: document.total_amount ?? 0,
       paidAt,
@@ -172,7 +177,9 @@ export const getDraft = cache(
     const supabase = await createClient();
     const { data } = await supabase
       .from("documents")
-      .select("id, document_type, customer_id, issue_date, valid_until")
+      .select(
+        "id, document_type, customer_id, issue_date, service_date, service_period_start, service_period_end, valid_until",
+      )
       .eq("id", documentId)
       .eq("company_id", companyId)
       .eq("status", "draft")
@@ -184,6 +191,9 @@ export const getDraft = cache(
       id: data.id as string,
       docType: data.document_type,
       issueDate: (data.issue_date as string | null) ?? todayInGermany(),
+      serviceDate: (data.service_date as string | null) ?? null,
+      servicePeriodStart: (data.service_period_start as string | null) ?? null,
+      servicePeriodEnd: (data.service_period_end as string | null) ?? null,
       customerId: (data.customer_id as string | null) ?? null,
       validUntil: (data.valid_until as string | null) ?? null,
       documentTypeLocked: relations.some(

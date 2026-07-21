@@ -10,6 +10,7 @@ import {
 } from "@/lib/repositories/companies";
 import { isTaxRate, resolveDocumentDefaultTaxRate } from "@/lib/documents/tax";
 import { prepareCompanyLogo } from "@/lib/company-logo/process";
+import { clearSessionLock } from "@/lib/auth/session-lock-actions";
 import type { TaxRate } from "@/types/database";
 
 export interface SettingsActionResult {
@@ -61,13 +62,15 @@ export async function saveSteuer(data: {
   steuernummer: string;
   ust_id: string;
 }): Promise<SettingsActionResult> {
-  if (!data.steuernummer.trim()) return { error: "steuernummerRequired" };
+  if (!data.steuernummer.trim() && !data.ust_id.trim()) {
+    return { error: "steuernummerRequired" };
+  }
 
   const ctx = await getCompanyId();
   if ("error" in ctx) return ctx;
 
   return updateCompany(ctx.companyId, {
-    steuernummer: data.steuernummer.trim(),
+    steuernummer: data.steuernummer.trim() || null,
     ust_id: data.ust_id.trim() || null,
   });
 }
@@ -167,5 +170,6 @@ export async function removeLogo(): Promise<SettingsActionResult & { removed?: b
 export async function signOutAndRedirect(locale: string): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  await clearSessionLock();
   redirect(`/${locale}/login`);
 }

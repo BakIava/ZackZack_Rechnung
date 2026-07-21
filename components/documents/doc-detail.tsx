@@ -19,6 +19,7 @@ import { Link } from "@/i18n/navigation";
 import type { ShareTarget } from "@/components/create/3/use-share-document";
 import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
+import { serviceTimingDisplay } from "@/lib/documents/document-de";
 import { DocShareRow } from "./doc-share-row";
 import { PositionsList } from "./positions-list";
 import { QuoteActions } from "./quote-actions";
@@ -86,6 +87,7 @@ export function DocDetail({
 
   const displayStatus = getDocumentUiStatus(doc);
   const dueDate = addDays(doc.issueDate, paymentDays);
+  const serviceTiming = doc.type === "invoice" ? serviceTimingDisplay(doc) : null;
 
   type BannerCls = "ok" | "warn" | "over" | "info" | "draft";
   interface Banner {
@@ -237,6 +239,14 @@ export function DocDetail({
               <div className={`hmeta-v${displayStatus === "abgelaufen" ? " warn" : ""}`}>
                 {formatDateDE(doc.validUntil)}
               </div>
+            </div>
+          )}
+          {serviceTiming && (
+            <div className="hmeta-cell hmeta-cell--wide">
+              <div className="hmeta-k">
+                {doc.serviceDate ? t("mServiceDate") : t("mServicePeriod")}
+              </div>
+              <div className="hmeta-v">{serviceTiming.value}</div>
             </div>
           )}
         </div>

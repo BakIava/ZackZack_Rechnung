@@ -213,7 +213,7 @@ export function ReviewFields({ t, formData, statuses, onChange }: ReviewFieldsPr
       </div>
 
       <div className="ob-group-lbl">{t.grpSteuer}</div>
-      <Field label={t.steuernr} req badge={badge("steuernummer")}>
+      <Field label={t.steuernr} badge={badge("steuernummer")}>
         <TextInput
           value={formData.steuernummer}
           onChange={(value) => onChange("steuernummer", value)}

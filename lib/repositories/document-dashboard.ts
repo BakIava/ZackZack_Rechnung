@@ -21,6 +21,11 @@ export type RecentDocument = Pick<
   replacement_quote_status: DocumentRow["status"] | null;
 };
 
+export type InvoicePaymentAmount = Pick<
+  DocumentRow,
+  "status" | "total_amount" | "paid_at"
+>;
+
 /** Die zuletzt angelegten Dokumente der eigenen Firma. */
 export async function getRecentDocuments(limit: number): Promise<RecentDocument[]> {
   const companyId = await getCurrentCompanyId();
@@ -61,29 +66,13 @@ export async function getRecentDocuments(limit: number): Promise<RecentDocument[
   }));
 }
 
-/** Beträge aller offenen Rechnungen (finalisiert/versendet, unbezahlt). */
-export async function getOpenDocumentAmounts(): Promise<
-  Array<{ total_amount: number | null }>
-> {
+/** Beträge und Zahlungsstatus aller für die Dashboard-Summen relevanten Rechnungen. */
+export async function getInvoicePaymentAmounts(): Promise<InvoicePaymentAmount[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("documents")
-    .select("total_amount")
+    .select("status, total_amount, paid_at")
     .eq("document_type", "invoice")
-    .is("paid_at", null)
-    .in("status", ["finalized", "sent"]);
-  return data ?? [];
-}
-
-/** Beträge aller bezahlten Rechnungen. */
-export async function getPaidDocumentAmounts(): Promise<
-  Array<{ total_amount: number | null }>
-> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("documents")
-    .select("total_amount")
-    .eq("document_type", "invoice")
-    .not("paid_at", "is", null);
-  return data ?? [];
+    .or("paid_at.not.is.null,status.in.(finalized,sent)");
+  return (data ?? []) as InvoicePaymentAmount[];
 }

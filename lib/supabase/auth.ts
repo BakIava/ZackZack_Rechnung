@@ -20,21 +20,43 @@ export const getCurrentUser = cache(async (): Promise<User | null> => {
   return user;
 });
 
+function getJwtSubject(accessToken: string): string | null {
+  try {
+    const payloadPart = accessToken.split(".")[1];
+    if (!payloadPart) return null;
+
+    const base64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const payload = JSON.parse(atob(padded)) as { sub?: unknown };
+    return typeof payload.sub === "string" && payload.sub.length > 0
+      ? payload.sub
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * `company_id` des aktuellen Users, ebenfalls pro Request memoisiert. Ersetzt die
- * bislang in jeder Query-Datei duplizierte `getUser()` + `users`-Lookup-Kette,
- * sodass pro Request nur noch ein Auth-Roundtrip und ein `company_id`-Lookup
- * anfallen – unabhängig davon, wie viele Queries die Firma brauchen.
+ * `company_id` des aktuellen Users, ebenfalls pro Request memoisiert.
+ *
+ * Die Middleware hat die Session für diesen Request bereits mit `getUser()`
+ * validiert und bei Bedarf aktualisiert. Hier wird deshalb nur der `sub`-Claim
+ * aus ihrem Access-Token als Lookup-Filter gelesen. Er ist ausdrücklich kein
+ * Autorisierungsbeweis: Der anschließende `users`-Read bleibt RLS-geschützt und
+ * liefert für einen manipulierten oder fremden Claim keine Firmen-ID.
  */
 export const getCurrentCompanyId = cache(async (): Promise<string | null> => {
-  const user = await getCurrentUser();
-  if (!user) return null;
-
   const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const userId = session ? getJwtSubject(session.access_token) : null;
+  if (!userId) return null;
+
   const { data } = await supabase
     .from("users")
     .select("company_id")
-    .eq("id", user.id)
+    .eq("id", userId)
     .maybeSingle();
   return (data?.company_id as string | null) ?? null;
 });

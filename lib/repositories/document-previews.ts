@@ -21,7 +21,7 @@ const COMPANY_COLUMNS =
   "name, legal_form, street, street_no, postcode, city, phone, mobile, email, director, steuernummer, ust_id, bank_name, iban, bic, account_holder, logo_url, payment_days";
 
 const DOCUMENT_COLUMNS =
-  "id, document_type, document_number, status, issue_date, service_date, valid_until, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured";
+  "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, valid_until, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured";
 
 function toCompany(row: Record<string, unknown>): PreviewCompany {
   return {
@@ -107,6 +107,8 @@ async function loadDocumentPreview(documentId: string): Promise<DocumentPreview 
     documentNumber: (doc.document_number as string | null) ?? null,
     issueDate: (doc.issue_date as string | null) ?? null,
     serviceDate: (doc.service_date as string | null) ?? null,
+    servicePeriodStart: (doc.service_period_start as string | null) ?? null,
+    servicePeriodEnd: (doc.service_period_end as string | null) ?? null,
     validUntil: (doc.valid_until as string | null) ?? null,
     isKleinunternehmer: Boolean(doc.is_kleinunternehmer),
     defaultTaxRate: (doc.default_tax_rate as TaxRate | null) ?? 19,

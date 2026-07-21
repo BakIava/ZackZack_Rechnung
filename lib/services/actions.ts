@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import {
   deleteService as deleteServiceRow,
   insertService,
@@ -8,9 +9,13 @@ import {
 } from "@/lib/repositories/services";
 import type { ServiceInput } from "@/types/service";
 
+const APP_LAYOUT_PATTERN = "/[locale]/(app)";
+
 export async function createService(input: ServiceInput): Promise<ServiceMutationResult> {
   if (!input.description_de.trim()) return { error: "deRequired" };
-  return insertService(input);
+  const result = await insertService(input);
+  if (!result.error) revalidatePath(APP_LAYOUT_PATTERN, "layout");
+  return result;
 }
 
 export async function updateService(id: string, input: ServiceInput): Promise<ServiceMutationResult> {
@@ -19,5 +24,7 @@ export async function updateService(id: string, input: ServiceInput): Promise<Se
 }
 
 export async function deleteService(id: string): Promise<ServiceMutationResult> {
-  return deleteServiceRow(id);
+  const result = await deleteServiceRow(id);
+  if (!result.error) revalidatePath(APP_LAYOUT_PATTERN, "layout");
+  return result;
 }

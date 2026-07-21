@@ -2,11 +2,16 @@ import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import {
   CacheFirst,
+  CacheableResponsePlugin,
   ExpirationPlugin,
-  NetworkFirst,
   Serwist,
   StaleWhileRevalidate,
 } from "serwist";
+import {
+  isPublicOfflineApiPath,
+  PUBLIC_OFFLINE_CACHE_HEADER,
+  PUBLIC_OFFLINE_CACHE_VALUE,
+} from "../lib/pwa/offline-cache";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -16,32 +21,24 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-/** Stammdaten, Katalog und Kunden offline verfügbar halten */
+const LEGACY_PRIVATE_API_CACHES = ["api-fallback", "business-data"];
+
+/** Nur ausdrücklich öffentliche Platzhalter offline verfügbar halten. */
 const businessDataCache = [
   {
-    matcher: ({ url }: { url: URL }) =>
-      url.pathname.startsWith("/api/customers") ||
-      url.pathname.startsWith("/api/catalog") ||
-      url.pathname.startsWith("/api/settings"),
+    matcher: ({ url }: { url: URL }) => isPublicOfflineApiPath(url.pathname),
     handler: new StaleWhileRevalidate({
-      cacheName: "business-data",
+      cacheName: "public-offline-data-v2",
       plugins: [
+        new CacheableResponsePlugin({
+          statuses: [200],
+          headers: {
+            [PUBLIC_OFFLINE_CACHE_HEADER]: PUBLIC_OFFLINE_CACHE_VALUE,
+          },
+        }),
         new ExpirationPlugin({
           maxEntries: 64,
           maxAgeSeconds: 7 * 24 * 60 * 60,
-        }),
-      ],
-    }),
-  },
-  {
-    matcher: ({ url }: { url: URL }) => url.pathname.startsWith("/api/"),
-    handler: new NetworkFirst({
-      cacheName: "api-fallback",
-      networkTimeoutSeconds: 5,
-      plugins: [
-        new ExpirationPlugin({
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60,
         }),
       ],
     }),
@@ -77,6 +74,13 @@ const serwist = new Serwist({
       },
     ],
   },
+});
+
+// Entfernt mit älteren Service-Worker-Versionen gespeicherte private API-Daten.
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    Promise.all(LEGACY_PRIVATE_API_CACHES.map((cacheName) => caches.delete(cacheName))),
+  );
 });
 
 serwist.addEventListeners();

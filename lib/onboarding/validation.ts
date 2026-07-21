@@ -94,12 +94,10 @@ export function validateSetupStep(
   }
 
   if (step === 3) {
-    required(
-      errors,
-      "steuernummer",
-      data.steuernummer,
-      "tax_number_required",
-    );
+    // § 14 Abs. 4 Nr. 2 UStG: Eine der beiden Angaben genügt.
+    if (!data.steuernummer.trim() && !data.ust_id.trim()) {
+      errors.steuernummer = "tax_number_required";
+    }
   }
 
   if (step === 4) {
