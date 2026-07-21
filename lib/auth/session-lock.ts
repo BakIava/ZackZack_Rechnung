@@ -1,5 +1,5 @@
 /** 15 Minuten ohne Eingabe sperren die sichtbare App-Sitzung. */
-export const INACTIVITY_TIMEOUT_MS = 0.5 * 60 * 1_000;
+export const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1_000;
 /** Der Zeitstempel muss länger als der Timeout erhalten bleiben. */
 export const INACTIVITY_COOKIE_MAX_AGE = 30 * 24 * 60 * 60;
 export const LAST_ACTIVITY_COOKIE = "zz-last-activity";

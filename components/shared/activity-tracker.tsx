@@ -11,7 +11,7 @@ interface ActivityTrackerProps {
   locale: string;
 }
 
-const ACTIVITY_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
+const ACTIVITY_EVENTS = ["pointerdown", "click", "keydown", "touchstart"] as const;
 
 /**
  * Aktualisiert die letzte echte Eingabe im Browser und öffnet nach 15 Minuten
@@ -38,8 +38,6 @@ export function ActivityTracker({ locale }: ActivityTrackerProps) {
 
     function recordActivity() {
       const now = Date.now();
-      if (now - lastActivityAt.current < 60_000) return;
-
       lastActivityAt.current = now;
       document.cookie = `${LAST_ACTIVITY_COOKIE}=${now}; path=/; max-age=${INACTIVITY_COOKIE_MAX_AGE}; samesite=lax`;
       scheduleLock();
@@ -51,7 +49,7 @@ export function ActivityTracker({ locale }: ActivityTrackerProps) {
         lock();
         return;
       }
-      scheduleLock();
+      recordActivity();
     }
 
     recordActivity();
