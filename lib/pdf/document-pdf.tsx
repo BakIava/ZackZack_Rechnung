@@ -70,8 +70,8 @@ function Parties({ vm }: { vm: PdfViewModel }) {
       <View style={s.meta}>
         <MetaRow label={vm.numberLabel} value={vm.numberValue} draft={vm.isDraftNumber} />
         <MetaRow label={DOKUMENT_DE.datum} value={vm.dateValue} />
-        {vm.serviceDateValue && (
-          <MetaRow label={DOKUMENT_DE.leistungsdatum} value={vm.serviceDateValue} />
+        {vm.serviceTimingLabel && vm.serviceTimingValue && (
+          <MetaRow label={vm.serviceTimingLabel} value={vm.serviceTimingValue} />
         )}
         {vm.validUntilValue && (
           <MetaRow label={DOKUMENT_DE.gueltigBis} value={vm.validUntilValue} />

@@ -10,6 +10,8 @@ function validPreview(overrides: Partial<DocumentPreview> = {}): DocumentPreview
     documentNumber: null,
     issueDate: "2026-07-15",
     serviceDate: null,
+    servicePeriodStart: null,
+    servicePeriodEnd: null,
     validUntil: null,
     isKleinunternehmer: false,
     defaultTaxRate: 19,

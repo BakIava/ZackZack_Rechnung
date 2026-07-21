@@ -56,6 +56,8 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
     documentNumber: "R-2026-041",
     issueDate: "2026-06-09",
     serviceDate: null,
+    servicePeriodStart: null,
+    servicePeriodEnd: null,
     validUntil: null,
     isKleinunternehmer: true,
     defaultTaxRate: 0,
@@ -175,6 +177,26 @@ describe("buildPdfViewModel – harte Regeln", () => {
     expect(angebot.sumLabel).toBe("Angebotssumme");
     expect(angebot.validUntilValue).toBe("09.07.2026");
     expect(angebot.closingText).toBe("Wir freuen uns auf Ihren Auftrag.");
+  });
+
+  it("formatiert Leistungsdatum und Leistungszeitraum immer deutsch", () => {
+    const datum = buildPdfViewModel(preview({ serviceDate: "2026-05-15" }));
+    expect(datum.serviceTimingLabel).toBe("Leistungsdatum");
+    expect(datum.serviceTimingValue).toBe("15.05.2026");
+
+    const zeitraum = buildPdfViewModel(preview({
+      serviceDate: null,
+      servicePeriodStart: "2026-05-01",
+      servicePeriodEnd: "2026-05-15",
+    }));
+    expect(zeitraum.serviceTimingLabel).toBe("Leistungszeitraum");
+    expect(zeitraum.serviceTimingValue).toBe("01.05.2026 – 15.05.2026");
+  });
+
+  it("laesst die Leistungszeile ohne Angabe weg", () => {
+    const vm = buildPdfViewModel(preview());
+    expect(vm.serviceTimingLabel).toBeNull();
+    expect(vm.serviceTimingValue).toBeNull();
   });
 
   it("nutzt Steuernummer, sonst USt-IdNr.", () => {

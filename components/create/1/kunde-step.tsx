@@ -30,6 +30,7 @@ import { FlowSteps } from "../flow-steps";
 import type { DocType } from "@/types/document";
 import { addOneCalendarMonth } from "@/lib/documents/document-dates";
 import { QuoteValidityField } from "./quote-validity-field";
+import { ServiceTimingField } from "./service-timing-field";
 import "./kunde-step.css";
 
 interface KundeStepProps {
@@ -40,6 +41,9 @@ interface KundeStepProps {
   initialDocType?: DocType;
   issueDate: string;
   initialValidUntil: string | null;
+  initialServiceDate: string | null;
+  initialServicePeriodStart: string | null;
+  initialServicePeriodEnd: string | null;
   documentTypeLocked: boolean;
 }
 
@@ -54,6 +58,9 @@ export function KundeStep({
   initialDocType = "invoice",
   issueDate,
   initialValidUntil,
+  initialServiceDate,
+  initialServicePeriodStart,
+  initialServicePeriodEnd,
   documentTypeLocked,
 }: KundeStepProps) {
   const t = useTranslations("Create");
@@ -124,11 +131,13 @@ export function KundeStep({
       void updateDraftCustomer(documentId, customer.id);
   }
 
-  function handleDocType(next: DocType) {
+  async function handleDocType(next: DocType) {
     if (documentTypeLocked) return;
     setDocType(next);
-    // Dokumenttyp direkt in den Draft schreiben (optimistisch, fire-and-forget).
-    void updateDraftDocumentType(documentId, next);
+    // Dokumenttyp direkt in den Draft schreiben; beim Angebot werden
+    // rechnungsspezifische Leistungsangaben serverseitig entfernt.
+    await updateDraftDocumentType(documentId, next);
+    router.refresh();
   }
 
   async function handleValidUntil(next: string) {
@@ -198,7 +207,7 @@ export function KundeStep({
               data-on={docType === "invoice" ? "1" : "0"}
               aria-pressed={docType === "invoice"}
               disabled={documentTypeLocked}
-              onClick={() => handleDocType("invoice")}
+              onClick={() => void handleDocType("invoice")}
             >
               <ReceiptText size={20} strokeWidth={STROKE} aria-hidden />
               {t("invoice")}
@@ -209,7 +218,7 @@ export function KundeStep({
               data-on={docType === "quote" ? "1" : "0"}
               aria-pressed={docType === "quote"}
               disabled={documentTypeLocked}
-              onClick={() => handleDocType("quote")}
+              onClick={() => void handleDocType("quote")}
             >
               <FileText size={20} strokeWidth={STROKE} aria-hidden />
               {t("quote")}
@@ -226,6 +235,16 @@ export function KundeStep({
             value={validUntil}
             saving={validitySaving}
             onChange={handleValidUntil}
+          />
+        )}
+
+        {docType === "invoice" && (
+          <ServiceTimingField
+            key={`${documentId}-${docType}`}
+            documentId={documentId}
+            initialServiceDate={initialServiceDate}
+            initialPeriodStart={initialServicePeriodStart}
+            initialPeriodEnd={initialServicePeriodEnd}
           />
         )}
 

@@ -1,11 +1,8 @@
-import { getCompanyNameAndDirector } from "@/lib/repositories/companies";
-import { countCustomers } from "@/lib/repositories/customers";
-import { countServices } from "@/lib/repositories/services";
 import {
-  getOpenDocumentAmounts,
-  getPaidDocumentAmounts,
+  getInvoicePaymentAmounts,
   getRecentDocuments,
 } from "@/lib/repositories/document-dashboard";
+import { getSidebarData } from "@/lib/layout/sidebar-data";
 import { getCustomerName } from "@/lib/customers/utils";
 import type { CustomerSnapshot } from "@/types/customer";
 import type { DashboardDoc } from "@/types/document";
@@ -35,15 +32,18 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   // Kein separater supabase.auth.getUser() mehr: Die Middleware validiert und
   // refresht das Token bereits vor dem Rendern der Seite, und alle Queries hier
   // sind per RLS auf die Firma des eingeloggten Users beschränkt.
-  const [company, recentDocs, customerCount, catalogCount, openDocs, paidDocs] =
-    await Promise.all([
-      getCompanyNameAndDirector(),
-      getRecentDocuments(5),
-      countCustomers(),
-      countServices(),
-      getOpenDocumentAmounts(),
-      getPaidDocumentAmounts(),
-    ]);
+  const [sidebarData, recentDocs, invoiceAmounts] = await Promise.all([
+    getSidebarData(),
+    getRecentDocuments(5),
+    getInvoicePaymentAmounts(),
+  ]);
+  const { company, customerCount, catalogCount } = sidebarData;
+  const openDocs = invoiceAmounts.filter(
+    (doc) =>
+      doc.paid_at === null &&
+      (doc.status === "finalized" || doc.status === "sent"),
+  );
+  const paidDocs = invoiceAmounts.filter((doc) => doc.paid_at !== null);
 
   const docs: DashboardDoc[] = recentDocs.map((doc) => {
     const snapshot = doc.customer_snapshot as CustomerSnapshot | null;

@@ -1,3 +1,5 @@
+import type { ServiceTimingInput } from "@/types/document";
+
 const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 function parseIsoDate(isoDate: string): { year: number; month: number; day: number } {
@@ -58,4 +60,55 @@ export function isValidQuoteDateRange(issueDate: string | null, validUntil: stri
   } catch {
     return false;
   }
+}
+
+export type ServiceTimingValidationError =
+  | "serviceDateInvalid"
+  | "servicePeriodIncomplete"
+  | "servicePeriodInvalid"
+  | "servicePeriodOrderInvalid"
+  | "serviceTimingExclusive";
+
+export function isValidIsoDate(value: string): boolean {
+  try {
+    parseIsoDate(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Serverseitig nutzbare Validierung der optionalen Leistungsangabe. */
+export function validateServiceTiming(
+  input: ServiceTimingInput,
+): { error?: ServiceTimingValidationError } {
+  const { serviceDate, servicePeriodStart, servicePeriodEnd } = input;
+  const hasDate = serviceDate !== null;
+  const hasPeriodStart = servicePeriodStart !== null;
+  const hasPeriodEnd = servicePeriodEnd !== null;
+
+  if (hasDate && (hasPeriodStart || hasPeriodEnd)) {
+    return { error: "serviceTimingExclusive" };
+  }
+  if (hasPeriodStart !== hasPeriodEnd) {
+    return { error: "servicePeriodIncomplete" };
+  }
+  if (serviceDate !== null && !isValidIsoDate(serviceDate)) {
+    return { error: "serviceDateInvalid" };
+  }
+  if (
+    servicePeriodStart !== null
+    && servicePeriodEnd !== null
+    && (!isValidIsoDate(servicePeriodStart) || !isValidIsoDate(servicePeriodEnd))
+  ) {
+    return { error: "servicePeriodInvalid" };
+  }
+  if (
+    servicePeriodStart !== null
+    && servicePeriodEnd !== null
+    && servicePeriodStart > servicePeriodEnd
+  ) {
+    return { error: "servicePeriodOrderInvalid" };
+  }
+  return {};
 }

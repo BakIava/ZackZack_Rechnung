@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
 import { getCompanyTaxSettings } from "@/lib/repositories/companies";
@@ -12,11 +13,12 @@ import {
   getDraftIssueDate,
   insertDraftDocument,
   setDraftDocumentType,
+  setDraftInvoiceServiceTiming,
   setDraftQuoteValidUntil,
   updateDraftCustomerSnapshot,
 } from "@/lib/repositories/document-drafts";
-import type { DocType } from "@/types/document";
-import { isValidQuoteDateRange } from "./document-dates";
+import type { DocType, ServiceTimingInput } from "@/types/document";
+import { isValidQuoteDateRange, validateServiceTiming } from "./document-dates";
 
 async function getCompanyCtx() {
   const user = await getCurrentUser();
@@ -104,6 +106,21 @@ export async function updateDraftValidUntil(
     return { error: "validUntilInvalid" };
   }
   return setDraftQuoteValidUntil(documentId, validUntil);
+}
+
+export async function updateDraftServiceTiming(
+  documentId: string,
+  timing: ServiceTimingInput,
+): Promise<{ error?: string }> {
+  const validation = validateServiceTiming(timing);
+  if (validation.error) return validation;
+
+  const result = await setDraftInvoiceServiceTiming(documentId, timing);
+  if (!result.error) {
+    revalidatePath("/[locale]/create/[document_id]/1", "page");
+    revalidatePath("/[locale]/create/[document_id]/3", "page");
+  }
+  return result;
 }
 
 /**

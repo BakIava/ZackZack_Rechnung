@@ -3,6 +3,7 @@ import { formatDateDE, formatMoney } from "@/lib/format";
 import {
   DOKUMENT_DE,
   dokumentAbschlussText,
+  serviceTimingDisplay,
   zahlungszielText,
 } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
@@ -37,6 +38,7 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
   const isRechnung = docType === "invoice";
   const showTaxDetails = shouldShowTaxDetails(isKleinunternehmer, preview.items);
   const showKleinunternehmerHinweis = isKleinunternehmer && !showTaxDetails;
+  const serviceTiming = serviceTimingDisplay(preview);
   const coStreet = joinTrim([co.street, co.streetNo], " ");
   const coCity = joinTrim([co.postcode, co.city], " ");
   const coSenderLine = joinTrim([co.name, coStreet, coCity], " · ");
@@ -112,10 +114,10 @@ export function DocumentA4({ preview, className }: DocumentA4Props) {
                 {preview.issueDate ? formatDateDE(preview.issueDate) : "—"}
               </span>
             </div>
-            {preview.serviceDate && (
+            {serviceTiming && (
               <div className="a4-meta-row">
-                <span className="k">{DOKUMENT_DE.leistungsdatum}</span>
-                <span className="v">{formatDateDE(preview.serviceDate)}</span>
+                <span className="k">{serviceTiming.label}</span>
+                <span className="v">{serviceTiming.value}</span>
               </div>
             )}
             {!isRechnung && preview.validUntil && (

@@ -1,9 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { SidebarLangLink } from "./sidebar-lang-link";
 import { SidebarNav } from "./sidebar-nav";
-import { getCompanyNameAndDirector } from "@/lib/repositories/companies";
-import { countCustomers } from "@/lib/repositories/customers";
-import { countServices } from "@/lib/repositories/services";
+import { getSidebarData } from "@/lib/layout/sidebar-data";
 import "./sidebar.css";
 
 function toInitials(name: string): string {
@@ -17,12 +15,7 @@ function toInitials(name: string): string {
 /** Linke Navigationsleiste des Desktop-Dashboards (RTL-fest). */
 export async function Sidebar() {
   const t = await getTranslations("Dashboard");
-
-  const [company, customerCount, catalogCount] = await Promise.all([
-    getCompanyNameAndDirector(),
-    countCustomers(),
-    countServices(),
-  ]);
+  const { company, customerCount, catalogCount } = await getSidebarData();
 
   const companyName = company.name;
   const ownerName = company.director;

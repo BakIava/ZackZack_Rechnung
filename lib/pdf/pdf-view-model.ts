@@ -17,6 +17,7 @@ import { formatDateDE, formatMoney } from "@/lib/format";
 import {
   DOKUMENT_DE,
   dokumentAbschlussText,
+  serviceTimingDisplay,
   zahlungszielText,
 } from "@/lib/documents/document-de";
 import type { DocumentPreview } from "@/types/document";
@@ -57,7 +58,8 @@ export interface PdfViewModel {
   numberValue: string;
   isDraftNumber: boolean;
   dateValue: string;
-  serviceDateValue: string | null;
+  serviceTimingLabel: string | null;
+  serviceTimingValue: string | null;
   validUntilValue: string | null;
   steuerLabel: string;
   steuerValue: string;
@@ -126,6 +128,7 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
     isRechnung && preview.issueDate
       ? zahlungszielText(preview.issueDate, co.paymentDays)
       : null;
+  const serviceTiming = serviceTimingDisplay(preview);
 
   return {
     isRechnung,
@@ -150,9 +153,8 @@ export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
     numberValue: preview.documentNumber ?? DOKUMENT_DE.entwurfPlatzhalter,
     isDraftNumber: !preview.documentNumber,
     dateValue: preview.issueDate ? formatDateDE(preview.issueDate) : "—",
-    serviceDateValue: preview.serviceDate
-      ? formatDateDE(preview.serviceDate)
-      : null,
+    serviceTimingLabel: serviceTiming?.label ?? null,
+    serviceTimingValue: serviceTiming?.value ?? null,
     validUntilValue: !isRechnung && preview.validUntil
       ? formatDateDE(preview.validUntil)
       : null,

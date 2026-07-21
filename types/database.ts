@@ -193,6 +193,8 @@ export interface DocumentRow {
   status: DocStatus;
   issue_date: string | null; // date, YYYY-MM-DD
   service_date: string | null; // date, YYYY-MM-DD
+  service_period_start: string | null; // date, YYYY-MM-DD
+  service_period_end: string | null; // date, YYYY-MM-DD
   /** Nur fuer Angebote; Standard = ein Kalendermonat ab issue_date. */
   valid_until: string | null; // date, YYYY-MM-DD
   /** Eingefrorene Empfängerkopie (jsonb, nullable) – nie als Live-Join. */

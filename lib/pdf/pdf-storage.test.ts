@@ -41,6 +41,8 @@ const preview: DocumentPreview = {
   documentNumber: "R-2026-041",
   issueDate: "2026-06-09",
   serviceDate: null,
+  servicePeriodStart: null,
+  servicePeriodEnd: null,
   validUntil: null,
   isKleinunternehmer: true,
   defaultTaxRate: 0,

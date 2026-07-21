@@ -5,7 +5,7 @@ import { getCurrentCompanyId, getCurrentUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CustomerSnapshot } from "@/types/customer";
 import type { DocumentRow } from "@/types/database";
-import type { DocType, TaxRate } from "@/types/document";
+import type { DocType, ServiceTimingInput, TaxRate } from "@/types/document";
 import { getDocumentIdsWithItems } from "./document-items";
 
 /** Gehört das Dokument der eigenen Firma und ist noch ein Entwurf? */
@@ -102,12 +102,50 @@ export async function setDraftDocumentType(
       : null;
   const { error } = await supabase
     .from("documents")
-    .update({ document_type: docType, valid_until: validUntil })
+    .update({
+      document_type: docType,
+      valid_until: validUntil,
+      ...(docType === "quote"
+        ? {
+            service_date: null,
+            service_period_start: null,
+            service_period_end: null,
+          }
+        : {}),
+    })
     .eq("id", documentId)
     .eq("company_id", companyId)
     .eq("status", "draft");
 
   if (error) return { error: error.message };
+  return {};
+}
+
+/** Optionale Leistungsangabe eines eigenen Rechnungsentwurfs aktualisieren. */
+export async function setDraftInvoiceServiceTiming(
+  documentId: string,
+  timing: ServiceTimingInput,
+): Promise<{ error?: "notAuthenticated" | "draftNotFound" | "updateFailed" }> {
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { error: "notAuthenticated" };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .update({
+      service_date: timing.serviceDate,
+      service_period_start: timing.servicePeriodStart,
+      service_period_end: timing.servicePeriodEnd,
+    })
+    .eq("id", documentId)
+    .eq("company_id", companyId)
+    .eq("document_type", "invoice")
+    .eq("status", "draft")
+    .select("id")
+    .maybeSingle();
+
+  if (error) return { error: "updateFailed" };
+  if (!data) return { error: "draftNotFound" };
   return {};
 }
 
