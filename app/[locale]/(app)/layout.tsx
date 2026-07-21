@@ -33,7 +33,7 @@ export default async function AppLayout({ children, params }: AppLayoutProps) {
   const fontClasses = `${hanken.variable} ${plexArabic.variable}`;
 
   return (
-    <AppShell dir={dir} fontClasses={fontClasses}>
+    <AppShell dir={dir} fontClasses={fontClasses} locale={locale}>
       <Sidebar />
       {children}
     </AppShell>

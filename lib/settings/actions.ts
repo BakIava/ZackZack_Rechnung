@@ -10,6 +10,7 @@ import {
 } from "@/lib/repositories/companies";
 import { isTaxRate, resolveDocumentDefaultTaxRate } from "@/lib/documents/tax";
 import { prepareCompanyLogo } from "@/lib/company-logo/process";
+import { clearSessionLock } from "@/lib/auth/session-lock-actions";
 import type { TaxRate } from "@/types/database";
 
 export interface SettingsActionResult {
@@ -169,5 +170,6 @@ export async function removeLogo(): Promise<SettingsActionResult & { removed?: b
 export async function signOutAndRedirect(locale: string): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  await clearSessionLock();
   redirect(`/${locale}/login`);
 }

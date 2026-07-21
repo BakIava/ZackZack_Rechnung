@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { hasUserProfile } from "@/lib/repositories/users";
 import { getCurrentUser } from "@/lib/supabase/auth";
 import { resolveAuthLocale } from "./locale";
+import { clearSessionLock } from "./session-lock-actions";
 
 export type AuthErrorKey = "rateLimitExceeded" | "codeExpiredOrInvalid" | "generic";
 export type AuthResult = { error?: string; errorKey?: AuthErrorKey };
@@ -62,6 +63,7 @@ export async function verifyLoginCode(
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  await clearSessionLock();
 }
 
 export type AccessRequestErrorKey = "missingFields" | "badEmail";

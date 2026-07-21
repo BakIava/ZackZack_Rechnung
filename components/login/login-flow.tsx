@@ -13,6 +13,7 @@ import { WelcomeScreen } from "./welcome-screen";
 import { LockScreen } from "./lock-screen";
 import { RegisterScreen } from "./register-screen";
 import { sendLoginCode, verifyLoginCode, signOut } from "@/lib/auth/actions";
+import { unlockSession } from "@/lib/auth/session-lock-actions";
 import "./login-flow.css";
 
 type AuthPhase = "welcome" | "locked" | "login" | "register";
@@ -85,7 +86,10 @@ export function LoginFlow({ dir, locale, initialPhase, lockUser, unlockPath }: L
   };
   const unlock = () => {
     setLeaving(true);
-    setTimeout(() => router.push(unlockPath), 380);
+    startTransition(async () => {
+      await unlockSession();
+      setTimeout(() => router.push(unlockPath), 380);
+    });
   };
   const switchAccount = () => {
     startTransition(async () => {

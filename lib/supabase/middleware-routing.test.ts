@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { User } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
+import {
+  INACTIVITY_TIMEOUT_MS,
+  LAST_ACTIVITY_COOKIE,
+  SESSION_LOCK_COOKIE,
+} from "@/lib/auth/session-lock";
 
 const mocks = vi.hoisted(() => ({
   intlMiddleware: vi.fn(),
@@ -21,8 +26,10 @@ import { config, middleware } from "../../middleware";
 let sessionUser: User | null;
 let hasCompletedSetup: boolean;
 
-function request(pathname: string): NextRequest {
-  return new NextRequest(`https://zackzack.example${pathname}`);
+function request(pathname: string, cookieValues: Record<string, string> = {}): NextRequest {
+  const currentRequest = new NextRequest(`https://zackzack.example${pathname}`);
+  Object.entries(cookieValues).forEach(([name, value]) => currentRequest.cookies.set(name, value));
+  return currentRequest;
 }
 
 describe("Middleware-Routing", () => {
@@ -41,6 +48,39 @@ describe("Middleware-Routing", () => {
         hasCompletedSetup,
       }),
     );
+  });
+
+  it("sperrt nach 15 Minuten und bewahrt den aktuellen Create-Schritt als Rueckkehrziel", async () => {
+    sessionUser = { id: "user-1" } as User;
+    const response = await middleware(request("/de/create/doc-1/2?fix=customer", {
+      [LAST_ACTIVITY_COOKIE]: String(Date.now() - INACTIVITY_TIMEOUT_MS),
+    }));
+
+    const target = new URL(response.headers.get("location") as string);
+    expect(target.pathname).toBe("/de/login");
+    expect(target.searchParams.get("unlock")).toBe("1");
+    expect(target.searchParams.get("next")).toBe("/de/create/doc-1/2?fix=customer");
+    expect(response.cookies.get(SESSION_LOCK_COOKIE)?.value).toBe("1");
+  });
+
+  it("laesst nur den Lock-Screen bei gesetzter Sperre durch", async () => {
+    sessionUser = { id: "user-1" } as User;
+
+    const response = await middleware(request("/tr/login?unlock=1&next=/tr/dashboard", {
+      [SESSION_LOCK_COOKIE]: "1",
+    }));
+
+    expect(response.status).toBe(200);
+  });
+
+  it("bewahrt das Rueckkehrziel auch beim timer-gesteuerten Lock-Redirect", async () => {
+    sessionUser = { id: "user-1" } as User;
+    const response = await middleware(request("/de/login?unlock=1&next=/de/create/doc-1/2", {
+      [LAST_ACTIVITY_COOKIE]: String(Date.now() - INACTIVITY_TIMEOUT_MS),
+    }));
+
+    const target = new URL(response.headers.get("location") as string);
+    expect(target.searchParams.get("next")).toBe("/de/create/doc-1/2");
   });
 
   it.each(["/api/settings", "/api/export.json", "/api/script.js"])(
@@ -68,6 +108,7 @@ describe("Middleware-Routing", () => {
 
   it("leitet einen eingeloggten Locale-Einstieg zum Dashboard", async () => {
     sessionUser = { id: "user-1" } as User;
+    hasCompletedSetup = true;
 
     const response = await middleware(request("/ar"));
 
