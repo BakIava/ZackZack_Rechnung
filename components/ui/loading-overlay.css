@@ -1,0 +1,95 @@
+/* loading-overlay.css — Lade-Overlay für Screenwechsel (Marke im Ring auf
+   unscharfem Grund). Deckt den nächsten positionierten Vorfahren ab.
+   Tokens (--bg, --primary, --surface …) stammen aus den zz-*-Scopes.
+   Nur logische Properties → RTL automatisch. */
+
+.zz-ov {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  -webkit-backdrop-filter: blur(7px) saturate(1.1);
+  backdrop-filter: blur(7px) saturate(1.1);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.26s ease, visibility 0.26s;
+}
+.zz-ov[data-show="1"] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.zz-ov-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-block: 26px;
+  padding-inline: 34px;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 28px 64px -28px rgba(2, 51, 92, 0.55);
+  transform: translateY(8px) scale(0.95);
+  opacity: 0;
+  transition: transform 0.32s cubic-bezier(0.34, 1.32, 0.5, 1), opacity 0.26s ease;
+}
+.zz-ov[data-show="1"] .zz-ov-box {
+  transform: none;
+  opacity: 1;
+}
+
+.zz-ov-ring {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.zz-ov-ring::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 3px solid color-mix(in srgb, var(--primary) 13%, var(--line));
+}
+.zz-ov-spin {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  border-top-color: var(--primary);
+  border-inline-end-color: var(--primary);
+  animation: zz-ov-spin 0.82s linear infinite;
+}
+.zz-ov-mark {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+.zz-ov-tx {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+}
+
+@keyframes zz-ov-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zz-ov-spin {
+    animation-duration: 2.6s;
+  }
+  .zz-ov-box {
+    transition: opacity 0.26s ease;
+    transform: none;
+  }
+}

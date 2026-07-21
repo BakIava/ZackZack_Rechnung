@@ -1,0 +1,85 @@
+/* skeleton.css — Shimmer-Platzhalter für Listen-Screens.
+   Tokens (--surface, --line …) stammen aus den zz-*-Scopes. Maße werden per
+   CSS-Variablen (--sk-w/--sk-h/--sk-r) gesteuert; nur logische Properties. */
+
+.zz-sk {
+  display: block;
+  inline-size: var(--sk-w, 100%);
+  block-size: var(--sk-h, 13px);
+  border-radius: var(--sk-r, 6px);
+  background: linear-gradient(
+    100deg,
+    var(--surface-2) 30%,
+    #e4e9ef 50%,
+    var(--surface-2) 70%
+  );
+  background-size: 220% 100%;
+  animation: zz-sk-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Avatar-Platzhalter: feste Maße, überschreibt die Basis-Werte. */
+.zz-sk-av {
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+@keyframes zz-sk-shimmer {
+  0% {
+    background-position: 180% 0;
+  }
+  100% {
+    background-position: -40% 0;
+  }
+}
+
+/* Karte + Zeilenaufbau (gleiche Maße wie echte Karten) */
+.zz-sk-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 8px;
+}
+
+.zz-sk-cap {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 10px 6px;
+}
+
+.zz-sk-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 12px;
+  border-radius: var(--r-sm);
+}
+.zz-sk-row + .zz-sk-row {
+  border-top: 1px solid var(--line);
+}
+
+.zz-sk-tx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.zz-sk-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zz-sk {
+    animation-duration: 2.6s;
+  }
+}

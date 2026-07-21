@@ -1,0 +1,119 @@
+/* loading-button.css — Marken-Button mit Ablauf Bereit → Lädt → Erledigt.
+   Tokens (--primary, --accent, --ok …) stammen aus den zz-*-Scopes der
+   App-Screens. Ausschließlich logische Properties → RTL automatisch. */
+
+.zz-lbtn {
+  position: relative;
+  appearance: none;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 218px;
+  padding-block: 15px;
+  padding-inline: 26px;
+  border-radius: var(--r);
+  border: none;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  transition: background 0.25s ease, box-shadow 0.2s ease, transform 0.12s ease;
+}
+
+.zz-lbtn:active {
+  transform: scale(0.985);
+}
+
+.zz-lbtn-c {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Varianten */
+.zz-lbtn--primary {
+  background: var(--primary);
+  color: var(--primary-ink, #fff);
+  box-shadow: 0 12px 26px -14px rgba(2, 51, 92, 0.7);
+}
+.zz-lbtn--accent {
+  background: var(--accent);
+  color: var(--accent-ink, #fff);
+  box-shadow: 0 12px 26px -14px rgba(251, 98, 2, 0.6);
+}
+.zz-lbtn--ghost {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+/* Zustände */
+.zz-lbtn[data-state="pending"] {
+  cursor: progress;
+}
+.zz-lbtn[data-state="success"] {
+  background: var(--ok);
+  color: var(--ok-ink, #fff);
+  box-shadow: 0 12px 26px -14px rgba(31, 138, 91, 0.6);
+}
+.zz-lbtn--ghost[data-state="success"] {
+  color: var(--ok-ink, #fff);
+}
+
+/* Spinner */
+.zz-lbtn-spin {
+  width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  border: 2.5px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: currentColor;
+  animation: zz-lbtn-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* Erfolgs-Häkchen */
+.zz-lbtn-check {
+  width: 19px;
+  height: 19px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.zz-lbtn--ghost .zz-lbtn-check {
+  background: rgba(31, 138, 91, 0.16);
+}
+.zz-lbtn-check-path {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: zz-lbtn-draw 0.4s ease 0.05s forwards;
+}
+
+@keyframes zz-lbtn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes zz-lbtn-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zz-lbtn:active {
+    transform: none;
+  }
+  .zz-lbtn-spin {
+    animation-duration: 2.6s;
+  }
+  .zz-lbtn-check-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
