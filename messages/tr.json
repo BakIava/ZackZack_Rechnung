@@ -695,5 +695,9 @@
         "cleanup_failed": "İşlem güvenli şekilde tamamlanamadı. Lütfen tekrar dene."
       }
     }
+  },
+  "Loading": {
+    "overlayLabel": "Bir saniye …",
+    "loadingLabel": "Yükleniyor …"
   }
 }

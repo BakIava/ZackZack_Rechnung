@@ -695,5 +695,9 @@
         "cleanup_failed": "Die Verarbeitung konnte nicht sicher abgeschlossen werden. Bitte versuche es erneut."
       }
     }
+  },
+  "Loading": {
+    "overlayLabel": "Einen Moment …",
+    "loadingLabel": "Lädt …"
   }
 }
