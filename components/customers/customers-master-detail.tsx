@@ -5,6 +5,7 @@ import { Building2, Check, MapPin, Plus, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import type { CustomerListItem, CustomerRow } from "@/types/customer";
+import { getCustomerName } from "@/lib/customers/utils";
 import { formatDateShort } from "@/lib/format";
 import { deriveInitials } from "@/lib/initials";
 import { NewCustomerModal } from "./new-customer-modal";
@@ -219,6 +220,7 @@ function MasterRow({ customer, selected, isNew, onSelect }: MasterRowProps) {
   const initials = deriveInitials(customer);
   const docs = sortedDocs(customer.documents);
   const lastDoc = docs[0];
+  const customerName = getCustomerName(customer) || t("noName");
   const docLabel = lastDoc
     ? `${lastDoc.document_type === "invoice" ? t("invoice") : t("quote")} ${formatDateShort(lastDoc.issue_date)}`
     : "";
@@ -239,12 +241,7 @@ function MasterRow({ customer, selected, isNew, onSelect }: MasterRowProps) {
       </span>
       <span className="cdm-body">
         <span className="cdm-name">
-          {customer.customer_type === "business" && customer.company_name
-            ? customer.company_name
-            : ""}
-          {customer.firstname && customer.lastname
-            ? `${customer.firstname} ${customer.lastname}`
-            : t("noName")}
+          {customerName}
           {isNew && (
             <span className="cdm-badge">
               <Check size={11} strokeWidth={2.4} aria-hidden />

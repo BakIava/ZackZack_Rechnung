@@ -57,6 +57,7 @@
     "hlEmptySub": "Fatura kestiğinde burada görünür."
   },
   "Customers": {
+    "noName": "İsimsiz",
     "customers": "Müşteriler",
     "newCust": "Yeni müşteri",
     "search": "İsim, firma, yer …",

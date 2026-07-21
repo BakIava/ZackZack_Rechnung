@@ -57,6 +57,7 @@
     "hlEmptySub": "Sobald du Rechnungen stellst, siehst du sie hier."
   },
   "Customers": {
+    "noName": "Ohne Namen",
     "customers": "Kunden",
     "newCust": "Neuer Kunde",
     "search": "Name, Firma, Ort …",
