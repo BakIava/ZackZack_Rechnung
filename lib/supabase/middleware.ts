@@ -5,11 +5,17 @@ import { NextResponse, type NextRequest } from "next/server";
 interface SessionUpdate {
   response: NextResponse;
   user: User | null;
+  hasCompletedSetup: boolean;
+}
+
+interface SessionOptions {
+  includeSetupStatus?: boolean;
 }
 
 export async function updateSession(
   request: NextRequest,
   response: NextResponse = NextResponse.next({ request }),
+  { includeSetupStatus = false }: SessionOptions = {},
 ): Promise<SessionUpdate> {
   let supabaseResponse = response;
 
@@ -39,5 +45,15 @@ export async function updateSession(
     data: { user },
   } = await supabase.auth.getUser();
 
-  return { response: supabaseResponse, user };
+  let hasCompletedSetup = false;
+  if (user && includeSetupStatus) {
+    const { data } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+    hasCompletedSetup = Boolean(data);
+  }
+
+  return { response: supabaseResponse, user, hasCompletedSetup };
 }

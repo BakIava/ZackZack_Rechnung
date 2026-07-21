@@ -19,6 +19,7 @@ vi.mock("@/lib/supabase/middleware", () => ({
 import { config, middleware } from "../../middleware";
 
 let sessionUser: User | null;
+let hasCompletedSetup: boolean;
 
 function request(pathname: string): NextRequest {
   return new NextRequest(`https://zackzack.example${pathname}`);
@@ -27,6 +28,7 @@ function request(pathname: string): NextRequest {
 describe("Middleware-Routing", () => {
   beforeEach(() => {
     sessionUser = null;
+    hasCompletedSetup = false;
     mocks.intlMiddleware.mockReset();
     mocks.intlMiddleware.mockImplementation((currentRequest: NextRequest) =>
       NextResponse.next({ request: currentRequest }),
@@ -36,6 +38,7 @@ describe("Middleware-Routing", () => {
       async (currentRequest: NextRequest, response?: NextResponse) => ({
         response: response ?? NextResponse.next({ request: currentRequest }),
         user: sessionUser,
+        hasCompletedSetup,
       }),
     );
   });
@@ -74,6 +77,24 @@ describe("Middleware-Routing", () => {
 
   it("lässt den Login für anonyme Nutzer erreichbar", async () => {
     const response = await middleware(request("/de/login"));
+
+    expect(response.status).toBe(200);
+  });
+
+  it("leitet Nutzer mit abgeschlossenem Setup von jedem Setup-Schritt zum Dashboard", async () => {
+    sessionUser = { id: "user-1" } as User;
+    hasCompletedSetup = true;
+
+    const response = await middleware(request("/tr/setup/3"));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("https://zackzack.example/tr/dashboard");
+  });
+
+  it("lÃ¤sst Nutzer ohne abgeschlossenes Setup im Setup", async () => {
+    sessionUser = { id: "user-1" } as User;
+
+    const response = await middleware(request("/de/setup"));
 
     expect(response.status).toBe(200);
   });

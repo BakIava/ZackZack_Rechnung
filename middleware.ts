@@ -60,8 +60,12 @@ export async function middleware(request: NextRequest) {
   }
 
   const intlResponse = intlMiddleware(request);
-  const session = await updateSession(request, intlResponse);
   const locale = pathname.split("/")[1];
+  const isSetupPath = SUPPORTED_LOCALES.includes(locale)
+    && (pathname === `/${locale}/setup` || pathname.startsWith(`/${locale}/setup/`));
+  const session = await updateSession(request, intlResponse, {
+    includeSetupStatus: isSetupPath,
+  });
 
   if (SUPPORTED_LOCALES.includes(locale)) {
     // Der locale-Einstieg ist kein eigener Screen: angemeldete Nutzer gehen
@@ -75,6 +79,10 @@ export async function middleware(request: NextRequest) {
     const isLoginPath = pathname === `/${locale}/login` || pathname === `/${locale}/login/`;
     if (!isLoginPath && !session.user) {
       return loginRedirect(request, locale, session.response);
+    }
+
+    if (isSetupPath && session.hasCompletedSetup) {
+      return dashboardRedirect(request, locale, session.response);
     }
   }
 
