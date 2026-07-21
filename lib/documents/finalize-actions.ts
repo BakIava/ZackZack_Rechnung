@@ -27,6 +27,7 @@ function mapError(message: string): FinalizeError {
   if (message.includes("document_not_finalizable")) return "notFinalizable";
   if (message.includes("issue_date_missing")) return "issueDateMissing";
   if (message.includes("positions_missing")) return "notFinalizable";
+  if (message.includes("company_tax_id_missing")) return "notFinalizable";
   return "unknown";
 }
 

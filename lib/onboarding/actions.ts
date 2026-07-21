@@ -105,6 +105,13 @@ export async function completeOnboarding(
     if (result.reason === "not_authenticated") {
       return { ok: false, error: "not_authenticated" };
     }
+    if (result.reason === "tax_id_required") {
+      return {
+        ok: false,
+        error: "required_fields",
+        errors: { steuernummer: "tax_number_required" },
+      };
+    }
     if (result.reason === "trades_required" || result.reason === "trades_invalid") {
       return {
         ok: false,

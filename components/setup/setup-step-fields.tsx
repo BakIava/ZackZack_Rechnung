@@ -88,7 +88,6 @@ export function Step3Fields({ t, formData, errors, onChange }: StepProps) {
       <Field
         fieldName="steuernummer"
         label={t.steuernr}
-        req
         hint={<><span>{t.steuernrHint}</span><span className="mono">123/456/78901</span></>}
         error={errors.steuernummer}
       >

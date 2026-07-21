@@ -54,6 +54,15 @@ describe("setup validation", () => {
     expect(validateSetupStep(5, completeForm)).toEqual({});
   });
 
+  it("akzeptiert die USt-IdNr. als Alternative zur Steuernummer", () => {
+    expect(
+      validateSetupStep(3, { ...completeForm, steuernummer: "", ust_id: "DE123456789" }),
+    ).toEqual({});
+    expect(
+      validateSetupStep(3, { ...completeForm, steuernummer: "", ust_id: "" }),
+    ).toEqual({ steuernummer: "tax_number_required" });
+  });
+
   it("ordnet Fehler dem ersten betroffenen Schritt zu", () => {
     const errors = validateSetupForm({
       ...completeForm,

@@ -103,7 +103,7 @@ export function LoginFlow({ dir, locale, initialPhase, lockUser, unlockPath }: L
     }
     setEmailErr(false);
     startAuthTransition(async () => {
-      const result = await sendLoginCode(email.trim());
+      const result = await sendLoginCode(email.trim(), locale);
       if (result.error) {
         setEmailErr(true);
         setEmailErrMsg(
@@ -136,7 +136,7 @@ export function LoginFlow({ dir, locale, initialPhase, lockUser, unlockPath }: L
   const resend = () => {
     if (resendLeft > 0) return;
     startAuthTransition(async () => {
-      const result = await sendLoginCode(email.trim());
+      const result = await sendLoginCode(email.trim(), locale);
       if (result.error) return;
       setOkNote(true);
       setCodeErr(false);

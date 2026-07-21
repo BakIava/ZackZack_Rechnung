@@ -170,6 +170,11 @@ BEGIN
     RAISE EXCEPTION USING MESSAGE = 'onboarding_not_authenticated';
   END IF;
 
+  IF COALESCE(btrim(company_data->>'steuernummer'), '') = ''
+     AND COALESCE(btrim(company_data->>'ust_id'), '') = '' THEN
+    RAISE EXCEPTION USING MESSAGE = 'onboarding_tax_id_required';
+  END IF;
+
   INSERT INTO public.companies (
     name, legal_form, street, street_no, postcode, city,
     phone, mobile, fax, email, director,

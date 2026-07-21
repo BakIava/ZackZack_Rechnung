@@ -66,6 +66,22 @@ function validPreview(overrides: Partial<DocumentPreview> = {}): DocumentPreview
 }
 
 describe("serverseitige Finalisierungsprüfung", () => {
+  it("akzeptiert für Rechnungen und Angebote eine USt-IdNr. statt der Steuernummer", () => {
+    const company = {
+      ...validPreview().company,
+      steuernummer: null,
+      ustId: "DE123456789",
+    };
+
+    expect(canFinalizePreview(validPreview({ company }))).toBe(true);
+    expect(canFinalizePreview(validPreview({ docType: "quote", company }))).toBe(true);
+    expect(
+      canFinalizePreview(validPreview({
+        company: { ...company, ustId: "  " },
+      })),
+    ).toBe(false);
+  });
+
   it("bewertet die Kleinbetragsgrenze anhand des Bruttobetrags", () => {
     expect(
       canFinalizePreview(

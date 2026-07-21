@@ -61,13 +61,15 @@ export async function saveSteuer(data: {
   steuernummer: string;
   ust_id: string;
 }): Promise<SettingsActionResult> {
-  if (!data.steuernummer.trim()) return { error: "steuernummerRequired" };
+  if (!data.steuernummer.trim() && !data.ust_id.trim()) {
+    return { error: "steuernummerRequired" };
+  }
 
   const ctx = await getCompanyId();
   if ("error" in ctx) return ctx;
 
   return updateCompany(ctx.companyId, {
-    steuernummer: data.steuernummer.trim(),
+    steuernummer: data.steuernummer.trim() || null,
     ust_id: data.ust_id.trim() || null,
   });
 }
