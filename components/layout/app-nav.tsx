@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { NavigationForm } from "@/components/shared/navigation-form";
 import { cn } from "@/lib/utils";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 
@@ -8,11 +9,8 @@ interface AppNavProps {
 }
 
 const navItems = [
-  { href: "/dashboard", key: "dashboard" as const },
-  { href: "/documents", key: "documents" as const },
   { href: "/customers", key: "customers" as const },
   { href: "/catalog", key: "catalog" as const },
-  { href: "/settings", key: "settings" as const },
 ];
 
 const NAV_ITEM_CLASS =
@@ -36,12 +34,12 @@ export function AppNav({ className }: AppNavProps) {
         {t("documents")}
       </Link>
       {/* "Neu erstellen" legt einen Draft an (POST) statt zu einer festen URL zu linken. */}
-      <form action={startNewDocument} className="contents">
+      <NavigationForm action={startNewDocument} className="contents">
         <button type="submit" className={NAV_ITEM_CLASS}>
           {t("create")}
         </button>
-      </form>
-      {navItems.slice(2).map((item) => (
+      </NavigationForm>
+      {navItems.map((item) => (
         <Link key={item.href} href={item.href} className={NAV_ITEM_CLASS}>
           {t(item.key)}
         </Link>

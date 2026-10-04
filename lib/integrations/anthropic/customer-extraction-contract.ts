@@ -51,5 +51,13 @@ Regeln:
 - Unbekannte oder nicht sicher zuordenbare Werte sind null.
 - Ignoriere Notizen vollständig.
 - Triff keine Entscheidung über Adresssuche, Kundenanlage oder den weiteren Ablauf.
+- firstname/lastname beschreiben immer eine natürliche Person: bei Privatkunden den
+  Kunden selbst, bei Firmenkunden den Ansprechpartner der Firma (z. B. nach
+  "Ansprechpartner", "AP", "z. Hd.", "Kontakt", "Inhaber" oder "Herr/Frau ...").
+  Eine solche Person neben einem Firmennamen ändert customer_type "business" nicht.
+- Namensreihenfolge: "Vorname Nachname"; nur bei Komma ("Sahin, Muammer") steht der
+  Nachname vorne. Anreden und Titel (Herr, Frau, Dr.) gehören nicht in den Namen.
+- "Frau Müller" ergibt lastname "Müller" und firstname null; ein fehlender
+  Vorname darf niemals ergänzt werden.
 `.trim();
 

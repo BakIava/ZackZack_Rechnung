@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildPdfViewModel } from "./pdf-view-model";
+import { buildPdfViewModel as buildStandardViewModel } from "./pdf-view-model";
+import { buildDocumentRenderData } from "./render-data";
 import type { DocumentItem, DocumentPreview } from "@/types/document";
 import type { PreviewCompany } from "@/types/company";
 import type { PreviewCustomer } from "@/types/customer";
@@ -14,6 +15,7 @@ function company(overrides: Partial<PreviewCompany> = {}): PreviewCompany {
     city: "Berlin",
     phone: "030 123456",
     mobile: null,
+    fax: null,
     email: "info@yilmaz-maler.de",
     director: "Ahmet Yılmaz",
     steuernummer: "12/345/67890",
@@ -70,8 +72,18 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
     items,
     convertedInvoiceId: null,
     basedOnQuoteId: null,
+    template: { id: "standard", version: 1 },
     ...overrides,
   };
+}
+
+/**
+ * Voller Produktionsweg der Vorlage `standard`: Preview → Renderdaten →
+ * Standard-View-Model. Die Assertions unten sind gegenüber der Zeit vor der
+ * Vorlagen-Abstraktion unverändert und belegen damit identische Ausgabe.
+ */
+function buildPdfViewModel(p: DocumentPreview) {
+  return buildStandardViewModel(buildDocumentRenderData(p, null));
 }
 
 describe("buildPdfViewModel – harte Regeln", () => {
@@ -131,6 +143,70 @@ describe("buildPdfViewModel – harte Regeln", () => {
     expect(vm.totalText).toContain("119,00");
   });
 
+  it("bildet gemischte Steuergruppen vollständig und sortiert aus dem Snapshot ab", () => {
+    const vm = buildPdfViewModel(preview({
+      isKleinunternehmer: false,
+      defaultTaxRate: 19,
+      netAmount: 20_000,
+      taxAmount: 2_600,
+      totalAmount: 22_600,
+      taxGroups: [
+        { rate: 7, netAmount: 10_000, taxAmount: 700 },
+        { rate: 19, netAmount: 10_000, taxAmount: 1_900 },
+      ],
+      items: [
+        { position: 1, descriptionDe: "Nebenleistung", amount: 1, unit: "Stk.", unitPrice: 10_000, totalAmount: 10_000, taxRate: 7, taxAmount: 700, grossAmount: 10_700 },
+        { position: 2, descriptionDe: "Malerarbeit", amount: 1, unit: "Stk.", unitPrice: 10_000, totalAmount: 10_000, taxRate: 19, taxAmount: 1_900, grossAmount: 11_900 },
+      ],
+    }));
+
+    expect(vm.taxLines.map((line) => line.label)).toEqual([
+      "Umsatzsteuer 7 %",
+      "Umsatzsteuer 19 %",
+    ]);
+    expect(vm.rows.map((row) => row.taxRateText)).toEqual(["7 %", "19 %"]);
+  });
+
+  it("rendert eine noch leere temporäre Position, ohne Eingabevalidierung zu verändern", () => {
+    const vm = buildPdfViewModel(preview({
+      netAmount: 0,
+      taxAmount: 0,
+      totalAmount: 0,
+      taxGroups: [],
+      items: [{
+        position: 1,
+        descriptionDe: "",
+        amount: 0,
+        unit: "Stk.",
+        unitPrice: 0,
+        totalAmount: 0,
+        taxRate: 0,
+        taxAmount: 0,
+        grossAmount: 0,
+      }],
+    }));
+
+    expect(vm.rows).toEqual([{ position: 1, descriptionDe: "", additionalDescriptionDe: null, mengeText: "0 Stk.", unitPriceText: expect.stringContaining("0,00"), totalAmount: 0, totalText: expect.stringContaining("0,00"), taxRateText: "" }]);
+  });
+
+  it("übernimmt die vollständige mehrzeilige Positionsbeschreibung ohne Preis- oder Steueränderung", () => {
+    const additionalDescriptionDe = "Untergrund vorbereiten\nZwei Anstriche ausführen\nMaterial fachgerecht entsorgen";
+    const base = preview();
+    const withDescription = preview({
+      items: [{ ...base.items[0], additionalDescriptionDe }, base.items[1]],
+    });
+    const before = buildPdfViewModel(base);
+    const after = buildPdfViewModel(withDescription);
+    expect(after.rows[0].additionalDescriptionDe).toBe(additionalDescriptionDe);
+    expect(after.rows[0].descriptionDe).toBe("Innenanstrich Wohnzimmer");
+    expect(after.rows[0].unitPriceText).toBe(before.rows[0].unitPriceText);
+    expect(after.rows[0].totalText).toBe(before.rows[0].totalText);
+    expect(after.rows[0].taxRateText).toBe(before.rows[0].taxRateText);
+    expect(after.totalText).toBe(before.totalText);
+    expect(after.showKleinunternehmerHinweis).toBe(before.showKleinunternehmerHinweis);
+    expect(JSON.stringify(after)).not.toMatch(/purchase|surcharge|einkauf|marge|aufschlag/i);
+  });
+
   it("kein Kleinunternehmer → kein §19-Hinweis", () => {
     const vm = buildPdfViewModel(preview({ isKleinunternehmer: false }));
     expect(vm.showKleinunternehmerHinweis).toBe(false);
@@ -143,6 +219,7 @@ describe("buildPdfViewModel – harte Regeln", () => {
     expect(serialized).not.toContain("marge");
     expect(serialized).not.toContain("aufschlag");
     expect(serialized).not.toContain("purchase");
+    expect(serialized).not.toContain("surcharge");
   });
 
   it("Empfänger stammt aus dem Snapshot (Name + Anschrift)", () => {

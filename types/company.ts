@@ -2,16 +2,7 @@
  * Firmen-Typen — abgeleitet aus `CompanyRow` (types/database.ts).
  */
 
-import type { CompanyRow, TradeId } from "./database";
-
-/** Firmen-Stammdaten der Einstellungen — Spalten wie im SELECT (ohne Timestamps). */
-export type CompanySettings = Omit<CompanyRow, "created_at" | "updated_at">;
-
-export interface SettingsData {
-  company: CompanySettings;
-  authEmail: string | null;
-  currentInvoiceNumber: string | null;
-}
+import type { TradeId } from "./database";
 
 /** Firmenstammdaten für den Dokumentkopf (Verkaufssicht, alle Felder Deutsch). */
 export interface PreviewCompany {
@@ -23,6 +14,7 @@ export interface PreviewCompany {
   city: string | null;
   phone: string | null;
   mobile: string | null;
+  fax: string | null;
   email: string | null;
   director: string | null;
   steuernummer: string | null;

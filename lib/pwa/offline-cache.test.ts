@@ -7,7 +7,7 @@ import {
 } from "./offline-cache";
 
 describe("Offline-API-Cache", () => {
-  it.each(["/api/catalog", "/api/customers", "/api/settings"])(
+  it.each(["/api/catalog", "/api/customers"])(
     "erlaubt den statischen Platzhalter %s",
     (pathname) => {
       expect(isPublicOfflineApiPath(pathname)).toBe(true);
@@ -16,7 +16,8 @@ describe("Offline-API-Cache", () => {
 
   it.each([
     "/api/documents/abc/pdf",
-    "/api/pdf",
+    "/api/export.pdf",
+    "/api/settings",
     "/api/customers/private",
     "/api/export.json",
   ])("schließt geschützte oder unbekannte Route %s aus", (pathname) => {

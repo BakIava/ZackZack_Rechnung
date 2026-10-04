@@ -1,0 +1,69 @@
+.customers-loading {
+  flex-direction: row;
+  background: var(--bg);
+}
+
+.customers-loading-master {
+  display: flex;
+  flex-direction: column;
+  inline-size: 37%;
+  min-inline-size: 340px;
+  max-inline-size: 440px;
+  background: var(--surface);
+  border-inline-end: 1px solid var(--line);
+}
+
+.customers-loading-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 22px 14px;
+  border-block-end: 1px solid var(--line);
+}
+
+.customers-loading-title {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.customers-loading-chips {
+  display: flex;
+  gap: 7px;
+}
+
+.customers-loading-list {
+  flex: 1;
+  overflow: hidden;
+  padding: 10px 14px 18px;
+}
+
+.customers-loading-list .zz-sk-panel {
+  border: 0;
+  padding: 0;
+}
+
+.customers-loading-detail {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  margin: 28px;
+  padding: 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+.customers-loading-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.customers-loading-profile-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}

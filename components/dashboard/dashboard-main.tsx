@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { NavigationForm } from "@/components/shared/navigation-form";
 import type { DashboardDoc } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import type { DashboardData } from "@/lib/dashboard/fetch";
@@ -62,7 +63,7 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
 
       <div className="dscroll">
         <div className="dhero">
-          <form action={startNewDocument} className="contents">
+          <NavigationForm action={startNewDocument} className="contents">
             <button type="submit" className="dcta">
               <span className="dcta-ic">
                 <Plus size={30} strokeWidth={2.4} color="#fff" aria-hidden />
@@ -75,7 +76,7 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
                 <Chevron size={26} strokeWidth={STROKE} aria-hidden />
               </span>
             </button>
-          </form>
+          </NavigationForm>
 
           <div className={`dhighlight${isEmpty ? " is-empty" : ""}`}>
             <div className="dhl-top">
@@ -200,13 +201,13 @@ function EmptyGhost({
           </div>
           <div className="le-h">{ghostTitle}</div>
           <div className="le-sub">{ghostSub}</div>
-          <form action={startNewDocument} className="contents">
+          <NavigationForm action={startNewDocument} className="contents">
             <button type="submit" className="le-btn le-btn--navy">
               <Plus size={19} strokeWidth={2.4} aria-hidden />
               {newDocLabel}
               <Chevron size={18} strokeWidth={STROKE} aria-hidden />
             </button>
-          </form>
+          </NavigationForm>
         </div>
       </div>
     </div>

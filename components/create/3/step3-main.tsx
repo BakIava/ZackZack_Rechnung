@@ -19,8 +19,9 @@ import { DOKUMENT_DE } from "@/lib/documents/document-de";
 import { finalizeDocument, type FinalizeError } from "@/lib/documents/finalize-actions";
 import { istFinalisierbar, type PflichtCheck } from "@/lib/legal/dokument-pflicht";
 import type { DocumentPreview } from "@/types/document";
+import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { FlowSteps } from "@/components/create/flow-steps";
-import { DocumentA4 } from "./document-a4";
+import { DocumentPdfPreviewLoader } from "./document-pdf-preview-loader";
 import { FinalizeDialog } from "./finalize-dialog";
 import { PflichtList } from "./pflicht-list";
 import { ShareButtons } from "./share-buttons";
@@ -33,6 +34,7 @@ import "./step3-main.css";
 interface Step3MainProps {
   dir: "ltr" | "rtl";
   preview: DocumentPreview;
+  logo: PdfLogo | null;
   checks: PflichtCheck[];
 }
 
@@ -52,7 +54,7 @@ const ERROR_KEY: Record<FinalizeError, string> = {
  *  Aktions-Sidebar rechts. Dokumentinhalt bleibt Deutsch/LTR; die Bedienung
  *  folgt der UI-Sprache. Entwurf: Pflicht-Check + Finalisieren. Finalisiert:
  *  read-only mit echter Nummer (PDF/Teilen folgt im nächsten Schritt). */
-export function Step3Main({ dir, preview, checks }: Step3MainProps) {
+export function Step3Main({ dir, preview, logo, checks }: Step3MainProps) {
   const t = useTranslations("Create");
   const router = useRouter();
   const [zoom, setZoom] = useState(false);
@@ -136,7 +138,12 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
               </button>
             </div>
             <div className="d3-docstage">
-              <DocumentA4 preview={preview} />
+              <DocumentPdfPreviewLoader
+                preview={preview}
+                logo={logo}
+                testId="step3-pdf-preview"
+                loading={pending}
+              />
             </div>
           </div>
 
@@ -216,7 +223,7 @@ export function Step3Main({ dir, preview, checks }: Step3MainProps) {
 
       {zoom && (
         <ZoomOverlay title={zoomTitle} onClose={() => setZoom(false)}>
-          <DocumentA4 preview={preview} />
+          <DocumentPdfPreviewLoader preview={preview} logo={logo} loading={pending} />
         </ZoomOverlay>
       )}
 

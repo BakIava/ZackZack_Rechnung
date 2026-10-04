@@ -11,6 +11,16 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "e2e": "playwright test",
+    "e2e:package-01": "playwright test e2e/package-01-renderer.spec.ts --project=chromium",
+    "e2e:package-02": "playwright test e2e/package-02-canonical-renderer.spec.ts --project=chromium",
+    "e2e:package-03": "playwright test e2e/package-03-step2-preview-state.spec.ts --project=chromium",
+    "e2e:package-04": "playwright test e2e/package-04-new-item-live-preview.spec.ts --project=chromium",
+    "e2e:package-05": "playwright test e2e/package-05-edit-live-preview.spec.ts --project=chromium",
+    "e2e:package-06": "playwright test e2e/package-06-step2-layout.spec.ts --project=chromium",
+    "e2e:package-07": "playwright test e2e/package-07-validation-finalization.spec.ts --project=chromium",
+    "e2e:package-08": "playwright test e2e/package-08-final-parity.spec.ts --project=chromium",
+    "e2e:install": "playwright install chromium",
     "icons": "node scripts/generate-icons.cjs"
   },
   "dependencies": {
@@ -37,6 +47,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.63.0",
     "@serwist/cli": "^9.5.11",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -44,6 +55,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.19",
+    "pdfjs-dist": "^6.3.289",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.8"

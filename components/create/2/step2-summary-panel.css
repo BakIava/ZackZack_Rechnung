@@ -1,0 +1,107 @@
+.d2-sumpanel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.d2-sum-t {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.d2-sum-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.d2-sum-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.d2-sum-line b {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.d2-sum-line--vat span:first-child {
+  padding-inline-start: 12px;
+}
+
+.d2-sum-div {
+  height: 1px;
+  background: var(--line);
+}
+
+.d2-sum-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.d2-sum-total-l {
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.d2-sum-total-v {
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.d2-sum-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  border-radius: var(--r);
+  border: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+  background: var(--primary);
+  color: var(--primary-ink);
+  box-shadow: 0 12px 26px -12px rgba(15, 42, 63, 0.7);
+}
+
+.d2-sum-btn:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.d2-back {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--r);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}
+
+.d2-back:hover {
+  color: var(--ink);
+  border-color: #c3ccd4;
+}

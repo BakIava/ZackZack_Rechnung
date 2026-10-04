@@ -39,9 +39,17 @@ export function PositionsList({ items, totalAmount }: PositionsListProps) {
   return (
     <div className="hpos">
       {visibleItems.map((item) => (
-        <div className="hpos-row" key={item.position}>
+        <div
+          className={`hpos-row${item.additionalDescriptionDe?.trim() ? " hpos-row--with-description" : ""}`}
+          key={item.position}
+        >
           <div className="hpos-row-body">
             <div className="hpos-desc">{item.descriptionDe}</div>
+            {item.additionalDescriptionDe?.trim() && (
+              <div className="hpos-additional-description" dir="ltr" lang="de">
+                {item.additionalDescriptionDe}
+              </div>
+            )}
             <div className="hpos-qty">
               {item.amount} {item.unit} · {formatMoney(item.unitPrice)}
               {item.taxAmount > 0 ? ` · ${item.taxRate} %` : ""}

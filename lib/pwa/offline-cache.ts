@@ -4,7 +4,6 @@ export const PUBLIC_OFFLINE_CACHE_VALUE = "public";
 const PUBLIC_OFFLINE_API_PATHS = new Set([
   "/api/catalog",
   "/api/customers",
-  "/api/settings",
 ]);
 
 /** Nur statische, ausdrücklich freigegebene Platzhalter dürfen offline liegen. */

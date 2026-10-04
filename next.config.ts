@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
   // von Next sonst nicht ins Server-Bundle der PDF-Route getract.
   outputFileTracingIncludes: {
     "/api/documents/[document_id]/pdf": ["./lib/pdf/fonts/**"],
+    "/api/document-renderer/font/[weight]": ["./lib/pdf/fonts/**"],
   },
 };
 

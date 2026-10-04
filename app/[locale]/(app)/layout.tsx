@@ -23,7 +23,7 @@ interface AppLayoutProps {
 }
 
 /**
- * Gemeinsames Layout für Dashboard, Kunden, Katalog, Dokumente und Einstellungen.
+ * Gemeinsames Layout für Dashboard, Kunden, Katalog und Dokumente.
  * Die Sidebar wird einmal gerendert und bleibt beim Seitenwechsel erhalten.
  */
 export default async function AppLayout({ children, params }: AppLayoutProps) {

@@ -1,0 +1,32 @@
+.additional-description-sheet__hint {
+  margin-block: 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: start;
+}
+
+.additional-description-sheet__textarea {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: 180px;
+  max-block-size: min(50dvh, 440px);
+  margin-block-end: 14px;
+  padding: 14px 15px;
+  border: 2px solid var(--primary);
+  border-radius: var(--r-sm);
+  outline: none;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: start;
+  resize: vertical;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.additional-description-sheet__textarea:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
+}

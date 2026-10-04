@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { SetupFlow } from "./setup-flow";
 import { startNewDocument } from "@/lib/documents/draft-actions";
+import { startNavigationTransition } from "@/lib/navigation-transition";
 import { TRADE_IDS, type TradeId } from "@/types/database";
 import type { OnboardingErrorCode } from "@/types/company";
 import type { OnboardingExtractionErrorCode } from "@/types/onboarding-extraction";
@@ -70,7 +71,10 @@ export function SetupFlowClient({ lang, dir }: Props) {
       extractionErrorMessages={extractionErrorMessages}
       // Nach dem Setup direkt einen Draft anlegen und in Schritt 1 starten.
       onComplete={() => startNewDocument()}
-      onDashboard={() => router.push(`/${locale}/dashboard`)}
+      onDashboard={() => {
+        startNavigationTransition();
+        router.push(`/${locale}/dashboard`);
+      }}
     />
   );
 }

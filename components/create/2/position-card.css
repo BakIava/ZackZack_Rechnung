@@ -11,6 +11,11 @@
   gap: 14px;
 }
 
+.d2card-title-stack {
+  flex: 1;
+  min-width: 0;
+}
+
 .d2card-num {
   flex-shrink: 0;
   width: 30px;
@@ -35,12 +40,28 @@
   gap: 5px;
   flex: 1;
   min-width: 0;
+  inline-size: 100%;
   background: none;
   border: none;
   padding: 0;
   font-family: inherit;
   text-align: start;
   cursor: pointer;
+}
+
+.d2card-additional-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  max-block-size: calc(1.4em * 2);
+  margin-block: 7px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: start;
 }
 
 .d2title-btn:disabled {
@@ -293,6 +314,35 @@
 
 .d2vatrow {
   margin-top: 14px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.d2card-description-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+  padding: 7px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  text-align: start;
+  cursor: pointer;
+}
+
+.d2card-description-action:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.d2card-description-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .d2vat {

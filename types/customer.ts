@@ -111,7 +111,8 @@ export type CustomerSnapshot = Pick<
 
 /**
  * Empfänger auf der Dokument-Vorschau – IMMER aus `customer_snapshot`,
- * nie Live-Join. E-Mail/Telefon nur fürs Teilen, NICHT für den Beleg.
+ * nie Live-Join. E-Mail nur fürs Teilen, NICHT für den Beleg; das Telefon
+ * dient dem Teilen und wird nur von der Vorlage `ths-classic` gedruckt.
  */
 export interface PreviewCustomer {
   customer_type: CustomerType;

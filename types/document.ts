@@ -8,13 +8,29 @@ import type {
   DocStatus,
   DocType,
   DocumentRelationType,
+  DocumentTemplateId,
   SurchargeType,
   TaxRate,
 } from "./database";
 import type { PreviewCompany } from "./company";
 import type { PreviewCustomer } from "./customer";
 
-export type { DocStatus, DocType, DocumentRelationType, SurchargeType, TaxRate };
+export type {
+  DocStatus,
+  DocType,
+  DocumentRelationType,
+  DocumentTemplateId,
+  SurchargeType,
+  TaxRate,
+};
+export { DOCUMENT_TEMPLATE_IDS } from "./database";
+
+/** Vorlage + Layoutversion, mit der ein Beleg gerendert wird. */
+export interface DocumentTemplateRef {
+  id: DocumentTemplateId;
+  /** Veröffentlichte Versionen ändern sich optisch nie; neue Optik = neue Version. */
+  version: number;
+}
 
 export interface TaxGroup {
   rate: TaxRate;
@@ -84,6 +100,8 @@ export interface DocumentListItem {
 export interface DocumentItem {
   position: number;
   descriptionDe: string;
+  /** Optionale deutsche Positionsbeschreibung; bei bestehenden Positionen null. */
+  additionalDescriptionDe?: string | null;
   amount: number;
   unit: string;
   unitPrice: number; // cents
@@ -156,6 +174,8 @@ export interface DocumentPreview {
   items: DocumentItem[];
   convertedInvoiceId: string | null;
   basedOnQuoteId: string | null;
+  /** Serverseitig gewählte Vorlage; Browser-Vorschau und PDF rendern genau diese. */
+  template: DocumentTemplateRef;
 }
 
 export type ServiceTimingMode = "none" | "date" | "period";
@@ -205,6 +225,8 @@ export interface DraftItem {
   position: number;
   /** Deutscher Begriff – erscheint so auf dem Dokument. */
   descriptionDe: string;
+  /** Optionale deutsche Positionsbeschreibung; bei bestehenden Positionen null. */
+  additionalDescriptionDe?: string | null;
   amount: number;
   unit: string;
   unitPrice: number; // cents – Verkaufspreis, geht aufs Dokument
@@ -217,6 +239,13 @@ export interface DraftItem {
   purchasePrice: number | null; // cents – intern
   surcharge: number | null; // percent: Basispunkte (1250 = 12,50 %); fixed: cents – intern
   surchargeType: SurchargeType | null; // intern
+}
+
+/** Serverseitig gebündelter Startzustand für Schritt 2. */
+export interface Step2DocumentData {
+  preview: DocumentPreview;
+  /** Bearbeitungssicht; darf niemals direkt an den Renderer gehen. */
+  draftItems: DraftItem[];
 }
 
 /** Kontext des Drafts für den Kopfbereich von Schritt 2. */
@@ -236,6 +265,14 @@ export interface FreeItemInput {
   unitPrice: number; // cents
 }
 
+/** Rein lokaler, nicht persistierbarer Eingabestand der Dokumentvorschau. */
+export interface TemporaryDocumentItemInput {
+  descriptionDe: string;
+  amount: number;
+  unit: string;
+  unitPrice: number; // cents – nur sichtbarer Verkaufspreis
+}
+
 export interface FremdItemInput {
   descriptionDe: string;
   unit: string;
@@ -247,6 +284,8 @@ export interface FremdItemInput {
 
 export interface ItemPatch {
   descriptionDe?: string;
+  /** Nur für bestehende Positionen; null oder reine Leerzeichen entfernen den Text. */
+  additionalDescriptionDe?: string | null;
   amount?: number;
   unit?: string;
   unitPrice?: number; // cents – nur für normale Positionen

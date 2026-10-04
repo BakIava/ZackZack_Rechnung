@@ -221,15 +221,6 @@ export default function LanguagePage() {
             </div>
           </div>
         </div>
-
-        <div className="ls-foot">
-          <Icon name="shieldCheck" size={14} />
-          <span dir={dir}>
-            {dir === "rtl"
-              ? "يمكن تغيير اللغة لاحقاً في الإعدادات"
-              : "Später jederzeit in den Einstellungen änderbar"}
-          </span>
-        </div>
       </div>
     </div>
   );

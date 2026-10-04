@@ -4,13 +4,13 @@ import {
   Building2,
   ClipboardList,
   History,
-  Settings,
   Users,
   type LucideIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { startNavigationTransition } from "@/lib/navigation-transition";
 import "./sidebar-nav.css";
 
 interface NavEntry {
@@ -25,11 +25,17 @@ interface SidebarNavProps {
   customerCount: number;
   catalogCount: number;
   menuLabel: string;
+  collapsed?: boolean;
 }
 
 const STROKE = 1.75;
 
-export function SidebarNav({ customerCount, catalogCount, menuLabel }: SidebarNavProps) {
+export function SidebarNav({
+  customerCount,
+  catalogCount,
+  menuLabel,
+  collapsed = false,
+}: SidebarNavProps) {
   const t = useTranslations("Dashboard");
   const pathname = usePathname();
 
@@ -38,7 +44,6 @@ export function SidebarNav({ customerCount, catalogCount, menuLabel }: SidebarNa
     { id: "customers", href: "/customers", icon: Users, labelKey: "navCustomers", count: customerCount },
     { id: "catalog", href: "/catalog", icon: ClipboardList, labelKey: "navCatalog", count: catalogCount },
     { id: "history", href: "/documents", icon: History, labelKey: "navDocuments" },
-    { id: "settings", href: "/settings", icon: Settings, labelKey: "navSettings" },
   ];
 
   return (
@@ -53,6 +58,11 @@ export function SidebarNav({ customerCount, catalogCount, menuLabel }: SidebarNa
             className="dnav-item"
             data-on={isActive ? "1" : "0"}
             aria-current={isActive ? "page" : undefined}
+            aria-label={collapsed ? t(labelKey) : undefined}
+            title={collapsed ? t(labelKey) : undefined}
+            onClick={() => {
+              if (!isActive) startNavigationTransition();
+            }}
           >
             <Icon size={21} strokeWidth={STROKE} aria-hidden />
             <span>{t(labelKey)}</span>

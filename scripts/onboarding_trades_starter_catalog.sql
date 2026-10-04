@@ -114,9 +114,15 @@ GRANT SELECT ON TABLE public.trades TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.company_trades TO authenticated;
 GRANT SELECT ON TABLE public.service_templates TO authenticated;
 
--- Keep the existing signature so deployments that already installed the old
--- function can upgrade it in place. trade_ids is carried inside company_data.
-CREATE OR REPLACE FUNCTION public.complete_onboarding(company_data jsonb)
+-- Shared onboarding implementation for an explicit auth user. Internal only:
+-- not executable by any application role (see REVOKE below). It is reached
+-- through public.complete_onboarding (tenant, auth.uid()) and through the
+-- admin backend's own SECURITY DEFINER function owned by the same role.
+-- trade_ids is carried inside company_data.
+CREATE OR REPLACE FUNCTION public.complete_onboarding_for_user(
+  p_user_id uuid,
+  company_data jsonb
+)
 RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -129,7 +135,7 @@ DECLARE
   v_trade_ids text[];
   v_invalid_trade_ids text[];
 BEGIN
-  v_user_id := auth.uid();
+  v_user_id := p_user_id;
   IF v_user_id IS NULL THEN
     RAISE EXCEPTION USING MESSAGE = 'onboarding_not_authenticated';
   END IF;
@@ -245,6 +251,28 @@ EXCEPTION
       RAISE EXCEPTION USING MESSAGE = 'onboarding_already_completed';
     END IF;
     RAISE;
+END;
+$$;
+
+-- Supabase's default privileges grant EXECUTE on new public functions to
+-- anon, authenticated and service_role explicitly, so revoking from PUBLIC
+-- alone is not enough. The owning role keeps its implicit EXECUTE, which is
+-- what SECURITY DEFINER callers owned by that role rely on.
+REVOKE ALL ON FUNCTION public.complete_onboarding_for_user(uuid, jsonb)
+  FROM PUBLIC, anon, authenticated, service_role;
+
+-- Keep the existing signature so deployments that already installed the old
+-- function can upgrade it in place. Thin tenant wrapper: the caller can only
+-- onboard itself (auth.uid()); all validation and errors come from the shared
+-- implementation unchanged.
+CREATE OR REPLACE FUNCTION public.complete_onboarding(company_data jsonb)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN public.complete_onboarding_for_user(auth.uid(), company_data);
 END;
 $$;
 

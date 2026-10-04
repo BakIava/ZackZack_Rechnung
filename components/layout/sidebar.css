@@ -81,3 +81,34 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+/* Expliziter Desktop-Kompaktmodus. Ohne Prop bleibt die bestehende Sidebar
+   unverändert; Schritt 2 nutzt den zusätzlichen Platz für die A4-Vorschau. */
+.dside--collapsed {
+  inline-size: 76px;
+  padding-block: 22px 16px;
+  padding-inline: 12px;
+}
+
+.dside--collapsed .dside-brand,
+.dside--collapsed .dside-user {
+  justify-content: center;
+  padding-inline: 4px;
+}
+
+.dside--collapsed .dside-name,
+.dside--collapsed .dside-uname,
+.dside--collapsed .dside-lang-txt {
+  display: none;
+}
+
+.dside--collapsed .dside-foot {
+  align-items: center;
+}
+
+.dside--collapsed .dside-lang {
+  inline-size: 44px;
+  block-size: 44px;
+  justify-content: center;
+  padding: 0;
+}

@@ -34,6 +34,22 @@ export function deriveInitialsFromName(name: string): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+/**
+ * Wortmarke aus den Anfangsbuchstaben aller Namenswörter („Technik Hilfe
+ * Sander“ → „THS“), höchstens `maxLetters`; Wörter ohne Buchstaben am Anfang
+ * („&“, „-“) zählen nicht. Ein einzelnes Wort ergibt die ersten zwei Zeichen.
+ */
+export function deriveCompanyInitials(companyName: string, maxLetters = 4): string {
+  const words = companyName.trim().split(/\s+/).filter((word) => /^\p{L}/u.test(word));
+  if (words.length === 0) return "—";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return words
+    .slice(0, maxLetters)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+}
+
 /** Firmenlogo-Fallback; bewusst unabhängig von Empfänger-/Kundendaten. */
 export function deriveCompanyMonogram(companyName: string): string {
   return companyName.trim() ? deriveInitialsFromName(companyName) : "—";

@@ -22,6 +22,13 @@
   visibility: visible;
 }
 
+/* Seitenwechsel liegen in unterschiedlichen Layout-Segmenten. Als feste
+   Variante deckt das Overlay deshalb stets den sichtbaren Viewport ab. */
+.zz-ov--fullscreen {
+  position: fixed;
+  z-index: 100;
+}
+
 .zz-ov-box {
   display: flex;
   flex-direction: column;

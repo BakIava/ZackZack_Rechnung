@@ -9,12 +9,6 @@ import {
 
 // Vollständige, große Rechnung (> 250 €): Empfängerangaben sind Pflicht.
 const grossVollstaendig: DokumentPflichtInput = {
-  companyName: "Yılmaz Malerbetrieb",
-  companyStreet: "Neckarstraße",
-  companyPostcode: "70190",
-  companyCity: "Stuttgart",
-  companySteuernummer: "26/123/45678",
-  companyUstId: null,
   issueDate: "2026-06-06",
   itemCount: 2,
   totalAmountCents: 90_000,
@@ -25,25 +19,10 @@ const grossVollstaendig: DokumentPflichtInput = {
   customerCity: "Bingen",
 };
 
-describe("pruefeDokumentPflicht – Firma & Dokument", () => {
+describe("pruefeDokumentPflicht – Dokument", () => {
   it("ist finalisierbar, wenn alle Pflichtangaben vorhanden sind", () => {
     expect(istFinalisierbar(pruefeDokumentPflicht(grossVollstaendig))).toBe(true);
     expect(offeneMaengel(pruefeDokumentPflicht(grossVollstaendig))).toHaveLength(0);
-  });
-
-  it("akzeptiert USt-IdNr. als Ersatz für die Steuernummer", () => {
-    const checks = pruefeDokumentPflicht({
-      ...grossVollstaendig,
-      companySteuernummer: null,
-      companyUstId: "DE123456789",
-    });
-    expect(istFinalisierbar(checks)).toBe(true);
-  });
-
-  it("blockiert bei unvollständiger Firmenadresse", () => {
-    const checks = pruefeDokumentPflicht({ ...grossVollstaendig, companyCity: "" });
-    const mangel = offeneMaengel(checks).find((c) => c.feld === "companyAddress");
-    expect(mangel?.location).toBe("settings");
   });
 
   it("blockiert ohne Position und ohne Rechnungsdatum", () => {
@@ -55,6 +34,15 @@ describe("pruefeDokumentPflicht – Firma & Dokument", () => {
     const felder = offeneMaengel(checks).map((c) => c.feld);
     expect(felder).toContain("positions");
     expect(felder).toContain("issueDate");
+  });
+
+  it("liefert ausschließlich dokumentbezogene Prüffelder", () => {
+    expect(pruefeDokumentPflicht(grossVollstaendig).map((check) => check.feld)).toEqual([
+      "issueDate",
+      "positions",
+      "customerName",
+      "customerAddress",
+    ]);
   });
 });
 
@@ -106,5 +94,24 @@ describe("pruefeDokumentPflicht – betragsabhängige Empfängerangaben", () => 
       customerCity: null,
     });
     expect(istFinalisierbar(knapp)).toBe(false);
+  });
+
+  it("verlangt bei Angeboten unabhängig vom Betrag Empfänger und Gültigkeit", () => {
+    const angebot = pruefeDokumentPflicht({
+      ...grossVollstaendig,
+      docType: "quote",
+      totalAmountCents: 1,
+      validUntil: null,
+      customerName: null,
+      customerStreet: null,
+      customerStreetNo: null,
+      customerPostcode: null,
+      customerCity: null,
+    });
+    expect(offeneMaengel(angebot).map((check) => check.feld)).toEqual([
+      "validUntil",
+      "customerName",
+      "customerAddress",
+    ]);
   });
 });
