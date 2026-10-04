@@ -35,6 +35,15 @@ export type TaxRate = 0 | 7 | 19;
 
 export type CustomerType = "private" | "business";
 
+/**
+ * Belegvorlagen — DB-Werte von companies.document_template_id und
+ * documents.template_id (CHECK-Constraints in scripts/document-templates.sql).
+ * Versionen und Layouts: lib/pdf/templates/template-catalog.ts bzw. template-registry.tsx.
+ */
+export const DOCUMENT_TEMPLATE_IDS = ["standard", "ths-classic", "erhan-excel"] as const;
+
+export type DocumentTemplateId = (typeof DOCUMENT_TEMPLATE_IDS)[number];
+
 /** Stabile, sprachunabhängige IDs der im MVP unterstützten Gewerke. */
 export const TRADE_IDS = [
   "painter",
@@ -82,6 +91,8 @@ export interface CompanyRow {
   created_at: string;
   updated_at: string;
   payment_days: number;
+  /** Gewählte Belegvorlage für neue Belege (NOT NULL, Default 'standard'). */
+  document_template_id: DocumentTemplateId;
 }
 
 /** public.users — Verknüpfung Auth-User ↔ Firma (id = auth.users.id) */
@@ -212,6 +223,12 @@ export interface DocumentRow {
   logo_url_snapshot: string | null;
   /** Unterscheidet einen bewusst leeren Snapshot von historischen Zeilen vor der Migration. */
   logo_snapshot_captured: boolean;
+  /**
+   * Beim Finalisieren eingefrorene Vorlage + Layoutversion (beide gesetzt oder
+   * beide null). Entwürfe und Altbelege vor der Migration: null.
+   */
+  template_id: DocumentTemplateId | null;
+  template_version: number | null;
 }
 
 /**
@@ -226,6 +243,7 @@ export interface DocumentItemRow {
   service_id: string | null;
   position: number;
   description_de: string;
+  additional_description_de: string | null;
   amount: number; // numeric
   unit: string | null;
   unit_price: number; // cents – Verkaufspreis

@@ -10,6 +10,10 @@ const finalize = readFileSync(
   join(process.cwd(), "scripts", "finalize_document.sql"),
   "utf8",
 );
+const additionalDescriptionMigration = readFileSync(
+  join(process.cwd(), "scripts", "document-item-additional-description.sql"),
+  "utf8",
+);
 
 describe("Angebots-Workflow-SQL", () => {
   it("modelliert Gueltigkeit und Rechnung-only-Zahlungen ohne neuen Dokumentstatus", () => {
@@ -39,6 +43,28 @@ describe("Angebots-Workflow-SQL", () => {
     expect(body).toContain("INSERT INTO public.document_relations");
     expect(body).toContain("conversion_preview_stale");
     expect(body).toContain("expired_quote_confirmation_required");
+  });
+
+  it("legt eine nullable Textspalte ohne Datenänderung an", () => {
+    expect(additionalDescriptionMigration).toMatch(
+      /ADD COLUMN IF NOT EXISTS additional_description_de text NULL/i,
+    );
+    expect(additionalDescriptionMigration).not.toMatch(/\bUPDATE\b|varchar|CHECK\s*\(/i);
+  });
+
+  it("kopiert Positionsbeschreibungen in beide neuen Drafts", () => {
+    const conversion = migration.slice(
+      migration.indexOf("CREATE OR REPLACE FUNCTION public.convert_quote_to_invoice"),
+      migration.indexOf("CREATE OR REPLACE FUNCTION public.duplicate_quote"),
+    );
+    const duplicate = migration.slice(
+      migration.indexOf("CREATE OR REPLACE FUNCTION public.duplicate_quote"),
+      migration.indexOf("REVOKE ALL ON FUNCTION public.project_quote_invoice_total"),
+    );
+    for (const body of [conversion, duplicate]) {
+      expect(body).toMatch(/INSERT INTO public\.document_items\s*\([\s\S]*?\badditional_description_de\b/);
+      expect(body).toMatch(/SELECT\s+v_(?:invoice_id|new_id),[\s\S]*?\bi\.additional_description_de\b/);
+    }
   });
 
   it("bewahrt explizite Steuersaetze und nutzt sonst den aktuellen Standard", () => {
