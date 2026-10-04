@@ -5,6 +5,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { routing, isRtlLocale } from "@/i18n/routing";
+import { NavigationLoadingOverlay } from "@/components/shared/navigation-loading-overlay";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -59,6 +60,7 @@ export default async function LocaleLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-svh antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
+          <NavigationLoadingOverlay className="zz-loading" />
           {children}
         </NextIntlClientProvider>
         <SpeedInsights />

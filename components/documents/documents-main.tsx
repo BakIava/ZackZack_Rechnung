@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
+import { NavigationForm } from "@/components/shared/navigation-form";
 import { getDocumentItems } from "@/lib/repositories/document-items.client";
 import { markDocumentAsPaid } from "@/lib/documents/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
@@ -176,12 +177,12 @@ export function DocumentsMain({
               </button>
             )}
           </div>
-          <form action={startNewDocument} className="contents">
+          <NavigationForm action={startNewDocument} className="contents">
             <button type="submit" className="documents-new-button">
               <Plus size={19} strokeWidth={2.5} />
               {t("newBtn")}
             </button>
-          </form>
+          </NavigationForm>
         </div>
       </div>
 
