@@ -15,7 +15,6 @@ interface AppShellProps {
 function resolvePageClass(pathname: string): string {
   if (pathname.includes("/customers")) return "zz-cust";
   if (pathname.includes("/catalog")) return "zz-catalog";
-  if (pathname.includes("/settings")) return "zz-settings";
   return "zz-dash";
 }
 

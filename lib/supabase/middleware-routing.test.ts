@@ -83,7 +83,7 @@ describe("Middleware-Routing", () => {
     expect(target.searchParams.get("next")).toBe("/de/create/doc-1/2");
   });
 
-  it.each(["/api/settings", "/api/export.json", "/api/script.js"])(
+  it.each(["/api/catalog", "/api/export.json", "/api/script.js"])(
     "wendet die Middleware auf %s an",
     (url) => {
       expect(

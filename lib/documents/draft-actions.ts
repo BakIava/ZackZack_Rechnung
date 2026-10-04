@@ -33,7 +33,7 @@ async function getCompanyCtx() {
 /**
  * Öffnet einen bestehenden leeren Entwurf wieder oder legt einen neuen an und
  * gibt dessen id zurück. §19-Status wird als Snapshot aus den Firmen-
- * Einstellungen übernommen (in Schritt 2 pro Rechnung überschreibbar). Keine
+ * Firmenvorgaben übernommen (in Schritt 2 pro Rechnung überschreibbar). Keine
  * Rechnungsnummer – die wird erst bei der Finalisierung vergeben.
  */
 export async function createDraftDocument(): Promise<

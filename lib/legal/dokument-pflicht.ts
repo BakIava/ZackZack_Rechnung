@@ -1,7 +1,8 @@
 /**
- * §14-UStG-Pflichtangaben-Check auf Dokumentebene, ausgewertet **vor der
- * Finalisierung**. Rein funktional (nur Primitives rein, Prüfliste raus), damit
- * die Regeln unabhängig von Supabase testbar bleiben.
+ * Dokumentbezogener Pflichtangaben-Check, ausgewertet **vor der Finalisierung**.
+ * Rein funktional (nur Primitives rein, Prüfliste raus), damit die Regeln
+ * unabhängig von Supabase testbar bleiben. Unternehmensstammdaten werden
+ * außerhalb der App gepflegt und hier bewusst nicht validiert.
  *
  * Empfängerangaben (§14 Abs. 4 Nr. 1: Name + vollständige Anschrift) sind
  * **betragsabhängig**: Bei einer Kleinbetragsrechnung bis 250 € brutto
@@ -20,13 +21,10 @@ import { isValidQuoteDateRange } from "@/lib/documents/document-dates";
 /** Kleinbetragsrechnung-Grenze (§ 33 UStDV): 250,00 € brutto in Cent. */
 export const KLEINBETRAG_LIMIT_CENTS = 25_000;
 
-/** Wo eine fehlende Angabe ergänzt wird – steuert den Korrigieren-Link. */
-export type PflichtLocation = "settings" | "customer" | "positions" | "validity";
+/** Wo eine fehlende Dokumentangabe ergänzt wird – steuert den Korrigieren-Link. */
+export type PflichtLocation = "customer" | "positions" | "validity";
 
 export type PflichtFeld =
-  | "companyName"
-  | "companyAddress"
-  | "companySteuer"
   | "issueDate"
   | "validUntil"
   | "positions"
@@ -36,12 +34,6 @@ export type PflichtFeld =
 export interface DokumentPflichtInput {
   /** Ohne Angabe aus Rueckwaertskompatibilitaet als Rechnung behandelt. */
   docType?: DocType;
-  companyName: string | null;
-  companyStreet: string | null;
-  companyPostcode: string | null;
-  companyCity: string | null;
-  companySteuernummer: string | null;
-  companyUstId: string | null;
   /** issue_date des Dokuments (YYYY-MM-DD) oder null. */
   issueDate: string | null;
   validUntil?: string | null;
@@ -78,20 +70,6 @@ function mk(feld: PflichtFeld, location: PflichtLocation, ok: boolean): PflichtC
 export function pruefeDokumentPflicht(input: DokumentPflichtInput): PflichtCheck[] {
   const isQuote = input.docType === "quote";
   const checks: PflichtCheck[] = [
-    mk("companyName", "settings", gefuellt(input.companyName)),
-    mk(
-      "companyAddress",
-      "settings",
-      gefuellt(input.companyStreet) &&
-        gefuellt(input.companyPostcode) &&
-        gefuellt(input.companyCity),
-    ),
-    // Steuernummer ODER USt-IdNr. genügt (§14 Abs. 4 Nr. 2 UStG).
-    mk(
-      "companySteuer",
-      "settings",
-      gefuellt(input.companySteuernummer) || gefuellt(input.companyUstId),
-    ),
     mk("issueDate", "customer", gefuellt(input.issueDate)),
     mk("positions", "positions", input.itemCount >= 1),
   ];

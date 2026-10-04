@@ -18,9 +18,6 @@ interface PflichtListProps {
 const STROKE = 1.75;
 
 const FELD_LABEL_KEY: Record<PflichtFeld, string> = {
-  companyName: "pfCompanyName",
-  companyAddress: "pfCompanyAddress",
-  companySteuer: "pfCompanySteuer",
   customerName: "pfCustomerName",
   customerAddress: "pfCustomerAddress",
   issueDate: "pfIssueDate",
@@ -29,7 +26,6 @@ const FELD_LABEL_KEY: Record<PflichtFeld, string> = {
 };
 
 const LOCATION_LABEL_KEY: Record<PflichtLocation, string> = {
-  settings: "fixInSettings",
   customer: "fixAtCustomer",
   positions: "fixAtPositions",
   validity: "fixAtValidity",
@@ -37,8 +33,6 @@ const LOCATION_LABEL_KEY: Record<PflichtLocation, string> = {
 
 function fixHref(location: PflichtLocation, documentId: string): string {
   switch (location) {
-    case "settings":
-      return "/settings";
     case "customer":
       // ?fix=customer signalisiert Schritt 1, einen Hinweis auf den
       // „Kunde bearbeiten"-Button anzuzeigen.
@@ -53,7 +47,7 @@ function fixHref(location: PflichtLocation, documentId: string): string {
 /**
  * Pflichtangaben-Ampel für die Finalisierung. Zeigt alle §14-Checks; jeder
  * offene (rote) Punkt bekommt einen Korrigieren-Link genau an die Stelle, an
- * der er ergänzt wird (Einstellungen / Kunde / Positionen).
+ * der die Dokumentangabe ergänzt wird (Kunde / Positionen / Gültigkeit).
  */
 export function PflichtList({ checks, documentId }: PflichtListProps) {
   const t = useTranslations("Create");
@@ -77,7 +71,7 @@ export function PflichtList({ checks, documentId }: PflichtListProps) {
           </div>
         </div>
       </div>
-      <div className="check-list">
+      <div className="check-list" data-testid="document-requirements">
         {checks.map((c) => (
           <div key={c.feld} className={`check-row${c.ok ? "" : " bad"}`}>
             <span className={`check-tick ${c.ok ? "ok" : "bad"}`}>

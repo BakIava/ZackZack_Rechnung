@@ -1,95 +1,13 @@
 /**
  * Repository `companies` — einzige Stelle mit Supabase-Zugriff auf die Tabelle
- * `companies`, die zugehörige `number_sequences`-Anzeige und den
- * Logo-Storage-Bucket `company-logos`.
+ * `companies` und den Logo-Storage-Bucket `company-logos`.
  */
 
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCurrentUser, getCurrentCompanyId } from "@/lib/supabase/auth";
-import type { CompanySettings, SettingsData } from "@/types/company";
 import type { TaxRate } from "@/types/database";
 import type { PreparedCompanyLogo } from "@/lib/company-logo/constants";
 import { resolveDocumentDefaultTaxRate } from "@/lib/documents/tax";
-
-export type GetSettingsResult =
-  | { ok: true; data: SettingsData }
-  | { ok: false; reason: "unauthenticated" | "no_profile" | "db_error"; detail?: string };
-
-const COMPANY_COLUMNS =
-  "id, name, legal_form, street, street_no, postcode, city, phone, mobile, fax, " +
-  "email, director, steuernummer, ust_id, registergericht, handelsregister_nr, " +
-  "kleinunternehmer, default_tax_rate, bank_name, iban, bic, account_holder, logo_url, payment_days";
-
-const COMPANY_COLUMNS_FALLBACK =
-  "id, name, legal_form, street, street_no, postcode, city, phone, " +
-  "email, director, steuernummer, ust_id, kleinunternehmer, bank_name, iban, bic, account_holder, logo_url";
-
-const COMPANY_DEFAULTS: Partial<CompanySettings> = {
-  mobile: null,
-  fax: null,
-  registergericht: null,
-  handelsregister_nr: null,
-  payment_days: 14,
-  default_tax_rate: 19,
-};
-
-/** Vollständige Stammdaten + Auth-E-Mail + aktuelle Rechnungsnummer (Einstellungen). */
-export async function getSettingsData(): Promise<GetSettingsResult> {
-  const user = await getCurrentUser();
-  if (!user) return { ok: false, reason: "unauthenticated" };
-
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return { ok: false, reason: "no_profile" };
-
-  const supabase = await createClient();
-  let company: Record<string, unknown> | null = null;
-
-  const { data: full, error: fullError } = await supabase
-    .from("companies")
-    .select(COMPANY_COLUMNS)
-    .eq("id", companyId)
-    .single();
-
-  if (full && !fullError) {
-    company = full as unknown as Record<string, unknown>;
-  } else {
-    // Fallback: some columns (payment_days, mobile, fax…) may not
-    // exist yet in the DB. Retry with the minimal set that's guaranteed to be there.
-    const { data: minimal, error: minError } = await supabase
-      .from("companies")
-      .select(COMPANY_COLUMNS_FALLBACK)
-      .eq("id", companyId)
-      .single();
-
-    if (!minimal || minError) {
-      return { ok: false, reason: "db_error", detail: (minError ?? fullError)?.message };
-    }
-    company = { ...COMPANY_DEFAULTS, ...(minimal as unknown as Record<string, unknown>) };
-  }
-
-  const year = new Date().getFullYear();
-  const { data: sequence } = await supabase
-    .from("number_sequences")
-    .select("last_number")
-    .eq("company_id", companyId)
-    .eq("document_type", "invoice")
-    .eq("year", year)
-    .maybeSingle();
-
-  const currentInvoiceNumber = sequence
-    ? `${year}-${String((sequence as { last_number: number }).last_number).padStart(4, "0")}`
-    : null;
-
-  return {
-    ok: true,
-    data: {
-      company: company as unknown as CompanySettings,
-      authEmail: user.email ?? null,
-      currentInvoiceNumber,
-    },
-  };
-}
 
 /** Name + Inhaber der eigenen Firma (RLS-scoped, Sidebar/Dashboard). */
 export async function getCompanyNameAndDirector(): Promise<{
@@ -139,7 +57,7 @@ export async function getCompanyTaxSettings(
 }
 
 /** Teil-Update der Stammdaten (Patch mit DB-Spaltennamen). */
-export async function updateCompany(
+async function updateCompany(
   companyId: string,
   patch: Record<string, unknown>,
 ): Promise<{ error?: string }> {
@@ -243,16 +161,6 @@ export async function saveCompanyLogo(
 
   const cleanup = await removeUnreferencedLogo(companyId, previousUrl);
   return { publicUrl, ...cleanup };
-}
-
-/** Entfernt die DB-Verknüpfung und löscht das Objekt, sofern kein Beleg es referenziert. */
-export async function removeCompanyLogo(
-  companyId: string,
-): Promise<{ cleanupFailed?: boolean } | { error: string }> {
-  const previousUrl = await getCompanyLogoUrl(companyId);
-  const saveResult = await updateCompany(companyId, { logo_url: null });
-  if (saveResult.error) return { error: saveResult.error };
-  return removeUnreferencedLogo(companyId, previousUrl);
 }
 
 /** Firma anlegen (Service-Role, nur Onboarding – users-Zeile existiert noch nicht). */

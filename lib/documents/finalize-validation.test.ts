@@ -28,6 +28,7 @@ function validPreview(overrides: Partial<DocumentPreview> = {}): DocumentPreview
       city: "Berlin",
       phone: null,
       mobile: null,
+      fax: null,
       email: null,
       director: null,
       steuernummer: "12/345/67890",
@@ -66,29 +67,24 @@ function validPreview(overrides: Partial<DocumentPreview> = {}): DocumentPreview
     ],
     convertedInvoiceId: null,
     basedOnQuoteId: null,
+    template: { id: "standard", version: 1 },
     ...overrides,
   };
 }
 
 describe("serverseitige Finalisierungsprüfung", () => {
-  it("akzeptiert für Rechnungen und Angebote eine USt-IdNr. statt der Steuernummer", () => {
-    const company = {
+  it("bewertet Unternehmensstammdaten bewusst nicht mehr", () => {
+    const unvollstaendigeFirma = {
       ...validPreview().company,
+      name: "",
+      street: null,
+      postcode: null,
+      city: null,
       steuernummer: null,
-      ustId: "DE123456789",
+      ustId: null,
     };
 
-    expect(canFinalizePreview(validPreview({ company }))).toBe(true);
-    expect(canFinalizePreview(validPreview({
-      docType: "quote",
-      company,
-      validUntil: "2026-08-15",
-    }))).toBe(true);
-    expect(
-      canFinalizePreview(validPreview({
-        company: { ...company, ustId: "  " },
-      })),
-    ).toBe(false);
+    expect(canFinalizePreview(validPreview({ company: unvollstaendigeFirma }))).toBe(true);
   });
 
   it("bewertet die Kleinbetragsgrenze anhand des Bruttobetrags", () => {
