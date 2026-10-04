@@ -3,7 +3,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasUserProfile } from "@/lib/repositories/users";
+import { createDevLoginTokenHash } from "@/lib/repositories/dev-auth";
 import { getCurrentUser } from "@/lib/supabase/auth";
+import { isDevTestLogin } from "./dev-login";
 import { resolveAuthLocale } from "./locale";
 import { clearSessionLock } from "./session-lock-actions";
 
@@ -15,6 +17,9 @@ export async function sendLoginCode(email: string, locale: string): Promise<Auth
   if (await getCurrentUser()) {
     redirect(`/${safeLocale}/dashboard`);
   }
+
+  // Dev-Test-Konten (@test.com): kein OTP-Versand, der Code wird in verifyLoginCode ignoriert.
+  if (isDevTestLogin(email)) return {};
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
@@ -38,11 +43,9 @@ export async function verifyLoginCode(
 ): Promise<AuthResult> {
   const safeLocale = resolveAuthLocale(locale);
   const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({
-    email,
-    token: code,
-    type: "email",
-  });
+  const { error } = isDevTestLogin(email)
+    ? await verifyDevTestLogin(supabase, email)
+    : await supabase.auth.verifyOtp({ email, token: code, type: "email" });
 
   if (error) {
     return { error: error.message, errorKey: "codeExpiredOrInvalid" };
@@ -58,6 +61,16 @@ export async function verifyLoginCode(
   const hasProfile = await hasUserProfile(user.id);
 
   redirect(hasProfile ? `/${safeLocale}/dashboard` : `/${safeLocale}/setup`);
+}
+
+/** Dev-Modus: beliebiger Code → Session per serverseitig erzeugtem Magic-Link-Hash. */
+async function verifyDevTestLogin(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  email: string,
+): Promise<{ error: { message: string } | null }> {
+  const tokenHash = await createDevLoginTokenHash(email.trim().toLowerCase());
+  if (!tokenHash) return { error: { message: "Dev test login failed" } };
+  return supabase.auth.verifyOtp({ token_hash: tokenHash, type: "email" });
 }
 
 export async function signOut(): Promise<void> {
