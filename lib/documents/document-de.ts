@@ -28,13 +28,15 @@ export const DOKUMENT_DE = {
   menge: "Menge",
   einzelpreis: "Einzelpreis",
   gesamtSpalte: "Gesamt",
+  zwischensumme: "Zwischensumme",
+  zwischensummeNetto: "Zwischensumme (netto)",
   gesamtNetto: "Gesamt (netto)",
   umsatzsteuer: "Umsatzsteuer",
   rechnungsbetrag: "Rechnungsbetrag",
   angebotssumme: "Angebotssumme",
   /** Exakter §19-Hinweis laut Vorgabe. */
   kleinunternehmerHinweis: "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.",
-  entwurfPlatzhalter: "Entwurf – noch keine Nummer vergeben",
+  entwurfPlatzhalter: "Entwurf",
   bankverbindung: "Bankverbindung",
   iban: "IBAN",
   bic: "BIC",
@@ -83,11 +85,16 @@ function addDaysIso(isoDate: string, days: number): string {
   return d.toISOString().split("T")[0];
 }
 
+/** Fälligkeitsdatum (ISO) einer Rechnung = issue_date + payment_days. */
+export function faelligkeitsdatum(issueDateIso: string, paymentDays: number): string {
+  return addDaysIso(issueDateIso, paymentDays);
+}
+
 /**
  * Zahlungsziel-Text für Rechnungen (nur dort – Angebote haben kein
  * Zahlungsziel). Fälligkeitsdatum = issue_date + payment_days.
  */
 export function zahlungszielText(issueDateIso: string, paymentDays: number): string {
-  const faellig = formatDateDE(addDaysIso(issueDateIso, paymentDays));
+  const faellig = formatDateDE(faelligkeitsdatum(issueDateIso, paymentDays));
   return `Zahlbar innerhalb von ${paymentDays} Tagen (bis ${faellig}) ohne Abzug auf das unten genannte Konto.`;
 }

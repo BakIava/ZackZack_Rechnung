@@ -24,6 +24,7 @@ vi.mock("@/lib/pdf/document-logo", () => ({
 }));
 
 import { PDF_BUCKET, pdfObjectPath } from "@/lib/repositories/document-pdfs";
+import { DocumentTemplateError } from "@/lib/pdf/templates/template-catalog";
 import {
   archiveDocumentPdf,
   fetchArchivedPdf,
@@ -59,6 +60,7 @@ const preview: DocumentPreview = {
     city: null,
     phone: null,
     mobile: null,
+    fax: null,
     email: null,
     director: null,
     steuernummer: null,
@@ -74,6 +76,7 @@ const preview: DocumentPreview = {
   items: [],
   convertedInvoiceId: null,
   basedOnQuoteId: null,
+  template: { id: "standard", version: 1 },
 };
 
 beforeEach(() => {
@@ -140,5 +143,39 @@ describe("fetchArchivedPdf", () => {
   it("gibt null zurück, wenn kein Objekt existiert", async () => {
     h.download.mockResolvedValue({ data: null, error: { message: "not found" } });
     expect(await fetchArchivedPdf(preview.id)).toBeNull();
+  });
+});
+
+describe("Archiv bleibt maßgeblich – unabhängig von Vorlagen", () => {
+  it("liefert ein vorhandenes Archiv auch dann, wenn seine Vorlage heute nicht renderbar wäre", async () => {
+    h.download.mockResolvedValue({ data: blobLike("ARCHIVED"), error: null });
+
+    const out = await getOrArchiveDocumentPdf({
+      ...preview,
+      template: { id: "standard", version: 99 },
+    });
+
+    expect(out.toString()).toBe("ARCHIVED");
+    expect(h.renderDocumentPdfBuffer).not.toHaveBeenCalled();
+    expect(h.upload).not.toHaveBeenCalled();
+  });
+
+  it("rendert beim Nacharchivieren genau diesen Beleg samt seiner Vorlage", async () => {
+    h.download.mockResolvedValue({ data: null, error: { message: "not found" } });
+    h.upload.mockResolvedValue({ error: null });
+
+    await getOrArchiveDocumentPdf(preview);
+
+    expect(h.renderDocumentPdfBuffer).toHaveBeenCalledWith(preview, null);
+  });
+
+  it("legt bei einem Vorlagenfehler nichts im Archiv ab", async () => {
+    h.download.mockResolvedValue({ data: null, error: { message: "not found" } });
+    h.renderDocumentPdfBuffer.mockRejectedValueOnce(
+      new DocumentTemplateError("unknown_template_version", "standard@99"),
+    );
+
+    await expect(getOrArchiveDocumentPdf(preview)).rejects.toBeInstanceOf(DocumentTemplateError);
+    expect(h.upload).not.toHaveBeenCalled();
   });
 });

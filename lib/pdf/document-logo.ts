@@ -7,7 +7,7 @@
  * Renderzeit nachgeladen — so bleibt der Beleg auch offline reproduzierbar.
  */
 
-import type { PdfLogo } from "@/lib/pdf/document-pdf";
+import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { COMPANY_LOGO_MAX_BYTES } from "@/lib/company-logo/constants";
 import {
   prepareCompanyLogoBytes,

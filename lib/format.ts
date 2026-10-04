@@ -10,6 +10,26 @@ export function formatMoney(cents: number): string {
   return moneyFormat.format(cents / 100);
 }
 
+const decimalFormat = new Intl.NumberFormat("de-DE", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/** Betrag in ganzzahligen Cents als deutsche Dezimalzahl ohne Währungszeichen („1.234,50“). */
+export function formatDecimal(cents: number): string {
+  return decimalFormat.format(cents / 100);
+}
+
+/** Menge mit genau zwei Nachkommastellen („1,00“, „12,50“). */
+export function formatQuantityDecimal(amount: number): string {
+  return decimalFormat.format(amount);
+}
+
+/** Steuersatz in Prozent mit genau zwei Nachkommastellen („19,00“). */
+export function formatRateDecimal(rate: number): string {
+  return decimalFormat.format(rate);
+}
+
 /** Formatiert einen Prozentwert deutsch (bis 2 Nachkommastellen, ohne Nullen). */
 export function formatPercent(value: number): string {
   return value.toLocaleString("de-DE", { maximumFractionDigits: 2 });

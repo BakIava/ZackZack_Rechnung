@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { serviceTimingDisplay } from "./document-de";
+import { faelligkeitsdatum, serviceTimingDisplay, zahlungszielText } from "./document-de";
 
 describe("deutsche Leistungsangabe fuer Vorschau und PDF", () => {
   it("formatiert ein einzelnes Datum", () => {
@@ -27,5 +27,18 @@ describe("deutsche Leistungsangabe fuer Vorschau und PDF", () => {
       servicePeriodStart: null,
       servicePeriodEnd: null,
     })).toBeNull();
+  });
+});
+
+describe("Zahlungsziel und Fälligkeit", () => {
+  it("berechnet die Fälligkeit als Ausstellungsdatum plus Zahlungsziel", () => {
+    expect(faelligkeitsdatum("2026-06-09", 14)).toBe("2026-06-23");
+    expect(faelligkeitsdatum("2026-12-20", 14)).toBe("2027-01-03");
+  });
+
+  it("nennt im Zahlungszieltext genau dieses Fälligkeitsdatum", () => {
+    expect(zahlungszielText("2026-06-09", 14)).toBe(
+      "Zahlbar innerhalb von 14 Tagen (bis 23.06.2026) ohne Abzug auf das unten genannte Konto.",
+    );
   });
 });

@@ -7,6 +7,7 @@ import {
   getDocumentPreviewFresh,
 } from "@/lib/repositories/document-previews";
 import { archiveDocumentPdf } from "@/lib/pdf/pdf-storage";
+import { assertRenderableTemplate } from "@/lib/pdf/templates/template-catalog";
 import { canFinalizePreview } from "./finalize-validation";
 
 export type FinalizeError =
@@ -30,12 +31,15 @@ function mapError(message: string): FinalizeError {
   if (message.includes("document_not_finalizable")) return "notFinalizable";
   if (message.includes("issue_date_missing")) return "issueDateMissing";
   if (message.includes("positions_missing")) return "notFinalizable";
-  if (message.includes("company_tax_id_missing")) return "notFinalizable";
+  if (message.includes("customer_name_missing")) return "notFinalizable";
+  if (message.includes("customer_address_missing")) return "notFinalizable";
   if (message.includes("valid_until_missing")) return "validUntilMissing";
   if (message.includes("valid_until_before_issue_date")) return "validUntilInvalid";
   if (message.includes("expired_quote_confirmation_required")) {
     return "expiredConfirmationRequired";
   }
+  // template_mismatch (Firmenwahl hat sich seit der Vorschau geändert),
+  // template_snapshot_incomplete, template_version_invalid: erneut versuchen.
   return "unknown";
 }
 
@@ -52,12 +56,23 @@ export async function finalizeDocument(
   const user = await getCurrentUser();
   if (!user) return { error: "notAuthenticated" };
 
-  const draftPreview = await getDocumentPreview(documentId);
+  // Die Vorschau des Entwurfs liefert auch die Vorlage, mit der er zuletzt
+  // gerendert wurde (aktuelle Firmenwahl, neueste Version). Genau diese wird
+  // beim Festschreiben eingefroren. Ungültige Vorlagenwerte werfen beim Laden
+  // bzw. Prüfen — dann wird nichts finalisiert und nichts archiviert.
+  let draftPreview: Awaited<ReturnType<typeof getDocumentPreview>>;
+  try {
+    draftPreview = await getDocumentPreview(documentId);
+    if (draftPreview) assertRenderableTemplate(draftPreview.template);
+  } catch (err) {
+    console.error("[finalizeDocument] template invalid:", err instanceof Error ? err.message : err);
+    return { error: "notFinalizable" };
+  }
   if (!draftPreview || draftPreview.status !== "draft" || !canFinalizePreview(draftPreview)) {
     return { error: "notFinalizable" };
   }
 
-  const result = await finalizeDocumentRpc(documentId, confirmExpiredQuote);
+  const result = await finalizeDocumentRpc(documentId, confirmExpiredQuote, draftPreview.template);
   if ("errorMessage" in result) {
     console.error("[finalizeDocument] rpc failed:", result.errorMessage);
     return { error: mapError(result.errorMessage) };

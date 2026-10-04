@@ -8,7 +8,8 @@
  */
 
 import { StyleSheet } from "@react-pdf/renderer";
-import { PDF_FONT_FAMILY } from "@/lib/pdf/fonts";
+import { PDF_A4_SIZE } from "@/lib/pdf/document-pages";
+import { PDF_FONT_FAMILY } from "@/lib/pdf/pdf-font-family";
 
 const INK = "#23303a";
 const HEAD = "#0f2a3f";
@@ -21,22 +22,25 @@ const BOLD = "bold" as const;
 
 export const pdfStyles = StyleSheet.create({
   page: {
-    paddingTop: 44,
-    // Reserviert Platz für den absolut positionierten Footer (s. foot unten),
-    // damit fließender Inhalt nie unter ihm verschwindet.
-    paddingBottom: 130,
-    paddingHorizontal: 44,
+    width: PDF_A4_SIZE.width,
+    height: PDF_A4_SIZE.height,
     fontSize: 10,
     fontFamily: PDF_FONT_FAMILY,
     color: INK,
     lineHeight: 1.5,
+  },
+  pageBody: {
+    paddingTop: 44,
+    paddingBottom: 130,
+    paddingHorizontal: 44,
   },
 
   top: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    paddingBottom: 0,
+    minHeight: 72,
+    paddingBottom: 8,
     borderBottomWidth: 0.5,
     borderBottomColor: RULE,
   },
@@ -99,6 +103,18 @@ export const pdfStyles = StyleSheet.create({
     marginBottom: 14,
   },
 
+  continuationHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    paddingBottom: 12,
+    marginBottom: 16,
+    borderBottomWidth: 0.5,
+    borderBottomColor: RULE,
+  },
+  continuationCompany: { fontSize: 11, fontWeight: BOLD, color: HEAD },
+  continuationTitle: { fontSize: 10, fontWeight: BOLD, color: MUTED },
+
   tHead: {
     flexDirection: "row",
     borderBottomWidth: 1.5,
@@ -118,8 +134,8 @@ export const pdfStyles = StyleSheet.create({
     borderBottomColor: LINE,
   },
   cPos: { width: "8%", color: FAINT },
-  cDesc: { width: "36%", fontWeight: BOLD, color: "#1a2430" },
-  cDescNoVat: { width: "44%", fontWeight: BOLD, color: "#1a2430" },
+  cDesc: { width: "36%" },
+  cDescNoVat: { width: "44%" },
   cQty: { width: "14%", textAlign: "right" },
   cQtyNoVat: { width: "16%", textAlign: "right" },
   cPrice: { width: "14%", textAlign: "right" },
@@ -127,6 +143,26 @@ export const pdfStyles = StyleSheet.create({
   cVat: { width: "12%", textAlign: "right" },
   cTotal: { width: "16%", textAlign: "right" },
   cellText: { fontSize: 10, color: INK },
+  itemName: { fontSize: 10, lineHeight: 1.5, fontWeight: BOLD, color: "#1a2430" },
+  itemDescription: { fontSize: 8.5, lineHeight: 1.4, marginTop: 3, color: MUTED, fontWeight: "normal" },
+  itemDescriptionContinued: { fontSize: 8.5, lineHeight: 1.4, color: MUTED, fontWeight: "normal" },
+
+  pageSubtotalWrap: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 10,
+  },
+  pageSubtotal: {
+    width: 240,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 7,
+    paddingHorizontal: 6,
+    borderTopWidth: 1.5,
+    borderTopColor: RULE,
+  },
+  pageSubtotalLabel: { fontSize: 10, fontWeight: BOLD, color: HEAD },
+  pageSubtotalValue: { fontSize: 11, fontWeight: BOLD, color: HEAD },
 
   sumWrap: { flexDirection: "row", justifyContent: "flex-end", marginTop: 10 },
   sumBox: { width: 240 },

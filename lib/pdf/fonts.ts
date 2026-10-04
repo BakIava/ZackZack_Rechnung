@@ -12,8 +12,9 @@
 
 import path from "node:path";
 import { Font } from "@react-pdf/renderer";
+import { PDF_FONT_FAMILY } from "@/lib/pdf/pdf-font-family";
 
-export const PDF_FONT_FAMILY = "ZackZack Sans";
+export { PDF_FONT_FAMILY } from "@/lib/pdf/pdf-font-family";
 
 let registered = false;
 

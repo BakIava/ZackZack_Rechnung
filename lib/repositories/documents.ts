@@ -12,6 +12,7 @@ import { deriveInitials } from "@/lib/initials";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CustomerSnapshot } from "@/types/customer";
+import type { DocumentTemplateRef } from "@/types/document";
 import type {
   DocStatus,
   DocumentListItem,
@@ -275,12 +276,16 @@ export async function markDocumentPaid(
 /** Atomare Finalisierung und Nummernvergabe über die SQL-Funktion. */
 export async function finalizeDocumentRpc(
   documentId: string,
-  confirmExpiredQuote = false,
+  confirmExpiredQuote: boolean,
+  template: DocumentTemplateRef,
 ): Promise<{ number: string } | { errorMessage: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("finalize_document", {
     p_document_id: documentId,
     p_confirm_expired_quote: confirmExpiredQuote,
+    // Vorlagen-Snapshot: wird atomar mit Nummer und Status eingefroren.
+    p_template_id: template.id,
+    p_template_version: template.version,
   });
   if (error) return { errorMessage: error.message };
   if (typeof data !== "string" || data.length === 0) {

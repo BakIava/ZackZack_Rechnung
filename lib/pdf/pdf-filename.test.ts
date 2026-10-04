@@ -28,6 +28,7 @@ function base(overrides: Partial<DocumentPreview>): DocumentPreview {
       city: null,
       phone: null,
       mobile: null,
+      fax: null,
       email: null,
       director: null,
       steuernummer: null,
@@ -43,6 +44,7 @@ function base(overrides: Partial<DocumentPreview>): DocumentPreview {
     items: [],
     convertedInvoiceId: null,
     basedOnQuoteId: null,
+    template: { id: "standard", version: 1 },
     ...overrides,
   };
 }

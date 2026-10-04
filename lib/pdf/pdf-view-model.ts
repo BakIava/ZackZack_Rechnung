@@ -1,35 +1,28 @@
 /**
- * Reines View-Model für den PDF-Beleg. Leitet aus dem eingefrorenen
- * DocumentPreview alle darstellbaren Werte ab — IMMER Deutsch, reine
- * Kundensicht. Ohne React/Supabase, damit die harten Regeln testbar bleiben:
+ * View-Model der Vorlage `standard`: reine Präsentationsabbildung der
+ * normalisierten Renderdaten (lib/pdf/render-data.ts) auf Zeilen und Felder des
+ * Standard-Layouts. Hier wird NICHT gerechnet und NICHT formatiert — Beträge,
+ * Daten, §19-/USt.-Ausweis und Zahlungsziel kommen fertig aus den Renderdaten.
+ * Diese Datei setzt nur Zeilen zusammen (Trenner, „Tel.“, „Inhaber“) und blendet
+ * Felder für das Standard-Layout ein oder aus.
  *
- *  - Einkaufspreis/Marge existieren im DTO nicht und tauchen hier nie auf
- *    (nur `unitPrice` = Verkaufspreis geht in die Zeile).
- *  - §19-Kleinunternehmer: keine USt., stattdessen automatischer §19-Hinweis.
- *  - Empfänger stammt aus dem Snapshot (der Aufrufer liest nie live).
- *  - Beträge/Datum deutsch formatiert (de-DE).
- *
- * Dieselbe Wahrheit wie die HTML-Vorschau (DocumentA4): gleiche Labels aus
- * DOKUMENT_DE, gleiche Formatter → Bildschirm und PDF bleiben deckungsgleich.
+ * Harte Regeln bleiben dadurch erhalten: kein Einkaufspreis/keine Marge (existiert
+ * in den Renderdaten nicht), §19-Hinweis und Steuerzeilen exakt wie in den
+ * Renderdaten entschieden, Dokument immer Deutsch.
  */
 
-import { formatDateDE, formatMoney } from "@/lib/format";
-import {
-  DOKUMENT_DE,
-  dokumentAbschlussText,
-  serviceTimingDisplay,
-  zahlungszielText,
-} from "@/lib/documents/document-de";
-import type { DocumentPreview } from "@/types/document";
-import { deriveCompanyMonogram } from "../initials";
-import { getCustomerName } from "../customers/utils";
-import { shouldShowTaxDetails } from "../documents/tax";
+import { DOKUMENT_DE } from "@/lib/documents/document-de";
+import { joinText } from "@/lib/pdf/join-text";
+import type { DocumentRenderData } from "@/lib/pdf/render-data";
 
 export interface PdfRow {
   position: number;
   descriptionDe: string;
+  additionalDescriptionDe: string | null;
   mengeText: string;
   unitPriceText: string;
+  /** Netto-Zeilensumme in Cent für seitenbezogene Zwischensummen. */
+  totalAmount: number;
   totalText: string;
   taxRateText: string;
 }
@@ -43,7 +36,6 @@ export interface PdfViewModel {
   isRechnung: boolean;
   /** Firmen-Monogramm als Logo-Fallback (kein Bild vorhanden). */
   monogram: string;
-
   companyName: string;
   companyAddressLine: string;
   companyContactLine: string;
@@ -90,115 +82,78 @@ export interface PdfViewModel {
   footerBankName: string | null;
 }
 
-function joinTrim(parts: (string | null | undefined)[], sep: string): string {
-  return parts
-    .map((p) => (p ?? "").trim())
-    .filter(Boolean)
-    .join(sep);
-}
-
-export function buildPdfViewModel(preview: DocumentPreview): PdfViewModel {
-  const { company: co, customer: rc, docType, isKleinunternehmer } = preview;
-  const isRechnung = docType === "invoice";
-  const showTaxDetails = shouldShowTaxDetails(isKleinunternehmer, preview.items);
-
-  // Summe strikt aus den Zeilen (Verkaufspreis) — nie aus internen Feldern.
-  const coStreet = joinTrim([co.street, co.streetNo], " ");
-  const coCity = joinTrim([co.postcode, co.city], " ");
-  const rcStreet = rc ? joinTrim([rc.street, rc.streetNo], " ") : "";
-  const rcCity = rc ? joinTrim([rc.postcode, rc.city], " ") : "";
-
-  const steuerLabel = co.steuernummer
-    ? DOKUMENT_DE.steuerNr
-    : DOKUMENT_DE.ustId;
-  const steuerValue = co.steuernummer ?? co.ustId ?? "—";
-
-  const numberLabel = isRechnung
-    ? DOKUMENT_DE.rechnungNr
-    : DOKUMENT_DE.angebotNr;
-  const titleWort = isRechnung ? DOKUMENT_DE.rechnung : DOKUMENT_DE.angebot;
-
-  const bankLine =
-    joinTrim(
-      [co.bankName, co.iban ? `${DOKUMENT_DE.iban} ${co.iban}` : null],
-      " · ",
-    ) || null;
-
-  const paymentText =
-    isRechnung && preview.issueDate
-      ? zahlungszielText(preview.issueDate, co.paymentDays)
-      : null;
-  const serviceTiming = serviceTimingDisplay(preview);
+export function buildPdfViewModel(data: DocumentRenderData): PdfViewModel {
+  const { document: doc, dates, company: co, customer: rc, tax, totals, payment } = data;
+  const showTaxDetails = tax.showTaxDetails;
 
   return {
-    isRechnung,
-    monogram: deriveCompanyMonogram(co.name),
-
+    isRechnung: doc.isInvoice,
+    monogram: data.logo.monogram,
     companyName: co.name,
-    companyAddressLine: joinTrim([coStreet, coCity], " · "),
-    companyContactLine: joinTrim(
+    companyAddressLine: joinText([co.streetLine, co.cityLine], " · "),
+    companyContactLine: joinText(
       [co.phone ? `Tel. ${co.phone}` : null, co.email],
       " · ",
     ),
 
-    senderLine: joinTrim([co.name, coStreet, coCity], " · "),
-    empfaengerLabel: isRechnung
-      ? DOKUMENT_DE.empfaengerRechnung
-      : DOKUMENT_DE.empfaengerAngebot,
-    recipientName: getCustomerName(rc),
-    recipientStreetLine: rcStreet,
-    recipientCityLine: rcCity,
+    senderLine: joinText([co.name, co.streetLine, co.cityLine], " · "),
+    empfaengerLabel: doc.recipientLabel,
+    recipientName: rc.name,
+    recipientStreetLine: rc.streetLine,
+    recipientCityLine: rc.cityLine,
 
-    numberLabel,
-    numberValue: preview.documentNumber ?? DOKUMENT_DE.entwurfPlatzhalter,
-    isDraftNumber: !preview.documentNumber,
-    dateValue: preview.issueDate ? formatDateDE(preview.issueDate) : "—",
-    serviceTimingLabel: serviceTiming?.label ?? null,
-    serviceTimingValue: serviceTiming?.value ?? null,
-    validUntilValue: !isRechnung && preview.validUntil
-      ? formatDateDE(preview.validUntil)
-      : null,
-    steuerLabel,
-    steuerValue,
+    numberLabel: doc.numberLabel,
+    numberValue: doc.numberText,
+    isDraftNumber: doc.isDraftNumber,
+    dateValue: dates.issueDateText,
+    serviceTimingLabel: dates.serviceTiming?.label ?? null,
+    serviceTimingValue: dates.serviceTiming?.value ?? null,
+    validUntilValue: dates.validUntilText,
+    steuerLabel: co.taxIdLabel,
+    steuerValue: co.taxIdValue,
 
-    title: `${titleWort}${preview.documentNumber ? ` ${preview.documentNumber}` : ""}`,
-    rows: preview.items.map((p) => ({
-      position: p.position,
-      descriptionDe: p.descriptionDe,
-      mengeText: joinTrim([String(p.amount), p.unit], " "),
-      unitPriceText: formatMoney(p.unitPrice),
-      totalText: formatMoney(p.totalAmount),
-      taxRateText: showTaxDetails ? `${p.taxRate} %` : "",
+    title: doc.title,
+    rows: data.items.map((item) => ({
+      position: item.position,
+      descriptionDe: item.descriptionDe,
+      additionalDescriptionDe: item.additionalDescriptionDe,
+      mengeText: item.quantityText,
+      unitPriceText: item.unitPriceText,
+      totalAmount: item.totalAmount,
+      totalText: item.totalAmountText,
+      taxRateText: showTaxDetails ? item.taxRateText : "",
     })),
 
     gesamtNettoLabel: DOKUMENT_DE.gesamtNetto,
-    netTotalText: formatMoney(preview.netAmount),
+    netTotalText: totals.netAmountText,
     showTaxDetails,
     taxLines: showTaxDetails
-      ? preview.taxGroups.map((group) => ({
-          label: `${DOKUMENT_DE.umsatzsteuer} ${group.rate} %`,
-          amountText: formatMoney(group.taxAmount),
+      ? totals.taxGroups.map((group) => ({
+          label: group.label,
+          amountText: group.taxAmountText,
         }))
       : [],
-    sumLabel: isRechnung
-      ? DOKUMENT_DE.rechnungsbetrag
-      : DOKUMENT_DE.angebotssumme,
-    totalText: formatMoney(preview.totalAmount),
+    sumLabel: doc.sumLabel,
+    totalText: totals.grossAmountText,
 
-    showKleinunternehmerHinweis: isKleinunternehmer && !showTaxDetails,
-    kleinunternehmerHinweis: DOKUMENT_DE.kleinunternehmerHinweis,
+    showKleinunternehmerHinweis: tax.showKleinunternehmerHinweis,
+    kleinunternehmerHinweis: tax.kleinunternehmerHinweis,
 
-    paymentText,
-    bankLine,
-    closingText: dokumentAbschlussText(docType),
+    paymentText: payment.termsText,
+    bankLine:
+      joinText(
+        [payment.bankName, payment.iban ? `${DOKUMENT_DE.iban} ${payment.iban}` : null],
+        " · ",
+      ) || null,
+    closingText: doc.closingText,
 
     footerCompanyName: co.name,
     footerOwnerLine: co.director
       ? `${co.director}, ${DOKUMENT_DE.inhaber}`
       : null,
-    footerAddressLine: joinTrim([coStreet, coCity], ", "),
+    footerAddressLine: joinText([co.streetLine, co.cityLine], ", "),
     footerContactPhone: co.phone ? `Tel. ${co.phone}` : null,
     footerContactEmail: co.email,
-    footerBankName: co.bankName,
+    footerBankName: payment.bankName,
   };
 }
