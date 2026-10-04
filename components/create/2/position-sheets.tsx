@@ -5,6 +5,7 @@ import { Check, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { filterUnits, FLOW_UNITS, withCurrentUnit } from "@/lib/documents/units";
 import type { DraftItem, TaxRate } from "@/types/document";
+import { AdditionalDescriptionSheet } from "./additional-description-sheet";
 import "./position-sheets.css";
 
 const STROKE = 1.75;
@@ -13,16 +14,17 @@ const STROKE = 1.75;
 export const FLOW_VAT_RATES = [19, 7, 0] as const satisfies readonly TaxRate[];
 
 /** Feld, das der Direkt-Editor gerade bearbeitet (Nicht-Ziffernfelder). */
-export type SheetField = "desc" | "unit" | "vat";
+export type SheetField = "desc" | "additionalDescription" | "unit" | "vat";
 
 interface DescSheetProps {
   item: DraftItem;
+  onPreview: (value: string) => void;
   onCommit: (value: string) => void;
   onClose: () => void;
 }
 
 /** Bezeichnung ändern: kurzes Textfeld. */
-function DescSheet({ item, onCommit, onClose }: DescSheetProps) {
+function DescSheet({ item, onPreview, onCommit, onClose }: DescSheetProps) {
   const t = useTranslations("Step2");
   const [value, setValue] = useState(item.descriptionDe);
   const ref = useRef<HTMLInputElement>(null);
@@ -50,7 +52,10 @@ function DescSheet({ item, onCommit, onClose }: DescSheetProps) {
         className="zz-desc-input"
         value={value}
         placeholder={t("descPh")}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+          onPreview(e.target.value);
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter") commit();
           else if (e.key === "Escape") onClose();
@@ -66,14 +71,16 @@ function DescSheet({ item, onCommit, onClose }: DescSheetProps) {
 
 interface UnitSheetProps {
   item: DraftItem;
+  onPreview: (unit: string) => void;
   onCommit: (unit: string) => void;
   onClose: () => void;
 }
 
 /** Einheit wählen: Raster aus den Standard-Einheiten. */
-function UnitSheet({ item, onCommit, onClose }: UnitSheetProps) {
+function UnitSheet({ item, onPreview, onCommit, onClose }: UnitSheetProps) {
   const t = useTranslations("Step2");
   const [query, setQuery] = useState("");
+  const [value, setValue] = useState(item.unit);
   const unitOptions = withCurrentUnit(FLOW_UNITS, item.unit);
   const filteredUnits = filterUnits(unitOptions, query);
   return (
@@ -107,14 +114,21 @@ function UnitSheet({ item, onCommit, onClose }: UnitSheetProps) {
               key={u}
               type="button"
               className="zz-choice"
-              data-on={item.unit === u ? "1" : "0"}
-              onClick={() => onCommit(u)}
+              data-on={value === u ? "1" : "0"}
+              onClick={() => {
+                setValue(u);
+                onPreview(u);
+              }}
             >
               <span className="zz-choice-l">{u}</span>
             </button>
           ))
         )}
       </div>
+      <button type="button" className="zz-done" onClick={() => onCommit(value)}>
+        <Check size={19} strokeWidth={2.4} aria-hidden />
+        {t("done")}
+      </button>
     </>
   );
 }
@@ -123,18 +137,20 @@ interface VatSheetProps {
   item: DraftItem;
   vat: TaxRate | null;
   companyVat: TaxRate;
+  onPreview: (vat: TaxRate | null) => void;
   onCommit: (vat: TaxRate | null) => void;
   onClose: () => void;
 }
 
 /** MwSt.-Satz wählen. „Standard" folgt dem eingefrorenen Dokumentstandard. */
-function VatSheet({ item, vat, companyVat, onCommit, onClose }: VatSheetProps) {
+function VatSheet({ item, vat, companyVat, onPreview, onCommit, onClose }: VatSheetProps) {
   const t = useTranslations("Step2");
+  const [value, setValue] = useState<TaxRate | null>(vat);
   const options: { key: string; value: TaxRate | null; label: string; sub?: string }[] = [
     { key: "std", value: null, label: t("vatStdOn", { rate: companyVat }), sub: t("vatStd") },
     ...FLOW_VAT_RATES.map((r) => ({ key: String(r), value: r, label: `${r} %` })),
   ];
-  const current = vat == null ? "std" : String(vat);
+  const current = value == null ? "std" : String(value);
 
   return (
     <>
@@ -154,7 +170,10 @@ function VatSheet({ item, vat, companyVat, onCommit, onClose }: VatSheetProps) {
             type="button"
             className="zz-choice"
             data-on={current === o.key ? "1" : "0"}
-            onClick={() => onCommit(o.value)}
+            onClick={() => {
+              setValue(o.value);
+              onPreview(o.value);
+            }}
           >
             <span className="zz-choice-l">
               {o.label}
@@ -168,6 +187,10 @@ function VatSheet({ item, vat, companyVat, onCommit, onClose }: VatSheetProps) {
           </button>
         ))}
       </div>
+      <button type="button" className="zz-done" onClick={() => onCommit(value)}>
+        <Check size={19} strokeWidth={2.4} aria-hidden />
+        {t("done")}
+      </button>
     </>
   );
 }
@@ -182,7 +205,12 @@ interface PositionEditorProps {
   editor: PositionEditorState | null;
   companyVat: TaxRate;
   onClose: () => void;
+  onPreviewDesc: (itemId: string, value: string) => void;
+  onPreviewAdditionalDescription: (itemId: string, value: string) => void;
+  onPreviewUnit: (itemId: string, unit: string) => void;
+  onPreviewVat: (itemId: string, vat: TaxRate | null) => void;
   onCommitDesc: (itemId: string, value: string) => void;
+  onCommitAdditionalDescription: (itemId: string, value: string) => void;
   onCommitUnit: (itemId: string, unit: string) => void;
   onCommitVat: (itemId: string, vat: TaxRate | null) => void;
 }
@@ -192,36 +220,66 @@ export function PositionEditor({
   editor,
   companyVat,
   onClose,
+  onPreviewDesc,
+  onPreviewAdditionalDescription,
+  onPreviewUnit,
+  onPreviewVat,
   onCommitDesc,
+  onCommitAdditionalDescription,
   onCommitUnit,
   onCommitVat,
 }: PositionEditorProps) {
   const t = useTranslations("Step2");
   if (!editor) return null;
   const { item, field, vat } = editor;
-  const label =
-    field === "desc" ? t("editDescT") : field === "unit" ? t("editUnitT") : t("editVatT");
+  const label = field === "desc"
+    ? t("editDescT")
+    : field === "additionalDescription"
+      ? t("additionalDescriptionTitle")
+      : field === "unit" ? t("editUnitT") : t("editVatT");
 
   return (
     <div
-      className="zz-ov zz-ov--center"
+      className="position-editor-overlay"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") onClose();
       }}
     >
       <div className="zz-sheet" role="dialog" aria-modal="true" aria-label={label}>
         {field === "desc" && (
-          <DescSheet item={item} onCommit={(v) => onCommitDesc(item.id, v)} onClose={onClose} />
+          <DescSheet
+            item={item}
+            onPreview={(value) => onPreviewDesc(item.id, value)}
+            onCommit={(value) => onCommitDesc(item.id, value)}
+            onClose={onClose}
+          />
+        )}
+        {field === "additionalDescription" && (
+          <AdditionalDescriptionSheet
+            item={item}
+            onPreview={(value) => onPreviewAdditionalDescription(item.id, value)}
+            onCommit={(value) => onCommitAdditionalDescription(item.id, value)}
+            onClose={onClose}
+          />
         )}
         {field === "unit" && (
-          <UnitSheet item={item} onCommit={(u) => onCommitUnit(item.id, u)} onClose={onClose} />
+          <UnitSheet
+            item={item}
+            onPreview={(unit) => onPreviewUnit(item.id, unit)}
+            onCommit={(unit) => onCommitUnit(item.id, unit)}
+            onClose={onClose}
+          />
         )}
         {field === "vat" && (
           <VatSheet
             item={item}
             vat={vat}
             companyVat={companyVat}
-            onCommit={(v) => onCommitVat(item.id, v)}
+            onPreview={(value) => onPreviewVat(item.id, value)}
+            onCommit={(value) => onCommitVat(item.id, value)}
             onClose={onClose}
           />
         )}

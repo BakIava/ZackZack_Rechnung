@@ -20,6 +20,8 @@ interface NumberPadProps {
   initial: string;
   /** Bestätigter Wert als Zahl (Menge bzw. Preis in Euro). */
   onCommit: (value: number) => void;
+  /** Rein lokale Vorschau; löst keine Server-Action aus. */
+  onPreview: (value: number) => void;
   onClose: () => void;
 }
 
@@ -38,17 +40,32 @@ function sanitize(input: string): string {
 /** Großflächiger Ziffernblock (Variante B): Menge oder Preis für diese Rechnung
  *  anpassen — per Tasten ODER direkt im Eingabefeld tippbar. Zahlen bleiben LTR,
  *  damit die Eingabe auch in RTL vorhersehbar ist. */
-export function NumberPad({ field, unit, name, initial, onCommit, onClose }: NumberPadProps) {
+export function NumberPad({
+  field,
+  unit,
+  name,
+  initial,
+  onCommit,
+  onPreview,
+  onClose,
+}: NumberPadProps) {
   const t = useTranslations("Step2");
   const [raw, setRaw] = useState(initial || "0");
 
-  const type = (d: string) =>
-    setRaw((s) => {
-      if (d === ",") return s.includes(",") ? s : (s || "0") + ",";
-      if (s.includes(",") && s.split(",")[1].length >= 2) return s;
-      return (s === "0" ? "" : s) + d;
-    });
-  const back = () => setRaw((s) => s.slice(0, -1) || "0");
+  const previewValue = (nextRaw: string) => {
+    setRaw(nextRaw);
+    onPreview(parseFloat((nextRaw || "0").replace(",", ".")) || 0);
+  };
+  const type = (digit: string) => {
+    let next = raw;
+    if (digit === ",") {
+      next = raw.includes(",") ? raw : (raw || "0") + ",";
+    } else if (!(raw.includes(",") && raw.split(",")[1].length >= 2)) {
+      next = (raw === "0" ? "" : raw) + digit;
+    }
+    previewValue(next);
+  };
+  const back = () => previewValue(raw.slice(0, -1) || "0");
   const commit = () => onCommit(parseFloat((raw || "0").replace(",", ".")) || 0);
 
   const label =
@@ -85,7 +102,7 @@ export function NumberPad({ field, unit, name, initial, onCommit, onClose }: Num
             inputMode="decimal"
             autoFocus
             aria-label={`${label} · ${name}`}
-            onChange={(e) => setRaw(sanitize(e.target.value))}
+            onChange={(e) => previewValue(sanitize(e.target.value))}
             onKeyDown={(e) => {
               if (e.key === "Enter") commit();
               else if (e.key === "Escape") onClose();

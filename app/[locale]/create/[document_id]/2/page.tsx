@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { Step2Screen } from "@/components/create/2/step2-screen";
-import { getDraftItems } from "@/lib/repositories/document-items";
-import { getDraftContext, getFlowDocMeta } from "@/lib/repositories/documents";
+import { getStep2DocumentData } from "@/lib/repositories/document-previews";
 import { getServices } from "@/lib/repositories/services";
 import { isRtlLocale, type Locale } from "@/i18n/routing";
+import { loadPdfLogo } from "@/lib/pdf/document-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -17,28 +17,26 @@ export default async function Step2Page({ params }: Step2PageProps) {
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
 
-  // Finalisierte Dokumente sind unveränderbar → in den Ansichtsmodus (Schritt 3).
-  const meta = await getFlowDocMeta(document_id);
-  if (meta && meta.status !== "draft") {
-    redirect(`/${locale}/create/${document_id}/3`);
-  }
-
-  const [context, items, services] = await Promise.all([
-    getDraftContext(document_id),
-    getDraftItems(document_id),
+  const [documentData, services] = await Promise.all([
+    getStep2DocumentData(document_id),
     getServices(),
   ]);
 
   // Layout validiert bereits; dieser Fallback greift nur bei Race-Conditions.
-  if (!context) redirect(`/${locale}/documents`);
+  if (!documentData) redirect(`/${locale}/documents`);
+  if (documentData.preview.status !== "draft") {
+    redirect(`/${locale}/create/${document_id}/3`);
+  }
+  const logo = await loadPdfLogo(documentData.preview.company.logoUrl);
 
   return (
     <Step2Screen
       dir={dir}
       locale={locale as Locale}
       documentId={document_id}
-      context={context}
-      initialItems={items}
+      initialPreview={documentData.preview}
+      initialItems={documentData.draftItems}
+      logo={logo}
       services={services}
     />
   );

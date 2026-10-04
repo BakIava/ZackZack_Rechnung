@@ -16,7 +16,7 @@ import {
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, useRouterWithoutTransition } from "@/i18n/navigation";
 import { getCustomerForEdit } from "@/lib/customers/actions";
 import type { CustomerListItem, FlowCustomer } from "@/types/customer";
 import {
@@ -65,6 +65,7 @@ export function KundeStep({
 }: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
+  const stepRouter = useRouterWithoutTransition();
   const searchParams = useSearchParams();
   // Hinweis anzeigen, wenn der Nutzer aus Schritt 3 („Beim Kunden ergänzen")
   // kommt – damit er den „Kunde bearbeiten"-Button unten findet.
@@ -158,7 +159,7 @@ export function KundeStep({
     // Schritt 1 ist überspringbar: ohne Kundenwahl direkt zu den Positionen.
     // Ein Kunde ist erst ab > 250 € Pflicht (geprüft in Schritt 3).
     if (!selected) {
-      router.push(`/create/${documentId}/2`);
+      stepRouter.push(`/create/${documentId}/2`);
       return;
     }
     setSaving(true);
@@ -169,7 +170,7 @@ export function KundeStep({
       setSaveError(t("draftError"));
       return;
     }
-    router.push(`/create/${documentId}/2`);
+    stepRouter.push(`/create/${documentId}/2`);
   }
 
   function handleBack() {

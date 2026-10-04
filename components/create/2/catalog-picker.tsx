@@ -6,8 +6,17 @@ import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { anzeigeName } from "@/lib/katalog/anzeige";
 import type { KatalogEintrag } from "@/types/service";
-import type { FreeItemInput, FremdItemInput } from "@/types/document";
+import type {
+  FreeItemInput,
+  FremdItemInput,
+  TemporaryDocumentItemInput,
+} from "@/types/document";
 import { formatMoney } from "@/lib/format";
+import {
+  EMPTY_TEMPORARY_DOCUMENT_ITEM,
+  FREE_TEMPORARY_DOCUMENT_ITEM,
+  FREMD_TEMPORARY_DOCUMENT_ITEM,
+} from "@/lib/documents/document-preview-state";
 import { FreeForm, FremdForm } from "./position-forms";
 import "./catalog-picker.css";
 
@@ -21,6 +30,7 @@ interface CatalogPickerProps {
   onAddCatalog: (serviceId: string) => void;
   onAddFree: (input: FreeItemInput) => void;
   onAddFremd: (input: FremdItemInput) => void;
+  onPreviewChange: (input: TemporaryDocumentItemInput) => void;
 }
 
 /** Gemeinsamer Picker: Aus Katalog · Freie Position · Fremdleistung. */
@@ -30,6 +40,7 @@ export function CatalogPicker({
   onAddCatalog,
   onAddFree,
   onAddFremd,
+  onPreviewChange,
 }: CatalogPickerProps) {
   const t = useTranslations("Step2");
   const [tab, setTab] = useState<Tab>("katalog");
@@ -46,6 +57,16 @@ export function CatalogPicker({
     (c) => anzeigeName(c, locale).toLowerCase().includes(q) || c.de.toLowerCase().includes(q),
   );
 
+  function selectTab(nextTab: Tab) {
+    setTab(nextTab);
+    const defaults = nextTab === "frei"
+      ? FREE_TEMPORARY_DOCUMENT_ITEM
+      : nextTab === "fremd"
+        ? FREMD_TEMPORARY_DOCUMENT_ITEM
+        : EMPTY_TEMPORARY_DOCUMENT_ITEM;
+    onPreviewChange({ ...defaults });
+  }
+
   return (
     <>
       <div className="picker-tabs" role="tablist">
@@ -57,7 +78,7 @@ export function CatalogPicker({
             data-on={tab === id ? "1" : "0"}
             role="tab"
             aria-selected={tab === id}
-            onClick={() => setTab(id)}
+            onClick={() => selectTab(id)}
           >
             <Icon size={18} strokeWidth={STROKE} aria-hidden />
             {label}
@@ -118,8 +139,12 @@ export function CatalogPicker({
         </>
       )}
 
-      {tab === "frei" && <FreeForm onAdd={onAddFree} />}
-      {tab === "fremd" && <FremdForm onAdd={onAddFremd} />}
+      {tab === "frei" && (
+        <FreeForm onAdd={onAddFree} onPreviewChange={onPreviewChange} />
+      )}
+      {tab === "fremd" && (
+        <FremdForm onAdd={onAddFremd} onPreviewChange={onPreviewChange} />
+      )}
     </>
   );
 }

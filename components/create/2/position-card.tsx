@@ -20,6 +20,7 @@ interface PositionCardProps {
   companyVat: DraftItem["taxRate"];
   onOpenPad: (item: DraftItem, field: PadField) => void;
   onEditDesc: (item: DraftItem) => void;
+  onEditAdditionalDescription: (item: DraftItem) => void;
   onEditUnit: (item: DraftItem) => void;
   onEditVat: (item: DraftItem) => void;
   onDelete: (id: string) => void;
@@ -37,6 +38,7 @@ export function PositionCard({
   companyVat,
   onOpenPad,
   onEditDesc,
+  onEditAdditionalDescription,
   onEditUnit,
   onEditVat,
   onDelete,
@@ -52,28 +54,36 @@ export function PositionCard({
   const qtyLabel = String(item.amount).replace(".", ",");
   const vatIsDefault = vat == null;
   const vatRate = vat ?? companyVat;
+  const hasAdditionalDescription = Boolean(item.additionalDescriptionDe?.trim());
 
   return (
     <div className="d2card">
       <div className="d2card-top">
         <span className="d2card-num">{index + 1}</span>
-        <button
-          type="button"
-          className="d2title-btn"
-          disabled={disabled}
-          onClick={() => onEditDesc(item)}
-        >
-          <span className="d2-name">
-            {item.descriptionDe}
-            <Pencil size={14} strokeWidth={STROKE} aria-hidden />
-          </span>
-          {isFremd && (
-            <span className="p2-fremdtag">
-              <Truck size={13} strokeWidth={STROKE} aria-hidden />
-              {t("subcontract")}
+        <div className="d2card-title-stack">
+          <button
+            type="button"
+            className="d2title-btn"
+            disabled={disabled}
+            onClick={() => onEditDesc(item)}
+          >
+            <span className="d2-name">
+              {item.descriptionDe}
+              <Pencil size={14} strokeWidth={STROKE} aria-hidden />
             </span>
+            {isFremd && (
+              <span className="p2-fremdtag">
+                <Truck size={13} strokeWidth={STROKE} aria-hidden />
+                {t("subcontract")}
+              </span>
+            )}
+          </button>
+          {hasAdditionalDescription && (
+            <p className="d2card-additional-description" dir="ltr" lang="de">
+              {item.additionalDescriptionDe}
+            </p>
           )}
-        </button>
+        </div>
         <button
           type="button"
           className="d2card-del"
@@ -189,6 +199,15 @@ export function PositionCard({
             {vatIsDefault ? t("vatStdOn", { rate: companyVat }) : `${vatRate} %`}
           </span>
           <ChevronDown size={13} strokeWidth={STROKE} aria-hidden />
+        </button>
+        <button
+          type="button"
+          className="d2card-description-action"
+          disabled={disabled}
+          onClick={() => onEditAdditionalDescription(item)}
+        >
+          <Pencil size={13} strokeWidth={STROKE} aria-hidden />
+          {t(hasAdditionalDescription ? "editAdditionalDescription" : "addAdditionalDescription")}
         </button>
       </div>
     </div>

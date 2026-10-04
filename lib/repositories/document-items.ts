@@ -7,6 +7,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import type { DraftItem, SurchargeType, TaxRate } from "@/types/document";
+import { toDraftItem } from "./document-item-mappers";
 
 /** Positionen eines Drafts, sortiert nach position. */
 export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
@@ -17,7 +18,7 @@ export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
   const { data, error } = await supabase
     .from("document_items")
     .select(
-      "id, service_id, position, description_de, amount, unit, unit_price, total_amount, tax_rate, tax_rate_overridden, tax_amount, gross_amount, purchase_price, surcharge, surcharge_type",
+      "id, service_id, position, description_de, additional_description_de, amount, unit, unit_price, total_amount, tax_rate, tax_rate_overridden, tax_amount, gross_amount, purchase_price, surcharge, surcharge_type",
     )
     .eq("document_id", documentId)
     .eq("company_id", companyId)
@@ -25,23 +26,7 @@ export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
 
   if (error || !data) return [];
 
-  return data.map((r) => ({
-    id: r.id as string,
-    serviceId: (r.service_id as string | null) ?? null,
-    position: r.position as number,
-    descriptionDe: (r.description_de as string) ?? "",
-    amount: Number(r.amount ?? 0),
-    unit: (r.unit as string) ?? "",
-    unitPrice: (r.unit_price as number) ?? 0,
-    totalAmount: (r.total_amount as number) ?? 0,
-    taxRate: (r.tax_rate as TaxRate | null) ?? 0,
-    taxRateOverridden: Boolean(r.tax_rate_overridden),
-    taxAmount: (r.tax_amount as number | null) ?? 0,
-    grossAmount: (r.gross_amount as number | null) ?? (r.total_amount as number) ?? 0,
-    purchasePrice: (r.purchase_price as number | null) ?? null,
-    surcharge: (r.surcharge as number | null) ?? null,
-    surchargeType: (r.surcharge_type as DraftItem["surchargeType"]) ?? null,
-  }));
+  return data.map((r) => toDraftItem(r));
 }
 /** Welche der übergebenen Dokumente haben mindestens eine Position? */
 export async function getDocumentIdsWithItems(

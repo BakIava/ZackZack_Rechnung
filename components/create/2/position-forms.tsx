@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { UnitPicker } from "@/components/shared/unit-picker";
@@ -10,20 +10,39 @@ import {
   fixedSurchargeForSale,
   surchargeBasisPointsForSale,
 } from "@/lib/documents/margin";
-import type { FreeItemInput, FremdItemInput } from "@/types/document";
+import type {
+  FreeItemInput,
+  FremdItemInput,
+  TemporaryDocumentItemInput,
+} from "@/types/document";
 import { eurosToCents } from "@/lib/money";
 import "./position-forms.css";
 
 const STROKE = 1.75;
 
+interface FreeFormProps {
+  onAdd: (input: FreeItemInput) => void;
+  onPreviewChange: (input: TemporaryDocumentItemInput) => void;
+}
+
 /** Freie Position: Bezeichnung, Menge, Einheit, Einzelpreis. */
-export function FreeForm({ onAdd }: { onAdd: (input: FreeItemInput) => void }) {
+export function FreeForm({ onAdd, onPreviewChange }: FreeFormProps) {
   const t = useTranslations("Step2");
   const [label, setLabel] = useState("");
   const [qty, setQty] = useState("1");
   const [unit, setUnit] = useState("m²");
   const [price, setPrice] = useState("");
   const ok = label.trim().length > 0 && parseFloat(price) > 0;
+
+  useEffect(() => {
+    const parsedAmount = parseFloat(qty);
+    onPreviewChange({
+      descriptionDe: label,
+      amount: Number.isFinite(parsedAmount) ? parsedAmount : 0,
+      unit,
+      unitPrice: eurosToCents(parseFloat(price) || 0),
+    });
+  }, [label, onPreviewChange, price, qty, unit]);
 
   return (
     <div className="f-grid">
@@ -73,8 +92,13 @@ export function FreeForm({ onAdd }: { onAdd: (input: FreeItemInput) => void }) {
   );
 }
 
+interface FremdFormProps {
+  onAdd: (input: FremdItemInput) => void;
+  onPreviewChange: (input: TemporaryDocumentItemInput) => void;
+}
+
 /** Fremdleistung: Einkauf + Aufschlag → Verkaufspreis (Einkauf/Marge intern). */
-export function FremdForm({ onAdd }: { onAdd: (input: FremdItemInput) => void }) {
+export function FremdForm({ onAdd, onPreviewChange }: FremdFormProps) {
   const t = useTranslations("Step2");
   const [label, setLabel] = useState("");
   const [purchase, setPurchase] = useState("");
@@ -88,6 +112,15 @@ export function FremdForm({ onAdd }: { onAdd: (input: FremdItemInput) => void })
     ? eurosToCents(parseFloat(salePrice) || 0)
     : calculatedSalePriceCents;
   const ok = label.trim().length > 0 && purchaseCents > 0 && salePriceCents > 0;
+
+  useEffect(() => {
+    onPreviewChange({
+      descriptionDe: label,
+      amount: 1,
+      unit: "Pauschale",
+      unitPrice: salePriceCents,
+    });
+  }, [label, onPreviewChange, salePriceCents]);
 
   const updatePurchase = (value: string) => {
     setPurchase(value);

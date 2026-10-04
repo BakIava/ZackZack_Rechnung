@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { computeUnitPrice } from "./margin";
+import { normalizeAdditionalDescriptionDe } from "./additional-description";
 import {
   getDraftTaxConfig,
   isDraftDocument,
@@ -55,7 +56,11 @@ async function renumber(companyId: string, documentId: string): Promise<void> {
 }
 
 /** Dokument-Summen aus den serverseitig berechneten Zeilenwerten aktualisieren. */
-async function recompute(companyId: string, documentId: string): Promise<ItemsResult> {
+async function recompute(
+  companyId: string,
+  documentId: string,
+  persistTotals = true,
+): Promise<ItemsResult> {
   const items = await getDraftItems(documentId);
   const totals = calculateDocumentTotals(
     items.map((item) => ({
@@ -65,7 +70,7 @@ async function recompute(companyId: string, documentId: string): Promise<ItemsRe
       grossAmount: item.grossAmount,
     })),
   );
-  await setDraftDocumentTotals(companyId, documentId, totals);
+  if (persistTotals) await setDraftDocumentTotals(companyId, documentId, totals);
   // Router-Cache des gesamten Flow-Layouts invalidieren, damit beim Zurück-
   // navigieren (z. B. Schritt 3 → 2) nicht ein veralteter, positionsloser
   // Server-Render aus dem Client-Cache ausgeliefert wird.
@@ -222,6 +227,27 @@ export async function updateItem(
   if (patch.descriptionDe !== undefined && !patch.descriptionDe.trim()) {
     return { error: "descriptionRequired" };
   }
+  if (
+    patch.additionalDescriptionDe !== undefined &&
+    patch.additionalDescriptionDe !== null &&
+    typeof patch.additionalDescriptionDe !== "string"
+  ) {
+    return { error: "descriptionInvalid" };
+  }
+
+  // Ein reiner Beschreibungspatch darf weder Preis- noch Steuerfelder neu schreiben.
+  if (
+    patch.additionalDescriptionDe !== undefined &&
+    Object.keys(patch).length === 1
+  ) {
+    const { error } = await updateDocumentItem(ctx.companyId, itemId, {
+      additional_description_de: normalizeAdditionalDescriptionDe(
+        patch.additionalDescriptionDe,
+      ),
+    });
+    if (error) return { error };
+    return recompute(ctx.companyId, documentId, false);
+  }
 
   const taxConfig = await getDraftTaxConfig(documentId);
   if (!taxConfig) return { error: "draftNotFound" };
@@ -266,6 +292,11 @@ export async function updateItem(
     surcharge_type: isFremd ? surchargeType : null,
   };
   if (patch.descriptionDe !== undefined) update.description_de = patch.descriptionDe.trim();
+  if (patch.additionalDescriptionDe !== undefined) {
+    update.additional_description_de = normalizeAdditionalDescriptionDe(
+      patch.additionalDescriptionDe,
+    );
+  }
   if (patch.unit !== undefined) update.unit = patch.unit;
 
   const { error } = await updateDocumentItem(ctx.companyId, itemId, update);
