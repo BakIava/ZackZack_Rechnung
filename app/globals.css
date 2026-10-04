@@ -130,15 +130,14 @@
 }
 
 /* ── Design-Tokens der eingeloggten App-Screens (Dashboard, Kunden, Katalog,
-   Einstellungen, Create-Flow). Bewusst auf die zz-*-Scope-Klassen begrenzt,
+   Create-Flow). Bewusst auf die zz-*-Scope-Klassen begrenzt,
    damit die shadcn-Variablen auf :root (--primary etc.) unberührt bleiben.
-   Abweichungen einzelner Screens leben beim jeweiligen Scope
-   (settings: --r-lg; create: --bad*). Werte aus dem Design-Handoff. */
+   Abweichungen einzelner Screens leben beim jeweiligen Scope. */
 .zz-dash,
 .zz-cust,
 .zz-catalog,
-.zz-settings,
-.zz-create {
+.zz-create,
+.zz-loading {
   /* Marken-/Flächentokens */
   --primary: #02335c;
   --bg: #f6f7f9;

@@ -66,3 +66,13 @@
   color: rgba(255, 255, 255, 0.55);
   font-variant-numeric: tabular-nums;
 }
+
+.dside--collapsed .dnav-lbl,
+.dside--collapsed .dnav-item > span {
+  display: none;
+}
+
+.dside--collapsed .dnav-item {
+  justify-content: center;
+  padding-inline: 0;
+}
