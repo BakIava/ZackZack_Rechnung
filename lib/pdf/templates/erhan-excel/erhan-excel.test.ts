@@ -10,6 +10,13 @@ import { ERHAN_LOGO_DATA_URL } from "./erhan-excel-logo";
 import { ERHAN_BODY_SIZE, ERHAN_COLUMNS, ERHAN_GEOMETRY, FOOTER_SIZE } from "./erhan-excel.styles";
 
 describe("erhan-excel – Seitenaufbau", () => {
+  it("richtet die Überschrift Preis € rechtsbündig an den Preisen aus", async () => {
+    const page = (await renderPages("single-vat")).pages[0];
+    const heading = page.find((item) => item.str === "Preis €")!;
+    const price = page.find((item) => item.str === "2.000,00")!;
+    expect(heading.x + heading.width).toBeCloseTo(price.x + price.width, 0);
+  }, 60_000);
+
   it("große Beträge bleiben vollständig in einer Zeile und verschieben keine Folgeposition", async () => {
     const page = (await renderPages("large-amounts")).pages[0];
     const amount = page.find((item) => item.str === "1.234.567,80 €")!;
@@ -33,10 +40,10 @@ describe("erhan-excel – Seitenaufbau", () => {
   }, 60_000);
 
   it.each([
-    ["business-contact", ["Schneider Hausverwaltung GmbH", "Jonas Beispiel", "Lindenstr. 1", "55262 Ingelheim"]],
+    ["business-contact", ["Jonas Beispiel", "Schneider Hausverwaltung GmbH", "Lindenstr. 1", "55262 Ingelheim"]],
     ["business-no-contact", ["Schneider Hausverwaltung GmbH", "Lindenstr. 1", "55262 Ingelheim"]],
     ["single-vat", ["Jonas Beispiel", "Lindenstr. 1", "55262 Ingelheim"]],
-  ] as const)("%s: Empfänger mit Kontaktperson unter der Firma, ohne Leerzeilen oder doppelte Namen", async (name, expected) => {
+  ] as const)("%s: Kontaktperson steht über der Firma, ohne Leerzeilen oder doppelte Namen", async (name, expected) => {
     const page = (await renderPages(name)).pages[0];
     const recipient = page.filter((item) =>
       Math.abs(item.x - ERHAN_GEOMETRY.left) < 0.5
@@ -79,6 +86,8 @@ describe("erhan-excel – Seitenaufbau", () => {
     expect(prefix).toBe("data:image/png;base64");
     const embedded = pngSize(Buffer.from(base64, "base64"));
     expect(embedded.width / embedded.height).toBeCloseTo(source.width / source.height, 1);
+    expect(ERHAN_GEOMETRY.logo.width).toBeGreaterThan(200);
+    expect(ERHAN_GEOMETRY.logo.top + ERHAN_GEOMETRY.logo.height).toBe(124);
 
     const buffer = await renderDocumentPdfBuffer(FIXTURES["single-vat"], null);
     const task = getDocument({ data: new Uint8Array(buffer) });

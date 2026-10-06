@@ -27,8 +27,8 @@ export const ERHAN_COLUMNS = [50.4, 83.4, 260.4, 323.65, 386.15, 469.9, 544.65] 
 
 export const ERHAN_GEOMETRY = {
   left: 54.9,
-  /** Logobox; das Bild liegt rechtsbündig darin und füllt die Höhe (≈ 164 pt breit). Unterkante 124 pt — über dem Kontaktblock. */
-  logo: { left: 357.2, top: 58, width: 184.2, height: 66 },
+  /** Logobox; proportional um rund 10 % vergrößert, rechtsbündig und mit unveränderter Unterkante über dem Kontaktblock. */
+  logo: { left: 338.8, top: 51.4, width: 202.6, height: 72.6 },
   senderBaseline: 128.25,
   recipientBaseline: 151.5,
   recipientLineHeight: 13.5,

@@ -23,7 +23,7 @@ export function ErhanLetterhead({ data }: DataProps) {
     [L.web, co.website ?? ""],
   ].filter((entry): entry is [string, string] => Boolean(entry[1]));
   const contactBlock = erhanContactBlock(contact.map(([, value]) => value));
-  const recipient = [customer.name, customer.contactPersonName, customer.streetLine, customer.cityLine].filter(Boolean);
+  const recipient = [customer.contactPersonName, customer.name, customer.streetLine, customer.cityLine].filter(Boolean);
   const place = co.city ? `${co.city}, ${L.den} ` : "";
   const dateText = `${place}${dates.issueDateText}`;
   const dateLine = erhanDateLine(dateText);
