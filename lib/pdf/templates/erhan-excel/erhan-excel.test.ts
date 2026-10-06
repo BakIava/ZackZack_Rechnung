@@ -10,6 +10,13 @@ import { ERHAN_LOGO_DATA_URL } from "./erhan-excel-logo";
 import { ERHAN_BODY_SIZE, ERHAN_COLUMNS, ERHAN_GEOMETRY, FOOTER_SIZE } from "./erhan-excel.styles";
 
 describe("erhan-excel – Seitenaufbau", () => {
+  it("richtet die Überschrift Preis € rechtsbündig an den Preisen aus", async () => {
+    const page = (await renderPages("single-vat")).pages[0];
+    const heading = page.find((item) => item.str === "Preis €")!;
+    const price = page.find((item) => item.str === "2.000,00")!;
+    expect(heading.x + heading.width).toBeCloseTo(price.x + price.width, 0);
+  }, 60_000);
+
   it("große Beträge bleiben vollständig in einer Zeile und verschieben keine Folgeposition", async () => {
     const page = (await renderPages("large-amounts")).pages[0];
     const amount = page.find((item) => item.str === "1.234.567,80 €")!;

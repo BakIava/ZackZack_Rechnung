@@ -16,7 +16,7 @@ export function ErhanTableHead() {
     <View style={s.headRow}>
       <Text style={[s.cA, s.headSingle]}>{L.position}</Text>
       <Text style={[s.cB, s.headSingle, s.centered]}>{L.leistung}</Text>
-      <Text style={[s.cC, s.headSingle, s.centered]}>{L.preis}</Text>
+      <Text style={[s.cC, s.headSingle]}>{L.preis}</Text>
       <Text style={[s.cD, s.headSingle]}>{L.art}</Text>
       <Text style={s.cE}>{L.menge}</Text>
       <Text style={s.cF}>{L.gesamt}</Text>
