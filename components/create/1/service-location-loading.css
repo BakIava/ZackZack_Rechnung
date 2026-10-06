@@ -1,0 +1,5 @@
+.location-loading { display: grid; justify-items: center; align-content: center; gap: 14px; min-block-size: 250px; padding: 24px; text-align: center; }
+.location-loading__icon { display: grid; place-items: center; inline-size: 58px; block-size: 58px; border-radius: 17px; background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent-deep); animation: location-loading-pulse 1.4s ease-in-out infinite; }
+.location-loading p { margin: 0; color: var(--ink); font-size: 16px; font-weight: 600; }
+@keyframes location-loading-pulse { 50% { opacity: .5; transform: scale(.94); } }
+@media (prefers-reduced-motion: reduce) { .location-loading__icon { animation: none; } }

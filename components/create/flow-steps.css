@@ -96,6 +96,24 @@
   color: var(--ink);
 }
 
+@media (max-width: 700px) {
+  .dflow-head { flex-wrap: wrap; gap: 12px; }
+  .dflow-head > div:not(.dsteps2) { min-width: 0; flex: 1; }
+  .dflow-title, .dflow-sub { white-space: normal; }
+  .dsteps2 { flex-basis: 100%; justify-content: center; margin-inline-start: 0; }
+}
+
+@media (max-width: 500px) {
+  .dstep2-lbl {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .dstep2-line {
   width: 28px;
   height: 2px;

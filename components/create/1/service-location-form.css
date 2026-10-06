@@ -1,0 +1,28 @@
+.location-form { display: flex; flex-direction: column; min-block-size: 0; }
+.location-form__body { overflow-y: auto; padding: 0 22px 22px; }
+.location-form__error { margin: 0 0 14px; color: var(--danger, #a42121); font-size: 14px; }
+.location-form__notice { display: flex; align-items: flex-start; gap: 9px; margin-block-end: 16px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface-2); font-size: 13px; line-height: 1.45; }
+.location-form__notice--ai-ok { border-color: var(--accent); }
+.location-form__notice svg { flex: 0 0 auto; }
+.location-form__notice span { flex: 1; }
+.location-form__notice button { flex: 0 0 auto; padding: 0; border: none; background: transparent; color: var(--primary); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.location-form__notice button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.location-form__hint { margin-block: 0 16px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.location-form__source { margin-block-end: 16px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); font-size: 13px; }
+.location-form__source summary { cursor: pointer; color: var(--muted); font-weight: 600; }
+.location-form__source p { margin-block: 8px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.location-form__fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 12px; }
+.location-form__field { display: grid; gap: 6px; min-inline-size: 0; }
+.location-form__field span { color: var(--muted); font-size: 13px; font-weight: 600; }
+.location-form__field--name,
+.location-form__field--addressExtra { grid-column: 1 / -1; }
+.location-form__field input { box-sizing: border-box; background: var(--surface); color: var(--ink); border-color: var(--line); font: inherit; font-size: 16px; }
+.location-form__field input::placeholder { color: var(--muted); }
+.location-form__footer { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 22px; border-block-start: 1px solid var(--line); background: var(--surface); }
+.location-form__footer button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-block-size: 48px; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--ink); font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; }
+.location-form__footer .location-form__apply { flex: 1; border-color: var(--primary); background: var(--primary); color: var(--primary-ink); }
+.location-form__footer button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.location-form__footer button:disabled { border-color: var(--surface-2); background: var(--surface-2); color: var(--muted); cursor: not-allowed; }
+@media (max-width: 360px) {
+  .location-form__fields { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,0 +1,6 @@
+.location-modal__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 22px; }
+.location-modal__header h2 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 18px; font-weight: 700; }
+.location-modal__header h2 svg { flex-shrink: 0; color: var(--primary); }
+.location-modal__header button { display: grid; place-items: center; flex: 0 0 auto; inline-size: 44px; block-size: 44px; padding: 0; border: none; border-radius: 999px; background: var(--surface-2); color: var(--ink); cursor: pointer; }
+.location-modal__header button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.location-modal__header button:disabled { opacity: .5; cursor: not-allowed; }
