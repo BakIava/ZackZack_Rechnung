@@ -6,7 +6,7 @@ import { joinText } from "@/lib/pdf/join-text";
 import { ERHAN_LABELS as L } from "./erhan-excel-labels";
 import { ERHAN_LOGO_DATA_URL } from "./erhan-excel-logo";
 import { erhanContactBlock, erhanDateLine, erhanFirstPageShift, erhanServiceLocationLines, fitMeasured } from "./erhan-excel-layout";
-import { ERHAN_GEOMETRY as G, ERHAN_ROW, ERHAN_COLUMNS, erhanStyles as s, erhanTop, FOOTER_COLUMN, FOOTER_SIZE } from "./erhan-excel.styles";
+import { ERHAN_BODY_SIZE, ERHAN_GEOMETRY as G, ERHAN_ROW, ERHAN_COLUMNS, erhanStyles as s, erhanTop, FOOTER_COLUMN, FOOTER_SIZE } from "./erhan-excel.styles";
 
 interface DataProps {
   data: DocumentRenderData;
@@ -23,7 +23,7 @@ export function ErhanLetterhead({ data }: DataProps) {
     [L.web, co.website ?? ""],
   ].filter((entry): entry is [string, string] => Boolean(entry[1]));
   const contactBlock = erhanContactBlock(contact.map(([, value]) => value));
-  const recipient = [customer.name, customer.streetLine, customer.cityLine].filter(Boolean);
+  const recipient = [customer.name, customer.contactPersonName, customer.streetLine, customer.cityLine].filter(Boolean);
   const place = co.city ? `${co.city}, ${L.den} ` : "";
   const dateText = `${place}${dates.issueDateText}`;
   const dateLine = erhanDateLine(dateText);
@@ -55,13 +55,13 @@ export function ErhanLetterhead({ data }: DataProps) {
         {dateText}
       </Text>
       <Text style={s.title}>{doc.typeLabel}</Text>
-      <Text style={[s.number, { top: erhanTop(G.numberBaseline, 10) }]}>
+      <Text style={[s.number, { top: erhanTop(G.numberBaseline, ERHAN_BODY_SIZE) }]}>
         {`${doc.numberLabel} ${doc.numberText}`}
       </Text>
       {locationLines.length > 0 && (
         <Text style={[s.locationLabel, {
           left: G.left,
-          top: erhanTop(G.validUntilBaseline, 10),
+          top: erhanTop(G.validUntilBaseline, ERHAN_BODY_SIZE),
           width: G.locationIndent - 5,
         }]}>
           {L.einsatzort}
@@ -70,7 +70,7 @@ export function ErhanLetterhead({ data }: DataProps) {
       {locationLines.map((line, index) => (
         <Text key={`location-${index}`} style={[s.locationValue, line.isName ? s.locationName : {}, {
           left: G.left + G.locationIndent,
-          top: erhanTop(G.validUntilBaseline + index * ERHAN_ROW, 10),
+          top: erhanTop(G.validUntilBaseline + index * ERHAN_ROW, ERHAN_BODY_SIZE),
           width: ERHAN_COLUMNS.at(-1)! - G.left - G.locationIndent - 5,
         }]}>
           {line.text}
@@ -78,13 +78,13 @@ export function ErhanLetterhead({ data }: DataProps) {
       ))}
       {dates.validUntilText && (
         <Text style={[s.number, { top: erhanTop(
-          G.validUntilBaseline + locationLines.length * ERHAN_ROW, 10,
+          G.validUntilBaseline + locationLines.length * ERHAN_ROW, ERHAN_BODY_SIZE,
         ) }]}>
           {`${L.gueltigBis} ${dates.validUntilText}`}
         </Text>
       )}
       {dates.serviceTiming && (
-        <Text style={[s.serviceTiming, { top: erhanTop(G.serviceTimingBaseline + firstPageShift, 10) }]}>
+        <Text style={[s.serviceTiming, { top: erhanTop(G.serviceTimingBaseline + firstPageShift, ERHAN_BODY_SIZE) }]}>
           {`${dates.serviceTiming.label} ${dates.serviceTiming.value}`}
         </Text>
       )}
@@ -95,7 +95,7 @@ export function ErhanLetterhead({ data }: DataProps) {
 /** Folgeseiten: Belegnummer über dem fortgesetzten Raster. */
 export function ErhanContinuationHead({ data }: DataProps) {
   return (
-    <Text style={[s.number, { top: erhanTop(G.continuationNumberBaseline, 10) }]}>
+    <Text style={[s.number, { top: erhanTop(G.continuationNumberBaseline, ERHAN_BODY_SIZE) }]}>
       {`${data.document.typeLabel} · ${data.document.numberLabel} ${data.document.numberText}`}
     </Text>
   );
@@ -121,21 +121,23 @@ const FOOTER_ALIGN = { left: s.footerLeft, center: s.footerCenter, right: s.foot
 interface FooterColumnProps {
   lines: Array<string | null>;
   column: keyof typeof FOOTER_ALIGN;
+  boldLineIndex?: number;
 }
 
 /** Eine Fußspalte: bis zu drei Zeilen auf festen Grundlinien, jede einzeilig eingepasst. */
-function FooterColumn({ lines, column }: FooterColumnProps) {
+function FooterColumn({ lines, column, boldLineIndex }: FooterColumnProps) {
   const width = FOOTER_COLUMN - 2.5;
   const align = FOOTER_ALIGN[column];
   return (
     <>
       {lines.map((line, index) => {
         if (!line) return null;
-        const size = fitMeasured(line, width, FOOTER_SIZE);
+        const isBold = index === boldLineIndex;
+        const size = fitMeasured(line, width, FOOTER_SIZE, isBold ? "bold" : "regular");
         return (
           <Text
             key={`${index}-${line}`}
-            style={[s.footerCell, align, { top: erhanTop(G.footerBaselines[index], size), fontSize: size }]}
+            style={[s.footerCell, align, isBold ? s.bold : {}, { top: erhanTop(G.footerBaselines[index], size), fontSize: size }]}
           >
             {line}
           </Text>
@@ -157,6 +159,7 @@ export function ErhanFooter({ data, pageNumber, pageCount }: FooterProps) {
       <FooterColumn column="left" lines={[company.name, company.streetLine, company.cityLine]} />
       <FooterColumn
         column="center"
+        boldLineIndex={1}
         lines={[
           payment.bankName,
           payment.iban ? `${L.iban} ${payment.iban}` : null,
