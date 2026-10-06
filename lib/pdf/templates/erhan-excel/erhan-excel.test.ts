@@ -86,6 +86,8 @@ describe("erhan-excel – Seitenaufbau", () => {
     expect(prefix).toBe("data:image/png;base64");
     const embedded = pngSize(Buffer.from(base64, "base64"));
     expect(embedded.width / embedded.height).toBeCloseTo(source.width / source.height, 1);
+    expect(ERHAN_GEOMETRY.logo.width).toBeGreaterThan(200);
+    expect(ERHAN_GEOMETRY.logo.top + ERHAN_GEOMETRY.logo.height).toBe(124);
 
     const buffer = await renderDocumentPdfBuffer(FIXTURES["single-vat"], null);
     const task = getDocument({ data: new Uint8Array(buffer) });
