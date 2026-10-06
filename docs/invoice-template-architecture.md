@@ -189,17 +189,17 @@ exact. Hanken Grotesk runs as wide as Arial at the same size, so the Excel point
 - **Excel character, kept:**
   - The 12.75 pt row grid: every table text sits on a grid row on every page. A test enforces
     this.
-  - Light gray (#cfcfcf, 0.5 pt) gridlines inside the table area only.
   - A two-row merged header with the reference labels.
   - Open empty grid rows between items and totals.
   - Totals anchored bottom-right.
   - The reference's only real border: a 1.5 pt black rule under "Mwst".
 - **Not reproduced:**
-  - Page-wide gridlines (Excel screen chrome).
+  - Gridlines of any kind; the table grid is invisible (Excel screen chrome).
   - The white text-box masks.
   - Raster content of any kind.
 - **Mapping:**
-  - Logo image or company name (top right).
+  - Fixed template logo `erhan-excel-logo.png` (top right), independent of the company logo;
+    embedded as a data URL (`npm run logo:erhan`) so browser and Node render it alike.
   - Sender line: name / street / city, underlined 7 pt.
   - Recipient from the customer snapshot.
   - Tel./Mobil./Fax./E-Mail from company phone/mobile/fax/email. Fax is now loaded into the
@@ -223,8 +223,12 @@ exact. Hanken Grotesk runs as wide as Arial at the same size, so the Excel point
   - With several tax rates, the line rate is printed under the unit in Art (§ 14 Abs. 4 Nr. 8
     UStG).
   - §19 shows only Gesamtbetrag plus the §19 note.
-  - Payment terms, the §19 note, bank details and the tax number are not visible in the
-    reference crop, so they are added as plain text below the grid and in a small footer.
+  - Payment terms and the §19 note are not visible in the reference crop, so they are added
+    as plain text below the grid.
+  - Footer as in the ERHAN reference, three 8 pt columns of three lines each: company name /
+    street / city (left) | bank name / IBAN / BIC (centered) | "St.Nr.:" (or USt-IdNr.) /
+    "Geschäftsinhaber" / director (right). Overlong lines shrink to fit, never wrap.
+    "Seite x von y" appears only on multi-page documents, right-aligned above the footer.
 - **Exact wrapping:** `lib/pdf/text-metrics.ts` holds Hanken Grotesk advance widths, tested
   against rendered PDFs. ERHAN pre-wraps every multi-line cell to its true width, so planned
   and rendered rows always match (no lost lines, no clipped rows) even for all-caps text and
