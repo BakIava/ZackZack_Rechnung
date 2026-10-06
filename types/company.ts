@@ -16,6 +16,7 @@ export interface PreviewCompany {
   mobile: string | null;
   fax: string | null;
   email: string | null;
+  website: string | null;
   director: string | null;
   steuernummer: string | null;
   ustId: string | null;

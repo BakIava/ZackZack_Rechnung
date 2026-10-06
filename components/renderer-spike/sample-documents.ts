@@ -10,6 +10,7 @@ const company: DocumentPreview["company"] = {
   city: "Berlin",
   phone: "+49 30 1234567",
   mobile: null,
+  website: null,
   fax: null,
   email: "info@example.test",
   director: "İlker Yılmaz",

@@ -14,11 +14,13 @@ import {
   insertDraftDocument,
   setDraftDocumentType,
   setDraftInvoiceServiceTiming,
+  setDraftServiceLocation,
   setDraftQuoteValidUntil,
   updateDraftCustomerSnapshot,
 } from "@/lib/repositories/document-drafts";
 import type { DocType, ServiceTimingInput } from "@/types/document";
 import { isValidQuoteDateRange, validateServiceTiming } from "./document-dates";
+import { parseDocumentServiceLocation } from "./service-location";
 
 async function getCompanyCtx() {
   const user = await getCurrentUser();
@@ -123,6 +125,21 @@ export async function updateDraftServiceTiming(
   return result;
 }
 
+export async function updateDraftServiceLocation(
+  documentId: string,
+  input: unknown,
+): Promise<{ error?: "invalidLocation" | "notAuthenticated" | "draftNotFound" | "updateFailed" }> {
+  const location = input === null ? null : parseDocumentServiceLocation(input);
+  if (input !== null && !location) return { error: "invalidLocation" };
+  const result = await setDraftServiceLocation(documentId, location);
+  if (!result.error) {
+    revalidatePath("/[locale]/create/[document_id]/1", "page");
+    revalidatePath("/[locale]/create/[document_id]/2", "page");
+    revalidatePath("/[locale]/create/[document_id]/3", "page");
+  }
+  return result;
+}
+
 /**
  * Kundenwahl in Schritt 1 festschreiben: customer_id + eingefrorener Snapshot,
  * issue_date auf heute (nur falls noch nicht gesetzt).
@@ -148,10 +165,9 @@ export async function updateDraftCustomer(
 }
 
 /**
- * Löscht den Draft nur, wenn er wirklich leer ist – d. h. keine Positionen hat.
- * Der Kunde allein macht einen Entwurf nicht wertvoll (in Schritt 1 in Sekunden
- * neu gewählt); der eigentliche Inhalt sind die Positionen. Sobald mindestens
- * eine Position existiert, bleibt der Entwurf erhalten.
+ * Löscht den Draft nur, wenn er weder Positionen noch einen Einsatzort hat.
+ * Ein eingetragener Einsatzort gehört bereits zu diesem konkreten Beleg und
+ * darf nicht in einen neu gestarteten Beleg übernommen werden.
  */
 export async function deleteDraftIfEmpty(documentId: string): Promise<void> {
   const ctx = await getCompanyCtx();

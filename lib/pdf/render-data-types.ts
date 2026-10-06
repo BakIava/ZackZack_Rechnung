@@ -7,6 +7,7 @@
 import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import type { PreviewCompany } from "@/types/company";
 import type { PreviewCustomer } from "@/types/customer";
+import type { DocumentServiceLocation } from "@/types/service-location";
 import type {
   DocStatus,
   DocType,
@@ -154,6 +155,7 @@ export interface RenderLogo {
 export interface DocumentRenderData {
   document: RenderDocumentInfo;
   dates: RenderDates;
+  serviceLocation: DocumentServiceLocation | null;
   company: RenderCompany;
   customer: RenderCustomer;
   items: RenderItem[];

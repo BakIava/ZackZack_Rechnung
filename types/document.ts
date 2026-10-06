@@ -14,6 +14,7 @@ import type {
 } from "./database";
 import type { PreviewCompany } from "./company";
 import type { PreviewCustomer } from "./customer";
+import type { DocumentServiceLocation } from "./service-location";
 
 export type {
   DocStatus,
@@ -129,6 +130,7 @@ export interface DraftDoc {
   /** documents.customer_id – null, solange noch kein Kunde gewählt ist */
   customerId: string | null;
   validUntil: string | null;
+  serviceLocation: DocumentServiceLocation | null;
   /** Verknuepfte Workflow-Drafts duerfen ihren Dokumenttyp nicht wechseln. */
   documentTypeLocked: boolean;
 }
@@ -162,6 +164,8 @@ export interface DocumentPreview {
   servicePeriodStart: string | null; // YYYY-MM-DD
   servicePeriodEnd: string | null; // YYYY-MM-DD
   validUntil: string | null; // YYYY-MM-DD, nur Angebot
+  /** Optional für ältere Belege/Testdaten; Repository liefert immer null oder einen Snapshot. */
+  serviceLocation?: DocumentServiceLocation | null;
   isKleinunternehmer: boolean;
   defaultTaxRate: TaxRate;
   /** Bruttobetrag; bei §19 identisch mit netAmount. */

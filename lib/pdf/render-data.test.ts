@@ -13,6 +13,7 @@ const company: PreviewCompany = {
   city: "Berlin",
   phone: "030 123456",
   mobile: null,
+  website: null,
   fax: null,
   email: "info@yilmaz-maler.de",
   director: "Ahmet Yılmaz",
@@ -98,6 +99,16 @@ function preview(items: DocumentItem[], overrides: Partial<DocumentPreview> = {}
 const NBSP_EURO = / €$/;
 
 describe("buildDocumentRenderData – Rechnungsberechnung unverändert", () => {
+  it("führt den dokumentbezogenen Einsatzort zum Renderer durch", () => {
+    const serviceLocation = {
+      name: "Baustelle Familie Schneider", street: "Gartenstraße", houseNumber: "12",
+      postcode: "55116", city: "Mainz", addressExtra: "Hinterhaus",
+    };
+    const data = buildDocumentRenderData(preview([], { serviceLocation }), null);
+    expect(data.serviceLocation).toEqual(serviceLocation);
+    expect(buildDocumentRenderData(preview([]), null).serviceLocation).toBeNull();
+  });
+
   it("§19-Rechnung: Summen aus den Zeilen, kein Steuerausweis, §19-Hinweis, Zahlungsziel", () => {
     const data = buildDocumentRenderData(preview([
       line(1, "Innenanstrich Wohnzimmer", 1, "psch", 48_000, 0),
