@@ -33,10 +33,10 @@ describe("erhan-excel – Seitenaufbau", () => {
   }, 60_000);
 
   it.each([
-    ["business-contact", ["Schneider Hausverwaltung GmbH", "Jonas Beispiel", "Lindenstr. 1", "55262 Ingelheim"]],
+    ["business-contact", ["Jonas Beispiel", "Schneider Hausverwaltung GmbH", "Lindenstr. 1", "55262 Ingelheim"]],
     ["business-no-contact", ["Schneider Hausverwaltung GmbH", "Lindenstr. 1", "55262 Ingelheim"]],
     ["single-vat", ["Jonas Beispiel", "Lindenstr. 1", "55262 Ingelheim"]],
-  ] as const)("%s: Empfänger mit Kontaktperson unter der Firma, ohne Leerzeilen oder doppelte Namen", async (name, expected) => {
+  ] as const)("%s: Kontaktperson steht über der Firma, ohne Leerzeilen oder doppelte Namen", async (name, expected) => {
     const page = (await renderPages(name)).pages[0];
     const recipient = page.filter((item) =>
       Math.abs(item.x - ERHAN_GEOMETRY.left) < 0.5
