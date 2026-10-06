@@ -16,8 +16,8 @@ import { StyleSheet } from "@react-pdf/renderer";
 import { PDF_A4_SIZE } from "@/lib/pdf/document-pages";
 import { PDF_FONT_FAMILY } from "@/lib/pdf/pdf-font-family";
 
-const BLACK = "#000000";
-const GRID = "#cfcfcf";
+/** Dunkelgrau statt Schwarz — harmoniert mit den neutralen Grautönen des Logos. */
+const TEXT = "#333333";
 const BOLD = "bold" as const;
 
 export const ERHAN_ROW = 12.75;
@@ -27,7 +27,8 @@ export const ERHAN_COLUMNS = [50.4, 83.4, 300.4, 353.65, 405.15, 480.9, 544.65] 
 
 export const ERHAN_GEOMETRY = {
   left: 54.9,
-  logo: { left: 357.2, top: 65.25, width: 184.2, height: 52.5 },
+  /** Logobox; das Bild liegt rechtsbündig darin und füllt die Höhe (≈ 164 pt breit). Unterkante 124 pt — über dem Kontaktblock. */
+  logo: { left: 357.2, top: 58, width: 184.2, height: 66 },
   senderBaseline: 128.25,
   recipientBaseline: 151.5,
   recipientLineHeight: 13.5,
@@ -41,8 +42,10 @@ export const ERHAN_GEOMETRY = {
   dateBaseline: 213.75,
   titleBaseline: 261.4,
   numberBaseline: 287.25,
-  /** Freie Einsatzort-Zeile der Referenz: trägt bei Angeboten die Gültigkeit. */
+  /** Erste Einsatzort-Zeile der Referenz; ohne Einsatzort bleibt die Angebotsgültigkeit hier. */
   validUntilBaseline: 315.75,
+  /** Hängender Einzug: alle Ortsangaben beginnen nach der festen Beschriftung. */
+  locationIndent: 64,
   serviceTimingX: 86.4,
   serviceTimingBaseline: 354,
   continuationNumberBaseline: 66,
@@ -58,11 +61,17 @@ export const ERHAN_GEOMETRY = {
   gridBottom: 739.5,
   notesTop: 663,
   notesWidth: 486,
-  footerBaselines: [770, 780],
+  /** Nur bei mehrseitigen Belegen: „Seite x von y“ rechts über der Fußzeile. */
+  pageNumberBaseline: 752,
+  /** Drei Fußzeilen je Spalte (Firma | Bank | Steuernummer/Inhaber). */
+  footerBaselines: [766, 776, 786],
 } as const;
 
 const G = ERHAN_GEOMETRY;
 const [A, B, C, D, E, F, END] = ERHAN_COLUMNS;
+
+export const FOOTER_SIZE = 8;
+export const FOOTER_COLUMN = (END - G.left) / 3;
 
 function top(baseline: number, size: number): number {
   return baseline - size;
@@ -76,7 +85,7 @@ export const erhanStyles = StyleSheet.create({
     height: PDF_A4_SIZE.height,
     fontFamily: PDF_FONT_FAMILY,
     fontSize: 10,
-    color: BLACK,
+    color: TEXT,
   },
   bold: { fontWeight: BOLD },
 
@@ -88,17 +97,6 @@ export const erhanStyles = StyleSheet.create({
     height: G.logo.height,
     objectFit: "contain",
     objectPosition: "right",
-  },
-  logoText: {
-    position: "absolute",
-    left: G.logo.left,
-    top: G.logo.top + 12,
-    width: G.logo.width,
-    fontSize: 16,
-    lineHeight: 1.15,
-    fontWeight: BOLD,
-    textAlign: "right",
-    maxLines: 2,
   },
   sender: {
     position: "absolute",
@@ -118,29 +116,25 @@ export const erhanStyles = StyleSheet.create({
     lineHeight: G.recipientLineHeight / 12,
     fontWeight: BOLD,
   },
+  /** Lage des Kontaktblocks setzt `erhanContactBlock` (mittig unter dem Logo). */
   contactLabel: {
     position: "absolute",
-    left: G.contactLabelX,
     fontSize: 12,
     lineHeight: 1,
     fontWeight: BOLD,
   },
   contactValue: {
     position: "absolute",
-    left: G.contactValueX,
-    width: G.contactValueRight - G.contactValueX,
     lineHeight: 1,
     fontWeight: BOLD,
     maxLines: 1,
   },
+  /** Lage und Schriftgrad setzt `erhanDateLine`; die Zeile bricht nie um. */
   date: {
     position: "absolute",
-    left: G.dateX,
-    top: top(G.dateBaseline, 12),
-    width: END - G.dateX,
-    fontSize: 12,
     lineHeight: 1,
     fontWeight: BOLD,
+    maxLines: 1,
   },
   title: {
     position: "absolute",
@@ -157,6 +151,20 @@ export const erhanStyles = StyleSheet.create({
     lineHeight: 1,
     fontWeight: BOLD,
   },
+  locationLabel: {
+    position: "absolute",
+    fontSize: 10,
+    lineHeight: 1,
+    fontWeight: BOLD,
+    maxLines: 1,
+  },
+  locationValue: {
+    position: "absolute",
+    fontSize: 10,
+    lineHeight: 1,
+    maxLines: 1,
+  },
+  locationName: { fontWeight: BOLD },
   serviceTiming: {
     position: "absolute",
     left: G.serviceTimingX,
@@ -165,8 +173,6 @@ export const erhanStyles = StyleSheet.create({
     lineHeight: 1,
   },
 
-  gridLineH: { position: "absolute", left: A, width: END - A, height: 0.5, backgroundColor: GRID },
-  gridLineV: { position: "absolute", width: 0.5, backgroundColor: GRID },
   rows: { position: "absolute", left: A, width: END - A },
   headRow: { height: G.headHeight, flexDirection: "row", fontSize: 10, lineHeight: 11.5 / 10, fontWeight: BOLD },
   headSingle: { paddingTop: 5.75 },
@@ -185,7 +191,7 @@ export const erhanStyles = StyleSheet.create({
   totalsLabelWide: { position: "absolute", right: END - F, top: 0.5, width: F - D, paddingRight: 2.5, textAlign: "right" },
   /** Summenbeträge dürfen leicht in die zentrierte Beschriftungsspalte reichen. */
   totalsValue: { position: "absolute", right: 2.5, top: 0.5, width: END - F + 14, textAlign: "right" },
-  totalsRule: { height: 1.5, backgroundColor: BLACK, marginTop: -0.75 },
+  totalsRule: { height: 1.5, backgroundColor: TEXT, marginTop: -0.75 },
   totalsGap: { height: ERHAN_ROW - 0.75 },
 
   notes: {
@@ -196,18 +202,17 @@ export const erhanStyles = StyleSheet.create({
     fontSize: 10,
     lineHeight: ERHAN_ROW / 10,
   },
-  footerLine: {
-    position: "absolute",
-    left: G.left,
-    width: END - G.left,
-    fontSize: 8,
-    lineHeight: 1,
-  },
+  /** Drei gleich breite Fußspalten: links Firma, Mitte Bank, rechts Steuer/Inhaber. */
+  footerCell: { position: "absolute", width: FOOTER_COLUMN, lineHeight: 1, maxLines: 1 },
+  footerLeft: { left: G.left },
+  footerCenter: { left: G.left + FOOTER_COLUMN, textAlign: "center" },
+  footerRight: { left: G.left + 2 * FOOTER_COLUMN, paddingRight: 2.5, textAlign: "right" },
   footerPage: {
     position: "absolute",
     left: G.left,
+    top: top(G.pageNumberBaseline, FOOTER_SIZE),
     width: END - G.left - 2.5,
-    fontSize: 8,
+    fontSize: FOOTER_SIZE,
     lineHeight: 1,
     textAlign: "right",
   },

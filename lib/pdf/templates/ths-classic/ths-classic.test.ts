@@ -10,7 +10,7 @@ import type { DocumentItem, DocumentPreview, TaxRate } from "@/types/document";
 const company: DocumentPreview["company"] = {
   name: "Technik Hilfe Sander", legalForm: "Einzelunternehmen",
   street: "Am Mühlbach", streetNo: "51", postcode: "55257", city: "Musterstadt",
-  phone: null, mobile: "0151 – 23 45 678", fax: null, email: "info@technik-hilfe.example",
+  phone: null, mobile: "0151 – 23 45 678", website: null, fax: null, email: "info@technik-hilfe.example",
   director: "Tarik Sander", steuernummer: null, ustId: "DE123456789",
   bankName: null, iban: "DE02 1203 0000 0000 2020 51", bic: "BYLADEM1001",
   accountHolder: null, logoUrl: null, paymentDays: 14,
@@ -106,6 +106,21 @@ const FIXTURES: Record<string, DocumentPreview> = {
       `Arbeitsschritt ${index + 1}: Demontage, Reinigung und fachgerechte Wiedermontage der Beschläge.`).join("\n")),
     line(2, "Abschlussprüfung", 2, "Std.", 3_900, 0),
   ], kleinunternehmer),
+  "service-location": preview([line(1, "Aufzugarbeiten", 2, "Std.", 3_900, 19)], {
+    serviceLocation: {
+      name: "Muster Pharma Campus", street: "Industriestraße", houseNumber: "173",
+      postcode: "55216", city: "Musterheim", addressExtra: "",
+    },
+  }),
+  "service-location-long": preview([line(1, "Aufzugarbeiten", 2, "Std.", 3_900, 19)], {
+    customer: { ...businessCustomer, firstname: "Max", lastname: "Mustermann", phone: "06131 000000" },
+    serviceLocation: {
+      name: "Gemeinnützige Wohnungsbaugesellschaft Rheinhessen-Nahe Gebäudemanagement mbH",
+      street: "Industriestraßenverlängerung", houseNumber: "173a",
+      postcode: "55216", city: "Musterheim am Rhein",
+      addressExtra: "Gebäude 12 A, Hintereingang über den Parkplatz Nord, 3. Obergeschoss, Technikraum links neben dem Aufzug",
+    },
+  }),
   "quote-k19": preview(
     [line(1, "Jalousie reparieren", 3, "Stk.", 6_500, 0), line(2, "Anfahrt", 1, "psch", 3_500, 0)],
     { ...kleinunternehmer, docType: "quote", documentNumber: "A-2026-088", validUntil: "2026-07-09", serviceDate: null },
@@ -301,6 +316,29 @@ describe("ths-classic – Seitenaufbau", () => {
     })).pages[0];
     expect(text(withoutDirector)).not.toContain("Sachbearbeiter");
     expect(text(withoutDirector)).not.toContain("Geschäftsführer");
+  }, 60_000);
+
+  it("Einsatzort steht wie die Lieferadresse der Referenz rechts neben der Anschrift", async () => {
+    const page = (await renderPages("service-location")).pages[0];
+    expectAt(page, "Einsatzort:", 354.4, 148.5);
+    expectAt(page, "Muster Pharma Campus", 354.4, 162.5);
+    expectAt(page, "Industriestraße 173", 354.4, 176.6);
+    expectAt(page, "55216 Musterheim", 354.4, 190.6);
+    expect(text(page)).not.toContain("Lieferadresse");
+
+    const without = text((await renderPages("one-line-vat")).pages[0]);
+    expect(without).not.toContain("Einsatzort");
+  }, 60_000);
+
+  it("langer Einsatzort endet über dem Belegdatum", async () => {
+    const page = (await renderPages("service-location-long")).pages[0];
+    const block = page.filter((item) => item.x >= 354 && item.x < 439 && item.baseline < 216);
+    expect(block.length).toBeGreaterThan(0);
+    const metaTop = 216.9 - 9.25;
+    for (const item of page.filter((entry) => entry.x >= 354 && entry.baseline < 216.9 - 1)) {
+      expect(item.baseline + item.size * 0.2, item.str).toBeLessThan(metaTop);
+    }
+    expectAt(page, "Belegdatum:", 439.6, 216.9);
   }, 60_000);
 
   it("lange Namen bleiben vollständig lesbar", async () => {

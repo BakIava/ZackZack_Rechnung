@@ -1,8 +1,7 @@
 /**
- * Tabellenraster der Vorlage `erhan-excel`: zurückhaltende Excel-Gitterlinien
- * (nur im Tabellenbereich), zweizeiliger Kopf, Positionen auf ganzen
- * Rasterzeilen und rechtsbündiger Summenblock mit kräftiger Linie unter der
- * Mehrwertsteuer — die einzige echte Rahmenlinie der Referenz.
+ * Tabelle der Vorlage `erhan-excel`: ohne sichtbares Gitter, zweizeiliger
+ * Kopf, Positionen auf ganzen Rasterzeilen und rechtsbündiger Summenblock mit
+ * kräftiger Linie unter der Mehrwertsteuer — die einzige Linie der Tabelle.
  */
 
 import { Text, View } from "@react-pdf/renderer";
@@ -10,21 +9,7 @@ import type { DocumentRenderData } from "@/lib/pdf/render-data";
 import { formatPageSubtotal, type PdfPageRow } from "@/lib/pdf/document-pages";
 import { ERHAN_LABELS as L } from "./erhan-excel-labels";
 import type { ErhanRow } from "./erhan-excel-layout";
-import { ERHAN_COLUMNS, ERHAN_GEOMETRY as G, ERHAN_ROW, erhanStyles as s } from "./erhan-excel.styles";
-
-/** Hellgraue Rasterlinien von `top` bis `bottom`; der Tabellenkopf ist eine verbundene Doppelzeile. */
-export function ErhanGrid({ top, bottom }: { top: number; bottom: number }) {
-  const lines = [top];
-  for (let y = top + G.headHeight; y <= bottom + 0.01; y += ERHAN_ROW) lines.push(y);
-  return (
-    <>
-      {lines.map((y) => <View key={`h-${y}`} style={[s.gridLineH, { top: y - 0.25 }]} />)}
-      {ERHAN_COLUMNS.map((x) => (
-        <View key={`v-${x}`} style={[s.gridLineV, { left: x - 0.25, top, height: bottom - top }]} />
-      ))}
-    </>
-  );
-}
+import { ERHAN_GEOMETRY as G, ERHAN_ROW, erhanStyles as s } from "./erhan-excel.styles";
 
 export function ErhanTableHead() {
   return (

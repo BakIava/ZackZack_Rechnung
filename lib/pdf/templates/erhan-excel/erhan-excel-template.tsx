@@ -1,7 +1,7 @@
 /**
  * Vorlage `erhan-excel` (Version 1) — Nachbildung der ERHAN-Excel-Rechnung als
- * echtes PDF: Logo oben rechts, unterstrichene Absenderzeile, fetter Empfänger-
- * und Kontaktblock, „Rechnung“ groß, Positionen im zurückhaltenden Excel-Raster,
+ * echtes PDF: festes Vorlagen-Logo oben rechts, unterstrichene Absenderzeile, fetter Empfänger-
+ * und Kontaktblock, „Rechnung“ groß, Positionen ohne sichtbares Gitter,
  * Summen unten rechts mit kräftiger Linie unter der Mehrwertsteuer.
  *
  * Konsumiert ausschließlich die normalisierten Renderdaten (keine Berechnung,
@@ -14,23 +14,23 @@ import { DOCUMENT_LOCALE } from "@/lib/document-locale";
 import { paginatePdfRows, PDF_A4_SIZE } from "@/lib/pdf/document-pages";
 import type { DocumentTemplateProps } from "../template-types";
 import { ErhanContinuationHead, ErhanFooter, ErhanLetterhead, ErhanNotes } from "./erhan-excel-blocks";
-import { buildErhanRows, erhanPageMetrics, erhanTotalsTop } from "./erhan-excel-layout";
+import { buildErhanRows, erhanFirstPageShift, erhanPageMetrics, erhanTotalsTop } from "./erhan-excel-layout";
 import { ERHAN_GEOMETRY as G, erhanStyles as s } from "./erhan-excel.styles";
-import { ErhanGrid, ErhanItemRow, ErhanPageSubtotal, ErhanTableHead, ErhanTotals } from "./erhan-excel-table";
+import { ErhanItemRow, ErhanPageSubtotal, ErhanTableHead, ErhanTotals } from "./erhan-excel-table";
 
 export function ErhanExcelTemplate({ data }: DocumentTemplateProps) {
   const pages = paginatePdfRows(buildErhanRows(data), data.tax.showTaxDetails, erhanPageMetrics(data));
   const totalsTop = erhanTotalsTop(data);
+  const firstPageShift = erhanFirstPageShift(data);
 
   return (
     <Document language={DOCUMENT_LOCALE} title={data.document.title}>
       {pages.map((page, index) => {
-        const gridTop = page.isFirst ? G.gridTop : G.continuationGridTop;
-        const rowsTop = page.isFirst ? G.firstRowsTop : G.continuationRowsTop;
+        const gridTop = page.isFirst ? G.gridTop + firstPageShift : G.continuationGridTop;
+        const rowsTop = page.isFirst ? G.firstRowsTop + firstPageShift : G.continuationRowsTop;
         return (
           <Page key={`page-${index}`} size={PDF_A4_SIZE} style={s.page}>
             {page.isFirst ? <ErhanLetterhead data={data} /> : <ErhanContinuationHead data={data} />}
-            <ErhanGrid top={gridTop} bottom={page.showSummary ? G.totalsBottom : G.gridBottom} />
             <View style={[s.rows, { top: gridTop }]}>
               <ErhanTableHead />
             </View>

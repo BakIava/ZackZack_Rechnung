@@ -4,12 +4,13 @@
  * Die Leistungszeilen im Kopfband sind fest hinterlegt (THS_HEADER_SERVICES).
  * Sachbearbeiter = Geschäftsführer der Firma, Ansprechpartner = Vor-/Nachname
  * eines Firmenkunden, Telefon = Telefon des Kunden (alles aus den Renderdaten).
- * Felder der Referenz ohne Entsprechung in ZackZack (Lieferadresse,
- * Bauvorhaben, Mitarbeiter) bleiben bewusst leer.
+ * Die „Lieferadresse“ der Referenz trägt den Einsatzort. Felder ohne
+ * Entsprechung in ZackZack (Bauvorhaben, Mitarbeiter) bleiben bewusst leer.
  */
 
 import { Image, Text, View } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
+import { joinText } from "@/lib/pdf/join-text";
 import type { DocumentRenderData } from "@/lib/pdf/render-data";
 import { breakLongWords } from "./ths-classic-layout";
 import { THS_HEADER_SERVICES, THS_LABELS as L } from "./ths-classic-labels";
@@ -51,6 +52,18 @@ function addressLines(data: DocumentRenderData): string[] {
   ].filter((line): line is string => Boolean(line));
 }
 
+/** Einsatzort wie die Lieferadresse der Referenz: Name, Straße, Ort, Zusatz. */
+function serviceLocationLines(data: DocumentRenderData): string[] {
+  const location = data.serviceLocation;
+  if (!location) return [];
+  return [
+    location.name,
+    joinText([location.street, location.houseNumber], " "),
+    joinText([location.postcode, location.city], " "),
+    location.addressExtra,
+  ].filter(Boolean);
+}
+
 function LabelValue({ label, value, boldValue = false }: {
   label: string;
   value: string;
@@ -77,7 +90,7 @@ function numberLine(data: DocumentRenderData): string {
 }
 
 /**
- * Erste Seite: Empfänger; rechts Belegdatum/Gültigkeit/Sachbearbeiter; links
+ * Erste Seite: Empfänger, daneben der Einsatzort; rechts Belegdatum/Gültigkeit/Sachbearbeiter; links
  * Belegnummer, Ansprechpartner, Telefon, Liefer-/Montagetermin, Einleitung.
  * Fehlende Angaben entfallen, die folgenden Zeilen rücken nach.
  */
@@ -94,11 +107,18 @@ export function ThsFirstPageHead({ data }: DataProps) {
     [L.lieferMontagetermin, dates.serviceTiming?.value ?? null],
   ]);
   const lines = addressLines(data);
+  const location = serviceLocationLines(data);
 
   return (
     <>
       {lines.length > 0 && (
         <Text style={s.address} hyphenationCallback={breakLongWords}>{lines.join("\n")}</Text>
+      )}
+      {location.length > 0 && (
+        <Text style={s.serviceLocation} hyphenationCallback={breakLongWords}>
+          <Text style={s.bold}>{L.einsatzort}</Text>
+          {`\n${location.join("\n")}`}
+        </Text>
       )}
       {meta.map(([label, value], index) => (
         <Text
