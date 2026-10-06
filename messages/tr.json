@@ -180,7 +180,7 @@
   },
   "Create": {
     "title": "Yeni fatura",
-    "step1": "Müşteri",
+    "step1": "Müşteri ve iş yeri",
     "step2": "Kalemler",
     "step3": "Önizleme",
     "createTitle": "{type} oluştur",
@@ -323,7 +323,8 @@
     "ncAiFailBanner": "Maalesef net bir şey tanıyamadık. Lütfen bilgileri kendin gir.",
     "ncAiDailyLimitBanner": "Günlük {limit} yapay zeka kullanım sınırına ulaştın. Lütfen bilgileri kendin gir.",
     "ncAiManualBanner": "Müşteri bilgilerini gir.",
-    "ncAiChangeInput": "Girişi değiştir"
+    "ncAiChangeInput": "Girişi değiştir",
+    "chooseCustomerAndLocation": "Müşteriyi ve işin yapılacağı yeri belirle"
   },
   "Step2": {
     "createTitle": "{type} oluştur",
@@ -624,5 +625,42 @@
   "Loading": {
     "overlayLabel": "Bir saniye …",
     "loadingLabel": "Yükleniyor …"
+  },
+  "ServiceLocation": {
+    "title": "İşin yapılacağı yer",
+    "hint": "Çalışma nerede yapılacak?",
+    "optional": "İsteğe bağlı",
+    "add": "İş yeri ekle",
+    "edit": "İş yerini düzenle",
+    "remove": "Kaldır",
+    "new": "Yeni iş yeri",
+    "intro": "İşin yapılacağı yeri anlat – örneğin şantiyenin adresini ve binayı yaz.",
+    "example": "Örnek: Şantiye",
+    "exampleText": "Schneider ailesinin şantiyesi, Gartenstraße 12, 55116 Mainz, arka bina.",
+    "aiHint": "Yapay zekâ tanıdığı bilgileri alanlara aktarır. Uygulamadan önce lütfen kontrol et.",
+    "manual": "Kendim gireceğim",
+    "aiFill": "Yapay zekâyla doldur",
+    "aiLoading": "İş yeri tanınıyor …",
+    "aiSuccess": "Bilgiler tanındı. Lütfen kontrol et ve eksikleri tamamla.",
+    "aiFailure": "İş yeri güvenle tanınamadı. Lütfen alanları kendin doldur.",
+    "aiLimit": "Günlük {limit} yapay zekâ kullanımı sınırına ulaşıldı. Alanları kendin doldurabilirsin.",
+    "aiRetry": "Metni değiştir",
+    "formHint": "Bir ad veya adres yeterli. Bilgileri istediğin zaman düzenleyebilirsin.",
+    "yourInput": "Yazdığın bilgiler",
+    "name": "Ad",
+    "street": "Sokak",
+    "houseNumber": "Bina numarası",
+    "postcode": "Posta kodu",
+    "city": "Şehir",
+    "addressExtra": "Adres ayrıntısı (isteğe bağlı)",
+    "namePlaceholder": "Schneider ailesinin şantiyesi",
+    "streetPlaceholder": "Gartenstraße",
+    "houseNumberPlaceholder": "12",
+    "postcodePlaceholder": "55116",
+    "cityPlaceholder": "Mainz",
+    "addressExtraPlaceholder": "Arka bina, 2. kat",
+    "apply": "Uygula",
+    "cancel": "İptal",
+    "close": "Kapat"
   }
 }
