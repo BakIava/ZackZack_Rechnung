@@ -5,6 +5,7 @@ import { KundeStep } from "@/components/create/1/kunde-step";
 import { getDraft, getFlowDocMeta } from "@/lib/repositories/documents";
 import { getCustomerSummaries } from "@/lib/repositories/customers";
 import { isRtlLocale } from "@/i18n/routing";
+import type { ServiceLocationInput } from "@/types/service-location";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,9 @@ export default async function Step1Page({ params }: Step1PageProps) {
   const initialServiceDate = draft?.serviceDate ?? null;
   const initialServicePeriodStart = draft?.servicePeriodStart ?? null;
   const initialServicePeriodEnd = draft?.servicePeriodEnd ?? null;
+  const initialServiceLocation: ServiceLocationInput | null = draft?.serviceLocation
+    ? { ...draft.serviceLocation, sourceText: "" }
+    : null;
   const documentTypeLocked = draft?.documentTypeLocked ?? false;
 
   return (
@@ -54,6 +58,7 @@ export default async function Step1Page({ params }: Step1PageProps) {
           initialServiceDate={initialServiceDate}
           initialServicePeriodStart={initialServicePeriodStart}
           initialServicePeriodEnd={initialServicePeriodEnd}
+          initialServiceLocation={initialServiceLocation}
           documentTypeLocked={documentTypeLocked}
         />
       </div>
