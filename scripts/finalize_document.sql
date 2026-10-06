@@ -10,9 +10,11 @@
 --   * get_next_document_number(company_id, document_type, year) -> integer
 --     (atomar, row-locking auf number_sequences)
 --
--- Nummernformat:
---   invoice -> 'R-' || jahr || '-' || lpad(seq, 3, '0')   z. B. R-2026-041
---   quote   -> 'A-' || jahr || '-' || lpad(seq, 3, '0')   z. B. A-2026-088
+-- Nummernformat: Muster pro Firma und Typ (companies.invoice_number_pattern /
+-- quote_number_pattern), gebaut von format_document_number().
+-- scripts/document-number-patterns.sql muss vorher gelaufen sein.
+--   Standard: R-{YYYY}-{NNN} -> R-2026-041,  A-{YYYY}-{NNN} -> A-2026-088
+--   Eigener Kreis z. B.: E/{NN}/{YYYY} -> E/05/2026
 --
 -- Das Jahr stammt aus issue_date (NICHT aus now()), damit die Nummer konsistent
 -- zum ausgewiesenen Rechnungsdatum bleibt.
@@ -50,7 +52,7 @@ DECLARE
   v_issue_date date;
   v_year       int;
   v_seq        int;
-  v_prefix     text;
+  v_pattern    text;
   v_number     text;
   v_subtotal   integer;
   v_tax        integer;
@@ -191,16 +193,22 @@ BEGIN
 
   v_year := EXTRACT(YEAR FROM v_issue_date)::int;
 
+  SELECT CASE v_type
+           WHEN 'invoice' THEN c.invoice_number_pattern
+           WHEN 'quote'   THEN c.quote_number_pattern
+         END
+    INTO v_pattern
+  FROM companies c
+  WHERE c.id = v_company_id;
+
+  IF v_pattern IS NULL THEN
+    RAISE EXCEPTION 'number_pattern_missing';
+  END IF;
+
   -- Sequenz erst hier verbrauchen: nie im Entwurf, ausschließlich atomar hier.
   v_seq := get_next_document_number(v_company_id, v_type, v_year);
 
-  v_prefix := CASE v_type
-                WHEN 'invoice' THEN 'R-'
-                WHEN 'quote'   THEN 'A-'
-                ELSE 'D-'
-              END;
-
-  v_number := v_prefix || v_year::text || '-' || lpad(v_seq::text, 3, '0');
+  v_number := format_document_number(v_pattern, v_seq, v_year);
 
   PERFORM set_config('zackzack.finalizing', 'on', true);
 
