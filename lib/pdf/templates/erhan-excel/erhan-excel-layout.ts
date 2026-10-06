@@ -1,6 +1,6 @@
 /**
  * Seitenplanung der Vorlage `erhan-excel`: alles liegt auf dem Excel-Zeilenraster
- * (12,75 pt). Positionszeilen belegen ganze Rasterzeilen; die Summen sitzen auf
+ * (15 pt für 12-pt-Schrift). Positionszeilen belegen ganze Rasterzeilen; die Summen sitzen auf
  * der Schlussseite fest unten rechts, der Raum dazwischen bleibt als leeres
  * Raster stehen — wie im Excel-Original. Reine Layout-Arithmetik.
  */
@@ -10,7 +10,7 @@ import type { PdfPageMetrics } from "@/lib/pdf/document-pages";
 import { measureText, wrapTextToWidth, type FontWeightName } from "@/lib/pdf/text-metrics";
 import { joinText } from "@/lib/pdf/join-text";
 import { ERHAN_LOGO_SIZE } from "./erhan-excel-logo";
-import { ERHAN_COLUMNS, ERHAN_GEOMETRY, ERHAN_ROW } from "./erhan-excel.styles";
+import { ERHAN_BODY_SIZE, ERHAN_COLUMNS, ERHAN_GEOMETRY, ERHAN_ROW } from "./erhan-excel.styles";
 
 const G = ERHAN_GEOMETRY;
 
@@ -21,7 +21,6 @@ const G = ERHAN_GEOMETRY;
  */
 const [, B, C, D, E] = ERHAN_COLUMNS;
 export const ERHAN_TEXT_WIDTH = { leistung: C - B - 6, art: E - D - 6 } as const;
-const FONT_SIZE = 10;
 /** Die Seitenplanung zählt nur noch die vorab gesetzten Zeilenumbrüche. */
 const NO_REWRAP = 100_000;
 
@@ -42,7 +41,7 @@ export function erhanServiceLocationLines(data: DocumentRenderData): ErhanLocati
   const addressLine = [address, city].filter(Boolean).join(", ");
   const width = ERHAN_COLUMNS.at(-1)! - G.left - G.locationIndent - 5;
   const wrap = (value: string, isName: boolean): ErhanLocationLine[] => value
-    ? wrapTextToWidth(value, width, 10, isName ? "bold" : "regular")
+    ? wrapTextToWidth(value, width, ERHAN_BODY_SIZE, isName ? "bold" : "regular")
       .map((text) => ({ text, isName }))
     : [];
   return [
@@ -53,7 +52,8 @@ export function erhanServiceLocationLines(data: DocumentRenderData): ErhanLocati
 }
 
 export function erhanFirstPageShift(data: DocumentRenderData): number {
-  return Math.max(0, erhanServiceLocationLines(data).length - 2) * ERHAN_ROW;
+  const detailLines = erhanServiceLocationLines(data).length + (data.dates.validUntilText ? 1 : 0);
+  return Math.max(0, detailLines - 2) * ERHAN_ROW;
 }
 
 export type ErhanRow = RenderItem & { minNameLines: number; artText: string };
@@ -66,7 +66,7 @@ export function showsLineRates(data: DocumentRenderData): boolean {
 /** Positionen mit exakt vorab umbrochener Bezeichnung, Beschreibung und Einheit. */
 export function buildErhanRows(data: DocumentRenderData): ErhanRow[] {
   const lineRates = showsLineRates(data);
-  const wrap = (text: string, width: number) => wrapTextToWidth(text, width, FONT_SIZE);
+  const wrap = (text: string, width: number) => wrapTextToWidth(text, width, ERHAN_BODY_SIZE);
   return data.items.map((item) => {
     const nameLines = wrap(item.descriptionDe, ERHAN_TEXT_WIDTH.leistung);
     const artLines = wrap(
@@ -111,7 +111,7 @@ export function erhanPageMetrics(data: DocumentRenderData): PdfPageMetrics {
   };
 }
 
-const DATE_SIZE = 12;
+const DATE_SIZE = 11;
 /** Rechte Kante des Empfängerblocks — weiter nach links rückt die Ortszeile nicht. */
 const DATE_MIN_X = G.contactLabelX - 30;
 
