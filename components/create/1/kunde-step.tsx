@@ -1,18 +1,6 @@
 "use client";
 
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  Loader2,
-  MapPin,
-  Pencil,
-  Plus,
-  ReceiptText,
-  Search,
-  X,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, ReceiptText, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -23,14 +11,20 @@ import {
   deleteDraftIfEmpty,
   updateDraftCustomer,
   updateDraftDocumentType,
+  updateDraftServiceLocation,
   updateDraftValidUntil,
 } from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/new-customer-modal";
 import { FlowSteps } from "../flow-steps";
 import type { DocType } from "@/types/document";
+import type { ServiceLocationInput } from "@/types/service-location";
 import { addOneCalendarMonth } from "@/lib/documents/document-dates";
 import { QuoteValidityField } from "./quote-validity-field";
 import { ServiceTimingField } from "./service-timing-field";
+import { CustomerPicker } from "./customer-picker";
+import { CustomerStepFooter } from "./customer-step-footer";
+import { ServiceLocationField } from "./service-location-field";
+import { ServiceLocationModal } from "./service-location-modal";
 import "./kunde-step.css";
 
 interface KundeStepProps {
@@ -44,11 +38,11 @@ interface KundeStepProps {
   initialServiceDate: string | null;
   initialServicePeriodStart: string | null;
   initialServicePeriodEnd: string | null;
+  initialServiceLocation: ServiceLocationInput | null;
   documentTypeLocked: boolean;
 }
 
 const STROKE = 1.75;
-const STROKE_BOLD = 2.4;
 
 export function KundeStep({
   dir,
@@ -61,6 +55,7 @@ export function KundeStep({
   initialServiceDate,
   initialServicePeriodStart,
   initialServicePeriodEnd,
+  initialServiceLocation,
   documentTypeLocked,
 }: KundeStepProps) {
   const t = useTranslations("Create");
@@ -86,12 +81,16 @@ export function KundeStep({
   // damit die Liste die Änderung sofort zeigt, ohne die Server-Daten neu zu laden.
   const [edits, setEdits] = useState<Record<string, CustomerListItem>>({});
   const [showNew, setShowNew] = useState(false);
+  const [showLocation, setShowLocation] = useState(false);
+  const [location, setLocation] = useState<ServiceLocationInput | null>(initialServiceLocation);
+  const [locationSaving, setLocationSaving] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [editing, setEditing] = useState<FlowCustomer | null>(null);
   const [editLoadingId, setEditLoadingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
+  const modalOpen = showNew || editing !== null || showLocation;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
   const allCustomers: CustomerListItem[] = [...created, ...customers].map(
@@ -155,7 +154,7 @@ export function KundeStep({
   }
 
   async function handleWeiter() {
-    if (saving) return;
+    if (saving || locationSaving) return;
     // Schritt 1 ist überspringbar: ohne Kundenwahl direkt zu den Positionen.
     // Ein Kunde ist erst ab > 250 € Pflicht (geprüft in Schritt 3).
     if (!selected) {
@@ -173,6 +172,43 @@ export function KundeStep({
     stepRouter.push(`/create/${documentId}/2`);
   }
 
+  async function handleLocationApply(next: ServiceLocationInput) {
+    if (locationSaving) return;
+    setLocationSaving(true);
+    setLocationError(null);
+    try {
+      const result = await updateDraftServiceLocation(documentId, next);
+      if (result.error) {
+        setLocationError(t("draftError"));
+        return;
+      }
+      setLocation(next);
+      setShowLocation(false);
+    } catch {
+      setLocationError(t("draftError"));
+    } finally {
+      setLocationSaving(false);
+    }
+  }
+
+  async function handleLocationRemove() {
+    if (locationSaving) return;
+    setLocationSaving(true);
+    setLocationError(null);
+    try {
+      const result = await updateDraftServiceLocation(documentId, null);
+      if (result.error) {
+        setLocationError(t("draftError"));
+        return;
+      }
+      setLocation(null);
+    } catch {
+      setLocationError(t("draftError"));
+    } finally {
+      setLocationSaving(false);
+    }
+  }
+
   function handleBack() {
     // Nur leere Drafts löschen (fire-and-forget — kein Ladeindikator nötig).
     void deleteDraftIfEmpty(documentId);
@@ -181,7 +217,7 @@ export function KundeStep({
 
   return (
     <main className="dmain">
-      <div className="dscroll" inert={showNew || editing !== null}>
+      <div className="dscroll" inert={modalOpen}>
         <div className="dflow-head">
           <button
             type="button"
@@ -195,7 +231,7 @@ export function KundeStep({
             <div className="dflow-title">
               {t("createTitle", { type: docLabel })}
             </div>
-            <div className="dflow-sub">{t("chooseCustomer")}</div>
+            <div className="dflow-sub">{t("chooseCustomerAndLocation")}</div>
           </div>
           <FlowSteps current={1} />
         </div>
@@ -249,101 +285,20 @@ export function KundeStep({
           />
         )}
 
-        <div className="dsearch2">
-          <Search
-            size={20}
-            strokeWidth={STROKE}
-            color="var(--muted)"
-            aria-hidden
-          />
-          <input
-            type="search"
-            autoComplete="off"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("searchCustomer")}
-            aria-label={t("searchCustomer")}
-          />
-          {query && (
-            <button
-              type="button"
-              className="dsearch2-clear"
-              aria-label={t("clearSearch")}
-              onClick={() => setQuery("")}
-            >
-              <X size={18} strokeWidth={STROKE} aria-hidden />
-            </button>
-          )}
-        </div>
-
-        <div className="dgrid">
-          {!query && (
-            <button
-              type="button"
-              className="dcust dcust--new"
-              onClick={() => setShowNew(true)}
-            >
-              <span className="dcust-av">
-                <Plus
-                  size={22}
-                  strokeWidth={STROKE_BOLD}
-                  color="#fff"
-                  aria-hidden
-                />
-              </span>
-              <span className="dcust-body">
-                <span className="dcust-name">{t("newCustomer")}</span>
-                <span className="dcust-addr">{t("newCustomerSub")}</span>
-              </span>
-              <Chevron
-                size={20}
-                strokeWidth={STROKE}
-                color="var(--primary)"
-                aria-hidden
-              />
-            </button>
-          )}
-          {filtered.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className="dcust"
-              data-sel={selected === c.id ? "1" : "0"}
-              aria-pressed={selected === c.id}
-              onClick={() => setSelected(c.id)}
-            >
-              <span className="dcust-av">{c.initials}</span>
-              <span className="dcust-body">
-                <span className="dcust-name">
-                  {c.companyName ? c.companyName + " " : ""}
-                  {c.firstname && c.lastname ? c.firstname + " " + c.lastname : ""}
-                  {c.isNew && (
-                    <span className="dcust-badge">
-                      <Check size={11} strokeWidth={STROKE_BOLD} aria-hidden />
-                      {t("ncCreated")}
-                    </span>
-                  )}
-                </span>
-                <span className="dcust-addr">
-                  <MapPin size={13} strokeWidth={STROKE} aria-hidden />
-                  {c.street}
-                  {c.city ? `, ${c.city}` : ""}
-                </span>
-              </span>
-              {selected === c.id && (
-                <span className="dcust-check">
-                  <Check
-                    size={16}
-                    strokeWidth={STROKE_BOLD}
-                    color="#fff"
-                    aria-hidden
-                  />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        <CustomerPicker dir={dir} query={query} filtered={filtered} selected={selected}
+          onQueryChange={setQuery} onSelect={setSelected} onNew={() => setShowNew(true)} />
+        <ServiceLocationField location={location} onEdit={() => setShowLocation(true)}
+          onRemove={() => void handleLocationRemove()} />
+        {locationError && !showLocation && (
+          <p className="dflow-location-error" role="alert">{locationError}</p>
+        )}
       </div>
+
+      {showLocation && (
+        <ServiceLocationModal dir={dir} initialValue={location} saving={locationSaving}
+          error={locationError} onClose={() => setShowLocation(false)}
+          onApply={(next) => void handleLocationApply(next)} />
+      )}
 
       {showNew && (
         <NewCustomerModal
@@ -362,7 +317,7 @@ export function KundeStep({
         />
       )}
 
-      {showFixHint && !showNew && editing === null && (
+      {showFixHint && !modalOpen && (
         <div className="dflow-hint" role="status">
           <span className="dflow-hint-txt">
             {selectedCustomer
@@ -380,68 +335,9 @@ export function KundeStep({
         </div>
       )}
 
-      <div className="dflow-foot" inert={showNew || editing !== null}>
-        <div className="dflow-foot-sel">
-          {saveError ? (
-            <span className="dflow-error">{saveError}</span>
-          ) : selectedCustomer ? (
-            <>
-              <Check
-                size={16}
-                strokeWidth={STROKE_BOLD}
-                color="var(--ok)"
-                aria-hidden
-              />
-              <span>
-                <b>                
-                {selectedCustomer.firstname
-                  ? `${selectedCustomer.firstname} ${selectedCustomer.lastname}`
-                  : ""}
-                </b>{" "}
-                {t("selected")}
-              </span>
-              <button
-                type="button"
-                className={`dflow-edit${showFixHint ? " dflow-edit--pulse" : ""}`}
-                onClick={() => handleEditClick(selectedCustomer.id)}
-                disabled={editLoadingId !== null}
-              >
-                {editLoadingId === selectedCustomer.id ? (
-                  <Loader2
-                    size={15}
-                    strokeWidth={STROKE_BOLD}
-                    className="dbtn-spin"
-                    aria-hidden
-                  />
-                ) : (
-                  <Pencil size={15} strokeWidth={STROKE} aria-hidden />
-                )}
-                {t("editCustomer")}
-              </button>
-            </>
-          ) : (
-            <span>{t("customerOptionalHint")}</span>
-          )}
-        </div>
-        <button
-          type="button"
-          className="step1-next-button"
-          disabled={saving}
-          onClick={handleWeiter}
-        >
-          {saving ? (
-            <Loader2
-              size={20}
-              strokeWidth={STROKE_BOLD}
-              className="dbtn-spin"
-              aria-hidden
-            />
-          ) : (
-            <Chevron size={20} strokeWidth={STROKE_BOLD} aria-hidden />
-          )}
-          {t("next")}
-        </button>
-      </div>
+      <CustomerStepFooter dir={dir} inert={modalOpen} selectedCustomer={selectedCustomer}
+        saveError={saveError} saving={saving || locationSaving} editLoadingId={editLoadingId}
+        showFixHint={showFixHint} onEdit={handleEditClick} onNext={handleWeiter} />
     </main>
   );
 }

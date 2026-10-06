@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { CustomerSnapshot } from "@/types/customer";
 import type { DocumentRow } from "@/types/database";
 import type { DocType, ServiceTimingInput, TaxRate } from "@/types/document";
+import type { DocumentServiceLocation } from "@/types/service-location";
 import { getDocumentIdsWithItems } from "./document-items";
 
 /** Gehört das Dokument der eigenen Firma und ist noch ein Entwurf? */
@@ -29,7 +30,7 @@ export async function findReusableDraft(companyId: string): Promise<string | nul
   const supabase = await createClient();
   const { data: drafts } = await supabase
     .from("documents")
-    .select("id")
+    .select("id, service_location")
     .eq("company_id", companyId)
     .eq("status", "draft")
     .order("created_at", { ascending: false });
@@ -37,7 +38,8 @@ export async function findReusableDraft(companyId: string): Promise<string | nul
 
   const ids = drafts.map((draft) => draft.id as string);
   const hasItems = await getDocumentIdsWithItems(companyId, ids);
-  const reusable = drafts.find((draft) => !hasItems.has(draft.id as string));
+  const reusable = drafts.find((draft) =>
+    draft.service_location === null && !hasItems.has(draft.id as string));
   return reusable ? (reusable.id as string) : null;
 }
 
@@ -149,6 +151,29 @@ export async function setDraftInvoiceServiceTiming(
   return {};
 }
 
+/** Eigenen Einsatzort ausschließlich an einem bearbeitbaren Dokument speichern. */
+export async function setDraftServiceLocation(
+  documentId: string,
+  location: DocumentServiceLocation | null,
+): Promise<{ error?: "notAuthenticated" | "draftNotFound" | "updateFailed" }> {
+  const companyId = await getCurrentCompanyId();
+  if (!companyId) return { error: "notAuthenticated" };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .update({ service_location: location })
+    .eq("id", documentId)
+    .eq("company_id", companyId)
+    .eq("status", "draft")
+    .select("id")
+    .maybeSingle();
+
+  if (error) return { error: "updateFailed" };
+  if (!data) return { error: "draftNotFound" };
+  return {};
+}
+
 /** Gültigkeitsdatum eines eigenen Angebotsentwurfs aktualisieren. */
 export async function setDraftQuoteValidUntil(
   documentId: string,
@@ -230,7 +255,8 @@ export async function deleteDraftDocument(documentId: string): Promise<void> {
     .delete()
     .eq("id", documentId)
     .eq("company_id", companyId)
-    .eq("status", "draft");
+    .eq("status", "draft")
+    .is("service_location", null);
 }
 
 /** Autoritative Summen eines Entwurfs aktualisieren. */

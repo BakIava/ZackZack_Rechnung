@@ -37,7 +37,7 @@ const preview: DocumentPreview = {
   taxGroups: [{ rate: 0, netAmount: 48_000, taxAmount: 0 }],
   company: {
     name: "Yılmaz Malerbetrieb", legalForm: null, street: null, streetNo: null,
-    postcode: null, city: null, phone: null, mobile: null, fax: null, email: null,
+    postcode: null, city: null, phone: null, mobile: null, website: null, fax: null, email: null,
     director: null, steuernummer: null, ustId: null, bankName: null, iban: null,
     bic: null, accountHolder: null, logoUrl: null, paymentDays: 14,
   },

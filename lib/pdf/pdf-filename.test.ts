@@ -28,6 +28,7 @@ function base(overrides: Partial<DocumentPreview>): DocumentPreview {
       city: null,
       phone: null,
       mobile: null,
+      website: null,
       fax: null,
       email: null,
       director: null,

@@ -69,6 +69,7 @@ export function buildDocumentRenderData(
   const validUntil = !isInvoice ? preview.validUntil : null;
 
   return {
+    serviceLocation: preview.serviceLocation ?? null,
     document: {
       id: preview.id,
       docType,
@@ -104,6 +105,7 @@ export function buildDocumentRenderData(
       mobile: co.mobile,
       fax: co.fax,
       email: co.email,
+      website: co.website,
       director: co.director,
       steuernummer: co.steuernummer,
       ustId: co.ustId,

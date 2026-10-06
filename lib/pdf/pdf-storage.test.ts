@@ -60,6 +60,7 @@ const preview: DocumentPreview = {
     city: null,
     phone: null,
     mobile: null,
+    website: null,
     fax: null,
     email: null,
     director: null,

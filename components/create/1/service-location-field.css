@@ -1,0 +1,74 @@
+.service-location {
+  display: grid;
+  gap: 16px;
+  margin-block-start: 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.service-location__heading,
+.service-location__selected,
+.service-location__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.service-location__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 12px;
+  color: var(--primary);
+  background: var(--bg);
+}
+
+.service-location__copy { flex: 1; min-inline-size: 0; }
+.service-location__copy h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.service-location__copy p { margin-block: 3px 0; color: var(--muted); font-size: 13px; }
+.service-location__optional { color: var(--muted); font-size: 12px; }
+
+.service-location__address {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  min-inline-size: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.service-location__address span { color: var(--muted); }
+.service-location__actions { flex-wrap: wrap; gap: 8px; }
+
+.service-location button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.service-location button:hover { border-color: var(--primary); background: var(--bg); }
+.service-location button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.service-location .service-location__add { justify-self: start; border-style: dashed; border-color: var(--primary); }
+
+@media (max-width: 600px) {
+  .service-location { padding: 16px; }
+  .service-location__selected { align-items: stretch; flex-direction: column; }
+  .service-location__heading { flex-wrap: wrap; }
+  .service-location__optional { margin-inline-start: 56px; }
+}

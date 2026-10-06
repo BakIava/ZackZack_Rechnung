@@ -2,6 +2,7 @@
 
 import { cache } from "react";
 import { calculateDocumentTotals } from "@/lib/documents/tax";
+import { parseDocumentServiceLocation } from "@/lib/documents/service-location";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { toPreviewCustomer } from "@/lib/customers/utils";
@@ -21,10 +22,10 @@ import { toDocumentItem, toDraftItem } from "./document-item-mappers";
 // Als ein String-Literal (nicht verkettet), sonst kann Supabase die Spalten
 // nicht typisieren und die Zeile wird zu GenericStringError.
 const COMPANY_COLUMNS =
-  "name, legal_form, street, street_no, postcode, city, phone, mobile, fax, email, director, steuernummer, ust_id, bank_name, iban, bic, account_holder, logo_url, payment_days, document_template_id";
+  "name, legal_form, street, street_no, postcode, city, phone, mobile, fax, email, website, director, steuernummer, ust_id, bank_name, iban, bic, account_holder, logo_url, payment_days, document_template_id";
 
 const DOCUMENT_COLUMNS =
-  "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, valid_until, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured, template_id, template_version";
+  "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, service_location, valid_until, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured, template_id, template_version";
 
 const PREVIEW_ITEM_COLUMNS =
   "position, description_de, additional_description_de, amount, unit, unit_price, total_amount, tax_rate, tax_amount, gross_amount";
@@ -44,6 +45,7 @@ function toCompany(row: Record<string, unknown>): PreviewCompany {
     mobile: (row.mobile as string | null) ?? null,
     fax: (row.fax as string | null) ?? null,
     email: (row.email as string | null) ?? null,
+    website: (row.website as string | null) ?? null,
     director: (row.director as string | null) ?? null,
     steuernummer: (row.steuernummer as string | null) ?? null,
     ustId: (row.ust_id as string | null) ?? null,
@@ -114,6 +116,7 @@ async function loadDocumentPreviewData(
     servicePeriodStart: (doc.service_period_start as string | null) ?? null,
     servicePeriodEnd: (doc.service_period_end as string | null) ?? null,
     validUntil: (doc.valid_until as string | null) ?? null,
+    serviceLocation: parseDocumentServiceLocation(doc.service_location),
     isKleinunternehmer: Boolean(doc.is_kleinunternehmer),
     defaultTaxRate: (doc.default_tax_rate as TaxRate | null) ?? 19,
     totalAmount: totals.grossAmount,

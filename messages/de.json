@@ -180,7 +180,7 @@
   },
   "Create": {
     "title": "Neue Rechnung",
-    "step1": "Kunde",
+    "step1": "Kunde & Einsatzort",
     "step2": "Positionen",
     "step3": "Vorschau",
     "createTitle": "{type} erstellen",
@@ -323,7 +323,8 @@
     "ncAiFailBanner": "Wir konnten leider nichts sicher erkennen. Bitte trag die Angaben selbst ein.",
     "ncAiDailyLimitBanner": "Du hast das Tageslimit von {limit} KI-Nutzungen erreicht. Bitte trag die Angaben selbst ein.",
     "ncAiManualBanner": "Trag die Angaben des Kunden ein.",
-    "ncAiChangeInput": "Eingabe ändern"
+    "ncAiChangeInput": "Eingabe ändern",
+    "chooseCustomerAndLocation": "Kunde und Einsatzort festlegen"
   },
   "Step2": {
     "createTitle": "{type} erstellen",
@@ -624,5 +625,42 @@
   "Loading": {
     "overlayLabel": "Einen Moment …",
     "loadingLabel": "Lädt …"
+  },
+  "ServiceLocation": {
+    "title": "Einsatzort",
+    "hint": "Wo werden die Arbeiten ausgeführt?",
+    "optional": "Optional",
+    "add": "Einsatzort hinzufügen",
+    "edit": "Einsatzort bearbeiten",
+    "remove": "Entfernen",
+    "new": "Neuer Einsatzort",
+    "intro": "Beschreibe den Einsatzort – zum Beispiel die Adresse der Baustelle und das Gebäude.",
+    "example": "Beispiel: Baustelle",
+    "exampleText": "Baustelle Familie Schneider, Gartenstraße 12, 55116 Mainz, Hinterhaus.",
+    "aiHint": "Die KI übernimmt erkannte Angaben in die Felder. Bitte prüfe sie vor dem Übernehmen.",
+    "manual": "Selbst eingeben",
+    "aiFill": "Mit KI ausfüllen",
+    "aiLoading": "Einsatzort wird erkannt …",
+    "aiSuccess": "Angaben erkannt. Bitte prüfe und ergänze sie.",
+    "aiFailure": "Der Einsatzort konnte nicht sicher erkannt werden. Bitte fülle die Felder selbst aus.",
+    "aiLimit": "Das Tageslimit von {limit} KI-Erfassungen ist erreicht. Du kannst die Felder selbst ausfüllen.",
+    "aiRetry": "Text ändern",
+    "formHint": "Eine Bezeichnung oder Adresse genügt. Du kannst die Angaben jederzeit bearbeiten.",
+    "yourInput": "Deine Angaben",
+    "name": "Bezeichnung",
+    "street": "Straße",
+    "houseNumber": "Hausnummer",
+    "postcode": "PLZ",
+    "city": "Ort",
+    "addressExtra": "Adresszusatz (optional)",
+    "namePlaceholder": "Baustelle Familie Schneider",
+    "streetPlaceholder": "Gartenstraße",
+    "houseNumberPlaceholder": "12",
+    "postcodePlaceholder": "55116",
+    "cityPlaceholder": "Mainz",
+    "addressExtraPlaceholder": "Hinterhaus, 2. Stock",
+    "apply": "Übernehmen",
+    "cancel": "Abbrechen",
+    "close": "Schließen"
   }
 }

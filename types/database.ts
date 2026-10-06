@@ -74,6 +74,8 @@ export interface CompanyRow {
   mobile: string | null;
   fax: string | null;
   email: string | null;
+  /** Webadresse ohne Schema, z. B. "fliesen-erhan.de" (scripts/company-website.sql). */
+  website: string | null;
   director: string | null;
   steuernummer: string | null;
   ust_id: string | null;
@@ -93,6 +95,13 @@ export interface CompanyRow {
   payment_days: number;
   /** Gewählte Belegvorlage für neue Belege (NOT NULL, Default 'standard'). */
   document_template_id: DocumentTemplateId;
+  /**
+   * Nummernmuster (NOT NULL, Default 'R-{YYYY}-{NNN}' / 'A-{YYYY}-{NNN}'),
+   * gepflegt in zackzack_admin; nur `finalize_document` wendet es an
+   * (scripts/document-number-patterns.sql).
+   */
+  invoice_number_pattern: string;
+  quote_number_pattern: string;
 }
 
 /** public.users — Verknüpfung Auth-User ↔ Firma (id = auth.users.id) */
@@ -206,6 +215,8 @@ export interface DocumentRow {
   service_date: string | null; // date, YYYY-MM-DD
   service_period_start: string | null; // date, YYYY-MM-DD
   service_period_end: string | null; // date, YYYY-MM-DD
+  /** Dokumentbezogener Einsatzort (jsonb), kein Stammdatum des Kunden. */
+  service_location: unknown;
   /** Nur fuer Angebote; Standard = ein Kalendermonat ab issue_date. */
   valid_until: string | null; // date, YYYY-MM-DD
   /** Eingefrorene Empfängerkopie (jsonb, nullable) – nie als Live-Join. */

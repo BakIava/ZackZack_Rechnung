@@ -91,7 +91,7 @@ Einkaufspreis (inkl. MwSt) + Aufschlag (`percent` in **Basispunkten**, 1250 = 12
 
 ### Pflichtangaben & Finalisierung
 - §14-Check vor der Finalisierung: `pruefeDokumentPflicht()` (`lib/legal/dokument-pflicht.ts`), rein funktional und Supabase-frei. Empfängerangaben sind **betragsabhängig** (Kleinbetragsrechnung bis 250 € brutto, § 33 UStDV). Finalisieren ist erst möglich, wenn `istFinalisierbar()` grün ist.
-- Nummernvergabe passiert **ausschließlich** in der SQL-Funktion `finalize_document` (SECURITY DEFINER, atomar über `number_sequences`, lückenlos pro Firma/Typ/Jahr) — niemals im Client oder in TypeScript. Format: `R-JJJJ-NNN` (Rechnung) / `A-JJJJ-NNN` (Angebot), z. B. `R-2026-041`.
+- Nummernvergabe passiert **ausschließlich** in der SQL-Funktion `finalize_document` (SECURITY DEFINER, atomar über `number_sequences`, lückenlos pro Firma/Typ/Jahr) — niemals im Client oder in TypeScript. Format pro Firma über `companies.invoice_number_pattern`/`quote_number_pattern` (Standard `R-{YYYY}-{NNN}` / `A-{YYYY}-{NNN}`, z. B. `R-2026-041`; eigener Kreis z. B. `E/{NN}/{YYYY}` → `E/05/2026`). Muster und Startwert pflegt ausschließlich zackzack_admin (`seed_document_number`, `scripts/document-number-patterns.sql`); in TypeScript ist die Nummer ein opaker String.
 - Finalisierte Dokumente sind eingefroren: Schritt 1+2 leiten bei `status != 'draft'` auf Schritt 3 (Ansichtsmodus) um.
 
 ### Legacy-Spec-Module — nicht für neuen Code verwenden

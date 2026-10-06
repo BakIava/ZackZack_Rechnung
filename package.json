@@ -21,7 +21,8 @@
     "e2e:package-07": "playwright test e2e/package-07-validation-finalization.spec.ts --project=chromium",
     "e2e:package-08": "playwright test e2e/package-08-final-parity.spec.ts --project=chromium",
     "e2e:install": "playwright install chromium",
-    "icons": "node scripts/generate-icons.cjs"
+    "icons": "node scripts/generate-icons.cjs",
+    "logo:erhan": "node scripts/generate-erhan-excel-logo.cjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

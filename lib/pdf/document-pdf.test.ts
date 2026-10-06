@@ -31,7 +31,7 @@ function longPreview(): DocumentPreview {
     company: {
       name: "Yılmaz Malerbetrieb", legalForm: null,
       street: "Musterstraße", streetNo: "12", postcode: "10115", city: "Berlin",
-      phone: "030 123456", mobile: null, fax: null, email: "info@yilmaz-maler.de",
+      phone: "030 123456", mobile: null, website: null, fax: null, email: "info@yilmaz-maler.de",
       director: "Ahmet Yılmaz", steuernummer: "12/345/67890", ustId: null,
       bankName: "Sparkasse Berlin", iban: "DE12 3456 7890 1234 5678 90",
       bic: null, accountHolder: null, logoUrl: null, paymentDays: 14,

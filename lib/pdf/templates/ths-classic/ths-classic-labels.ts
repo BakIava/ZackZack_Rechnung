@@ -6,6 +6,7 @@
  */
 export const THS_LABELS = {
   firma: "Firma",
+  einsatzort: "Einsatzort:",
   belegdatum: "Belegdatum:",
   gueltigBis: "Gültig bis:",
   sachbearbeiter: "Sachbearbeiter:",

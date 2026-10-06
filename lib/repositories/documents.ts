@@ -6,6 +6,7 @@
 
 import { cache } from "react";
 import { getCustomerName } from "@/lib/customers/utils";
+import { parseDocumentServiceLocation } from "@/lib/documents/service-location";
 import { todayInGermany } from "@/lib/documents/document-dates";
 import { calculateDocumentTotals } from "@/lib/documents/tax";
 import { deriveInitials } from "@/lib/initials";
@@ -44,7 +45,7 @@ async function deleteEmptyDrafts(companyId: string): Promise<void> {
   const cutoff = new Date(Date.now() - EMPTY_DRAFT_MAX_AGE_MS).toISOString();
   const { data: drafts, error } = await supabase
     .from("documents")
-    .select("id")
+    .select("id, service_location")
     .eq("company_id", companyId)
     .eq("status", "draft")
     .lt("created_at", cutoff);
@@ -52,7 +53,9 @@ async function deleteEmptyDrafts(companyId: string): Promise<void> {
 
   const draftIds = drafts.map((draft) => draft.id as string);
   const hasItems = await getDocumentIdsWithItems(companyId, draftIds);
-  const emptyIds = draftIds.filter((id) => !hasItems.has(id));
+  const emptyIds = drafts
+    .filter((draft) => draft.service_location === null && !hasItems.has(draft.id as string))
+    .map((draft) => draft.id as string);
   if (emptyIds.length === 0) return;
 
   await supabase
@@ -60,6 +63,7 @@ async function deleteEmptyDrafts(companyId: string): Promise<void> {
     .delete()
     .eq("company_id", companyId)
     .eq("status", "draft")
+    .is("service_location", null)
     .in("id", emptyIds);
 }
 
@@ -179,7 +183,7 @@ export const getDraft = cache(
     const { data } = await supabase
       .from("documents")
       .select(
-        "id, document_type, customer_id, issue_date, service_date, service_period_start, service_period_end, valid_until",
+        "id, document_type, customer_id, issue_date, service_date, service_period_start, service_period_end, service_location, valid_until",
       )
       .eq("id", documentId)
       .eq("company_id", companyId)
@@ -197,6 +201,7 @@ export const getDraft = cache(
       servicePeriodEnd: (data.service_period_end as string | null) ?? null,
       customerId: (data.customer_id as string | null) ?? null,
       validUntil: (data.valid_until as string | null) ?? null,
+      serviceLocation: parseDocumentServiceLocation(data.service_location),
       documentTypeLocked: relations.some(
         (relation) => relation.targetDocumentId === data.id,
       ),

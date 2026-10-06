@@ -40,6 +40,8 @@ function mapError(message: string): FinalizeError {
   }
   // template_mismatch (Firmenwahl hat sich seit der Vorschau geändert),
   // template_snapshot_incomplete, template_version_invalid: erneut versuchen.
+  // number_pattern_* und Unique-Verletzungen der Nummer sind Fehlkonfiguration
+  // in zackzack_admin, nicht vom Nutzer behebbar.
   return "unknown";
 }
 

@@ -48,6 +48,11 @@ export const THS_GEOMETRY = {
   addressBaseline: 148.5,
   addressLineHeight: 14.03,
   /**
+   * Einsatzort rechts neben der Anschrift (Platz der „Lieferadresse“ der
+   * Referenz): höchstens 5 Zeilen, damit er über dem Belegdatum endet.
+   */
+  serviceLocationMaxLines: 5,
+  /**
    * Rechte Spalte über der Belegnummer: Belegdatum, Gültig bis (Angebot),
    * Sachbearbeiter — von oben gefüllt, ohne Lücken. Ein umbrechender
    * Sachbearbeiter läuft nach unten in die freie Spalte neben der Belegnummer.
@@ -175,6 +180,16 @@ export const thsStyles = StyleSheet.create({
     top: top(THS_GEOMETRY.addressBaseline, THS_TYPE.body),
     width: THS_GEOMETRY.rightColumn - THS_GEOMETRY.marginLeft - 14,
     lineHeight: THS_GEOMETRY.addressLineHeight / THS_TYPE.body,
+  },
+  serviceLocation: {
+    position: "absolute",
+    fontSize: THS_TYPE.body,
+    left: THS_GEOMETRY.rightColumn,
+    top: top(THS_GEOMETRY.addressBaseline, THS_TYPE.body),
+    width: THS_GEOMETRY.band.left + THS_GEOMETRY.band.width - THS_GEOMETRY.rightColumn,
+    lineHeight: THS_GEOMETRY.addressLineHeight / THS_TYPE.body,
+    maxLines: THS_GEOMETRY.serviceLocationMaxLines,
+    textOverflow: "ellipsis",
   },
   metaLine: {
     position: "absolute",

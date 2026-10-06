@@ -15,6 +15,7 @@ function company(overrides: Partial<PreviewCompany> = {}): PreviewCompany {
     city: "Berlin",
     phone: "030 123456",
     mobile: null,
+    website: null,
     fax: null,
     email: "info@yilmaz-maler.de",
     director: "Ahmet Yılmaz",
