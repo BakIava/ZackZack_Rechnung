@@ -61,6 +61,7 @@ async function addCatalogPositions(page: Page): Promise<void> {
     await page.getByRole("button", { name: /Position hinzufügen/ }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
+    await dialog.getByRole("tab", { name: "Aus Katalog" }).click();
     const firstCatalogItem = dialog.locator(".cat-item").first();
     await expect(firstCatalogItem).toBeVisible();
     await firstCatalogItem.click();

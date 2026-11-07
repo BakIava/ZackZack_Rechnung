@@ -17,6 +17,7 @@ async function loginWithLocalDevAccount(page: Page): Promise<void> {
 async function openCatalog(page: Page): Promise<void> {
   await page.getByRole("button", { name: /Position hinzufügen/ }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("dialog").getByRole("tab", { name: "Aus Katalog" }).click();
 }
 
 async function addCatalogPosition(page: Page, index: number): Promise<string> {

@@ -75,11 +75,12 @@ test("Paket 4: neue Position lebt bis zum Speichern nur in der Vorschau", async 
 
   await openPositionModal(page);
   await expect(page.locator(".d2card")).toHaveCount(0);
+  // „Freie Position" ist der Start-Tab und belegt die Vorschau mit ihren Vorgaben.
   await expectPreview(preview, {
     count: 1,
     descriptions: "",
-    amounts: "0",
-    units: "",
+    amounts: "1",
+    units: "m²",
     prices: "0",
   });
   await expect(preview).toHaveAttribute("data-preview-line-totals", "0");

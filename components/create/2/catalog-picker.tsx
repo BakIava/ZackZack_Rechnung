@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Brush, ClipboardList, FileText, Languages, Pencil, Plus, Search, Truck } from "lucide-react";
+import { Brush, ClipboardList, FileText, Pencil, Plus, Search, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { anzeigeName } from "@/lib/katalog/anzeige";
@@ -33,7 +33,7 @@ interface CatalogPickerProps {
   onPreviewChange: (input: TemporaryDocumentItemInput) => void;
 }
 
-/** Gemeinsamer Picker: Aus Katalog · Freie Position · Fremdleistung. */
+/** Gemeinsamer Picker: Freie Position · Aus Katalog · Fremdleistung. */
 export function CatalogPicker({
   locale,
   services,
@@ -43,12 +43,12 @@ export function CatalogPicker({
   onPreviewChange,
 }: CatalogPickerProps) {
   const t = useTranslations("Step2");
-  const [tab, setTab] = useState<Tab>("katalog");
+  const [tab, setTab] = useState<Tab>("frei");
   const [query, setQuery] = useState("");
 
   const tabs: { id: Tab; icon: typeof ClipboardList; label: string }[] = [
-    { id: "katalog", icon: ClipboardList, label: t("fromCatalog") },
     { id: "frei", icon: Pencil, label: t("freePosition") },
+    { id: "katalog", icon: ClipboardList, label: t("fromCatalog") },
     { id: "fremd", icon: Truck, label: t("subcontract") },
   ];
 
@@ -58,6 +58,8 @@ export function CatalogPicker({
   );
 
   function selectTab(nextTab: Tab) {
+    // Erneuter Klick auf den aktiven Tab darf die Vorschau nicht vom Formular lösen.
+    if (nextTab === tab) return;
     setTab(nextTab);
     const defaults = nextTab === "frei"
       ? FREE_TEMPORARY_DOCUMENT_ITEM
@@ -84,13 +86,6 @@ export function CatalogPicker({
             {label}
           </button>
         ))}
-      </div>
-
-      <div className="cat-hint">
-        <span className="cat-hint-ic">
-          <Languages size={18} strokeWidth={STROKE} aria-hidden />
-        </span>
-        <span className="cat-hint-t">{t("translateHint")}</span>
       </div>
 
       {tab === "katalog" && (

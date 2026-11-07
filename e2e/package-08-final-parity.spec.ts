@@ -44,6 +44,7 @@ async function addLongDocument(page: Page): Promise<void> {
     await page.getByRole("button", { name: /Position hinzufügen/ }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
+    await dialog.getByRole("tab", { name: "Aus Katalog" }).click();
     await dialog.locator(".cat-item").first().click();
     await expect(cards).toHaveCount(index + 1);
   }

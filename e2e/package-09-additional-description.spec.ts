@@ -42,6 +42,7 @@ async function openAddModal(page: Page): Promise<Locator> {
 
 async function addThreeOrigins(page: Page): Promise<void> {
   let dialog = await openAddModal(page);
+  await dialog.getByRole("tab", { name: "Aus Katalog" }).click();
   await dialog.locator(".cat-item").first().click();
   await expect(page.locator(".d2card")).toHaveCount(1);
 
