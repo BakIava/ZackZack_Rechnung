@@ -24,6 +24,8 @@ interface PositionCardProps {
   onEditUnit: (item: DraftItem) => void;
   onEditVat: (item: DraftItem) => void;
   onDelete: (id: string) => void;
+  /** Nummer antippen → an eine andere Stelle verschieben; ohne = reine Anzeige. */
+  onMoveTo?: ((item: DraftItem) => void) | null;
 }
 
 /** Positionskarte (Variante B): „Menge × Preis = Summe". Bezeichnung, Einheit
@@ -42,6 +44,7 @@ export function PositionCard({
   onEditUnit,
   onEditVat,
   onDelete,
+  onMoveTo,
 }: PositionCardProps) {
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
@@ -59,7 +62,20 @@ export function PositionCard({
   return (
     <div className="d2card">
       <div className="d2card-top">
-        <span className="d2card-num">{index + 1}</span>
+        {onMoveTo ? (
+          <button
+            type="button"
+            className="d2card-num d2card-num--move"
+            disabled={disabled}
+            aria-label={t("moveToAria", { n: index + 1 })}
+            title={t("moveToAria", { n: index + 1 })}
+            onClick={() => onMoveTo(item)}
+          >
+            {index + 1}
+          </button>
+        ) : (
+          <span className="d2card-num">{index + 1}</span>
+        )}
         <div className="d2card-title-stack">
           <button
             type="button"

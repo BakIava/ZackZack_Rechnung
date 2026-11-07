@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
+import { isSameItemSet, planReorder } from "./item-order";
 import { fremdUnitPrice } from "./margin";
 import { normalizeAdditionalDescriptionDe } from "./additional-description";
 import {
@@ -326,29 +327,35 @@ export async function deleteItem(itemId: string): Promise<ItemsResult> {
   return recompute(ctx.companyId, documentId);
 }
 
-/** Position um eine Stelle nach oben/unten verschieben. */
-export async function moveItem(
-  itemId: string,
-  direction: "up" | "down",
+/**
+ * Neue Reihenfolge speichern: vollständige Positions-IDs von oben nach unten.
+ * Erst auf Zwischennummern, dann auf 1..n – so tragen nie zwei Positionen
+ * dieselbe Nummer. Scheitert ein Schritt, wird lückenlos neu durchnummeriert.
+ */
+export async function reorderItems(
+  documentId: string,
+  orderedIds: string[],
 ): Promise<ItemsResult> {
   const ctx = await getCtx();
   if ("error" in ctx) return { error: "notAuthenticated" };
-
-  const documentId = await getItemDocumentId(itemId);
-  if (!documentId) return { error: "itemNotFound" };
   if (!(await isDraftDocument(documentId))) return { error: "draftNotFound" };
 
-  const list = await listItemPositions(ctx.companyId, documentId);
-  const index = list.findIndex((r) => r.id === itemId);
-  const target = direction === "up" ? index - 1 : index + 1;
-  if (index === -1 || target < 0 || target >= list.length) {
-    return recompute(ctx.companyId, documentId);
+  const current = await listItemPositions(ctx.companyId, documentId);
+  if (!isSameItemSet(current.map((row) => row.id), orderedIds)) {
+    return { error: "orderInvalid" };
   }
 
-  const a = list[index];
-  const b = list[target];
-  await setItemPosition(ctx.companyId, a.id, b.position);
-  await setItemPosition(ctx.companyId, b.id, a.position);
+  const plan = planReorder(current, orderedIds);
+  for (const step of ["temporary", "position"] as const) {
+    const results = await Promise.all(
+      plan.map((row) => setItemPosition(ctx.companyId, row.id, row[step])),
+    );
+    const failed = results.find((result) => result.error);
+    if (failed) {
+      await renumber(ctx.companyId, documentId);
+      return { error: failed.error ?? "reorderFailed" };
+    }
+  }
 
-  return recompute(ctx.companyId, documentId);
+  return recompute(ctx.companyId, documentId, false);
 }

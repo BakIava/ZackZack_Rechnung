@@ -28,6 +28,7 @@ import type {
 } from "@/types/document";
 import type { PadField } from "./number-pad";
 import type { PositionEditorState, SheetField } from "./position-sheets";
+import { useItemReorder } from "./use-item-reorder";
 
 interface UseStep2ItemsArgs {
   documentId: string;
@@ -89,6 +90,16 @@ export function useStep2Items({
   const [editor, setEditor] = useState<{ itemId: string; field: SheetField } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const reorder = useItemReorder({
+    documentId,
+    items,
+    savedPreview,
+    setItems,
+    setSavedPreview,
+    setError,
+    startTransition,
+    errorMessage: t("itemError"),
+  });
   const preview = temporaryItem
     ? withTemporaryDocumentItem(savedPreview, temporaryItem)
     : itemPreviewEdit
@@ -209,6 +220,7 @@ export function useStep2Items({
   };
 
   return {
+    reorder,
     items,
     preview,
     savedPreview,

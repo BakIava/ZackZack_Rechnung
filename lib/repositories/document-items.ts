@@ -223,11 +223,12 @@ export async function setItemPosition(
   companyId: string,
   itemId: string,
   position: number,
-): Promise<void> {
+): Promise<{ error: string | null }> {
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("document_items")
     .update({ position })
     .eq("id", itemId)
     .eq("company_id", companyId);
+  return { error: error?.message ?? null };
 }

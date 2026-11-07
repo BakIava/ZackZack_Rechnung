@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -24,6 +25,8 @@ import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
 import { NumberPad } from "./number-pad";
 import { PositionCard } from "./position-card";
+import { PositionPickerDialog } from "./position-picker";
+import { ReorderSheet } from "./reorder-sheet";
 import { Step2PreviewPanel } from "./step2-preview-panel";
 import { Step2SummaryPanel } from "./step2-summary-panel";
 import { useStep2Items } from "./use-step2-items";
@@ -88,6 +91,7 @@ export function Step2Main({
     commitAdditionalDescription,
     commitUnit,
     commitVat,
+    reorder,
   } = state;
 
   const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
@@ -163,6 +167,13 @@ export function Step2Main({
 
             {error && <div className="d2-error">{error}</div>}
 
+            {items.length > 1 && (
+              <button type="button" className="d2-reorder-open" disabled={pending} onClick={reorder.open}>
+                <ArrowUpDown size={18} strokeWidth={STROKE} aria-hidden />
+                {t("reorderOpen")}
+              </button>
+            )}
+
             {items.length === 0 ? (
               <div className="empty empty--boxed">
                 <div className="empty-t">{t("emptyPos")}</div>
@@ -184,6 +195,7 @@ export function Step2Main({
                     onEditUnit={editUnit}
                     onEditVat={editVat}
                     onDelete={remove}
+                    onMoveTo={items.length > 1 ? reorder.openPicker : null}
                   />
                 ))}
               </div>
@@ -241,6 +253,14 @@ export function Step2Main({
             />
           </div>
         </Modal>
+      )}
+
+      {reorder.isOpen && (
+        <ReorderSheet dir={dir} items={items} onSave={reorder.save} onClose={reorder.close} />
+      )}
+      {reorder.pickerItem && (
+        <PositionPickerDialog dir={dir} items={items} item={reorder.pickerItem}
+          onPick={reorder.moveTo} onClose={reorder.closePicker} />
       )}
 
       {pad && (
