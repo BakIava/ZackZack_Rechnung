@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { filterUnits } from "@/lib/documents/units";
 import "./unit-picker.css";
@@ -15,6 +15,29 @@ interface UnitPickerProps {
 }
 
 const STROKE = 1.75;
+const POPOVER_GAP = 6;
+const VIEWPORT_MARGIN = 12;
+const MIN_POPOVER_HEIGHT = 140;
+
+/**
+ * Richtet das Popover (position: fixed) direkt unter dem Auslöser aus. Fixed
+ * statt absolute, damit es nicht vom overflow eines Modals abgeschnitten wird;
+ * es bleibt im DOM-Baum und erbt so Design-Tokens und Leserichtung.
+ */
+function placePopover(trigger: HTMLElement, popover: HTMLElement) {
+  const rect = trigger.getBoundingClientRect();
+  const viewport = document.documentElement;
+  // Logische Insets eines fixed-Elements richten sich nach der Leserichtung des Viewports (<html dir>).
+  const start = getComputedStyle(viewport).direction === "rtl"
+    ? viewport.clientWidth - rect.right
+    : rect.left;
+  const top = rect.bottom + POPOVER_GAP;
+  const maxHeight = Math.max(viewport.clientHeight - top - VIEWPORT_MARGIN, MIN_POPOVER_HEIGHT);
+  popover.style.setProperty("--unit-picker-top", `${top}px`);
+  popover.style.setProperty("--unit-picker-start", `${start}px`);
+  popover.style.setProperty("--unit-picker-width", `${rect.width}px`);
+  popover.style.setProperty("--unit-picker-max-height", `${maxHeight}px`);
+}
 
 /** Geschlossene Einheiten-Auswahl mit Filter; es werden nur vorhandene Werte übernommen. */
 export function UnitPicker({
@@ -28,6 +51,8 @@ export function UnitPicker({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const generatedId = useId();
   const listId = `${generatedId}-list`;
@@ -52,12 +77,28 @@ export function UnitPicker({
     };
   }, [open]);
 
+  // Vor dem ersten Zeichnen ausrichten; Scrollen (auch im Modal-Body) und
+  // Größenänderungen verschieben den Auslöser und werden nachgeführt.
+  useLayoutEffect(() => {
+    const trigger = triggerRef.current;
+    const popover = popoverRef.current;
+    if (!open || !trigger || !popover) return;
+    const update = () => placePopover(trigger, popover);
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) {
       setQuery("");
       return;
     }
-    searchRef.current?.focus();
+    searchRef.current?.focus({ preventScroll: true });
   }, [open]);
 
   function select(unit: string) {
@@ -68,6 +109,7 @@ export function UnitPicker({
   return (
     <div ref={rootRef} className="unit-picker" data-open={open ? "1" : "0"}>
       <button
+        ref={triggerRef}
         id={id}
         type="button"
         className="unit-picker-trigger"
@@ -81,7 +123,7 @@ export function UnitPicker({
       </button>
 
       {open && (
-        <div className="unit-picker-popover">
+        <div ref={popoverRef} className="unit-picker-popover">
           <div className="unit-picker-search">
             <Search size={17} strokeWidth={STROKE} aria-hidden />
             <input
