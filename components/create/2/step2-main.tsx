@@ -24,7 +24,7 @@ import { getPreviewPflichtChecks } from "@/lib/documents/finalize-validation";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
 import { NumberPad } from "./number-pad";
-import { PositionCard } from "./position-card";
+import { PositionList } from "./position-list";
 import { PositionPickerDialog } from "./position-picker";
 import { ReorderSheet } from "./reorder-sheet";
 import { Step2PreviewPanel } from "./step2-preview-panel";
@@ -180,25 +180,18 @@ export function Step2Main({
                 {t("emptyPosHint")}
               </div>
             ) : (
-              <div className="d2cards">
-                {visibleItems.map((item, i) => (
-                  <PositionCard
-                    key={item.id}
-                    item={item}
-                    index={i}
-                    disabled={pending}
-                    vat={item.taxRateOverridden ? item.taxRate : null}
-                    companyVat={preview.defaultTaxRate}
-                    onOpenPad={openPad}
-                    onEditDesc={editDesc}
-                    onEditAdditionalDescription={editAdditionalDescription}
-                    onEditUnit={editUnit}
-                    onEditVat={editVat}
-                    onDelete={remove}
-                    onMoveTo={items.length > 1 ? reorder.openPicker : null}
-                  />
-                ))}
-              </div>
+              <PositionList
+                items={visibleItems}
+                disabled={pending}
+                companyVat={preview.defaultTaxRate}
+                onOpenPad={openPad}
+                onEditDesc={editDesc}
+                onEditAdditionalDescription={editAdditionalDescription}
+                onEditUnit={editUnit}
+                onEditVat={editVat}
+                onDelete={remove}
+                onMoveTo={items.length > 1 ? reorder.openPicker : null}
+              />
             )}
             <Step2SummaryPanel
               dir={dir}

@@ -1,11 +1,12 @@
 "use client";
 
-import { ChevronDown, Lock, Pencil, Percent, Trash2, Truck } from "lucide-react";
+import { ChevronDown, ChevronUp, Lock, Pencil, Percent, Trash2, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMoney, formatPercent } from "@/lib/format";
 import { markupPercent } from "@/lib/documents/margin";
 import type { DraftItem } from "@/types/document";
 import type { PadField } from "./number-pad";
+import { PositionNumber } from "./position-number";
 import "./position-card.css";
 
 const STROKE = 1.75;
@@ -26,12 +27,15 @@ interface PositionCardProps {
   onDelete: (id: string) => void;
   /** Nummer antippen → an eine andere Stelle verschieben; ohne = reine Anzeige. */
   onMoveTo?: ((item: DraftItem) => void) | null;
+  /** Aufgeklappte Karte in der Liste: wieder zur kompakten Zeile zuklappen. */
+  onCollapse?: () => void;
 }
 
 /** Positionskarte (Variante B): „Menge × Preis = Summe". Bezeichnung, Einheit
  *  und MwSt. sind direkt tippbar; Menge und Preis öffnen
  *  den Ziffernblock. Fremdleistungen zeigen den anpassbaren Verkaufspreis
- *  („Kunde zahlt") + internen Block — Einkauf/Marge erreichen nie das Dokument. */
+ *  („Kunde zahlt") + internen Block — Einkauf/Marge erreichen nie das Dokument.
+ *  Den Rahmen (.d2card) zeichnet die Positionsliste. */
 export function PositionCard({
   item,
   index,
@@ -45,6 +49,7 @@ export function PositionCard({
   onEditVat,
   onDelete,
   onMoveTo,
+  onCollapse,
 }: PositionCardProps) {
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
@@ -60,22 +65,9 @@ export function PositionCard({
   const hasAdditionalDescription = Boolean(item.additionalDescriptionDe?.trim());
 
   return (
-    <div className="d2card">
+    <>
       <div className="d2card-top">
-        {onMoveTo ? (
-          <button
-            type="button"
-            className="d2card-num d2card-num--move"
-            disabled={disabled}
-            aria-label={t("moveToAria", { n: index + 1 })}
-            title={t("moveToAria", { n: index + 1 })}
-            onClick={() => onMoveTo(item)}
-          >
-            {index + 1}
-          </button>
-        ) : (
-          <span className="d2card-num">{index + 1}</span>
-        )}
+        <PositionNumber item={item} index={index} disabled={disabled} onMoveTo={onMoveTo} />
         <div className="d2card-title-stack">
           <button
             type="button"
@@ -84,7 +76,7 @@ export function PositionCard({
             onClick={() => onEditDesc(item)}
           >
             <span className="d2-name">
-              {item.descriptionDe}
+              <span data-testid="position-name">{item.descriptionDe}</span>
               <Pencil size={14} strokeWidth={STROKE} aria-hidden />
             </span>
             {isFremd && (
@@ -109,6 +101,18 @@ export function PositionCard({
           <Trash2 size={18} strokeWidth={STROKE} aria-hidden />
           {t("delete")}
         </button>
+        {onCollapse && (
+          <button
+            type="button"
+            className="d2card-collapse"
+            aria-expanded
+            aria-label={t("collapsePosition")}
+            title={t("collapsePosition")}
+            onClick={onCollapse}
+          >
+            <ChevronUp size={20} strokeWidth={2} aria-hidden />
+          </button>
+        )}
       </div>
 
       {isFremd ? (
@@ -226,6 +230,6 @@ export function PositionCard({
           {t(hasAdditionalDescription ? "editAdditionalDescription" : "addAdditionalDescription")}
         </button>
       </div>
-    </div>
+    </>
   );
 }
