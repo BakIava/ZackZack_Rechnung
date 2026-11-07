@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { deleteAllPositions, deletePosition } from "./support/positions";
 
 const DEV_TEST_EMAIL = "zackzack@test.com";
 const FREE_DESCRIPTION = "Paket 04 Abdeckarbeiten";
@@ -27,12 +28,7 @@ async function openEmptyStep2(page: Page): Promise<void> {
   await page.locator(".step1-next-button").click();
   await page.waitForURL(/\/de\/create\/[^/]+\/2$/);
 
-  while (await page.locator(".d2card").count()) {
-    await page.getByRole("button", { name: "Löschen" }).first().click();
-    await expect(page.locator(".d2card")).toHaveCount(
-      Math.max(0, (await page.locator(".d2card").count()) - 1),
-    );
-  }
+  await deleteAllPositions(page);
 }
 
 async function openPositionModal(page: Page): Promise<Locator> {
@@ -151,7 +147,7 @@ test("Paket 4: neue Position lebt bis zum Speichern nur in der Vorschau", async 
     prices: "1000",
   });
 
-  await page.getByRole("button", { name: "Löschen" }).click();
+  await deletePosition(page.locator(".d2card").first());
   await expect(page.locator(".d2card")).toHaveCount(0);
   await expectPreview(preview, { count: 0 });
   expect(consoleErrors).toEqual([]);

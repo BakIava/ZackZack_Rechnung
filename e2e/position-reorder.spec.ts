@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { deleteAllPositions } from "./support/positions";
 
 const DEV_TEST_EMAIL = "zackzack@test.com";
 
@@ -16,12 +17,7 @@ async function loginWithLocalDevAccount(page: Page): Promise<void> {
 }
 
 async function clearPositions(page: Page): Promise<void> {
-  const cards = page.locator(".d2card");
-  while (await cards.count()) {
-    const previousCount = await cards.count();
-    await cards.first().getByRole("button", { name: "Löschen" }).click();
-    await expect(cards).toHaveCount(previousCount - 1);
-  }
+  await deleteAllPositions(page);
 }
 
 async function addFreePosition(page: Page, label: string, price: string): Promise<void> {
@@ -36,7 +32,7 @@ async function addFreePosition(page: Page, label: string, price: string): Promis
 }
 
 async function expectOrder(page: Page, labels: string[]): Promise<void> {
-  await expect(page.locator(".d2card .d2-name")).toHaveText(labels);
+  await expect(page.locator(".d2card").getByTestId("position-name")).toHaveText(labels);
   await expect(page.getByTestId("step2-document-preview")).toHaveAttribute(
     "data-preview-descriptions",
     labels.join(" | "),

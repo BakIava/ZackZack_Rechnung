@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { deleteAllPositions } from "./support/positions";
 
 const DEV_TEST_EMAIL = "zackzack@test.com";
 const LONG_ITEM_COUNT = 21;
@@ -30,12 +31,7 @@ async function openInvoiceStep2(page: Page): Promise<string> {
 }
 
 async function clearPositions(page: Page): Promise<void> {
-  const cards = page.locator(".d2card");
-  while (await cards.count()) {
-    const previousCount = await cards.count();
-    await cards.first().getByRole("button", { name: "Löschen" }).click();
-    await expect(cards).toHaveCount(previousCount - 1);
-  }
+  await deleteAllPositions(page);
 }
 
 async function addLongDocument(page: Page): Promise<void> {

@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { deleteAllPositions, deletePosition, expandPosition } from "./support/positions";
 
 const DEV_TEST_EMAIL = "zackzack@test.com";
 const NORMAL_DESCRIPTION = "Paket 05 Malerarbeiten";
@@ -25,11 +26,7 @@ async function openEmptyStep2(page: Page): Promise<void> {
   await page.locator(".step1-next-button").click();
   await page.waitForURL(/\/de\/create\/[^/]+\/2$/);
 
-  while (await page.locator(".d2card").count()) {
-    const count = await page.locator(".d2card").count();
-    await page.getByRole("button", { name: "Löschen" }).first().click();
-    await expect(page.locator(".d2card")).toHaveCount(count - 1);
-  }
+  await deleteAllPositions(page);
 }
 
 async function openAddModal(page: Page): Promise<Locator> {
@@ -92,6 +89,7 @@ test("Paket 5: bestehende Positionen ändern die Vorschau vor dem Commit", async
   await expectAttribute(preview, "data-preview-unit-prices", "1000,12500");
   await expectAttribute(preview, "data-preview-amounts", "2,1");
 
+  await expandPosition(normal);
   await normal.locator(".d2title-btn").click();
   const descriptionDialog = page.getByRole("dialog");
   await descriptionDialog.getByRole("textbox").fill("Nur lokale Bezeichnung");
@@ -114,6 +112,7 @@ test("Paket 5: bestehende Positionen ändern die Vorschau vor dem Commit", async
   await expectAttribute(preview, "data-preview-unit-prices", "1000,12500");
   await waitForStep2Hydration(page);
 
+  await expandPosition(normal);
   await normal.locator(".d2unit").click();
   let editor = page.getByRole("dialog");
   await editor.getByRole("button", { name: "Std.", exact: true }).click();
@@ -127,10 +126,12 @@ test("Paket 5: bestehende Positionen ändern die Vorschau vor dem Commit", async
   await expectAttribute(preview, "data-preview-line-totals", "3000,12500");
   await pad.getByRole("button", { name: "Fertig" }).click();
   await expectAttribute(preview, "data-preview-amounts", "3,1");
+  await expect(normal.getByRole("button", { name: /Menge/ })).toContainText("3");
   await page.reload();
   await expectAttribute(preview, "data-preview-amounts", "3,1");
   await waitForStep2Hydration(page);
 
+  await expandPosition(normal);
   await normal.locator(".d2unit").click();
   editor = page.getByRole("dialog");
   await editor.getByRole("button", { name: "Std.", exact: true }).click();
@@ -155,12 +156,14 @@ test("Paket 5: bestehende Positionen ändern die Vorschau vor dem Commit", async
   await editor.getByRole("button", { name: "19 %", exact: true }).click();
   await editor.getByRole("button", { name: "Fertig" }).click();
   await expectAttribute(preview, "data-preview-tax-rates", "19,0");
+  await expect(normal.locator(".d2vat")).toContainText("19 %");
   await page.reload();
   await expectAttribute(preview, "data-preview-tax-rates", "19,0");
   await expectAttribute(preview, "data-preview-total-amount", "16070");
   await expectAttribute(preview, "data-preview-units", "Std. | Pauschale");
   await waitForStep2Hydration(page);
 
+  await expandPosition(foreign);
   await foreign.getByRole("button", { name: /Einkauf/ }).click();
   pad = await fillNumberPad(page, "200");
   await expectAttribute(preview, "data-preview-unit-prices", "1000,12500");
@@ -174,6 +177,7 @@ test("Paket 5: bestehende Positionen ändern die Vorschau vor dem Commit", async
   await expectAttribute(preview, "data-preview-unit-prices", "1000,12500");
   await waitForStep2Hydration(page);
 
+  await expandPosition(foreign);
   await foreign.getByRole("button", { name: /Verkaufspreis/ }).click();
   pad = await fillNumberPad(page, "160");
   await expectAttribute(preview, "data-preview-unit-prices", "1000,16000");
@@ -187,14 +191,15 @@ test("Paket 5: bestehende Positionen ändern die Vorschau vor dem Commit", async
   expect(safePreviewMarkup).not.toMatch(/Einkauf|Aufschlag|purchase|surcharge|markup|margin/i);
   await pad.getByRole("button", { name: "Fertig" }).click();
   await expectAttribute(preview, "data-preview-unit-prices", "1000,14000");
+  await expect(foreign.getByRole("button", { name: /Verkaufspreis/ })).toContainText("140,00");
   await page.reload();
   await expectAttribute(preview, "data-preview-unit-prices", "1000,14000");
   await expectAttribute(preview, "data-preview-total-amount", "17570");
   await waitForStep2Hydration(page);
 
-  await page.getByRole("button", { name: "Löschen" }).first().click();
+  await deletePosition(cards.first());
   await expect(cards).toHaveCount(1);
-  await page.getByRole("button", { name: "Löschen" }).click();
+  await deletePosition(cards.first());
   await expect(cards).toHaveCount(0);
   expect(consoleErrors).toEqual([]);
 });

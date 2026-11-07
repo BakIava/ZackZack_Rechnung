@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { deleteAllPositions, expandPosition } from "./support/positions";
 
 const DEV_TEST_EMAIL = "zackzack@test.com";
 
@@ -25,12 +26,7 @@ async function openEmptyStep2(page: Page): Promise<string> {
 }
 
 async function clearPositions(page: Page): Promise<void> {
-  const cards = page.locator(".d2card");
-  while (await cards.count()) {
-    const count = await cards.count();
-    await cards.first().getByRole("button", { name: "Löschen" }).click();
-    await expect(cards).toHaveCount(count - 1);
-  }
+  await deleteAllPositions(page);
 }
 
 async function openAddModal(page: Page): Promise<Locator> {
@@ -85,8 +81,12 @@ test("Positionsbeschreibungen: eigene Bearbeitung, Speichern, Leeren und RTL", a
 
   try {
     await addThreeOrigins(page);
-    await expect(page.getByRole("button", { name: "Beschreibung hinzufügen" })).toHaveCount(3);
+    // Zugeklappt: nur die zuletzt hinzugefügte Position ist offen.
+    await expect(cards).toHaveCount(3);
+    await expect(cards.nth(2).getByRole("button", { name: "Beschreibung hinzufügen" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Beschreibung hinzufügen" })).toHaveCount(1);
     const catalog = cards.nth(0);
+    await expandPosition(catalog);
     const name = await catalog.locator(".d2-name").textContent();
     const price = await catalog.locator(".d2-sumval").textContent();
 
@@ -118,6 +118,7 @@ test("Positionsbeschreibungen: eigene Bearbeitung, Speichern, Leeren und RTL", a
     expect(await catalog.locator(".d2-sumval").textContent()).toBe(price);
 
     await page.reload();
+    await expandPosition(cards.nth(0));
     await expect(cards.nth(0).getByRole("button", { name: "Beschreibung bearbeiten" })).toBeVisible();
     await cards.nth(0).getByRole("button", { name: "Beschreibung bearbeiten" }).click();
     dialog = page.getByRole("dialog", { name: "Positionsbeschreibung" });
@@ -128,12 +129,14 @@ test("Positionsbeschreibungen: eigene Bearbeitung, Speichern, Leeren und RTL", a
     await expect(cards.nth(0).getByRole("button", { name: "Beschreibung hinzufügen" })).toBeEnabled();
     await expect(cards.nth(0).locator(".d2card-additional-description")).toHaveCount(0);
 
+    await expandPosition(cards.nth(1));
     await cards.nth(1).getByRole("button", { name: "Beschreibung hinzufügen" }).click();
     dialog = page.getByRole("dialog", { name: "Positionsbeschreibung" });
     await dialog.getByRole("textbox", { name: "Positionsbeschreibung" }).fill("Freie Arbeit\nMit Material");
     await dialog.getByRole("button", { name: "Speichern" }).click();
     await expect(cards.nth(1).getByRole("button", { name: "Beschreibung bearbeiten" })).toBeEnabled();
     await page.reload();
+    await expandPosition(cards.nth(1));
     await cards.nth(1).getByRole("button", { name: "Beschreibung bearbeiten" }).click();
     dialog = page.getByRole("dialog", { name: "Positionsbeschreibung" });
     await expect(dialog.getByRole("textbox", { name: "Positionsbeschreibung" }))
@@ -147,6 +150,7 @@ test("Positionsbeschreibungen: eigene Bearbeitung, Speichern, Leeren und RTL", a
     await dialog.getByRole("button", { name: "Speichern" }).click();
     await expect(cards.nth(1).getByRole("button", { name: "Beschreibung hinzufügen" })).toBeEnabled();
 
+    await expandPosition(cards.nth(2));
     await cards.nth(2).getByRole("button", { name: "Beschreibung hinzufügen" }).click();
     dialog = page.getByRole("dialog", { name: "Positionsbeschreibung" });
     await dialog.getByRole("textbox", { name: "Positionsbeschreibung" }).fill("Aufbau\nAbbau\nWeitere Arbeiten");
@@ -156,6 +160,7 @@ test("Positionsbeschreibungen: eigene Bearbeitung, Speichern, Leeren und RTL", a
     await page.goto(`/ar/create/${documentId}/2`);
     await expect(page.locator(".dapp")).toHaveAttribute("dir", "rtl");
     await page.locator(".d2-positions").evaluate((element) => { element.scrollTop = element.scrollHeight; });
+    await expandPosition(cards.nth(2));
     await cards.nth(2).getByRole("button", { name: "تعديل الوصف التفصيلي" }).click();
     dialog = page.getByRole("dialog", { name: "الوصف التفصيلي للبند" });
     await expect(dialog).toContainText("يرجى الكتابة بالألمانية");
@@ -174,6 +179,7 @@ test("Positionsbeschreibungen: eigene Bearbeitung, Speichern, Leeren und RTL", a
 
     await page.goto(`/de/create/${documentId}/2`);
     await page.locator(".d2-positions").evaluate((element) => { element.scrollTop = element.scrollHeight; });
+    await expandPosition(cards.nth(2));
     await cards.nth(2).getByRole("button", { name: "Beschreibung bearbeiten" }).click();
     dialog = page.getByRole("dialog", { name: "Positionsbeschreibung" });
     await dialog.getByRole("textbox", { name: "Positionsbeschreibung" }).fill("");

@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { deletePosition } from "./support/positions";
 
 const DEV_TEST_EMAIL = "zackzack@test.com";
 const FOREIGN_DESCRIPTION = "Paket-03 Fremdleistung";
@@ -59,7 +60,10 @@ test("Paket 3: Schritt 2 hält Liste, Persistenz und sichere Vorschau synchron",
   const frame = page.getByTestId("step2-pdf-preview-frame");
   await expect(preview).toBeVisible();
   await expect(page.getByTestId("step2-preview-company")).not.toHaveText("");
-  await expect(page.getByTestId("step2-preview-recipient")).toContainText(recipientName);
+  // Kundenkarte: „Firma Ansprechpartner" bzw. „Vorname Nachname"; Vorschau: Firma bzw. Name.
+  const recipient = page.getByTestId("step2-preview-recipient");
+  await expect(recipient).not.toHaveText("");
+  expect(recipientName.startsWith((await recipient.innerText()).trim())).toBe(true);
   await expectPreviewCount(preview, 0);
   await expect(frame).toHaveAttribute("src", /^blob:/);
 
@@ -75,9 +79,9 @@ test("Paket 3: Schritt 2 hält Liste, Persistenz und sichere Vorschau synchron",
   await expect(page.locator(".d2card")).toHaveCount(2);
   await expectPreviewCount(preview, 2);
 
-  await page.getByRole("button", { name: "Löschen" }).first().click();
+  await deletePosition(page.locator(".d2card").first());
   await expect(page.locator(".d2card")).toHaveCount(1);
-  await expect(page.locator(".d2card-num")).toHaveText("1");
+  await expect(page.locator(".d2card .position-number")).toHaveText("1");
   await expect(page.locator(".d2card")).toContainText(secondDescription);
   await expectPreviewCount(preview, 1);
   await expect(preview).toHaveAttribute("data-preview-position-sequence", "1");
@@ -103,9 +107,9 @@ test("Paket 3: Schritt 2 hält Liste, Persistenz und sichere Vorschau synchron",
   const previewMarkup = await preview.evaluate((element) => element.outerHTML);
   expect(previewMarkup).not.toMatch(/Einkauf|Aufschlag|purchase|surcharge|margin/i);
 
-  await page.getByRole("button", { name: "Löschen" }).first().click();
+  await deletePosition(page.locator(".d2card").first());
   await expectPreviewCount(preview, 1);
-  await page.getByRole("button", { name: "Löschen" }).first().click();
+  await deletePosition(page.locator(".d2card").first());
   await expectPreviewCount(preview, 0);
 
   expect(consoleErrors).toEqual([]);
