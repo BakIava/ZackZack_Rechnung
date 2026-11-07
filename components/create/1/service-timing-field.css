@@ -61,18 +61,19 @@
 
 .service-timing-modes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
 .service-timing-modes button {
   min-block-size: 48px;
-  padding-inline: 14px;
+  padding-inline: 10px;
   border: 1.5px solid var(--line);
   border-radius: 11px;
   background: white;
   color: var(--muted);
   font: inherit;
+  font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -134,4 +135,5 @@
   .service-timing-head { flex-wrap: wrap; }
   .service-timing-clear { margin-inline-start: 52px; }
   .service-timing-period { grid-template-columns: 1fr; }
+  .service-timing-modes { grid-template-columns: 1fr; }
 }
