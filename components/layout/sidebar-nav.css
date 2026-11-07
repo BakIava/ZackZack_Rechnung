@@ -59,6 +59,18 @@
   background: var(--accent);
 }
 
+.dnav-item:disabled {
+  cursor: wait;
+}
+
+@keyframes dnav-spin {
+  to { transform: rotate(360deg); }
+}
+
+.dnav-spin {
+  animation: dnav-spin 0.8s linear infinite;
+}
+
 .dnav-count {
   margin-inline-start: auto;
   font-size: 12px;
