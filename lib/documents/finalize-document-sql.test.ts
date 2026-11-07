@@ -26,6 +26,16 @@ describe("finalize_document SQL-Vertrag", () => {
     expect(finalizeSql).toContain("NOT COALESCE((");
   });
 
+  it("lehnt negative Belegsummen ab, bevor eine Nummer vergeben wird", () => {
+    expect(finalizeSql).toContain(
+      "IF v_subtotal < 0 OR v_tax < 0 OR v_total < 0 THEN",
+    );
+    expect(finalizeSql).toContain("RAISE EXCEPTION 'amounts_negative'");
+    const check = finalizeSql.indexOf("'amounts_negative'");
+    expect(check).toBeGreaterThan(finalizeSql.indexOf("INTO v_subtotal, v_tax, v_total"));
+    expect(check).toBeLessThan(finalizeSql.indexOf("v_seq := get_next_document_number("));
+  });
+
   it("lässt Nummernvergabe, Betragsberechnung und Logo-Snapshot bestehen", () => {
     expect(finalizeSql).toContain("get_next_document_number");
     expect(finalizeSql).toContain("round(i.unit_price::numeric * i.amount)");

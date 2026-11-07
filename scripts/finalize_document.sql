@@ -157,6 +157,14 @@ BEGIN
   FROM document_items
   WHERE document_id = p_document_id;
 
+  -- Abzüge (negative Positionen, z. B. bereits berechnete Abschläge) sind
+  -- erlaubt, ein negativer Beleg nicht: das wäre eine Gutschrift bzw.
+  -- Stornorechnung. Im Entwurf dürfen die Summen vorübergehend negativ sein
+  -- (scripts/negative-line-items.sql), festgeschrieben werden sie so nie.
+  IF v_subtotal < 0 OR v_tax < 0 OR v_total < 0 THEN
+    RAISE EXCEPTION 'amounts_negative';
+  END IF;
+
   -- Angebote brauchen immer einen vollständigen Adressaten. Bei Rechnungen
   -- greift die Kleinbetragsgrenze von 250,00 EUR brutto (§ 33 UStDV).
   -- Geprüft wird ausschließlich der eingefrorene Empfänger-Snapshot.
