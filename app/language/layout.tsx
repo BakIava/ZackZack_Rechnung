@@ -3,21 +3,9 @@
 // nur durch. <html>/<body> liefert sonst nur das Locale-Layout — hier müssen wir
 // sie selbst bereitstellen.
 //
-// Schriften wie im Design: Hanken Grotesk (Latein) + IBM Plex Sans Arabic (RTL).
-import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
+// Schriften wie im Design (Hanken Grotesk + IBM Plex Sans Arabic) kommen global
+// aus app/layout.tsx.
 import "../globals.css";
-
-const hanken = Hanken_Grotesk({
-  variable: "--font-hanken",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const ibmArabic = IBM_Plex_Sans_Arabic({
-  variable: "--font-ibm-arabic",
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-});
 
 export default function LanguageLayout({
   children,
@@ -26,7 +14,7 @@ export default function LanguageLayout({
 }>) {
   return (
     <html lang="de">
-      <body className={`${hanken.variable} ${ibmArabic.variable} antialiased`}>
+      <body className="antialiased">
         {children}
       </body>
     </html>

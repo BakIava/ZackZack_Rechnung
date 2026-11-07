@@ -7,7 +7,6 @@ import "./app-shell.css";
 
 interface AppShellProps {
   dir: "ltr" | "rtl";
-  fontClasses: string;
   locale: string;
   children: ReactNode;
 }
@@ -22,12 +21,12 @@ function resolvePageClass(pathname: string): string {
  * Client-seitige Shell: setzt die seitenspezifische CSS-Scope-Klasse
  * anhand der aktuellen Route, ohne die Sidebar neu zu laden.
  */
-export function AppShell({ dir, fontClasses, locale, children }: AppShellProps) {
+export function AppShell({ dir, locale, children }: AppShellProps) {
   const pathname = usePathname();
   const pageClass = resolvePageClass(pathname);
 
   return (
-    <div className={`${fontClasses} ${pageClass}`}>
+    <div className={pageClass}>
       <ActivityTracker locale={locale} />
       <div className="dapp" dir={dir}>
         {children}

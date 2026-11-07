@@ -1,4 +1,3 @@
-import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { LoginFlow } from "@/components/login/login-flow";
 import { routing, isRtlLocale } from "@/i18n/routing";
@@ -6,18 +5,6 @@ import { getCurrentUser } from "@/lib/supabase/auth";
 import { getCompanyNameAndDirector } from "@/lib/repositories/companies";
 import { hasUserProfile } from "@/lib/repositories/users";
 import { isLocaleAppPath, toLocaleRelativePath } from "@/lib/auth/session-lock";
-
-const hanken = Hanken_Grotesk({
-  variable: "--font-hanken",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const plexArabic = IBM_Plex_Sans_Arabic({
-  variable: "--font-plex-arabic",
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-});
 
 interface LoginPageProps {
   params: Promise<{ locale: string }>;
@@ -63,15 +50,13 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
   }
 
   return (
-    <div className={`${hanken.variable} ${plexArabic.variable}`}>
-      <LoginFlow
-        dir={dir}
-        locale={locale}
-        initialPhase={user && requestedUnlockPath ? "locked" : "welcome"}
-        lockUser={lockUser}
-        unlockPath={unlockPath}
-      />
-    </div>
+    <LoginFlow
+      dir={dir}
+      locale={locale}
+      initialPhase={user && requestedUnlockPath ? "locked" : "welcome"}
+      lockUser={lockUser}
+      unlockPath={unlockPath}
+    />
   );
 }
 

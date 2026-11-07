@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { Hanken_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { setRequestLocale } from "next-intl/server";
 import { getFlowDocMeta } from "@/lib/repositories/documents";
 import { ActivityTracker } from "@/components/shared/activity-tracker";
@@ -8,18 +7,6 @@ import "@/components/layout/app-shell.css";
 
 // Draft-Validierung + Redirect sind pro Request – nie statisch vorrendern.
 export const dynamic = "force-dynamic";
-
-const hanken = Hanken_Grotesk({
-  variable: "--font-hanken",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const plexArabic = IBM_Plex_Sans_Arabic({
-  variable: "--font-plex-arabic",
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-});
 
 interface CreateLayoutProps {
   children: ReactNode;
@@ -41,9 +28,9 @@ export default async function CreateLayout({ children, params }: CreateLayoutPro
   if (!meta) redirect(`/${locale}/documents`);
 
   return (
-    <div className={`${hanken.variable} ${plexArabic.variable}`}>
+    <>
       <ActivityTracker locale={locale} />
       {children}
-    </div>
+    </>
   );
 }
