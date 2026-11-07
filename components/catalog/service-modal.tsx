@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
+import { DeductionToggle } from "@/components/shared/deduction-toggle";
 import { UnitPicker } from "@/components/shared/unit-picker";
 import type { KatalogEintrag } from "@/types/service";
 import { withCurrentUnit } from "@/lib/documents/units";
@@ -41,16 +42,31 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
   const [tr, setTr] = useState(item?.uebersetzungen.tr ?? "");
   const [ar, setAr] = useState(item?.uebersetzungen.ar ?? "");
   const [einheit, setEinheit] = useState(item?.einheit || units[0]);
+  // Im Feld steht immer der Betrag; ein Abzug (negativer Preis) ist der Schalter.
   const [preisStr, setPreisStr] = useState(
-    item && item.preisCents > 0 ? (item.preisCents / 100).toFixed(2).replace(".", ",") : "",
+    item && item.preisCents !== 0
+      ? (Math.abs(item.preisCents) / 100).toFixed(2).replace(".", ",")
+      : "",
   );
+  const [deduction, setDeduction] = useState(item !== null && item.preisCents < 0);
   const unitOptions = withCurrentUnit(units, item?.einheit);
 
   const ok = de.trim().length > 0 && isPriceValid(preisStr);
 
+  // Ein getipptes Minus schaltet „Abzug" ein.
+  function changePrice(value: string) {
+    if (value.trim().startsWith("-")) {
+      setDeduction(true);
+      setPreisStr(value.trim().slice(1));
+      return;
+    }
+    setPreisStr(value);
+  }
+
   function submit() {
     if (!ok) return;
-    const preisCents = parsePrice(preisStr);
+    const amountCents = parsePrice(preisStr);
+    const preisCents = deduction ? -amountCents : amountCents;
     onSave({
       id: item?.id ?? `${TEMP_ID_PREFIX}${Date.now()}`,
       de: de.trim(),
@@ -155,13 +171,15 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
                   type="text"
                   inputMode="decimal"
                   value={preisStr}
-                  onChange={(e) => setPreisStr(e.target.value)}
+                  onChange={(e) => changePrice(e.target.value)}
                   placeholder="0,00"
                 />
                 <span className="f-unit">€</span>
               </div>
             </div>
           </div>
+
+          <DeductionToggle pressed={deduction} onChange={setDeduction} />
         </div>
       </div>
 

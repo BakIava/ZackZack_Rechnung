@@ -16,8 +16,10 @@ interface NumberPadProps {
   unit: string;
   /** Positionsname für die Kopfzeile. */
   name: string;
-  /** Startwert als Roh-String mit Dezimalkomma (z. B. "12,5"). */
+  /** Startwert als Roh-String mit Dezimalkomma (z. B. "12,5" oder "-12,5"). */
   initial: string;
+  /** Preisfelder: ±-Taste, ein negativer Betrag ist ein Abzug. */
+  signed?: boolean;
   /** Bestätigter Wert als Zahl (Menge bzw. Preis in Euro). */
   onCommit: (value: number) => void;
   /** Rein lokale Vorschau; löst keine Server-Action aus. */
@@ -37,6 +39,18 @@ function sanitize(input: string): string {
   return decPart === null ? intPart : `${intPart},${decPart}`;
 }
 
+/** Trennt ein führendes Minus ab – nur bei Preisfeldern (`signed`). */
+function splitSign(input: string, signed: boolean): { negative: boolean; digits: string } {
+  const trimmed = input.trim();
+  const negative = signed && trimmed.startsWith("-");
+  return { negative, digits: negative ? trimmed.slice(1) : trimmed };
+}
+
+function toNumber(digits: string, negative: boolean): number {
+  const value = parseFloat((digits || "0").replace(",", ".")) || 0;
+  return negative ? -value : value;
+}
+
 /** Großflächiger Ziffernblock (Variante B): Menge oder Preis für diese Rechnung
  *  anpassen — per Tasten ODER direkt im Eingabefeld tippbar. Zahlen bleiben LTR,
  *  damit die Eingabe auch in RTL vorhersehbar ist. */
@@ -45,16 +59,20 @@ export function NumberPad({
   unit,
   name,
   initial,
+  signed = false,
   onCommit,
   onPreview,
   onClose,
 }: NumberPadProps) {
   const t = useTranslations("Step2");
-  const [raw, setRaw] = useState(initial || "0");
+  const [initialSign] = useState(() => splitSign(initial || "0", signed));
+  const [raw, setRaw] = useState(initialSign.digits || "0");
+  const [negative, setNegative] = useState(initialSign.negative);
 
-  const previewValue = (nextRaw: string) => {
+  const previewValue = (nextRaw: string, nextNegative = negative) => {
     setRaw(nextRaw);
-    onPreview(parseFloat((nextRaw || "0").replace(",", ".")) || 0);
+    setNegative(nextNegative);
+    onPreview(toNumber(nextRaw, nextNegative));
   };
   const type = (digit: string) => {
     let next = raw;
@@ -66,7 +84,8 @@ export function NumberPad({
     previewValue(next);
   };
   const back = () => previewValue(raw.slice(0, -1) || "0");
-  const commit = () => onCommit(parseFloat((raw || "0").replace(",", ".")) || 0);
+  const toggleSign = () => previewValue(raw, !negative);
+  const commit = () => onCommit(toNumber(raw, negative));
 
   const label =
     field === "qty"
@@ -98,11 +117,14 @@ export function NumberPad({
         <div className="d2pad-disp" dir="ltr">
           <input
             className="d2pad-input"
-            value={raw}
+            value={negative ? `-${raw}` : raw}
             inputMode="decimal"
             autoFocus
             aria-label={`${label} · ${name}`}
-            onChange={(e) => previewValue(sanitize(e.target.value))}
+            onChange={(e) => {
+              const typed = splitSign(e.target.value, signed);
+              previewValue(sanitize(typed.digits), typed.negative);
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter") commit();
               else if (e.key === "Escape") onClose();
@@ -121,7 +143,24 @@ export function NumberPad({
           <button type="button" className="d2pad-key" onMouseDown={keepFocus} onClick={back} aria-label={t("backspace")}>
             <ChevronLeft size={22} strokeWidth={2.4} aria-hidden />
           </button>
-          <button type="button" className="d2pad-key d2pad-key--ok" onMouseDown={keepFocus} onClick={commit}>
+          {signed && (
+            <button
+              type="button"
+              className="d2pad-key d2pad-key--sign"
+              aria-pressed={negative}
+              aria-label={t("toggleSign")}
+              onMouseDown={keepFocus}
+              onClick={toggleSign}
+            >
+              ±
+            </button>
+          )}
+          <button
+            type="button"
+            className={signed ? "d2pad-key d2pad-key--ok d2pad-key--ok-short" : "d2pad-key d2pad-key--ok"}
+            onMouseDown={keepFocus}
+            onClick={commit}
+          >
             <Check size={20} strokeWidth={2.4} aria-hidden />
             {t("done")}
           </button>

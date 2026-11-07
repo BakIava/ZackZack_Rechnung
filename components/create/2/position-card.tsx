@@ -50,7 +50,7 @@ export function PositionCard({
   const markup =
     item.surchargeType === "percent" && item.surcharge != null
       ? item.surcharge / 100
-      : markupPercent(item.purchasePrice ?? 0, item.unitPrice);
+      : markupPercent(item.purchasePrice ?? 0, Math.abs(item.unitPrice));
   const qtyLabel = String(item.amount).replace(".", ",");
   const vatIsDefault = vat == null;
   const vatRate = vat ?? companyVat;

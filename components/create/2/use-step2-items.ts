@@ -44,8 +44,11 @@ function padPatch(item: DraftItem, field: PadField, value: number): ItemPatch | 
   if (field === "qty") {
     return { amount: Math.max(0, Math.round(value * 100) / 100) || 1 };
   }
+  // Negativer Preis = Abzug.
   if (field === "price") return { unitPrice: eurosToCents(value) };
   if (item.purchasePrice == null) return null;
+  // Fremdleistung: Einkauf und Aufschlag beschreiben immer den positiven Betrag;
+  // das Vorzeichen (Abzug) bleibt erhalten bzw. kommt aus dem Verkaufspreis.
   if (field === "markup") {
     return { surcharge: Math.round(value * 100), surchargeType: "percent" };
   }
@@ -53,14 +56,15 @@ function padPatch(item: DraftItem, field: PadField, value: number): ItemPatch | 
     const purchasePrice = eurosToCents(value);
     return {
       purchasePrice,
-      surcharge: fixedSurchargeForSale(purchasePrice, item.unitPrice),
+      surcharge: fixedSurchargeForSale(purchasePrice, Math.abs(item.unitPrice)),
       surchargeType: "fixed",
     };
   }
   const salePrice = eurosToCents(value);
   return {
-    surcharge: fixedSurchargeForSale(item.purchasePrice, salePrice),
+    surcharge: fixedSurchargeForSale(item.purchasePrice, Math.abs(salePrice)),
     surchargeType: "fixed",
+    deduction: salePrice < 0,
   };
 }
 
@@ -155,7 +159,7 @@ export function useStep2Items({
       const markup =
         item.surchargeType === "percent" && item.surcharge != null
           ? item.surcharge / 100
-          : markupPercent(item.purchasePrice ?? 0, item.unitPrice);
+          : markupPercent(item.purchasePrice ?? 0, Math.abs(item.unitPrice));
       initial = String(markup).replace(".", ",");
     } else {
       const cents = field === "purchase" ? item.purchasePrice ?? 0 : item.unitPrice;

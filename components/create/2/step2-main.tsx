@@ -249,6 +249,7 @@ export function Step2Main({
           unit={pad.unit}
           name={pad.name}
           initial={pad.initial}
+          signed={pad.field === "price" || pad.field === "sale"}
           onPreview={previewPad}
           onCommit={commitPad}
           onClose={closePad}

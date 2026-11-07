@@ -198,7 +198,7 @@ export function CatalogMasterDetail({ dir, initialItems }: CatalogMasterDetailPr
                         </span>
                         <span className="cat-row-right">
                           <span className="cat-row-price">
-                            {s.preisCents > 0 ? formatMoney(s.preisCents) : "—"}
+                            {s.preisCents !== 0 ? formatMoney(s.preisCents) : "—"}
                           </span>
                           {s.einheit && <span className="cat-row-unit">/ {s.einheit}</span>}
                         </span>
@@ -322,7 +322,7 @@ function ServiceDetail({ svc, locale, t, onEdit, onDelete }: ServiceDetailProps)
               {t("priceLbl")}
             </div>
             <div className="cat-price-val">
-              {svc.preisCents > 0 ? formatMoney(svc.preisCents) : "—"}
+              {svc.preisCents !== 0 ? formatMoney(svc.preisCents) : "—"}
             </div>
             {svc.einheit && <div className="cat-price-per">/ {svc.einheit}</div>}
           </div>

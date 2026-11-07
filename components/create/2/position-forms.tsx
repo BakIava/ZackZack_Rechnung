@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Lock, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { DeductionToggle } from "@/components/shared/deduction-toggle";
 import { UnitPicker } from "@/components/shared/unit-picker";
 import { FLOW_UNITS } from "@/lib/documents/units";
 import {
@@ -25,14 +26,27 @@ interface FreeFormProps {
   onPreviewChange: (input: TemporaryDocumentItemInput) => void;
 }
 
-/** Freie Position: Bezeichnung, Menge, Einheit, Einzelpreis. */
+/** Freie Position: Bezeichnung, Menge, Einheit, Einzelpreis – optional als Abzug. */
 export function FreeForm({ onAdd, onPreviewChange }: FreeFormProps) {
   const t = useTranslations("Step2");
   const [label, setLabel] = useState("");
   const [qty, setQty] = useState("1");
   const [unit, setUnit] = useState("m²");
   const [price, setPrice] = useState("");
-  const ok = label.trim().length > 0 && parseFloat(price) > 0;
+  const [deduction, setDeduction] = useState(false);
+  const priceCents = eurosToCents(Math.abs(parseFloat(price) || 0));
+  const unitPrice = deduction ? -priceCents : priceCents;
+  const ok = label.trim().length > 0 && priceCents > 0;
+
+  // Ein getipptes Minus schaltet „Abzug" ein; im Feld steht immer der Betrag.
+  const changePrice = (value: string) => {
+    if (value.trim().startsWith("-")) {
+      setDeduction(true);
+      setPrice(value.trim().slice(1));
+      return;
+    }
+    setPrice(value);
+  };
 
   useEffect(() => {
     const parsedAmount = parseFloat(qty);
@@ -40,9 +54,9 @@ export function FreeForm({ onAdd, onPreviewChange }: FreeFormProps) {
       descriptionDe: label,
       amount: Number.isFinite(parsedAmount) ? parsedAmount : 0,
       unit,
-      unitPrice: eurosToCents(parseFloat(price) || 0),
+      unitPrice,
     });
-  }, [label, onPreviewChange, price, qty, unit]);
+  }, [label, onPreviewChange, unitPrice, qty, unit]);
 
   return (
     <div className="f-grid">
@@ -70,10 +84,11 @@ export function FreeForm({ onAdd, onPreviewChange }: FreeFormProps) {
       <div className="f-row">
         <label className="f-lbl" htmlFor="ff-price">{t("unitPrice")}</label>
         <div className="f-affix">
-          <input id="ff-price" className="f-input" type="number" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="0,00" />
+          <input id="ff-price" className="f-input" type="number" inputMode="decimal" value={price} onChange={(e) => changePrice(e.target.value)} placeholder="0,00" />
           <span className="f-unit">€</span>
         </div>
       </div>
+      <DeductionToggle pressed={deduction} onChange={setDeduction} />
       <button
         type="button"
         className="f-submit"
@@ -82,7 +97,7 @@ export function FreeForm({ onAdd, onPreviewChange }: FreeFormProps) {
           descriptionDe: label.trim(),
           amount: parseFloat(qty) || 1,
           unit,
-          unitPrice: eurosToCents(parseFloat(price) || 0),
+          unitPrice,
         })}
       >
         <Plus size={20} strokeWidth={2.4} aria-hidden />
@@ -97,7 +112,10 @@ interface FremdFormProps {
   onPreviewChange: (input: TemporaryDocumentItemInput) => void;
 }
 
-/** Fremdleistung: Einkauf + Aufschlag → Verkaufspreis (Einkauf/Marge intern). */
+/**
+ * Fremdleistung: Einkauf + Aufschlag → Verkaufspreis (Einkauf/Marge intern).
+ * Als Abzug wird nur der Verkaufspreis auf dem Dokument negativ.
+ */
 export function FremdForm({ onAdd, onPreviewChange }: FremdFormProps) {
   const t = useTranslations("Step2");
   const [label, setLabel] = useState("");
@@ -105,12 +123,14 @@ export function FremdForm({ onAdd, onPreviewChange }: FremdFormProps) {
   const [markup, setMarkup] = useState("25");
   const [salePrice, setSalePrice] = useState("");
   const [priceSource, setPriceSource] = useState<"markup" | "sale">("markup");
+  const [deduction, setDeduction] = useState(false);
   const purchaseCents = eurosToCents(parseFloat(purchase) || 0);
   const surchargeBp = Math.round((parseFloat(markup) || 0) * 100);
   const calculatedSalePriceCents = computeUnitPrice(purchaseCents, surchargeBp, "percent");
   const salePriceCents = priceSource === "sale"
     ? eurosToCents(parseFloat(salePrice) || 0)
     : calculatedSalePriceCents;
+  const documentPriceCents = deduction ? -salePriceCents : salePriceCents;
   const ok = label.trim().length > 0 && purchaseCents > 0 && salePriceCents > 0;
 
   useEffect(() => {
@@ -118,9 +138,9 @@ export function FremdForm({ onAdd, onPreviewChange }: FremdFormProps) {
       descriptionDe: label,
       amount: 1,
       unit: "Pauschale",
-      unitPrice: salePriceCents,
+      unitPrice: documentPriceCents,
     });
-  }, [label, onPreviewChange, salePriceCents]);
+  }, [label, onPreviewChange, documentPriceCents]);
 
   const updatePurchase = (value: string) => {
     setPurchase(value);
@@ -201,6 +221,7 @@ export function FremdForm({ onAdd, onPreviewChange }: FremdFormProps) {
           <span className="f-unit">€</span>
         </div>
       </div>
+      <DeductionToggle pressed={deduction} onChange={setDeduction} />
       <button
         type="button"
         className="f-submit"
@@ -214,6 +235,7 @@ export function FremdForm({ onAdd, onPreviewChange }: FremdFormProps) {
             ? fixedSurchargeForSale(purchaseCents, salePriceCents)
             : surchargeBp,
           surchargeType: priceSource === "sale" ? "fixed" : "percent",
+          deduction,
         })}
       >
         <Plus size={20} strokeWidth={2.4} aria-hidden />

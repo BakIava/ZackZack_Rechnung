@@ -52,7 +52,7 @@ export function PositionsList({ items, totalAmount }: PositionsListProps) {
             )}
             <div className="hpos-qty">
               {item.amount} {item.unit} · {formatMoney(item.unitPrice)}
-              {item.taxAmount > 0 ? ` · ${item.taxRate} %` : ""}
+              {item.taxAmount !== 0 ? ` · ${item.taxRate} %` : ""}
             </div>
           </div>
           <div className="hpos-sum">{formatMoney(item.totalAmount)}</div>
