@@ -1,0 +1,134 @@
+/* ai-intake-loading.css — Phase ② des KI-Erfassungsdialogs (KI liest Angaben). */
+
+.ai-intake-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 22px 10px 30px;
+  text-align: center;
+}
+
+.ai-intake-loading-orb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  color: var(--accent-deep);
+  animation: ai-intake-pulse 1.4s ease-in-out infinite;
+}
+
+.ai-intake-loading-orb::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 999px;
+  animation: ai-intake-ring 1.4s ease-out infinite;
+}
+
+@keyframes ai-intake-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes ai-intake-ring {
+  0% { transform: scale(0.85); opacity: 0.9; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+.ai-intake-loading-title {
+  margin-block-start: 18px;
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.ai-intake-loading-sub {
+  max-inline-size: 320px;
+  margin-block-start: 5px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.ai-intake-loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  inline-size: 100%;
+  max-inline-size: 300px;
+  margin-block-start: 22px;
+}
+
+.ai-intake-loading-step {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: start;
+  transition: 0.2s;
+}
+
+.ai-intake-loading-step[data-state="active"] {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--ink);
+}
+
+.ai-intake-loading-step[data-state="done"] {
+  border-color: color-mix(in srgb, var(--ok) 45%, var(--line));
+  background: color-mix(in srgb, var(--ok) 6%, var(--surface));
+  color: var(--ink);
+}
+
+.ai-intake-loading-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.ai-intake-loading-step[data-state="done"] .ai-intake-loading-dot {
+  background: var(--ok);
+  color: #fff;
+}
+
+.ai-intake-loading-spin {
+  inline-size: 13px;
+  block-size: 13px;
+  border: 2px solid color-mix(in srgb, var(--muted) 35%, transparent);
+  border-block-start-color: var(--muted);
+  border-radius: 999px;
+  animation: ai-intake-loading-spin 0.7s linear infinite;
+}
+
+.ai-intake-loading-step[data-state="active"] .ai-intake-loading-spin {
+  border-block-start-color: var(--accent-deep);
+}
+
+@keyframes ai-intake-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-intake-loading-orb,
+  .ai-intake-loading-orb::after,
+  .ai-intake-loading-spin {
+    animation: none;
+  }
+}

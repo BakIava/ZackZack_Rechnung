@@ -1,0 +1,8 @@
+.customer-type-required {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 650;
+  color: color-mix(in srgb, var(--warn) 82%, #000);
+}

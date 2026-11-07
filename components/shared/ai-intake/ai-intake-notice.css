@@ -1,0 +1,104 @@
+/* ai-intake-notice.css — Ergebnis-Hinweis + „Deine Angaben" über dem Formular. */
+
+.ai-intake-notice {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-block-end: 16px;
+  padding: 12px 14px;
+  border-radius: var(--r);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.ai-intake-notice-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 26px;
+  block-size: 26px;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.ai-intake-notice-text {
+  flex: 1;
+  min-inline-size: 0;
+  font-weight: 600;
+}
+
+.ai-intake-notice--ok {
+  background: var(--ok-bg);
+  color: color-mix(in srgb, var(--ok) 80%, #000);
+}
+
+.ai-intake-notice--ok .ai-intake-notice-icon {
+  background: var(--ok);
+}
+
+.ai-intake-notice--warn {
+  background: var(--warn-bg);
+  color: color-mix(in srgb, var(--warn) 82%, #000);
+}
+
+.ai-intake-notice--warn .ai-intake-notice-icon {
+  background: var(--warn);
+}
+
+.ai-intake-notice--muted {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.ai-intake-notice-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  min-block-size: 32px;
+  padding: 2px 4px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ai-intake-notice-action:hover {
+  opacity: 0.72;
+}
+
+.ai-intake-notice-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Originaltext zum Abgleich, standardmäßig zugeklappt */
+
+.ai-intake-source {
+  margin-block: -6px 16px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.ai-intake-source summary {
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.ai-intake-source p {
+  margin-block: 8px 0;
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
