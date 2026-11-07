@@ -130,8 +130,8 @@
   white-space: nowrap;
 }
 
-/* Kompaktmodus: per Button umschaltbar (Wahl als Cookie gespeichert); Schritt 2
-   startet immer eingeklappt und nutzt den Platz für die A4-Vorschau. */
+/* Kompaktmodus: per Button umschaltbar (Wahl als Cookie gespeichert); der
+   Erstell-Flow (Schritt 1–3) startet immer eingeklappt. */
 .dside--collapsed {
   inline-size: 76px;
   padding-block: 22px 16px;
