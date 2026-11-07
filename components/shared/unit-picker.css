@@ -41,10 +41,18 @@
   transform: rotate(180deg);
 }
 
+/* Klappt immer nach unten auf und schwebt über allem – auch über den Rand eines
+   Modals hinaus (fixed). Koordinaten setzt unit-picker.tsx als Custom Properties. */
 .unit-picker-popover {
-  position: relative;
-  z-index: 1;
-  margin-block-start: 6px;
+  position: fixed;
+  z-index: 50;
+  inset-block-start: var(--unit-picker-top);
+  inset-inline-start: var(--unit-picker-start);
+  inline-size: var(--unit-picker-width);
+  max-block-size: var(--unit-picker-max-height);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   padding: 8px;
   border: 1.5px solid var(--line);
   border-radius: var(--r-sm);
@@ -104,6 +112,8 @@
 }
 
 .unit-picker-list {
+  flex: 0 1 auto;
+  min-block-size: 0;
   max-height: 190px;
   overflow-y: auto;
   display: flex;
