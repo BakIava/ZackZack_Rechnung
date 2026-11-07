@@ -31,6 +31,30 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Nummer als Tippziel: Position an eine andere Stelle verschieben. */
+.d2card-num--move {
+  inline-size: 40px;
+  block-size: 40px;
+  padding: 0;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 30%, var(--surface));
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+
+.d2card-num--move:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.d2card-num--move:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.d2card-num--move:disabled {
+  cursor: wait;
+}
+
 /* Titel als Direkt-Tippziel (Bezeichnung ändern). */
 
 .d2title-btn {

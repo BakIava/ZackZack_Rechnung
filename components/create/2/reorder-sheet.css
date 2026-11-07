@@ -1,0 +1,202 @@
+/* reorder-sheet.css — „Reihenfolge ändern": kompakte Positionsliste. RTL-fest. */
+
+.reorder-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 18px 6px;
+  padding-inline: 22px 14px;
+  flex-shrink: 0;
+}
+
+.reorder-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.reorder-close {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border: none;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+/* Kopf und Fuß bleiben stehen, nur die Liste scrollt. */
+.reorder-body {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-block-size: 0;
+  padding-block: 4px 14px;
+  padding-inline: 22px;
+  overflow-y: auto;
+}
+
+.reorder-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.reorder-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reorder-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 6px;
+  padding-inline: 8px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  transition: border-color 0.2s, background 0.2s;
+}
+
+/* Zuletzt verschobene Zeile – hilft bei langen Listen bei der Orientierung. */
+.reorder-row[data-moved="1"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+
+.reorder-num {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 30%, var(--surface));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.reorder-num:hover {
+  border-color: var(--primary);
+}
+
+.reorder-text {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.reorder-name {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 600;
+  text-align: start;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reorder-amount {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.reorder-step {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.reorder-step:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.reorder-step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.reorder-num:focus-visible,
+.reorder-step:focus-visible,
+.reorder-close:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.reorder-picking-name {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.reorder-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+  padding-block: 14px 18px;
+  padding-inline: 22px;
+  border-block-start: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.reorder-cancel,
+.reorder-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 48px;
+  padding-inline: 20px;
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.reorder-cancel {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.reorder-save {
+  flex: 1;
+  max-inline-size: 240px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reorder-row {
+    transition: none;
+  }
+}
