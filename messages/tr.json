@@ -298,6 +298,7 @@
     "pfIssueDate": "Fatura tarihi",
     "pfValidUntil": "Teklifin geçerlilik tarihi",
     "pfPositions": "En az bir kalem",
+    "pfAmounts": "Toplam tutar eksi değil",
     "fixAtCustomer": "Müşteride tamamla",
     "fixAtPositions": "Kalemlerde tamamla",
     "fixAtValidity": "Geçerlilik tarihini düzelt",
@@ -307,6 +308,7 @@
     "errValidUntilMissing": "Teklifin geçerlilik tarihi eksik.",
     "errValidUntilInvalid": "Geçerlilik tarihi teklif tarihinden önce.",
     "errExpiredConfirmation": "Süresi dolmuş teklif açıkça onaylanmalıdır.",
+    "errAmountsNegative": "Toplam tutar eksi. Lütfen kesintileri kontrol et.",
     "finalizeExpiredQuoteWarning": "Geçerlilik tarihi dolmuş. Tamamlayarak bu teklifin yine de kesinleştirilmesini açıkça onaylarsınız.",
     "errUnknown": "Tamamlama başarısız. Lütfen tekrar deneyin.",
     "ncAiLead": "Müşteri hakkında bildiğin her şeyi yaz. İsim, müşteri türü, adres ve iletişimi tanıyıp alanları senin için dolduruyoruz.",
@@ -339,6 +341,7 @@
     "lineSum": "Tutar",
     "done": "Tamam",
     "backspace": "Rakamı sil",
+    "toggleSign": "Artı/eksi değiştir",
     "labelLbl": "Açıklama",
     "unitLbl": "Birim",
     "searchUnit": "Birim ara …",
@@ -658,5 +661,9 @@
     "optional": "isteğe bağlı",
     "cancel": "İptal",
     "close": "Kapat"
+  },
+  "Deduction": {
+    "label": "Kesinti (eksi tutar)",
+    "hint": "ör. ara fatura, avans veya indirim"
   }
 }

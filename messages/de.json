@@ -298,6 +298,7 @@
     "pfIssueDate": "Rechnungsdatum",
     "pfValidUntil": "Gültigkeitsdatum des Angebots",
     "pfPositions": "Mindestens eine Position",
+    "pfAmounts": "Gesamtbetrag nicht negativ",
     "fixAtCustomer": "Beim Kunden ergänzen",
     "fixAtPositions": "Bei Positionen ergänzen",
     "fixAtValidity": "Gültigkeit anpassen",
@@ -307,6 +308,7 @@
     "errValidUntilMissing": "Das Gültigkeitsdatum des Angebots fehlt.",
     "errValidUntilInvalid": "Das Gültigkeitsdatum liegt vor dem Angebotsdatum.",
     "errExpiredConfirmation": "Das abgelaufene Angebot muss ausdrücklich bestätigt werden.",
+    "errAmountsNegative": "Der Gesamtbetrag ist negativ. Bitte die Abzüge prüfen.",
     "finalizeExpiredQuoteWarning": "Das Gültigkeitsdatum ist bereits abgelaufen. Mit Abschließen bestätigst du ausdrücklich, dass dieses Angebot trotzdem finalisiert werden soll.",
     "errUnknown": "Abschließen fehlgeschlagen. Bitte erneut versuchen.",
     "ncAiLead": "Schreib einfach alles, was du über den Kunden weißt. Wir erkennen Name, Kundenart, Adresse und Kontakt – und füllen die Felder für dich aus.",
@@ -339,6 +341,7 @@
     "lineSum": "Summe",
     "done": "Fertig",
     "backspace": "Ziffer löschen",
+    "toggleSign": "Plus/Minus umschalten",
     "labelLbl": "Bezeichnung",
     "unitLbl": "Einheit",
     "searchUnit": "Einheit suchen …",
@@ -658,5 +661,9 @@
     "optional": "optional",
     "cancel": "Abbrechen",
     "close": "Schließen"
+  },
+  "Deduction": {
+    "label": "Abzug (Minusbetrag)",
+    "hint": "z. B. Abschlagsrechnung, Anzahlung oder Rabatt"
   }
 }
