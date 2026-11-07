@@ -136,7 +136,7 @@ Pages bleiben dünn: `params` auflösen, `setRequestLocale`, Daten über Reposit
 - Jede gerenderte TSX-Komponente mit eigenen CSS-Regeln erhält genau eine gleichnamige `.css`-Datei im selben Verzeichnis (`foo.tsx` → `foo.css`) und importiert sie direkt. Komponenten ohne eigene Regeln, reine Route-Delegates und React-PDF-Komponenten benötigen keine leere CSS-Datei.
 - Ein Selektor gehört in die CSS-Datei der Komponente, die seine Klasse rendert. Bewusst geteilte Varianten gehören zum kleinsten gemeinsamen UI-Baustein; keine Ordner-Sammeldateien, Cross-Imports fremder Komponenten-CSS oder duplizierten Selektoren. Generische Klassennamen bei Kollisionsgefahr komponentenspezifisch benennen oder unter einer eindeutigen Komponenten-Wurzel kapseln.
 - `app/globals.css` enthält nur: Tailwind-Direktiven, Theme-Variablen (shadcn auf `:root` + App-Design-Tokens auf den `zz-*`-Scopes), Base-Layer. Kein komponentenspezifisches CSS.
-- Gemeinsames App-Gerüst (`.dapp`, `.dmain`, `.dtopbar`, `.pill` …) liegt in `components/layout/app-shell.css` bzw. `sidebar.css` — dort erweitern statt Shell-Klassen in Screen-CSS zu duplizieren.
+- Gemeinsames App-Gerüst (`.dapp`, `.dmain`, `.dtopbar`, `.pill` …) liegt in `components/layout/app-shell.css` bzw. `sidebar-panel.css` — dort erweitern statt Shell-Klassen in Screen-CSS zu duplizieren.
 - RTL: nur logische Properties (siehe oben).
 
 ### UI-Primitives (`components/ui/`, Barrel-Import)
