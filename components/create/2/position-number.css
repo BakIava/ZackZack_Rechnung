@@ -1,0 +1,40 @@
+/* position-number.css — Positionsnummer in Zeile und Karte. */
+
+.position-number {
+  flex-shrink: 0;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Nummer als Tippziel: Position an eine andere Stelle verschieben. */
+.position-number--move {
+  inline-size: 40px;
+  block-size: 40px;
+  padding: 0;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 30%, var(--surface));
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+
+.position-number--move:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.position-number--move:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.position-number--move:disabled {
+  cursor: wait;
+}

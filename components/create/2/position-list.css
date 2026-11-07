@@ -1,0 +1,31 @@
+/* position-list.css — Positionsliste in Schritt 2: Rahmen jeder Position. */
+
+.d2cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.d2card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+}
+
+/* Zugeklappt: kompakte Zeile. */
+.d2card[data-expanded="0"] {
+  padding-block: 10px;
+  padding-inline: 14px;
+  border-radius: var(--r);
+}
+
+.d2card[data-expanded="0"]:hover {
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--line));
+}
+
+/* Aufgeklappt: deutlich als die gerade bearbeitete Position erkennbar. */
+.d2card[data-expanded="1"] {
+  border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
+  box-shadow: 0 6px 18px rgba(12, 24, 32, 0.08);
+}

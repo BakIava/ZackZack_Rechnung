@@ -1,0 +1,96 @@
+/* position-row.css — zugeklappte Position als kompakte Zeile. RTL-fest. */
+
+.d2row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.d2row-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.d2row-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.d2row-main {
+  display: grid;
+  gap: 2px;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.d2row-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-inline-size: 0;
+}
+
+.d2row-name {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.d2row-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.d2row-chip {
+  flex-shrink: 0;
+  padding-block: 1px;
+  padding-inline: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* LTR-Inhalt, aber am Zeilenanfang der Bediensprache ausgerichtet (RTL: rechts). */
+.d2row-calc {
+  justify-self: start;
+  max-inline-size: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.d2row-sum {
+  flex-shrink: 0;
+  font-size: 15.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.d2row-chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+
+.d2row-toggle:hover .d2row-chevron {
+  color: var(--primary);
+}

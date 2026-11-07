@@ -122,12 +122,6 @@
 
 /* ── Positionskarten (Variante B: Menge × Preis = Summe) ─────────────────── */
 
-.d2cards {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 /* „Reihenfolge ändern" über den Positionskarten, am Zeilenende. */
 .d2-reorder-open {
   display: flex;

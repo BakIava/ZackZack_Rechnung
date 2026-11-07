@@ -1,9 +1,4 @@
-.d2card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: 20px 22px;
-}
+/* Den Kartenrahmen (.d2card) zeichnet position-list; hier nur der Inhalt. */
 
 .d2card-top {
   display: flex;
@@ -16,43 +11,28 @@
   min-width: 0;
 }
 
-.d2card-num {
+/* Aufgeklappte Karte wieder zur kompakten Zeile zuklappen. */
+.d2card-collapse {
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
-  color: var(--primary);
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Nummer als Tippziel: Position an eine andere Stelle verschieben. */
-.d2card-num--move {
-  inline-size: 40px;
-  block-size: 40px;
-  padding: 0;
-  border: 1.5px solid color-mix(in srgb, var(--primary) 30%, var(--surface));
-  font-family: inherit;
+  inline-size: 46px;
+  block-size: 46px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--muted);
   cursor: pointer;
-  transition: border-color 0.12s;
 }
 
-.d2card-num--move:hover:not(:disabled) {
+.d2card-collapse:hover {
   border-color: var(--primary);
+  color: var(--primary);
 }
 
-.d2card-num--move:focus-visible {
+.d2card-collapse:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-}
-
-.d2card-num--move:disabled {
-  cursor: wait;
 }
 
 /* Titel als Direkt-Tippziel (Bezeichnung ändern). */
