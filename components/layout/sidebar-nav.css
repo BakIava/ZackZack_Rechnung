@@ -79,7 +79,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-.dside--collapsed .dnav-lbl,
+/* Überschrift behält ihre Höhe, damit die Menüpunkte beim Umschalten nicht springen. */
+.dside--collapsed .dnav-lbl {
+  visibility: hidden;
+}
+
 .dside--collapsed .dnav-item > span {
   display: none;
 }

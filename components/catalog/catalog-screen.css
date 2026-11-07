@@ -1,5 +1,5 @@
 /* catalog-screen.css — Token-Scope für den Katalog-Bereich.
-   Geteilte Shell-Klassen (.dapp, .dmain, .dside, .pill) kommen aus components/layout/app-shell.css bzw. sidebar.css; Tokens aus globals.css.
+   Geteilte Shell-Klassen (.dapp, .dmain, .dside, .pill) kommen aus components/layout/app-shell.css bzw. sidebar-panel.css; Tokens aus globals.css.
    Logische Properties → RTL automatisch. */
 
 .zz-catalog {

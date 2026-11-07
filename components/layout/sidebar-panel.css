@@ -1,10 +1,10 @@
-/* sidebar.css — linke Navigationsleiste der App-Screens (RTL-fest).
+/* sidebar-panel.css — linke Navigationsleiste der App-Screens (RTL-fest).
    Tokens kommen aus globals.css (zz-*-Scopes). */
 
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
 
 .dside {
-  width: 250px;
+  inline-size: 250px;
   flex-shrink: 0;
   background: linear-gradient(190deg, var(--primary-2), var(--primary));
   color: #fff;
@@ -12,6 +12,15 @@
   flex-direction: column;
   padding: 22px 16px 16px;
   border-inline-end: 1px solid rgba(0, 0, 0, 0.1);
+  /* Während des Umschaltens ragen Texte nicht über den Rand. */
+  overflow-x: clip;
+  transition: inline-size 0.2s ease, padding-inline 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dside {
+    transition: none;
+  }
 }
 
 .dside-brand {
@@ -36,11 +45,50 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
+/* Höchstens zwei Zeilen – bleibt damit in der Höhe des Logos, auch neben dem Button. */
 .dside-name {
+  flex: 1;
+  min-inline-size: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: break-word;
   font-size: 15.5px;
   font-weight: 700;
+  line-height: 1.25;
   letter-spacing: -0.01em;
-  white-space: nowrap;
+}
+
+.dside-toggle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 36px;
+  block-size: 36px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.78);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.dside-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+
+.dside-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Symbol zeigt zur Leiste – in RTL liegt sie rechts. */
+.dapp[dir="rtl"] .dside-toggle svg {
+  transform: scaleX(-1);
 }
 
 .dapp[dir="rtl"] .dnav-item[data-on="1"]::before {
@@ -82,8 +130,8 @@
   white-space: nowrap;
 }
 
-/* Expliziter Desktop-Kompaktmodus. Ohne Prop bleibt die bestehende Sidebar
-   unverändert; Schritt 2 nutzt den zusätzlichen Platz für die A4-Vorschau. */
+/* Kompaktmodus: per Button umschaltbar (Wahl als Cookie gespeichert); Schritt 2
+   startet immer eingeklappt und nutzt den Platz für die A4-Vorschau. */
 .dside--collapsed {
   inline-size: 76px;
   padding-block: 22px 16px;
@@ -96,6 +144,14 @@
   padding-inline: 4px;
 }
 
+/* Der Button nimmt den Platz des Logos ein – die Kopfzeile bleibt gleich hoch,
+   die Menüpunkte springen beim Umschalten nicht. */
+.dside--collapsed .dside-toggle {
+  inline-size: 44px;
+  block-size: 44px;
+}
+
+.dside--collapsed .dside-logo,
 .dside--collapsed .dside-name,
 .dside--collapsed .dside-uname,
 .dside--collapsed .dside-lang-txt {
