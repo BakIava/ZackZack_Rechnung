@@ -138,3 +138,14 @@
   background: var(--ok);
   filter: brightness(1.05);
 }
+
+/* Preisfelder: ±-Taste (Abzug) neben einer schmaleren Fertig-Taste. */
+.d2pad-key--ok.d2pad-key--ok-short {
+  grid-column: span 2;
+}
+
+.d2pad-key--sign[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--primary);
+}
