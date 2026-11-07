@@ -13,6 +13,7 @@
   background: color-mix(in srgb, var(--bg) 62%, transparent);
   -webkit-backdrop-filter: blur(7px) saturate(1.1);
   backdrop-filter: blur(7px) saturate(1.1);
+  font-family: var(--ui-font);
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.26s ease, visibility 0.26s;
