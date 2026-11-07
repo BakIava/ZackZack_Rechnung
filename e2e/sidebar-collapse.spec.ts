@@ -56,7 +56,7 @@ test("Sidebar: Einklappen bleibt nach Neuladen, Seitenwechsel und Sprachwechsel 
   await expect(sidebar).toHaveAttribute("data-collapsed", "false");
 });
 
-test("Sidebar: Schritt 2 startet eingeklappt, Umschalten dort ändert die gespeicherte Wahl nicht", async ({ page }) => {
+test("Sidebar: Erstell-Flow startet eingeklappt, Umschalten dort ändert die gespeicherte Wahl nicht", async ({ page }) => {
   await loginWithLocalDevAccount(page);
   await page.goto("/de/dashboard");
   const sidebar = page.getByTestId("app-sidebar");
@@ -65,14 +65,20 @@ test("Sidebar: Schritt 2 startet eingeklappt, Umschalten dort ändert die gespei
   await sidebar.getByRole("button", { name: "Rechnung erstellen" }).click();
   await page.waitForURL(/\/de\/create\/[^/]+\/1$/);
   const documentId = new URL(page.url()).pathname.split("/")[3];
-  await expect(sidebar).toHaveAttribute("data-collapsed", "false");
-
-  await page.goto(`/de/create/${documentId}/2`);
   await expect(sidebar).toHaveAttribute("data-collapsed", "true");
+  await expect.poll(() => sidebarWidth(page)).toBeLessThanOrEqual(78);
+
+  // Würde der Flow die Wahl speichern, stünde sie danach auf „eingeklappt“.
   await sidebar.getByRole("button", { name: "Menü ausklappen" }).click();
   await expect(sidebar).toHaveAttribute("data-collapsed", "false");
   await sidebar.getByRole("button", { name: "Menü einklappen" }).click();
   await expect(sidebar).toHaveAttribute("data-collapsed", "true");
+
+  for (const step of [2, 3]) {
+    await page.goto(`/de/create/${documentId}/${step}`);
+    await page.waitForURL(new RegExp(`/de/create/${documentId}/${step}$`));
+    await expect(sidebar).toHaveAttribute("data-collapsed", "true");
+  }
 
   await page.goto("/de/dashboard");
   await expect(sidebar).toHaveAttribute("data-collapsed", "false");

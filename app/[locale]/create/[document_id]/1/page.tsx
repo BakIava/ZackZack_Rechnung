@@ -50,7 +50,7 @@ export default async function Step1Page({ params }: Step1PageProps) {
   return (
     <div className="zz-dash">
       <div className="dapp" dir={dir}>
-        <Sidebar />
+        <Sidebar startCollapsed />
         <KundeStep
           dir={dir}
           customers={customers}

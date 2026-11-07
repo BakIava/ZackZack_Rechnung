@@ -20,7 +20,7 @@ export function Step3Screen({ dir, preview, logo, checks }: Step3ScreenProps) {
   return (
     <div className="zz-create">
       <div className="dapp" dir={dir}>
-        <Sidebar />
+        <Sidebar startCollapsed />
         <Step3Main dir={dir} preview={preview} logo={logo} checks={checks} />
       </div>
     </div>

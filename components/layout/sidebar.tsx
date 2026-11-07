@@ -16,8 +16,9 @@ function toInitials(name: string): string {
 
 interface SidebarProps {
   /**
-   * Startet eingeklappt (Schritt 2: Platz für die A4-Vorschau). Umschalten gilt
-   * dann nur für diese Ansicht und ändert die gespeicherte Wahl nicht.
+   * Startet eingeklappt (Erstell-Flow, Schritt 1–3: Platz für Formular und
+   * A4-Vorschau). Umschalten gilt dann nur für diese Ansicht und ändert die
+   * gespeicherte Wahl nicht.
    */
   startCollapsed?: boolean;
 }
