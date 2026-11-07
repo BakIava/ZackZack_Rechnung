@@ -6,8 +6,9 @@ import type {
   ItemPatch,
   TemporaryDocumentItemInput,
 } from "@/types/document";
-import { computeUnitPrice } from "@/lib/documents/margin";
+import { fremdUnitPrice } from "@/lib/documents/margin";
 import { normalizeAdditionalDescriptionDe } from "@/lib/documents/additional-description";
+import { roundHalfAwayFromZero } from "@/lib/money";
 import {
   calculateDocumentTotals,
   calculateLineAmounts,
@@ -70,7 +71,8 @@ export function withPersistedDocumentItems(
 /**
  * Hängt einen ausschließlich lokalen Eingabestand an die Kundenvorschau an.
  * Die persistente Positionsvalidierung bleibt unberührt; nur hier ist Menge 0
- * für den leeren Startzustand ausdrücklich erlaubt.
+ * für den leeren Startzustand ausdrücklich erlaubt. Ein negativer Einzelpreis
+ * ist ein Abzug und wird wie auf dem Server gerundet.
  */
 export function withTemporaryDocumentItem(
   preview: DocumentPreview,
@@ -79,12 +81,10 @@ export function withTemporaryDocumentItem(
   const amount = Number.isFinite(input.amount) && input.amount >= 0
     ? Math.round(input.amount * 100) / 100
     : 0;
-  const unitPrice = Number.isSafeInteger(input.unitPrice) && input.unitPrice >= 0
-    ? input.unitPrice
-    : 0;
-  const totalAmount = Math.round(unitPrice * amount);
+  const unitPrice = Number.isSafeInteger(input.unitPrice) ? input.unitPrice : 0;
+  const totalAmount = roundHalfAwayFromZero(unitPrice * amount);
   const taxRate = preview.defaultTaxRate;
-  const taxAmount = Math.round((totalAmount * taxRate) / 100);
+  const taxAmount = roundHalfAwayFromZero((totalAmount * taxRate) / 100);
   const temporaryItem: DocumentItem = {
     position: preview.items.length + 1,
     descriptionDe: input.descriptionDe,
@@ -133,8 +133,9 @@ export function withEditedDocumentItem(
     ? patch.surchargeType
     : item.surchargeType;
   const isFremd = purchasePrice != null && surchargeType != null;
+  const deduction = patch.deduction ?? item.unitPrice < 0;
   const unitPrice = isFremd
-    ? computeUnitPrice(purchasePrice, surcharge ?? 0, surchargeType)
+    ? fremdUnitPrice(purchasePrice, surcharge ?? 0, surchargeType, deduction)
     : patch.unitPrice ?? item.unitPrice;
   const taxRateOverridden = patch.taxRate !== undefined
     ? patch.taxRate !== null

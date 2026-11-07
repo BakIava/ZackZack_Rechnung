@@ -3,9 +3,29 @@ import {
   computeUnitPrice,
   computeLineTotal,
   fixedSurchargeForSale,
+  fremdUnitPrice,
   markupPercent,
   surchargeBasisPointsForSale,
 } from "./margin";
+
+describe("fremdUnitPrice – Fremdleistung als Abzug", () => {
+  it("entspricht ohne Abzug dem berechneten Verkaufspreis", () => {
+    expect(fremdUnitPrice(20_000, 2_500, "percent", false)).toBe(25_000);
+    expect(fremdUnitPrice(20_000, 5_000, "fixed", false)).toBe(25_000);
+  });
+
+  it("kehrt als Abzug nur den Verkaufspreis um – Einkauf und Aufschlag bleiben positiv", () => {
+    expect(fremdUnitPrice(20_000, 2_500, "percent", true)).toBe(-25_000);
+    expect(fremdUnitPrice(20_000, 5_000, "fixed", true)).toBe(-25_000);
+  });
+});
+
+describe("computeLineTotal – Abzüge", () => {
+  it("rundet negative Zeilensummen wie Postgres (,5 vom Nullpunkt weg)", () => {
+    expect(computeLineTotal(-1_999, 0.5)).toBe(-1_000);
+    expect(computeLineTotal(1_999, 0.5)).toBe(1_000);
+  });
+});
 
 describe("computeUnitPrice", () => {
   it("adds a fixed surcharge (cents) to the purchase price", () => {

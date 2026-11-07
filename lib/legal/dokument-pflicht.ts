@@ -13,10 +13,15 @@
  * Der §19-Hinweis selbst ist keine „fehlende Angabe": er wird beim Rendern
  * automatisch gesetzt, sobald keine USt. ausgewiesen wird (siehe DOKUMENT_DE).
  * Für Angebote gilt dieselbe Prüfung – das Zahlungsziel ist keine Pflichtangabe.
+ *
+ * Abzüge (negative Positionen, z. B. bereits berechnete Abschläge) sind
+ * erlaubt; der Beleg selbst darf aber nicht negativ werden – das wäre eine
+ * Gutschrift/Stornorechnung. Diese Prüfung erscheint nur bei Belegen mit Abzug.
  */
 
 import type { DocType } from "@/types/document";
 import { isValidQuoteDateRange } from "@/lib/documents/document-dates";
+import { hasNegativeTotals } from "@/lib/documents/tax";
 
 /** Kleinbetragsrechnung-Grenze (§ 33 UStDV): 250,00 € brutto in Cent. */
 export const KLEINBETRAG_LIMIT_CENTS = 25_000;
@@ -28,6 +33,7 @@ export type PflichtFeld =
   | "issueDate"
   | "validUntil"
   | "positions"
+  | "amounts"
   | "customerName"
   | "customerAddress";
 
@@ -40,6 +46,11 @@ export interface DokumentPflichtInput {
   itemCount: number;
   /** Dokumentbetrag in Cent (brutto). Steuert die Empfänger-Pflicht. */
   totalAmountCents: number;
+  /** Mindestens eine Position mit negativem Betrag (Abzug). Ohne Angabe: keine. */
+  hasDeductions?: boolean;
+  /** Netto- und Steuersumme in Cent; nur bei Abzügen relevant. */
+  netAmountCents?: number;
+  taxAmountCents?: number;
   customerName: string | null;
   customerStreet: string | null;
   customerStreetNo: string | null;
@@ -73,6 +84,20 @@ export function pruefeDokumentPflicht(input: DokumentPflichtInput): PflichtCheck
     mk("issueDate", "customer", gefuellt(input.issueDate)),
     mk("positions", "positions", input.itemCount >= 1),
   ];
+
+  if (input.hasDeductions) {
+    checks.push(
+      mk(
+        "amounts",
+        "positions",
+        !hasNegativeTotals({
+          netAmount: input.netAmountCents ?? 0,
+          taxAmount: input.taxAmountCents ?? 0,
+          grossAmount: input.totalAmountCents,
+        }),
+      ),
+    );
+  }
 
   if (isQuote) {
     checks.push(

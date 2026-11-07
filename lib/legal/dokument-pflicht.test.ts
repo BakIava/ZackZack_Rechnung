@@ -115,3 +115,74 @@ describe("pruefeDokumentPflicht – betragsabhängige Empfängerangaben", () => 
     ]);
   });
 });
+
+describe("pruefeDokumentPflicht – Abzüge (negative Positionen)", () => {
+  it("prüft die Belegsumme nur, wenn der Beleg einen Abzug enthält", () => {
+    expect(pruefeDokumentPflicht(grossVollstaendig).map((c) => c.feld)).not.toContain("amounts");
+
+    const checks = pruefeDokumentPflicht({
+      ...grossVollstaendig,
+      hasDeductions: true,
+      netAmountCents: 90_000,
+      taxAmountCents: 0,
+    });
+    expect(checks.find((c) => c.feld === "amounts")).toEqual({
+      feld: "amounts",
+      location: "positions",
+      ok: true,
+    });
+    expect(istFinalisierbar(checks)).toBe(true);
+  });
+
+  it("erlaubt eine Schlussrechnung mit 0 €, wenn alles per Abschlag bezahlt ist", () => {
+    const checks = pruefeDokumentPflicht({
+      ...grossVollstaendig,
+      totalAmountCents: 0,
+      hasDeductions: true,
+      netAmountCents: 0,
+      taxAmountCents: 0,
+    });
+    expect(istFinalisierbar(checks)).toBe(true);
+  });
+
+  it("blockiert einen negativen Beleg – das wäre eine Gutschrift", () => {
+    const checks = pruefeDokumentPflicht({
+      ...grossVollstaendig,
+      totalAmountCents: -5_000,
+      hasDeductions: true,
+      netAmountCents: -5_000,
+      taxAmountCents: 0,
+    });
+    expect(offeneMaengel(checks).map((c) => c.feld)).toEqual(["amounts"]);
+    expect(istFinalisierbar(checks)).toBe(false);
+  });
+
+  it("blockiert eine negative Steuersumme auch bei positivem Gesamtbetrag", () => {
+    const checks = pruefeDokumentPflicht({
+      ...grossVollstaendig,
+      totalAmountCents: 40_500,
+      hasDeductions: true,
+      netAmountCents: 50_000,
+      taxAmountCents: -9_500,
+    });
+    expect(offeneMaengel(checks).map((c) => c.feld)).toEqual(["amounts"]);
+  });
+
+  it("lässt die Kleinbetragsgrenze am Endbetrag – auch nach einem Abzug", () => {
+    // 2.000 € Leistung − 1.900 € Abschlag = 100 € Rest: Kleinbetragsrechnung.
+    const checks = pruefeDokumentPflicht({
+      ...grossVollstaendig,
+      totalAmountCents: 10_000,
+      hasDeductions: true,
+      netAmountCents: 10_000,
+      taxAmountCents: 0,
+      customerName: null,
+      customerStreet: null,
+      customerStreetNo: null,
+      customerPostcode: null,
+      customerCity: null,
+    });
+    expect(checks.map((c) => c.feld)).not.toContain("customerName");
+    expect(istFinalisierbar(checks)).toBe(true);
+  });
+});

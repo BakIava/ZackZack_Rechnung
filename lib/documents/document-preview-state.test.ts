@@ -235,3 +235,64 @@ describe("document preview state", () => {
     expect(withEditedDocumentItem(initial, draftItem, { amount: 0 })).toBe(initial);
   });
 });
+
+describe("Abzüge in der Live-Vorschau", () => {
+  // Draft-Item `draftItem` ist eine Fremdleistung (Einkauf 100 €, fest +25 € → 125 €).
+  const withFremd = () => withPersistedDocumentItems(preview(), [draftItem], {
+    netAmount: 12_500,
+    taxAmount: 0,
+    grossAmount: 12_500,
+    taxGroups: [{ rate: 0, netAmount: 12_500, taxAmount: 0 }],
+  });
+
+  it("zeigt eine neue Position mit negativem Einzelpreis als Abzug und verrechnet sie", () => {
+    const result = withTemporaryDocumentItem(withFremd(), {
+      descriptionDe: "Abzüglich Abschlagsrechnung R-2026-005",
+      amount: 1,
+      unit: "Pauschale",
+      unitPrice: -5_000,
+    });
+
+    expect(result.items[1]).toMatchObject({
+      unitPrice: -5_000,
+      totalAmount: -5_000,
+      grossAmount: -5_000,
+    });
+    expect(result.totalAmount).toBe(7_500);
+    expect(result.netAmount).toBe(7_500);
+  });
+
+  it("rundet einen vorläufigen Abzug wie der Server", () => {
+    const result = withTemporaryDocumentItem(preview(), {
+      descriptionDe: "Rabatt",
+      amount: 0.5,
+      unit: "Stk.",
+      unitPrice: -1_999,
+    });
+    expect(result.items[0].totalAmount).toBe(-1_000);
+  });
+
+  it("macht eine Fremdleistung per Abzug-Flag negativ – Einkauf und Aufschlag bleiben", () => {
+    const result = withEditedDocumentItem(withFremd(), draftItem, { deduction: true });
+    expect(result.items[0].unitPrice).toBe(-12_500);
+    expect(result.totalAmount).toBe(-12_500);
+    expect(JSON.stringify(result)).not.toMatch(/purchase|surcharge|markup|margin/i);
+  });
+
+  it("behält das Vorzeichen einer Fremdleistung beim Ändern der Menge", () => {
+    const deducted: DraftItem = { ...draftItem, unitPrice: -12_500, totalAmount: -12_500, grossAmount: -12_500 };
+    const base = withPersistedDocumentItems(preview(), [deducted], {
+      netAmount: -12_500,
+      taxAmount: 0,
+      grossAmount: -12_500,
+      taxGroups: [{ rate: 0, netAmount: -12_500, taxAmount: 0 }],
+    });
+
+    const result = withEditedDocumentItem(base, deducted, { amount: 2 });
+    expect(result.items[0].unitPrice).toBe(-12_500);
+    expect(result.items[0].totalAmount).toBe(-25_000);
+
+    const positive = withEditedDocumentItem(base, deducted, { deduction: false });
+    expect(positive.items[0].unitPrice).toBe(12_500);
+  });
+});

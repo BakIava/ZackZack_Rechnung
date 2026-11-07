@@ -114,3 +114,55 @@ describe("renderDocumentPdfBuffer – Vorlagenauswahl", () => {
     );
   });
 });
+
+/** Gesamter Seitentext ohne Leerraum – robust gegen Zeilen- und Laufgrenzen. */
+async function compactPdfText(buffer: Buffer): Promise<string> {
+  const task = getDocument({ data: new Uint8Array(buffer) });
+  try {
+    const pdf = await task.promise;
+    let text = "";
+    for (let number = 1; number <= pdf.numPages; number += 1) {
+      const content = await (await pdf.getPage(number)).getTextContent();
+      text += content.items.map((item) => ("str" in item ? item.str : "")).join("");
+    }
+    return text.replace(/\s+/g, "");
+  } finally {
+    await task.destroy();
+  }
+}
+
+describe("renderDocumentPdfBuffer – Abzüge (negative Positionen)", () => {
+  it.each(["standard", "ths-classic", "erhan-excel"] as const)(
+    "%s: druckt den Abzug mit Minus und die verrechnete Summe",
+    async (id) => {
+      const p = preview({
+        template: { id, version: 1 },
+        isKleinunternehmer: true,
+        defaultTaxRate: 0,
+        netAmount: 300_000,
+        taxAmount: 0,
+        totalAmount: 300_000,
+        taxGroups: [{ rate: 0, netAmount: 300_000, taxAmount: 0 }],
+        items: [
+          {
+            position: 1, descriptionDe: "Fassadenanstrich", additionalDescriptionDe: null,
+            amount: 1, unit: "psch", unitPrice: 500_000, totalAmount: 500_000,
+            taxRate: 0, taxAmount: 0, grossAmount: 500_000,
+          },
+          {
+            position: 2, descriptionDe: "Abzüglich Abschlagsrechnung R-2026-005",
+            additionalDescriptionDe: null,
+            amount: 1, unit: "psch", unitPrice: -200_000, totalAmount: -200_000,
+            taxRate: 0, taxAmount: 0, grossAmount: -200_000,
+          },
+        ],
+      });
+
+      const text = await compactPdfText(await renderDocumentPdfBuffer(p, null));
+      expect(text).toContain("AbzüglichAbschlagsrechnungR-2026-005");
+      expect(text).toContain("-2.000,00");
+      expect(text).toContain("3.000,00");
+    },
+    60_000,
+  );
+});

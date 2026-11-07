@@ -137,3 +137,46 @@ describe("serverseitige Finalisierungsprüfung", () => {
     }))).toBe(true);
   });
 });
+
+describe("canFinalizePreview – Abzüge", () => {
+  const leistung = {
+    position: 1,
+    descriptionDe: "Malerarbeiten",
+    amount: 1,
+    unit: "Pauschale",
+    unitPrice: 30_000,
+    totalAmount: 30_000,
+    taxRate: 19 as const,
+    taxAmount: 5_700,
+    grossAmount: 35_700,
+  };
+  const abzug = (net: number) => ({
+    position: 2,
+    descriptionDe: "Abzüglich Abschlagsrechnung R-2026-005",
+    amount: 1,
+    unit: "Pauschale",
+    unitPrice: net,
+    totalAmount: net,
+    taxRate: 19 as const,
+    taxAmount: Math.round((net * 19) / 100),
+    grossAmount: net + Math.round((net * 19) / 100),
+  });
+
+  it("finalisiert eine Schlussrechnung mit Abzug und positivem Restbetrag", () => {
+    expect(canFinalizePreview(validPreview({
+      items: [leistung, abzug(-10_000)],
+      netAmount: 20_000,
+      taxAmount: 3_800,
+      totalAmount: 23_800,
+    }))).toBe(true);
+  });
+
+  it("blockiert, wenn die Abzüge den Beleg negativ machen", () => {
+    expect(canFinalizePreview(validPreview({
+      items: [leistung, abzug(-40_000)],
+      netAmount: -10_000,
+      taxAmount: -1_900,
+      totalAmount: -11_900,
+    }))).toBe(false);
+  });
+});

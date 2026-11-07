@@ -17,6 +17,7 @@ export type FinalizeError =
   | "validUntilMissing"
   | "validUntilInvalid"
   | "expiredConfirmationRequired"
+  | "amountsNegative"
   | "unknown";
 
 export type FinalizeResult = { number: string } | { error: FinalizeError };
@@ -38,6 +39,7 @@ function mapError(message: string): FinalizeError {
   if (message.includes("expired_quote_confirmation_required")) {
     return "expiredConfirmationRequired";
   }
+  if (message.includes("amounts_negative")) return "amountsNegative";
   // template_mismatch (Firmenwahl hat sich seit der Vorschau geändert),
   // template_snapshot_incomplete, template_version_invalid: erneut versuchen.
   // number_pattern_* und Unique-Verletzungen der Nummer sind Fehlkonfiguration

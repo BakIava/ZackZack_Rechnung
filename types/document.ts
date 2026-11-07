@@ -271,7 +271,7 @@ export interface FreeItemInput {
   descriptionDe: string;
   amount: number;
   unit: string;
-  unitPrice: number; // cents
+  unitPrice: number; // cents – negativ = Abzug
 }
 
 /** Rein lokaler, nicht persistierbarer Eingabestand der Dokumentvorschau. */
@@ -289,6 +289,8 @@ export interface FremdItemInput {
   purchasePrice: number; // cents (inkl. MwSt)
   surcharge: number; // percent: Basispunkte; fixed: cents
   surchargeType: SurchargeType;
+  /** Verkaufspreis als Abzug (negativ). Einkauf und Aufschlag bleiben positiv. */
+  deduction?: boolean;
 }
 
 export interface ItemPatch {
@@ -297,10 +299,12 @@ export interface ItemPatch {
   additionalDescriptionDe?: string | null;
   amount?: number;
   unit?: string;
-  unitPrice?: number; // cents – nur für normale Positionen
+  unitPrice?: number; // cents – nur für normale Positionen; negativ = Abzug
   purchasePrice?: number | null; // cents – intern
   surcharge?: number | null; // intern
   surchargeType?: SurchargeType | null; // intern
+  /** Nur Fremdleistung: Verkaufspreis als Abzug. Ohne Angabe bleibt das Vorzeichen. */
+  deduction?: boolean;
   /** null setzt die Position auf den eingefrorenen Dokumentstandard zurück. */
   taxRate?: TaxRate | null;
 }

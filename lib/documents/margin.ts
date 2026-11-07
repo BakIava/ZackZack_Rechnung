@@ -6,6 +6,7 @@
  * darf jemals auf das Dokument/PDF gelangen.
  */
 
+import { roundHalfAwayFromZero } from "@/lib/money";
 import type { SurchargeType } from "@/types/database";
 
 /**
@@ -26,11 +27,28 @@ export function computeUnitPrice(
 }
 
 /**
- * Zeilensumme aus Einzelpreis und Menge. Rundung nur einmal, auf Zeilenebene.
+ * Verkaufspreis einer Fremdleistung inklusive Vorzeichen. Einkauf und Aufschlag
+ * beschreiben immer den positiven Betrag; ein Abzug kehrt nur den Verkaufspreis
+ * um. So bleibt die Margenlogik unverändert und das Vorzeichen übersteht jedes
+ * Neuberechnen (Menge, Einkauf, Aufschlag).
+ */
+export function fremdUnitPrice(
+  purchasePrice: number,
+  surcharge: number,
+  surchargeType: SurchargeType,
+  deduction: boolean,
+): number {
+  const salePrice = computeUnitPrice(purchasePrice, surcharge, surchargeType);
+  return deduction ? -salePrice : salePrice;
+}
+
+/**
+ * Zeilensumme aus Einzelpreis und Menge. Rundung nur einmal, auf Zeilenebene –
+ * wie Postgres round(numeric), auch für Abzüge (negativer Einzelpreis).
  * unitPrice in Cents, amount numerisch.
  */
 export function computeLineTotal(unitPrice: number, amount: number): number {
-  return Math.round(unitPrice * amount);
+  return roundHalfAwayFromZero(unitPrice * amount);
 }
 
 /**

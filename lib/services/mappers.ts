@@ -28,6 +28,7 @@ export function katalogToServiceInput(entry: KatalogEintrag): {
     description_tr: entry.uebersetzungen.tr?.trim() || null,
     description_ar: entry.uebersetzungen.ar?.trim() || null,
     unit: entry.einheit?.trim() || null,
-    default_price: entry.preisCents > 0 ? entry.preisCents : null,
+    // Negativ = Abzug-Eintrag (z. B. Rabatt); 0 = kein Standardpreis.
+    default_price: entry.preisCents !== 0 ? entry.preisCents : null,
   };
 }

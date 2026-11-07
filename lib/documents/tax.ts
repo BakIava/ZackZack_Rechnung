@@ -4,8 +4,13 @@
  * Alle Geldbeträge sind ganzzahlige Cents. Der Nettobetrag und die Steuer
  * werden genau einmal pro Position kaufmännisch gerundet; Dokument- und
  * Steuergruppensummen sind anschließend reine Summen dieser Zeilenwerte.
+ *
+ * Abzüge (z. B. bereits berechnete Abschläge, Rabatte) sind Positionen mit
+ * negativem Einzelpreis; die Menge bleibt positiv. Negative Belegsummen sind nur
+ * im Entwurf möglich – festgeschrieben werden sie nie (siehe hasNegativeTotals).
  */
 
+import { roundHalfAwayFromZero } from "@/lib/money";
 import type { DocumentTotals, TaxGroup, TaxRate } from "@/types/document";
 
 export const SUPPORTED_TAX_RATES = [19, 7, 0] as const satisfies readonly TaxRate[];
@@ -48,7 +53,8 @@ export function shouldShowTaxDetails(
 }
 
 function assertLineInput(unitPriceCents: number, amount: number, taxRate: TaxRate): void {
-  if (!Number.isSafeInteger(unitPriceCents) || unitPriceCents < 0) {
+  // Negativ = Abzug. Das Vorzeichen trägt allein der Einzelpreis.
+  if (!Number.isSafeInteger(unitPriceCents)) {
     throw new RangeError("unit_price_invalid");
   }
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -69,8 +75,9 @@ export function calculateLineAmounts(
   taxRate: TaxRate,
 ): LineAmounts {
   assertLineInput(unitPriceCents, amount, taxRate);
-  const netAmount = Math.round(unitPriceCents * amount);
-  const taxAmount = Math.round((netAmount * taxRate) / 100);
+  // Rundung wie Postgres round(numeric) in finalize_document (auch für Abzüge).
+  const netAmount = roundHalfAwayFromZero(unitPriceCents * amount);
+  const taxAmount = roundHalfAwayFromZero((netAmount * taxRate) / 100);
   return {
     netAmount,
     taxRate,
@@ -114,4 +121,17 @@ export function calculateDocumentTotals(lines: readonly LineAmounts[]): Document
     grossAmount,
     taxGroups: [...groups.values()].sort((a, b) => b.rate - a.rate),
   };
+}
+
+/**
+ * Ein Beleg mit negativer Netto-, Steuer- oder Gesamtsumme wäre eine Gutschrift
+ * bzw. Stornorechnung – kein Rechnungs- oder Angebotsbeleg. Er darf als Entwurf
+ * existieren (Abzug zuerst erfasst), aber nicht festgeschrieben werden.
+ */
+export function hasNegativeTotals(totals: {
+  netAmount: number;
+  taxAmount: number;
+  grossAmount: number;
+}): boolean {
+  return totals.netAmount < 0 || totals.taxAmount < 0 || totals.grossAmount < 0;
 }

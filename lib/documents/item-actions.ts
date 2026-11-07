@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
-import { computeUnitPrice } from "./margin";
+import { fremdUnitPrice } from "./margin";
 import { normalizeAdditionalDescriptionDe } from "./additional-description";
 import {
   getDraftTaxConfig,
@@ -165,7 +165,10 @@ export async function addFreeItem(
   return recompute(ctx.companyId, documentId);
 }
 
-/** Fremdleistung: Verkaufspreis aus Einkauf + Aufschlag; interne Felder gespeichert. */
+/**
+ * Fremdleistung: Verkaufspreis aus Einkauf + Aufschlag; interne Felder gespeichert.
+ * Als Abzug wird nur der Verkaufspreis negativ, Einkauf und Aufschlag bleiben positiv.
+ */
 export async function addFremdItem(
   documentId: string,
   input: FremdItemInput,
@@ -179,10 +182,11 @@ export async function addFremdItem(
   const taxConfig = await getDraftTaxConfig(documentId);
   if (!taxConfig) return { error: "draftNotFound" };
 
-  const unitPrice = computeUnitPrice(
+  const unitPrice = fremdUnitPrice(
     input.purchasePrice,
     input.surcharge,
     input.surchargeType,
+    input.deduction === true,
   );
   const position = await getNextItemPosition(ctx.companyId, documentId);
   const taxRate = resolveTaxRate(
@@ -261,8 +265,10 @@ export async function updateItem(
     patch.surchargeType !== undefined ? patch.surchargeType : item.surchargeType;
 
   const isFremd = purchasePrice != null && surchargeType != null;
+  // Ohne ausdrückliche Angabe bleibt eine Fremdleistung, was sie war (Abzug oder nicht).
+  const deduction = patch.deduction ?? item.unitPrice < 0;
   const unitPrice = isFremd
-    ? computeUnitPrice(purchasePrice, surcharge ?? 0, surchargeType)
+    ? fremdUnitPrice(purchasePrice, surcharge ?? 0, surchargeType, deduction)
     : patch.unitPrice ?? item.unitPrice;
   const taxRateOverridden = patch.taxRate !== undefined
     ? patch.taxRate !== null

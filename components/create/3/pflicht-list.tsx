@@ -23,6 +23,7 @@ const FELD_LABEL_KEY: Record<PflichtFeld, string> = {
   issueDate: "pfIssueDate",
   validUntil: "pfValidUntil",
   positions: "pfPositions",
+  amounts: "pfAmounts",
 };
 
 const LOCATION_LABEL_KEY: Record<PflichtLocation, string> = {

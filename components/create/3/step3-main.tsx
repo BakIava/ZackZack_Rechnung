@@ -47,6 +47,7 @@ const ERROR_KEY: Record<FinalizeError, string> = {
   validUntilMissing: "errValidUntilMissing",
   validUntilInvalid: "errValidUntilInvalid",
   expiredConfirmationRequired: "errExpiredConfirmation",
+  amountsNegative: "errAmountsNegative",
   unknown: "errUnknown",
 };
 
