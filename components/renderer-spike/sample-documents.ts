@@ -62,6 +62,7 @@ function documentWithItems(id: string, items: DocumentItem[]): DocumentPreview {
     serviceDate: "2026-09-28",
     servicePeriodStart: null,
     servicePeriodEnd: null,
+    servicePeriodIsMonth: false,
     validUntil: null,
     isKleinunternehmer: true,
     defaultTaxRate: 0,
@@ -190,6 +191,7 @@ export function createPackage02Document(variant: Package02Variant): DocumentPrev
           serviceDate: null,
           servicePeriodStart: "2026-09-01",
           servicePeriodEnd: "2026-09-15",
+          servicePeriodIsMonth: false,
           validUntil: "2026-10-31",
         },
       );

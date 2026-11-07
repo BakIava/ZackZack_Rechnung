@@ -61,6 +61,7 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
     serviceDate: null,
     servicePeriodStart: null,
     servicePeriodEnd: null,
+    servicePeriodIsMonth: false,
     validUntil: null,
     isKleinunternehmer: true,
     defaultTaxRate: 0,
@@ -266,9 +267,19 @@ describe("buildPdfViewModel – harte Regeln", () => {
       serviceDate: null,
       servicePeriodStart: "2026-05-01",
       servicePeriodEnd: "2026-05-15",
+      servicePeriodIsMonth: false,
     }));
     expect(zeitraum.serviceTimingLabel).toBe("Leistungszeitraum");
     expect(zeitraum.serviceTimingValue).toBe("01.05.2026 – 15.05.2026");
+
+    const monat = buildPdfViewModel(preview({
+      serviceDate: null,
+      servicePeriodStart: "2026-10-01",
+      servicePeriodEnd: "2026-10-31",
+      servicePeriodIsMonth: true,
+    }));
+    expect(monat.serviceTimingLabel).toBe("Leistungsmonat");
+    expect(monat.serviceTimingValue).toBe("Oktober 2026");
   });
 
   it("laesst die Leistungszeile ohne Angabe weg", () => {

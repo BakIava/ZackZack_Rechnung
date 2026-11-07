@@ -112,6 +112,7 @@ export async function setDraftDocumentType(
             service_date: null,
             service_period_start: null,
             service_period_end: null,
+            service_period_is_month: false,
           }
         : {}),
     })
@@ -138,6 +139,7 @@ export async function setDraftInvoiceServiceTiming(
       service_date: timing.serviceDate,
       service_period_start: timing.servicePeriodStart,
       service_period_end: timing.servicePeriodEnd,
+      service_period_is_month: timing.servicePeriodIsMonth,
     })
     .eq("id", documentId)
     .eq("company_id", companyId)

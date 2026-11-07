@@ -48,6 +48,7 @@ function preview(items: DocumentItem[], overrides: Partial<DocumentPreview> = {}
     id: "erhan-fixture", docType: "invoice", status: "finalized", documentNumber: "R-2026-005",
     issueDate: "2026-04-06", serviceDate: null, servicePeriodStart: "2026-04-01",
     servicePeriodEnd: "2026-04-30", validUntil: null, isKleinunternehmer: false, defaultTaxRate: 19,
+    servicePeriodIsMonth: false,
     netAmount: totals.netAmount, taxAmount: totals.taxAmount, totalAmount: totals.grossAmount,
     taxGroups: totals.taxGroups, company, customer, items,
     convertedInvoiceId: null, basedOnQuoteId: null,

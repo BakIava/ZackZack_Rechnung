@@ -18,6 +18,7 @@ export const DOKUMENT_DE = {
   datum: "Datum",
   leistungsdatum: "Leistungsdatum",
   leistungszeitraum: "Leistungszeitraum",
+  leistungsmonat: "Leistungsmonat",
   gueltigBis: "Gültig bis",
   steuerNr: "Steuernummer",
   ustId: "USt-IdNr.",
@@ -51,6 +52,15 @@ export function leistungszeitraumText(startIso: string, endIso: string): string 
   return `${formatDateDE(startIso)} – ${formatDateDE(endIso)}`;
 }
 
+/** „Oktober 2026" – in UTC formatiert, damit der Monatserste nie in den Vormonat kippt. */
+export function leistungsmonatText(monthStartIso: string): string {
+  return new Date(`${monthStartIso}T00:00:00Z`).toLocaleDateString("de-DE", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export function serviceTimingDisplay(
   timing: ServiceTimingInput,
 ): { label: string; value: string } | null {
@@ -61,6 +71,12 @@ export function serviceTimingDisplay(
     };
   }
   if (timing.servicePeriodStart && timing.servicePeriodEnd) {
+    if (timing.servicePeriodIsMonth) {
+      return {
+        label: DOKUMENT_DE.leistungsmonat,
+        value: leistungsmonatText(timing.servicePeriodStart),
+      };
+    }
     return {
       label: DOKUMENT_DE.leistungszeitraum,
       value: leistungszeitraumText(

@@ -7,6 +7,7 @@ describe("deutsche Leistungsangabe fuer Vorschau und PDF", () => {
       serviceDate: "2026-05-15",
       servicePeriodStart: null,
       servicePeriodEnd: null,
+      servicePeriodIsMonth: false,
     })).toEqual({ label: "Leistungsdatum", value: "15.05.2026" });
   });
 
@@ -15,9 +16,37 @@ describe("deutsche Leistungsangabe fuer Vorschau und PDF", () => {
       serviceDate: null,
       servicePeriodStart: "2026-05-01",
       servicePeriodEnd: "2026-05-15",
+      servicePeriodIsMonth: false,
     })).toEqual({
       label: "Leistungszeitraum",
       value: "01.05.2026 – 15.05.2026",
+    });
+  });
+
+  it("formatiert einen Leistungsmonat mit deutschem Monatsnamen", () => {
+    expect(serviceTimingDisplay({
+      serviceDate: null,
+      servicePeriodStart: "2026-10-01",
+      servicePeriodEnd: "2026-10-31",
+      servicePeriodIsMonth: true,
+    })).toEqual({ label: "Leistungsmonat", value: "Oktober 2026" });
+    expect(serviceTimingDisplay({
+      serviceDate: null,
+      servicePeriodStart: "2027-01-01",
+      servicePeriodEnd: "2027-01-31",
+      servicePeriodIsMonth: true,
+    })).toEqual({ label: "Leistungsmonat", value: "Januar 2027" });
+  });
+
+  it("druckt einen manuell erfassten vollen Monat weiter als Zeitraum", () => {
+    expect(serviceTimingDisplay({
+      serviceDate: null,
+      servicePeriodStart: "2026-10-01",
+      servicePeriodEnd: "2026-10-31",
+      servicePeriodIsMonth: false,
+    })).toEqual({
+      label: "Leistungszeitraum",
+      value: "01.10.2026 – 31.10.2026",
     });
   });
 
@@ -26,6 +55,7 @@ describe("deutsche Leistungsangabe fuer Vorschau und PDF", () => {
       serviceDate: null,
       servicePeriodStart: null,
       servicePeriodEnd: null,
+      servicePeriodIsMonth: false,
     })).toBeNull();
   });
 });

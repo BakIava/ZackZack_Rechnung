@@ -44,7 +44,7 @@ describe("Leistungszeitraum-Migration", () => {
 
   it("liefert die Leistungsangabe an die Dokumenten-Detailansicht", () => {
     expect(documentsRepository).toContain(
-      "issue_date, service_date, service_period_start, service_period_end, valid_until",
+      "issue_date, service_date, service_period_start, service_period_end, service_period_is_month, valid_until",
     );
     expect(documentsRepository).toContain("servicePeriodStart:");
     expect(documentsRepository).toContain("servicePeriodEnd:");

@@ -215,6 +215,8 @@ export interface DocumentRow {
   service_date: string | null; // date, YYYY-MM-DD
   service_period_start: string | null; // date, YYYY-MM-DD
   service_period_end: string | null; // date, YYYY-MM-DD
+  /** Zeitraum ist genau ein Kalendermonat und wird als „Leistungsmonat" gedruckt. */
+  service_period_is_month: boolean; // NOT NULL Default false
   /** Dokumentbezogener Einsatzort (jsonb), kein Stammdatum des Kunden. */
   service_location: unknown;
   /** Nur fuer Angebote; Standard = ein Kalendermonat ab issue_date. */

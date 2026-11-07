@@ -244,7 +244,11 @@ export function DocDetail({
           {serviceTiming && (
             <div className="hmeta-cell hmeta-cell--wide">
               <div className="hmeta-k">
-                {doc.serviceDate ? t("mServiceDate") : t("mServicePeriod")}
+                {doc.serviceDate
+                  ? t("mServiceDate")
+                  : doc.servicePeriodIsMonth
+                    ? t("mServiceMonth")
+                    : t("mServicePeriod")}
               </div>
               <div className="hmeta-v">{serviceTiming.value}</div>
             </div>

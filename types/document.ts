@@ -84,6 +84,7 @@ export interface DocumentListItem {
   serviceDate: string | null; // YYYY-MM-DD
   servicePeriodStart: string | null; // YYYY-MM-DD
   servicePeriodEnd: string | null; // YYYY-MM-DD
+  servicePeriodIsMonth: boolean;
   validUntil: string | null; // nur quote
   totalAmount: number; // cents
   paidAt: string | null; // ISO timestamp
@@ -127,6 +128,7 @@ export interface DraftDoc {
   serviceDate: string | null;
   servicePeriodStart: string | null;
   servicePeriodEnd: string | null;
+  servicePeriodIsMonth: boolean;
   /** documents.customer_id – null, solange noch kein Kunde gewählt ist */
   customerId: string | null;
   validUntil: string | null;
@@ -163,6 +165,7 @@ export interface DocumentPreview {
   serviceDate: string | null; // YYYY-MM-DD
   servicePeriodStart: string | null; // YYYY-MM-DD
   servicePeriodEnd: string | null; // YYYY-MM-DD
+  servicePeriodIsMonth: boolean;
   validUntil: string | null; // YYYY-MM-DD, nur Angebot
   /** Optional für ältere Belege/Testdaten; Repository liefert immer null oder einen Snapshot. */
   serviceLocation?: DocumentServiceLocation | null;
@@ -182,13 +185,15 @@ export interface DocumentPreview {
   template: DocumentTemplateRef;
 }
 
-export type ServiceTimingMode = "none" | "date" | "period";
+export type ServiceTimingMode = "none" | "date" | "period" | "month";
 
 /** Vollstaendige, gegenseitig ausschliessende Leistungsangabe eines Dokuments. */
 export interface ServiceTimingInput {
   serviceDate: string | null;
   servicePeriodStart: string | null;
   servicePeriodEnd: string | null;
+  /** Zeitraum deckt genau einen Kalendermonat ab (Leistungsmonat, § 31 Abs. 4 UStDV). */
+  servicePeriodIsMonth: boolean;
 }
 
 /** Leichte, unveränderbare Dokumentverknüpfung für Anzeige und Workflows. */

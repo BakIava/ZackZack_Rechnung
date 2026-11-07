@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   addOneCalendarMonth,
+  calendarMonthBounds,
+  isCalendarMonth,
   isPastDate,
   isValidQuoteDateRange,
   todayInGermany,
@@ -36,6 +38,7 @@ describe("Leistungsangabe", () => {
       serviceDate: "2026-05-15",
       servicePeriodStart: null,
       servicePeriodEnd: null,
+      servicePeriodIsMonth: false,
     })).toEqual({});
   });
 
@@ -44,6 +47,7 @@ describe("Leistungsangabe", () => {
       serviceDate: null,
       servicePeriodStart: "2026-05-01",
       servicePeriodEnd: "2026-05-15",
+      servicePeriodIsMonth: false,
     })).toEqual({});
   });
 
@@ -52,6 +56,7 @@ describe("Leistungsangabe", () => {
       serviceDate: null,
       servicePeriodStart: "2026-05-16",
       servicePeriodEnd: "2026-05-15",
+      servicePeriodIsMonth: false,
     })).toEqual({ error: "servicePeriodOrderInvalid" });
   });
 
@@ -60,6 +65,7 @@ describe("Leistungsangabe", () => {
       serviceDate: "2026-05-15",
       servicePeriodStart: "2026-05-01",
       servicePeriodEnd: "2026-05-15",
+      servicePeriodIsMonth: false,
     })).toEqual({ error: "serviceTimingExclusive" });
   });
 
@@ -68,11 +74,13 @@ describe("Leistungsangabe", () => {
       serviceDate: null,
       servicePeriodStart: null,
       servicePeriodEnd: null,
+      servicePeriodIsMonth: false,
     })).toEqual({});
     expect(validateServiceTiming({
       serviceDate: null,
       servicePeriodStart: "2026-05-01",
       servicePeriodEnd: null,
+      servicePeriodIsMonth: false,
     })).toEqual({ error: "servicePeriodIncomplete" });
   });
 
@@ -81,6 +89,54 @@ describe("Leistungsangabe", () => {
       serviceDate: "2026-02-30",
       servicePeriodStart: null,
       servicePeriodEnd: null,
+      servicePeriodIsMonth: false,
     })).toEqual({ error: "serviceDateInvalid" });
+  });
+});
+
+describe("Leistungsmonat", () => {
+  it("ermittelt Monatsersten und Monatsletzten inkl. Schaltjahr und Jahreswechsel", () => {
+    expect(calendarMonthBounds("2026-10-22")).toEqual({ start: "2026-10-01", end: "2026-10-31" });
+    expect(calendarMonthBounds("2028-02-10")).toEqual({ start: "2028-02-01", end: "2028-02-29" });
+    expect(calendarMonthBounds("2026-02-28")).toEqual({ start: "2026-02-01", end: "2026-02-28" });
+    expect(calendarMonthBounds("2026-12-31")).toEqual({ start: "2026-12-01", end: "2026-12-31" });
+  });
+
+  it("erkennt nur exakt einen vollen Kalendermonat", () => {
+    expect(isCalendarMonth("2026-10-01", "2026-10-31")).toBe(true);
+    expect(isCalendarMonth("2026-10-01", "2026-10-30")).toBe(false);
+    expect(isCalendarMonth("2026-10-02", "2026-10-31")).toBe(false);
+    expect(isCalendarMonth("2026-10-01", "2026-11-30")).toBe(false);
+    expect(isCalendarMonth("2026-02-30", "2026-02-28")).toBe(false);
+  });
+
+  it("akzeptiert einen vollen Kalendermonat als Leistungsmonat", () => {
+    expect(validateServiceTiming({
+      serviceDate: null,
+      servicePeriodStart: "2026-10-01",
+      servicePeriodEnd: "2026-10-31",
+      servicePeriodIsMonth: true,
+    })).toEqual({});
+  });
+
+  it("weist einen Leistungsmonat ohne vollen Kalendermonat zurueck", () => {
+    expect(validateServiceTiming({
+      serviceDate: null,
+      servicePeriodStart: "2026-10-01",
+      servicePeriodEnd: "2026-10-15",
+      servicePeriodIsMonth: true,
+    })).toEqual({ error: "serviceMonthInvalid" });
+    expect(validateServiceTiming({
+      serviceDate: null,
+      servicePeriodStart: null,
+      servicePeriodEnd: null,
+      servicePeriodIsMonth: true,
+    })).toEqual({ error: "serviceMonthInvalid" });
+    expect(validateServiceTiming({
+      serviceDate: "2026-10-15",
+      servicePeriodStart: null,
+      servicePeriodEnd: null,
+      servicePeriodIsMonth: true,
+    })).toEqual({ error: "serviceMonthInvalid" });
   });
 });

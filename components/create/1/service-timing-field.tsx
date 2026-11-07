@@ -4,19 +4,21 @@ import { CalendarDays, Loader2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { updateDraftServiceTiming } from "@/lib/documents/draft-actions";
+import { calendarMonthBounds, todayInGermany } from "@/lib/documents/document-dates";
 import type { ServiceTimingInput, ServiceTimingMode } from "@/types/document";
+import { ServiceMonthPicker } from "./service-month-picker";
 import "./service-timing-field.css";
 
 interface ServiceTimingFieldProps {
+  dir: "ltr" | "rtl";
   documentId: string;
-  initialServiceDate: string | null;
-  initialPeriodStart: string | null;
-  initialPeriodEnd: string | null;
+  initialTiming: ServiceTimingInput;
 }
 
-function initialMode(props: ServiceTimingFieldProps): ServiceTimingMode {
-  if (props.initialServiceDate) return "date";
-  if (props.initialPeriodStart || props.initialPeriodEnd) return "period";
+function initialMode(timing: ServiceTimingInput): ServiceTimingMode {
+  if (timing.serviceDate) return "date";
+  if (timing.servicePeriodIsMonth) return "month";
+  if (timing.servicePeriodStart || timing.servicePeriodEnd) return "period";
   return "none";
 }
 
@@ -24,21 +26,36 @@ const EMPTY_TIMING: ServiceTimingInput = {
   serviceDate: null,
   servicePeriodStart: null,
   servicePeriodEnd: null,
+  servicePeriodIsMonth: false,
 };
 
-export function ServiceTimingField(props: ServiceTimingFieldProps) {
+const MODES = [
+  { mode: "date", labelKey: "serviceDate" },
+  { mode: "period", labelKey: "servicePeriod" },
+  { mode: "month", labelKey: "serviceMonth" },
+] as const;
+
+export function ServiceTimingField({ dir, documentId, initialTiming }: ServiceTimingFieldProps) {
   const t = useTranslations("Create");
-  const [mode, setMode] = useState<ServiceTimingMode>(() => initialMode(props));
-  const [serviceDate, setServiceDate] = useState(props.initialServiceDate ?? "");
-  const [periodStart, setPeriodStart] = useState(props.initialPeriodStart ?? "");
-  const [periodEnd, setPeriodEnd] = useState(props.initialPeriodEnd ?? "");
+  const initialIsMonth = initialTiming.servicePeriodIsMonth;
+  const [mode, setMode] = useState<ServiceTimingMode>(() => initialMode(initialTiming));
+  const [serviceDate, setServiceDate] = useState(initialTiming.serviceDate ?? "");
+  const [periodStart, setPeriodStart] = useState(
+    initialIsMonth ? "" : (initialTiming.servicePeriodStart ?? ""),
+  );
+  const [periodEnd, setPeriodEnd] = useState(
+    initialIsMonth ? "" : (initialTiming.servicePeriodEnd ?? ""),
+  );
+  const [monthStart, setMonthStart] = useState(
+    initialIsMonth ? (initialTiming.servicePeriodStart ?? "") : "",
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function save(timing: ServiceTimingInput) {
     setSaving(true);
     setError(null);
-    const result = await updateDraftServiceTiming(props.documentId, timing);
+    const result = await updateDraftServiceTiming(documentId, timing);
     setSaving(false);
     if (result.error) {
       setError(
@@ -49,33 +66,37 @@ export function ServiceTimingField(props: ServiceTimingFieldProps) {
     }
   }
 
+  function resetValues() {
+    setServiceDate("");
+    setPeriodStart("");
+    setPeriodEnd("");
+    setMonthStart("");
+  }
+
   function chooseMode(next: Exclude<ServiceTimingMode, "none">) {
     if (next === mode) return;
     setMode(next);
     setError(null);
-    if (next === "date") {
-      setPeriodStart("");
-      setPeriodEnd("");
-    } else {
-      setServiceDate("");
+    resetValues();
+    // Leistungsmonat startet mit dem aktuellen Monat – ein Tipp genügt.
+    if (next === "month") {
+      selectMonth(todayInGermany());
+      return;
     }
     void save(EMPTY_TIMING);
   }
 
   function clearTiming() {
     setMode("none");
-    setServiceDate("");
-    setPeriodStart("");
-    setPeriodEnd("");
+    resetValues();
     void save(EMPTY_TIMING);
   }
 
   function changeServiceDate(value: string) {
     setServiceDate(value);
     void save({
+      ...EMPTY_TIMING,
       serviceDate: value || null,
-      servicePeriodStart: null,
-      servicePeriodEnd: null,
     });
   }
 
@@ -89,9 +110,20 @@ export function ServiceTimingField(props: ServiceTimingFieldProps) {
       return;
     }
     void save({
+      ...EMPTY_TIMING,
+      servicePeriodStart: start,
+      servicePeriodEnd: end,
+    });
+  }
+
+  function selectMonth(isoDate: string) {
+    const { start, end } = calendarMonthBounds(isoDate);
+    setMonthStart(start);
+    void save({
       serviceDate: null,
       servicePeriodStart: start,
       servicePeriodEnd: end,
+      servicePeriodIsMonth: true,
     });
   }
 
@@ -124,24 +156,18 @@ export function ServiceTimingField(props: ServiceTimingFieldProps) {
       </div>
 
       <div className="service-timing-modes" role="group" aria-label={t("serviceTimingTitle")}>
-        <button
-          type="button"
-          disabled={saving}
-          aria-pressed={mode === "date"}
-          data-on={mode === "date" ? "1" : "0"}
-          onClick={() => chooseMode("date")}
-        >
-          {t("serviceDate")}
-        </button>
-        <button
-          type="button"
-          disabled={saving}
-          aria-pressed={mode === "period"}
-          data-on={mode === "period" ? "1" : "0"}
-          onClick={() => chooseMode("period")}
-        >
-          {t("servicePeriod")}
-        </button>
+        {MODES.map((option) => (
+          <button
+            key={option.mode}
+            type="button"
+            disabled={saving}
+            aria-pressed={mode === option.mode}
+            data-on={mode === option.mode ? "1" : "0"}
+            onClick={() => chooseMode(option.mode)}
+          >
+            {t(option.labelKey)}
+          </button>
+        ))}
       </div>
 
       {mode === "date" && (
@@ -182,6 +208,15 @@ export function ServiceTimingField(props: ServiceTimingFieldProps) {
             />
           </label>
         </div>
+      )}
+
+      {mode === "month" && (
+        <ServiceMonthPicker
+          dir={dir}
+          value={monthStart}
+          disabled={saving}
+          onSelect={selectMonth}
+        />
       )}
     </section>
   );

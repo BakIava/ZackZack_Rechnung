@@ -76,7 +76,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
     supabase
       .from("documents")
       .select(
-        "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, valid_until, total_amount, paid_at, customer_id, customer_snapshot",
+        "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, service_period_is_month, valid_until, total_amount, paid_at, customer_id, customer_snapshot",
       )
       .eq("company_id", companyId)
       .order("issue_date", { ascending: false }),
@@ -136,6 +136,7 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       serviceDate: (document.service_date as string | null) ?? null,
       servicePeriodStart: (document.service_period_start as string | null) ?? null,
       servicePeriodEnd: (document.service_period_end as string | null) ?? null,
+      servicePeriodIsMonth: Boolean(document.service_period_is_month),
       validUntil: (document.valid_until as string | null) ?? null,
       totalAmount: document.total_amount ?? 0,
       paidAt,
@@ -183,7 +184,7 @@ export const getDraft = cache(
     const { data } = await supabase
       .from("documents")
       .select(
-        "id, document_type, customer_id, issue_date, service_date, service_period_start, service_period_end, service_location, valid_until",
+        "id, document_type, customer_id, issue_date, service_date, service_period_start, service_period_end, service_period_is_month, service_location, valid_until",
       )
       .eq("id", documentId)
       .eq("company_id", companyId)
@@ -199,6 +200,7 @@ export const getDraft = cache(
       serviceDate: (data.service_date as string | null) ?? null,
       servicePeriodStart: (data.service_period_start as string | null) ?? null,
       servicePeriodEnd: (data.service_period_end as string | null) ?? null,
+      servicePeriodIsMonth: Boolean(data.service_period_is_month),
       customerId: (data.customer_id as string | null) ?? null,
       validUntil: (data.valid_until as string | null) ?? null,
       serviceLocation: parseDocumentServiceLocation(data.service_location),

@@ -25,7 +25,7 @@ const COMPANY_COLUMNS =
   "name, legal_form, street, street_no, postcode, city, phone, mobile, fax, email, website, director, steuernummer, ust_id, bank_name, iban, bic, account_holder, logo_url, payment_days, document_template_id";
 
 const DOCUMENT_COLUMNS =
-  "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, service_location, valid_until, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured, template_id, template_version";
+  "id, document_type, document_number, status, issue_date, service_date, service_period_start, service_period_end, service_period_is_month, service_location, valid_until, customer_snapshot, subtotal_amount, tax_amount, total_amount, is_kleinunternehmer, default_tax_rate, logo_url_snapshot, logo_snapshot_captured, template_id, template_version";
 
 const PREVIEW_ITEM_COLUMNS =
   "position, description_de, additional_description_de, amount, unit, unit_price, total_amount, tax_rate, tax_amount, gross_amount";
@@ -115,6 +115,7 @@ async function loadDocumentPreviewData(
     serviceDate: (doc.service_date as string | null) ?? null,
     servicePeriodStart: (doc.service_period_start as string | null) ?? null,
     servicePeriodEnd: (doc.service_period_end as string | null) ?? null,
+    servicePeriodIsMonth: Boolean(doc.service_period_is_month),
     validUntil: (doc.valid_until as string | null) ?? null,
     serviceLocation: parseDocumentServiceLocation(doc.service_location),
     isKleinunternehmer: Boolean(doc.is_kleinunternehmer),

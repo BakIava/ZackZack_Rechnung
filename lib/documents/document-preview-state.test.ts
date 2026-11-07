@@ -39,6 +39,7 @@ function preview(): DocumentPreview {
     serviceDate: null,
     servicePeriodStart: null,
     servicePeriodEnd: null,
+    servicePeriodIsMonth: false,
     validUntil: null,
     isKleinunternehmer: true,
     defaultTaxRate: 0,

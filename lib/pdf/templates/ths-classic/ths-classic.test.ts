@@ -48,6 +48,7 @@ function preview(items: DocumentItem[], overrides: Partial<DocumentPreview> = {}
     id: "ths-fixture", docType: "invoice", status: "finalized", documentNumber: "R-2026-041",
     issueDate: "2026-06-09", serviceDate: "2026-06-05", servicePeriodStart: null,
     servicePeriodEnd: null, validUntil: null, isKleinunternehmer: false, defaultTaxRate: 19,
+    servicePeriodIsMonth: false,
     netAmount: totals.netAmount, taxAmount: totals.taxAmount, totalAmount: totals.grossAmount,
     taxGroups: totals.taxGroups, company, customer: businessCustomer, items,
     convertedInvoiceId: null, basedOnQuoteId: null,

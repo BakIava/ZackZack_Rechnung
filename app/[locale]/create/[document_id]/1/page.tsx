@@ -5,6 +5,7 @@ import { KundeStep } from "@/components/create/1/kunde-step";
 import { getDraft, getFlowDocMeta } from "@/lib/repositories/documents";
 import { getCustomerSummaries } from "@/lib/repositories/customers";
 import { isRtlLocale } from "@/i18n/routing";
+import type { ServiceTimingInput } from "@/types/document";
 import type { ServiceLocationInput } from "@/types/service-location";
 
 export const dynamic = "force-dynamic";
@@ -35,9 +36,12 @@ export default async function Step1Page({ params }: Step1PageProps) {
   const initialCustomerId = draft?.customerId ?? null;
   const initialIssueDate = draft?.issueDate ?? "";
   const initialValidUntil = draft?.validUntil ?? null;
-  const initialServiceDate = draft?.serviceDate ?? null;
-  const initialServicePeriodStart = draft?.servicePeriodStart ?? null;
-  const initialServicePeriodEnd = draft?.servicePeriodEnd ?? null;
+  const initialServiceTiming: ServiceTimingInput = {
+    serviceDate: draft?.serviceDate ?? null,
+    servicePeriodStart: draft?.servicePeriodStart ?? null,
+    servicePeriodEnd: draft?.servicePeriodEnd ?? null,
+    servicePeriodIsMonth: draft?.servicePeriodIsMonth ?? false,
+  };
   const initialServiceLocation: ServiceLocationInput | null = draft?.serviceLocation
     ? { ...draft.serviceLocation, sourceText: "" }
     : null;
@@ -55,9 +59,7 @@ export default async function Step1Page({ params }: Step1PageProps) {
           initialDocType={initialDocType}
           issueDate={initialIssueDate}
           initialValidUntil={initialValidUntil}
-          initialServiceDate={initialServiceDate}
-          initialServicePeriodStart={initialServicePeriodStart}
-          initialServicePeriodEnd={initialServicePeriodEnd}
+          initialServiceTiming={initialServiceTiming}
           initialServiceLocation={initialServiceLocation}
           documentTypeLocked={documentTypeLocked}
         />

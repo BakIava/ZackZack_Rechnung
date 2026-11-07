@@ -18,6 +18,7 @@ function preview(overrides: Partial<DocumentPreview> = {}): DocumentPreview {
     serviceDate: "2026-06-05",
     servicePeriodStart: null,
     servicePeriodEnd: null,
+    servicePeriodIsMonth: false,
     validUntil: null,
     isKleinunternehmer: false,
     defaultTaxRate: 19,

@@ -16,7 +16,7 @@ import {
 } from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/new-customer-modal";
 import { FlowSteps } from "../flow-steps";
-import type { DocType } from "@/types/document";
+import type { DocType, ServiceTimingInput } from "@/types/document";
 import type { ServiceLocationInput } from "@/types/service-location";
 import { addOneCalendarMonth } from "@/lib/documents/document-dates";
 import { QuoteValidityField } from "./quote-validity-field";
@@ -35,9 +35,7 @@ interface KundeStepProps {
   initialDocType?: DocType;
   issueDate: string;
   initialValidUntil: string | null;
-  initialServiceDate: string | null;
-  initialServicePeriodStart: string | null;
-  initialServicePeriodEnd: string | null;
+  initialServiceTiming: ServiceTimingInput;
   initialServiceLocation: ServiceLocationInput | null;
   documentTypeLocked: boolean;
 }
@@ -52,9 +50,7 @@ export function KundeStep({
   initialDocType = "invoice",
   issueDate,
   initialValidUntil,
-  initialServiceDate,
-  initialServicePeriodStart,
-  initialServicePeriodEnd,
+  initialServiceTiming,
   initialServiceLocation,
   documentTypeLocked,
 }: KundeStepProps) {
@@ -278,10 +274,9 @@ export function KundeStep({
         {docType === "invoice" && (
           <ServiceTimingField
             key={`${documentId}-${docType}`}
+            dir={dir}
             documentId={documentId}
-            initialServiceDate={initialServiceDate}
-            initialPeriodStart={initialServicePeriodStart}
-            initialPeriodEnd={initialServicePeriodEnd}
+            initialTiming={initialServiceTiming}
           />
         )}
 

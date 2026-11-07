@@ -33,6 +33,16 @@ export function addOneCalendarMonth(isoDate: string): string {
   return formatIsoDate(targetYear, targetMonth, Math.min(day, lastDay));
 }
 
+/** Erster und letzter Tag des Kalendermonats, in dem das Datum liegt. */
+export function calendarMonthBounds(isoDate: string): { start: string; end: string } {
+  const { year, month } = parseIsoDate(isoDate);
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return {
+    start: formatIsoDate(year, month, 1),
+    end: formatIsoDate(year, month, lastDay),
+  };
+}
+
 /** Heutiges Datum im deutschen Produkt-Zeitraum, unabhaengig vom Server-UTC. */
 export function todayInGermany(now: Date = new Date()): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -67,7 +77,8 @@ export type ServiceTimingValidationError =
   | "servicePeriodIncomplete"
   | "servicePeriodInvalid"
   | "servicePeriodOrderInvalid"
-  | "serviceTimingExclusive";
+  | "serviceTimingExclusive"
+  | "serviceMonthInvalid";
 
 export function isValidIsoDate(value: string): boolean {
   try {
@@ -78,11 +89,18 @@ export function isValidIsoDate(value: string): boolean {
   }
 }
 
+/** Deckt der Zeitraum genau einen Kalendermonat ab (01. bis Monatsletzter)? */
+export function isCalendarMonth(start: string, end: string): boolean {
+  if (!isValidIsoDate(start) || !isValidIsoDate(end)) return false;
+  const bounds = calendarMonthBounds(start);
+  return start === bounds.start && end === bounds.end;
+}
+
 /** Serverseitig nutzbare Validierung der optionalen Leistungsangabe. */
 export function validateServiceTiming(
   input: ServiceTimingInput,
 ): { error?: ServiceTimingValidationError } {
-  const { serviceDate, servicePeriodStart, servicePeriodEnd } = input;
+  const { serviceDate, servicePeriodStart, servicePeriodEnd, servicePeriodIsMonth } = input;
   const hasDate = serviceDate !== null;
   const hasPeriodStart = servicePeriodStart !== null;
   const hasPeriodEnd = servicePeriodEnd !== null;
@@ -109,6 +127,16 @@ export function validateServiceTiming(
     && servicePeriodStart > servicePeriodEnd
   ) {
     return { error: "servicePeriodOrderInvalid" };
+  }
+  if (
+    servicePeriodIsMonth
+    && (
+      servicePeriodStart === null
+      || servicePeriodEnd === null
+      || !isCalendarMonth(servicePeriodStart, servicePeriodEnd)
+    )
+  ) {
+    return { error: "serviceMonthInvalid" };
   }
   return {};
 }
