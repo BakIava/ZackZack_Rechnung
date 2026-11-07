@@ -49,6 +49,10 @@
     "navCustomers": "Müşteriler",
     "navCatalog": "Hizmetler",
     "navDocuments": "Belgeler",
+
+    "sidebarCollapse": "Menüyü daralt",
+
+    "sidebarExpand": "Menüyü genişlet",
     "noDocs": "Henüz belge yok",
     "ghostTitle": "Belgelerin burada görünür",
     "ghostSub": "Bir fatura veya teklif oluşturduğunda, hepsini düzenli olarak burada bulursun.",

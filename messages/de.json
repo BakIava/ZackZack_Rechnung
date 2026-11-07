@@ -49,6 +49,10 @@
     "navCustomers": "Kunden",
     "navCatalog": "Leistungen",
     "navDocuments": "Dokumente",
+
+    "sidebarCollapse": "Menü einklappen",
+
+    "sidebarExpand": "Menü ausklappen",
     "noDocs": "Noch keine Dokumente",
     "ghostTitle": "Hier erscheinen deine Dokumente",
     "ghostSub": "Sobald du eine Rechnung oder ein Angebot erstellst, findest du alles übersichtlich an dieser Stelle.",
