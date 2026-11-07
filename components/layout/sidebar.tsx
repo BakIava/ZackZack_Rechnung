@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
-import { SidebarLangLink } from "./sidebar-lang-link";
-import { SidebarNav } from "./sidebar-nav";
+import { cookies } from "next/headers";
 import { getSidebarData } from "@/lib/layout/sidebar-data";
-import "./sidebar.css";
+import {
+  SIDEBAR_COLLAPSED_COOKIE,
+  parseSidebarCollapsed,
+} from "@/lib/layout/sidebar-preference";
+import { SidebarPanel } from "./sidebar-panel";
 
 function toInitials(name: string): string {
   return name
@@ -13,45 +15,30 @@ function toInitials(name: string): string {
 }
 
 interface SidebarProps {
-  collapsed?: boolean;
+  /**
+   * Startet eingeklappt (Schritt 2: Platz für die A4-Vorschau). Umschalten gilt
+   * dann nur für diese Ansicht und ändert die gespeicherte Wahl nicht.
+   */
+  startCollapsed?: boolean;
 }
 
-/** Linke Navigationsleiste des Desktop-Dashboards (RTL-fest). */
-export async function Sidebar({ collapsed = false }: SidebarProps) {
-  const t = await getTranslations("Dashboard");
-  const { company, customerCount, catalogCount } = await getSidebarData();
-
-  const companyName = company.name;
-  const ownerName = company.director;
-  const initials = toInitials(companyName);
+/** Linke Navigationsleiste: lädt Firmendaten und die gespeicherte Ein-/Ausklapp-Wahl. */
+export async function Sidebar({ startCollapsed = false }: SidebarProps) {
+  const [{ company, customerCount, catalogCount }, cookieStore] = await Promise.all([
+    getSidebarData(),
+    cookies(),
+  ]);
+  const storedCollapsed = parseSidebarCollapsed(cookieStore.get(SIDEBAR_COLLAPSED_COOKIE)?.value);
 
   return (
-    <aside
-      className={collapsed ? "dside dside--collapsed" : "dside"}
-      data-collapsed={collapsed ? "true" : "false"}
-      data-testid="app-sidebar"
-    >
-      <div className="dside-brand">
-        <div className="dside-logo">{initials}</div>
-        <div>
-          <div className="dside-name">{companyName}</div>
-        </div>
-      </div>
-
-      <SidebarNav
-        customerCount={customerCount}
-        catalogCount={catalogCount}
-        menuLabel={t("menu")}
-        collapsed={collapsed}
-      />
-
-      <div className="dside-foot">
-        <SidebarLangLink />
-        <div className="dside-user" title={collapsed ? ownerName : undefined}>
-          <span className="dside-av">{initials}</span>
-          <div className="dside-uname">{ownerName}</div>
-        </div>
-      </div>
-    </aside>
+    <SidebarPanel
+      companyName={company.name}
+      ownerName={company.director}
+      initials={toInitials(company.name)}
+      customerCount={customerCount}
+      catalogCount={catalogCount}
+      initialCollapsed={startCollapsed || storedCollapsed}
+      persist={!startCollapsed}
+    />
   );
 }
