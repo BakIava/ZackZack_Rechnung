@@ -1,4 +1,4 @@
-/* ── Picker (Tabs + Hinweis + Liste + Formulare) ─────────────────────────── */
+/* ── Picker (Tabs + Liste + Formulare) ──────────────────────────────────── */
 
 .picker-tabs {
   display: flex;
@@ -27,35 +27,6 @@
   border-color: var(--primary);
   background: color-mix(in srgb, var(--primary) 6%, var(--surface));
   color: var(--primary);
-}
-
-.cat-hint {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--surface));
-  border-radius: var(--r-sm);
-  padding: 11px 13px;
-  margin-bottom: 12px;
-}
-
-.cat-hint-ic {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.cat-hint-t {
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: var(--ink);
 }
 
 .cat-search {
