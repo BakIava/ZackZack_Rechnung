@@ -375,6 +375,8 @@
     "moveToTitle": "Position verschieben",
     "moveToHint": "An welche Stelle soll sie?",
     "moveToAria": "Position {n} an eine andere Stelle verschieben",
+    "collapsePosition": "Position zuklappen",
+    "hasAdditionalDescription": "Mit Positionsbeschreibung",
     "cancel": "Abbrechen",
     "less": "Weniger",
     "more": "Mehr",

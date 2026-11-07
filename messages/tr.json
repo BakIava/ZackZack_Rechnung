@@ -375,6 +375,8 @@
     "moveToTitle": "Kalemi taşı",
     "moveToHint": "Hangi sıraya gelsin?",
     "moveToAria": "{n}. kalemi başka bir sıraya taşı",
+    "collapsePosition": "Kalemi daralt",
+    "hasAdditionalDescription": "Kalem açıklaması var",
     "cancel": "İptal",
     "less": "Azalt",
     "more": "Artır",

@@ -375,6 +375,8 @@
     "moveToTitle": "نقل البند",
     "moveToHint": "إلى أي موضع؟",
     "moveToAria": "نقل البند رقم {n} إلى موضع آخر",
+    "collapsePosition": "طي البند",
+    "hasAdditionalDescription": "يحتوي على وصف للبند",
     "cancel": "إلغاء",
     "less": "أقل",
     "more": "أكثر",
