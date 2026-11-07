@@ -89,9 +89,14 @@ export function KundeStep({
   const modalOpen = showNew || editing !== null || showLocation;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
 
-  const allCustomers: CustomerListItem[] = [...created, ...customers].map(
-    (c) => edits[c.id] ?? c,
-  );
+  // Neu angelegte Kunden bleiben oben (mit Badge). Lädt der Server die Seite neu
+  // (revalidatePath nach Einsatzort/Leistungsangabe, router.refresh), stecken sie
+  // zusätzlich in `customers` – dort ausblenden, sonst erscheinen sie doppelt.
+  const createdIds = new Set(created.map((c) => c.id));
+  const allCustomers: CustomerListItem[] = [
+    ...created,
+    ...customers.filter((c) => !createdIds.has(c.id)),
+  ].map((c) => edits[c.id] ?? c);
   const needle = query.trim().toLowerCase();
   const filtered = allCustomers.filter(
     (c) =>
