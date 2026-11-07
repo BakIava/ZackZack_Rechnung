@@ -4,6 +4,7 @@ import {
   hasUsableServiceLocation,
   parseServiceLocationExtraction,
   parseServiceLocationExtractionJson,
+  serviceLocationIntakeOutcome,
   validateServiceLocationText,
 } from "./service-location-intake";
 
@@ -41,5 +42,19 @@ describe("service location intake", () => {
     expect(hasUsableServiceLocation(EMPTY_SERVICE_LOCATION_EXTRACTION)).toBe(false);
     expect(hasUsableServiceLocation({ ...EMPTY_SERVICE_LOCATION_EXTRACTION, postcode: "55116" })).toBe(false);
     expect(hasUsableServiceLocation({ ...EMPTY_SERVICE_LOCATION_EXTRACTION, city: "Mainz" })).toBe(true);
+  });
+
+  it("bildet das Ergebnis auf den Hinweis im KI-Erfassungsdialog ab", () => {
+    expect(serviceLocationIntakeOutcome({
+      status: "extracted",
+      location: { ...EMPTY_SERVICE_LOCATION_EXTRACTION, city: "Mainz" },
+    })).toEqual({ kind: "ok" });
+    expect(serviceLocationIntakeOutcome({ status: "manual", reason: "no_usable_data" }))
+      .toEqual({ kind: "fail" });
+    expect(serviceLocationIntakeOutcome({
+      status: "manual",
+      reason: "daily_limit_reached",
+      dailyLimit: 10,
+    })).toEqual({ kind: "limit", limit: 10 });
   });
 });

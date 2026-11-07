@@ -1,3 +1,4 @@
+import type { AiIntakeOutcome } from "@/types/ai-intake";
 import type { CustomerIntakeResult } from "@/types/customer-intake";
 import type { CustomerType } from "@/types/database";
 
@@ -65,4 +66,12 @@ export function mapIntakeResult(result: CustomerIntakeResult): MappedIntake {
     values.email,
   ].some(Boolean);
   return { recognized, values };
+}
+
+/** Ergebnis für den gemeinsamen KI-Erfassungsdialog (Hinweis über dem Formular). */
+export function customerIntakeOutcome(result: CustomerIntakeResult): AiIntakeOutcome {
+  if (result.status === "manual" && result.reason === "daily_limit_reached") {
+    return { kind: "limit", limit: result.dailyLimit };
+  }
+  return mapIntakeResult(result).recognized ? { kind: "ok" } : { kind: "fail" };
 }

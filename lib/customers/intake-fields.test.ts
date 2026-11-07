@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapIntakeResult } from "./intake-fields";
+import { customerIntakeOutcome, mapIntakeResult } from "./intake-fields";
 import type { CustomerIntakeResult } from "@/types/customer-intake";
 
 describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
@@ -147,5 +147,45 @@ describe("mapIntakeResult – Intake-Ergebnis → Formular", () => {
     const m = mapIntakeResult(result);
     expect(m.recognized).toBe(false);
     expect(m.values.customerType).toBeNull();
+  });
+});
+
+describe("customerIntakeOutcome – Hinweis im KI-Erfassungsdialog", () => {
+  const empty = {
+    customer_type: null,
+    firstname: null,
+    lastname: null,
+    company_name: null,
+    street: null,
+    street_no: null,
+    postcode: null,
+    city: null,
+    phone: null,
+    email: null,
+  };
+
+  it("meldet ok, sobald ein Feld erkannt wurde", () => {
+    expect(customerIntakeOutcome({
+      status: "address_matches",
+      customer: { ...empty, lastname: "Schneider" },
+      addresses: [],
+    })).toEqual({ kind: "ok" });
+  });
+
+  it("meldet fail ohne erkannte Felder", () => {
+    expect(customerIntakeOutcome({
+      status: "manual",
+      reason: "no_extracted_data",
+      customer: empty,
+    })).toEqual({ kind: "fail" });
+  });
+
+  it("meldet das Tageslimit mit Grenzwert", () => {
+    expect(customerIntakeOutcome({
+      status: "manual",
+      reason: "daily_limit_reached",
+      customer: empty,
+      dailyLimit: 10,
+    })).toEqual({ kind: "limit", limit: 10 });
   });
 });

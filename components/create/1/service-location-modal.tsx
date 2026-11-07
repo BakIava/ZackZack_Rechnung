@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, X } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Modal } from "@/components/ui";
+import { AiIntakeModal } from "@/components/shared/ai-intake/ai-intake-modal";
+import {
+  SERVICE_LOCATION_MAX_INPUT_LENGTH,
+  serviceLocationIntakeOutcome,
+} from "@/lib/documents/service-location-intake";
 import { runServiceLocationIntake } from "@/lib/documents/service-location-intake-actions";
+import type { AiIntakeOutcome } from "@/types/ai-intake";
 import type { ServiceLocationInput } from "@/types/service-location";
-import { ServiceLocationIntro } from "./service-location-intro";
-import { ServiceLocationLoading } from "./service-location-loading";
-import { ServiceLocationForm } from "./service-location-form";
-import "./service-location-modal.css";
+import { ServiceLocationFields } from "./service-location-fields";
 
 interface ServiceLocationModalProps {
   dir: "ltr" | "rtl";
@@ -20,66 +22,72 @@ interface ServiceLocationModalProps {
   onClose: () => void;
 }
 
+const EMPTY_LOCATION: ServiceLocationInput = {
+  name: "", street: "", houseNumber: "", postcode: "", city: "", addressExtra: "", sourceText: "",
+};
+
+/** „Neuer Einsatzort" / „Einsatzort bearbeiten" auf Basis des gemeinsamen KI-Erfassungsdialogs. */
 export function ServiceLocationModal({
   dir, initialValue, saving, error, onApply, onClose,
 }: ServiceLocationModalProps) {
   const t = useTranslations("ServiceLocation");
-  const [phase, setPhase] = useState<"intro" | "loading" | "form">(initialValue ? "form" : "intro");
-  const [notice, setNotice] = useState<"ai-ok" | "ai-fail" | "ai-limit" | null>(null);
-  const [dailyLimit, setDailyLimit] = useState<number | null>(null);
-  const [value, setValue] = useState<ServiceLocationInput>(initialValue ?? {
-    name: "", street: "", houseNumber: "", postcode: "", city: "", addressExtra: "", sourceText: "",
-  });
+  const [value, setValue] = useState<ServiceLocationInput>(initialValue ?? EMPTY_LOCATION);
+  // Eine Bezeichnung oder Adresse genügt.
+  const canApply = Boolean(value.name.trim() || value.street.trim() || value.city.trim());
 
-  async function fillFromText() {
-    if (!value.sourceText.trim()) return;
-    setPhase("loading");
-    try {
-      const result = await runServiceLocationIntake(value.sourceText);
-      if (result.status === "extracted") {
-        setValue((previous) => ({
-          ...previous,
-          name: result.location.name ?? previous.name,
-          street: result.location.street ?? previous.street,
-          houseNumber: result.location.houseNumber ?? previous.houseNumber,
-          postcode: result.location.postcode ?? previous.postcode,
-          city: result.location.city ?? previous.city,
-          addressExtra: result.location.addressExtra ?? previous.addressExtra,
-        }));
-        setNotice("ai-ok");
-      } else if (result.reason === "daily_limit_reached") {
-        setDailyLimit(result.dailyLimit);
-        setNotice("ai-limit");
-      } else {
-        setNotice("ai-fail");
-      }
-    } catch {
-      setNotice("ai-fail");
-    }
-    setPhase("form");
+  async function extract(text: string): Promise<AiIntakeOutcome> {
+    const result = await runServiceLocationIntake(text);
+    setValue((previous) => {
+      if (result.status !== "extracted") return { ...previous, sourceText: text };
+      const found = result.location;
+      return {
+        name: found.name ?? previous.name,
+        street: found.street ?? previous.street,
+        houseNumber: found.houseNumber ?? previous.houseNumber,
+        postcode: found.postcode ?? previous.postcode,
+        city: found.city ?? previous.city,
+        addressExtra: found.addressExtra ?? previous.addressExtra,
+        sourceText: text,
+      };
+    });
+    return serviceLocationIntakeOutcome(result);
+  }
+
+  function apply() {
+    onApply({
+      name: value.name.trim(),
+      street: value.street.trim(),
+      houseNumber: value.houseNumber.trim(),
+      postcode: value.postcode.trim(),
+      city: value.city.trim(),
+      addressExtra: value.addressExtra.trim(),
+      sourceText: value.sourceText.trim(),
+    });
   }
 
   return (
-    <Modal open dir={dir} onClose={onClose} busy={phase === "loading" || saving}
-      labelledBy="location-modal-title" size="lg" className="location-modal">
-      <div className="location-modal__header">
-        <h2 id="location-modal-title"><MapPin size={20} aria-hidden />{t(initialValue ? "edit" : "new")}</h2>
-        <button type="button" onClick={onClose} disabled={phase === "loading" || saving} aria-label={t("close")}>
-          <X size={20} aria-hidden />
-        </button>
-      </div>
-      {phase === "intro" ? (
-        <ServiceLocationIntro value={value.sourceText}
-          onChange={(sourceText) => setValue({ ...value, sourceText })}
-          onFill={fillFromText} onManual={() => { setNotice(null); setPhase("form"); }} />
-      ) : phase === "loading" ? (
-        <ServiceLocationLoading />
-      ) : (
-        <ServiceLocationForm value={value} notice={notice} dailyLimit={dailyLimit}
-          saving={saving} error={error}
-          onChange={setValue} onApply={onApply} onClose={onClose}
-          onRetry={() => { setNotice(null); setPhase("intro"); }} />
-      )}
-    </Modal>
+    <AiIntakeModal
+      dir={dir}
+      icon={MapPin}
+      title={t(initialValue ? "edit" : "new")}
+      startInForm={initialValue !== null}
+      texts={{
+        lead: t("intro"),
+        placeholder: t("introPlaceholder"),
+        loadingSubtitle: t("loadingSub"),
+        loadingSteps: [t("stepName"), t("stepAddress")],
+        manualHint: t("manualHint"),
+      }}
+      maxInputLength={SERVICE_LOCATION_MAX_INPUT_LENGTH}
+      onExtract={extract}
+      canSubmit={canApply}
+      saving={saving}
+      error={error}
+      submitLabel={t("apply")}
+      onSubmit={apply}
+      onClose={onClose}
+    >
+      <ServiceLocationFields value={value} onChange={setValue} />
+    </AiIntakeModal>
   );
 }

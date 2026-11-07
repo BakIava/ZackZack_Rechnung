@@ -1,4 +1,9 @@
-import type { ServiceLocationExtraction, ServiceLocationInput } from "@/types/service-location";
+import type { AiIntakeOutcome } from "@/types/ai-intake";
+import type {
+  ServiceLocationExtraction,
+  ServiceLocationInput,
+  ServiceLocationIntakeResult,
+} from "@/types/service-location";
 
 export const SERVICE_LOCATION_MAX_INPUT_LENGTH = 1200;
 
@@ -50,4 +55,11 @@ export function parseServiceLocationExtractionJson(json: string): ServiceLocatio
 /** Entspricht der Übernehmen-Regel des Formulars. */
 export function hasUsableServiceLocation(location: ServiceLocationExtraction): boolean {
   return Boolean(location.name || location.street || location.city);
+}
+
+/** Ergebnis für den gemeinsamen KI-Erfassungsdialog (Hinweis über dem Formular). */
+export function serviceLocationIntakeOutcome(result: ServiceLocationIntakeResult): AiIntakeOutcome {
+  if (result.status === "extracted") return { kind: "ok" };
+  if (result.reason === "daily_limit_reached") return { kind: "limit", limit: result.dailyLimit };
+  return { kind: "fail" };
 }
