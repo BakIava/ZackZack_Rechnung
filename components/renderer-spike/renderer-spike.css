@@ -3,7 +3,7 @@
   padding: 32px;
   background: #eef2f5;
   color: #172a3a;
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-hanken), system-ui, sans-serif;
 }
 
 .renderer-spike__header,

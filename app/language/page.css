@@ -9,7 +9,7 @@
   --surface: #ffffff;
   --surface-2: #eff2f6;
   --r: 14px;
-  --ui-font: var(--font-hanken), var(--font-ibm-arabic), system-ui, sans-serif;
+  --ui-font: var(--font-hanken), var(--font-plex-arabic), system-ui, sans-serif;
 
   --r-sm: calc(var(--r) * 0.55);
   --r-lg: min(calc(var(--r) * 1.5), 24px);
