@@ -1,11 +1,9 @@
 import {
-  Bell,
   ChevronLeft,
   ChevronRight,
   FileText,
   Plus,
   ReceiptText,
-  Search,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -41,23 +39,6 @@ export async function DashboardMain({ dir, data }: DashboardMainProps) {
           <div className="greet-main">
             {t("greetMorning")}, {firstName}
           </div>
-        </div>
-        <div className="dtools">
-          <div className="dsearch">
-            <Search size={18} strokeWidth={STROKE} aria-hidden />
-            <input
-              placeholder={t("searchGlobal")}
-              aria-label={t("searchGlobal")}
-            />
-          </div>
-          <button
-            type="button"
-            className="iconbtn"
-            aria-label={t("openAmount")}
-          >
-            <Bell size={20} strokeWidth={STROKE} aria-hidden />
-            <span className="dot" />
-          </button>
         </div>
       </div>
 
