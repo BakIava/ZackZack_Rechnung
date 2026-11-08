@@ -10,23 +10,23 @@ import "./step2-preview-panel.css";
 interface Step2PreviewPanelProps {
   preview: DocumentPreview;
   logo: PdfLogo | null;
-  savedItemCount: number;
   loading: boolean;
 }
 
 export function Step2PreviewPanel({
   preview,
   logo,
-  savedItemCount,
   loading,
 }: Step2PreviewPanelProps) {
   const t = useTranslations("Step2");
-  const recipient = getCustomerName(preview.customer);
 
   return (
     <section
       className="step2-preview-panel"
+      aria-label={t("documentPreview")}
       data-testid="step2-document-preview"
+      data-preview-company={preview.company.name}
+      data-preview-recipient={getCustomerName(preview.customer)}
       data-preview-position-count={preview.items.length}
       data-preview-position-sequence={preview.items.map((item) => item.position).join(",")}
       data-preview-descriptions={preview.items.map((item) => item.descriptionDe).join(" | ")}
@@ -42,15 +42,6 @@ export function Step2PreviewPanel({
       data-preview-tax-amount={preview.taxAmount}
       data-preview-total-amount={preview.totalAmount}
     >
-      <div className="step2-preview-panel__head">
-        <h2>{t("documentPreview")}</h2>
-        <span>{t("savedPositions", { count: savedItemCount })}</span>
-      </div>
-      <p className="step2-preview-panel__parties">
-        <span data-testid="step2-preview-company">{preview.company.name}</span>
-        <span aria-hidden>→</span>
-        <span data-testid="step2-preview-recipient">{recipient}</span>
-      </p>
       <DocumentPdfPreviewLoader
         preview={preview}
         logo={logo}

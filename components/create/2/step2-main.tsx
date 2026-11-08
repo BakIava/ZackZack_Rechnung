@@ -4,9 +4,6 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  Plus,
-  ReceiptText,
   TriangleAlert,
   X,
 } from "lucide-react";
@@ -17,18 +14,17 @@ import { Link, useRouter } from "@/i18n/navigation";
 import type { KatalogEintrag } from "@/types/service";
 import type { DocumentPreview, DraftItem } from "@/types/document";
 import { shouldShowTaxDetails } from "@/lib/documents/tax";
-import { getCustomerName } from "@/lib/customers/utils";
-import { deriveInitials } from "@/lib/initials";
 import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { getPreviewPflichtChecks } from "@/lib/documents/finalize-validation";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
 import { NumberPad } from "./number-pad";
+import { PositionAddEnd } from "./position-add-end";
 import { PositionList } from "./position-list";
 import { PositionPickerDialog } from "./position-picker";
 import { ReorderSheet } from "./reorder-sheet";
 import { Step2PreviewPanel } from "./step2-preview-panel";
-import { Step2SummaryPanel } from "./step2-summary-panel";
+import { Step2SummaryBar } from "./step2-summary-bar";
 import { useStep2Items } from "./use-step2-items";
 import "./step2-main.css";
 import { PositionEditor } from "./position-sheets";
@@ -94,12 +90,9 @@ export function Step2Main({
     reorder,
   } = state;
 
-  const Forward = dir === "rtl" ? ChevronLeft : ChevronRight;
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
   const docLabel = t(preview.docType);
   const showTaxDetails = shouldShowTaxDetails(preview.isKleinunternehmer, items);
-  const customerName = getCustomerName(preview.customer);
-  const customerInitials = deriveInitials(preview.customer);
   const visibleItems = items.map((item) => ({
     ...item,
     additionalDescriptionDe: preview.items.find(
@@ -125,78 +118,46 @@ export function Step2Main({
           <FlowSteps current={2} />
         </div>
 
-        <div className="d2-ctx">
-          <span className="p2-chip p2-chip--mode">
-            {preview.docType === "invoice" ? (
-              <ReceiptText size={15} strokeWidth={STROKE} aria-hidden />
-            ) : (
-              <FileText size={15} strokeWidth={STROKE} aria-hidden />
-            )}
-            {docLabel}
-          </span>
-          {customerName && (
-            <span className="p2-chip">
-              <span className="p2-av">{customerInitials}</span>
-              {customerName}
-            </span>
-          )}
-        </div>
-
         <div className="d2-wrap" data-testid="step2-workspace">
           <section className="d2-positions" data-testid="step2-positions-column">
-            <button type="button" className="d2-add" onClick={openModal}>
-              <span className="d2-add-ic">
-                <Plus size={26} strokeWidth={2.4} color="#fff" aria-hidden />
-              </span>
-              <span className="d2-add-txt">
-                <span className="d2-add-t">{t("addPosition")}</span>
-                <span className="d2-add-s">{t("fromCatalog")} · {t("freePosition")} · {t("subcontract")}</span>
-              </span>
-              <Forward size={22} strokeWidth={STROKE} aria-hidden />
-            </button>
+            <div className="d2-positions-body">
+              {hasRecipientIssue && (
+                <div className="d2-recipient-hint" role="status" data-testid="step2-recipient-hint">
+                  <TriangleAlert size={20} strokeWidth={STROKE} aria-hidden />
+                  <span>
+                    <b>{t("recipientHintTitle")}</b>
+                    {t(preview.docType === "quote" ? "recipientHintQuote" : "recipientHintInvoice")}
+                  </span>
+                </div>
+              )}
 
-            {hasRecipientIssue && (
-              <div className="d2-recipient-hint" role="status" data-testid="step2-recipient-hint">
-                <TriangleAlert size={20} strokeWidth={STROKE} aria-hidden />
-                <span>
-                  <b>{t("recipientHintTitle")}</b>
-                  {t(preview.docType === "quote" ? "recipientHintQuote" : "recipientHintInvoice")}
-                </span>
-              </div>
-            )}
+              {error && <div className="d2-error">{error}</div>}
 
-            {error && <div className="d2-error">{error}</div>}
+              {items.length > 1 && (
+                <button type="button" className="d2-reorder-open" disabled={pending} onClick={reorder.open}>
+                  <ArrowUpDown size={18} strokeWidth={STROKE} aria-hidden />
+                  {t("reorderOpen")}
+                </button>
+              )}
 
-            {items.length > 1 && (
-              <button type="button" className="d2-reorder-open" disabled={pending} onClick={reorder.open}>
-                <ArrowUpDown size={18} strokeWidth={STROKE} aria-hidden />
-                {t("reorderOpen")}
-              </button>
-            )}
-
-            {items.length === 0 && (
-              <div className="empty empty--boxed">
-                <div className="empty-t">{t("emptyPos")}</div>
-                {t("emptyPosHint")}
-              </div>
-            )}
-            {/* Auch leer eingebunden: sonst startet die Liste beim ersten
-                Eintrag neu und erkennt ihn nicht als „neu hinzugefügt". */}
-            <PositionList
-              items={visibleItems}
-              disabled={pending}
-              companyVat={preview.defaultTaxRate}
-              onOpenPad={openPad}
-              onEditDesc={editDesc}
-              onEditAdditionalDescription={editAdditionalDescription}
-              onEditUnit={editUnit}
-              onEditVat={editVat}
-              onDelete={remove}
-              onMoveTo={items.length > 1 ? reorder.openPicker : null}
-            />
-            <Step2SummaryPanel
+              {/* Auch leer eingebunden: sonst startet die Liste beim ersten
+                  Eintrag neu und erkennt ihn nicht als „neu hinzugefügt". */}
+              <PositionList
+                items={visibleItems}
+                disabled={pending}
+                companyVat={preview.defaultTaxRate}
+                onOpenPad={openPad}
+                onEditDesc={editDesc}
+                onEditAdditionalDescription={editAdditionalDescription}
+                onEditUnit={editUnit}
+                onEditVat={editVat}
+                onDelete={remove}
+                onMoveTo={items.length > 1 ? reorder.openPicker : null}
+              />
+              <PositionAddEnd empty={items.length === 0} onAdd={openModal} />
+            </div>
+            <Step2SummaryBar
               dir={dir}
-              documentId={documentId}
               itemCount={items.length}
               totals={{
                 netAmount: savedPreview.netAmount,
@@ -214,7 +175,6 @@ export function Step2Main({
             <Step2PreviewPanel
               preview={preview}
               logo={logo}
-              savedItemCount={items.length}
               loading={pending}
             />
           </aside>
