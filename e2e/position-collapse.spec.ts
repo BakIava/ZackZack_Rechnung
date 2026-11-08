@@ -43,7 +43,9 @@ test("Positionen: zugeklappte Zeilen, höchstens eine aufgeklappt", async ({ pag
   const deleteButtons = page.getByRole("button", { name: "Löschen" });
 
   try {
+    // Auch die erste Position in einer leeren Liste klappt auf.
     await addFreePosition(page, "Pos A", "2", "10");
+    await expect(cards.nth(0)).toHaveAttribute("data-expanded", "1");
     await addFreePosition(page, "Pos B", "1", "20");
     await addFreePosition(page, "Pos C", "3", "5");
 

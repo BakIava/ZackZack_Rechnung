@@ -57,6 +57,8 @@ export function PositionList({
     });
   }, [expandedId]);
 
+  if (items.length === 0) return null;
+
   return (
     <div className="d2cards">
       {items.map((item, index) => {

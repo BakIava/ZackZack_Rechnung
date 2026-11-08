@@ -174,25 +174,26 @@ export function Step2Main({
               </button>
             )}
 
-            {items.length === 0 ? (
+            {items.length === 0 && (
               <div className="empty empty--boxed">
                 <div className="empty-t">{t("emptyPos")}</div>
                 {t("emptyPosHint")}
               </div>
-            ) : (
-              <PositionList
-                items={visibleItems}
-                disabled={pending}
-                companyVat={preview.defaultTaxRate}
-                onOpenPad={openPad}
-                onEditDesc={editDesc}
-                onEditAdditionalDescription={editAdditionalDescription}
-                onEditUnit={editUnit}
-                onEditVat={editVat}
-                onDelete={remove}
-                onMoveTo={items.length > 1 ? reorder.openPicker : null}
-              />
             )}
+            {/* Auch leer eingebunden: sonst startet die Liste beim ersten
+                Eintrag neu und erkennt ihn nicht als „neu hinzugefügt". */}
+            <PositionList
+              items={visibleItems}
+              disabled={pending}
+              companyVat={preview.defaultTaxRate}
+              onOpenPad={openPad}
+              onEditDesc={editDesc}
+              onEditAdditionalDescription={editAdditionalDescription}
+              onEditUnit={editUnit}
+              onEditVat={editVat}
+              onDelete={remove}
+              onMoveTo={items.length > 1 ? reorder.openPicker : null}
+            />
             <Step2SummaryPanel
               dir={dir}
               documentId={documentId}
