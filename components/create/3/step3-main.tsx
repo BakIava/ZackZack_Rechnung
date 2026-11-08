@@ -21,6 +21,7 @@ import { istFinalisierbar, type PflichtCheck } from "@/lib/legal/dokument-pflich
 import type { DocumentPreview } from "@/types/document";
 import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { FlowSteps } from "@/components/create/flow-steps";
+import { CorrectInvoiceButton } from "@/components/documents/correct-invoice-button";
 import { DocumentPdfPreviewLoader } from "./document-pdf-preview-loader";
 import { FinalizeDialog } from "./finalize-dialog";
 import { PflichtList } from "./pflicht-list";
@@ -66,6 +67,9 @@ export function Step3Main({ dir, preview, logo, checks }: Step3MainProps) {
   const isDraft = preview.status === "draft";
   const isRechnung = preview.docType === "invoice";
   const canFinalize = istFinalisierbar(checks);
+  // Festgeschriebene, unbezahlte Rechnung: darf korrigiert werden (gleiche Nummer).
+  const canCorrect = isRechnung
+    && (preview.status === "finalized" || preview.status === "sent");
   const expiredQuote = !isRechnung
     && Boolean(preview.validUntil)
     && isPastDate(preview.validUntil as string);
@@ -211,6 +215,13 @@ export function Step3Main({ dir, preview, logo, checks }: Step3MainProps) {
                   </div>
                   <div className="share-via">{t("shareVia")}</div>
                   <ShareButtons preview={preview} />
+                  {canCorrect && preview.documentNumber ? (
+                    <CorrectInvoiceButton
+                      documentId={preview.id}
+                      documentNumber={preview.documentNumber}
+                      className="d3-back d3-back--icon"
+                    />
+                  ) : null}
                   <Link href="/documents" className="d3-back d3-back--done">
                     <Check size={18} strokeWidth={2.2} aria-hidden />
                     {t("done")}
