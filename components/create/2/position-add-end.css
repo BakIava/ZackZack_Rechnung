@@ -1,0 +1,80 @@
+/* position-add-end.css — „Position hinzufügen" am Listenende (schmale Zeile)
+   bzw. als anklickbarer Leerzustand (große Fläche). Getönt und durchgezogen,
+   aber ruhiger als das vollflächige „Weiter" in der Summenleiste.
+   Logische Properties → RTL automatisch. */
+
+.d2-add-end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  inline-size: 100%;
+  min-block-size: 52px;
+  margin-block-start: 10px;
+  padding-block: 12px;
+  padding-inline: 16px;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 35%, var(--line));
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  color: var(--primary);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.14s;
+}
+
+.d2-add-end:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.d2-add-end:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* Leerzustand: große Fläche mit Plus, Aktion und Hinweis untereinander. */
+.d2-add-end--empty {
+  flex-direction: column;
+  gap: 6px;
+  margin-block-start: 0;
+  padding-block: 36px;
+  border: 2px solid var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  box-shadow: 0 10px 22px -16px color-mix(in srgb, var(--primary) 80%, transparent);
+  text-align: center;
+}
+
+.d2-add-end--empty:hover {
+  background: color-mix(in srgb, var(--primary) 16%, var(--surface));
+}
+
+.d2-add-end-ic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 60px;
+  block-size: 60px;
+  margin-block-end: 6px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.d2-add-end-t {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.d2-add-end-s {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .d2-add-end {
+    transition: none;
+  }
+}

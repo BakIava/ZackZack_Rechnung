@@ -1,0 +1,102 @@
+/* step2-summary-bar.css — Summenleiste am Ende der Positionsspalte (Endbetrag +
+   „Weiter"). Klebt unten im Scrollbereich der Spalte; die Positionen scrollen
+   darunter durch. Logische Properties → RTL automatisch. */
+
+.d2-foot {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-block-start: 14px;
+  padding-block: 12px;
+  padding-inline: 18px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  /* Hintergrundfarbener Rand: darunter durchscrollende Karten enden sauber
+     mit Abstand über der Leiste statt an ihrer Kante. */
+  box-shadow: 0 0 0 10px var(--bg);
+}
+
+/* Summe nimmt den Platz; wird die Spalte zu schmal, rutscht „Weiter" in eine
+   eigene Zeile und füllt dann die ganze Breite. */
+.d2-foot-sum {
+  display: grid;
+  flex: 999 1 14rem;
+  min-inline-size: 0;
+}
+
+.d2-foot-label {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.d2-foot-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+}
+
+.d2-foot-amount {
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.d2-foot-vat {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.d2-foot-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1 0 auto;
+  padding-block: 14px;
+  padding-inline: 26px;
+  border: none;
+  border-radius: var(--r);
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 8px 18px -10px rgba(15, 42, 63, 0.7);
+  transition: 0.15s;
+}
+
+.d2-foot-next:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.d2-foot-next:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.d2-foot-next:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .d2-foot-next {
+    transition: none;
+  }
+
+  .d2-foot-next:not(:disabled):hover {
+    transform: none;
+  }
+}

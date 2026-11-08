@@ -28,9 +28,17 @@
   scrollbar-gutter: stable;
 }
 
+/* Inhalt oben, Summenleiste unten: auch bei kurzer Liste steht die Leiste am
+   Spaltenende; bei langer Liste scrollen die Positionen unter ihr durch.
+   scroll-padding hält eine neu aufgeklappte letzte Karte samt „Position
+   hinzufügen" darunter oberhalb der Leiste sichtbar. */
 .d2-positions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
   overflow-y: auto;
   padding-inline-end: 8px;
+  scroll-padding-block-end: 210px;
 }
 
 .d2-document {
@@ -40,58 +48,6 @@
   block-size: 100%;
   overflow-y: auto;
   padding-inline-end: 4px;
-}
-
-.d2-add {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 18px 22px;
-  border-radius: var(--r-lg);
-  border: 1.5px dashed var(--primary);
-  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
-  cursor: pointer;
-  font-family: inherit;
-  text-align: start;
-  margin-bottom: 18px;
-  transition: 0.14s;
-  color: var(--primary);
-}
-
-.d2-add:hover {
-  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
-}
-
-.d2-add-ic {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--r-sm);
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.d2-add-txt {
-  flex: 1;
-  min-width: 0;
-}
-
-.d2-add-t {
-  display: block;
-  font-size: 16.5px;
-  font-weight: 650;
-  color: var(--ink);
-}
-
-.d2-add-s {
-  display: block;
-  font-size: 13px;
-  color: var(--muted);
-  margin-top: 2px;
 }
 
 .d2-recipient-hint {
@@ -175,31 +131,13 @@
   font-size: 13.5px;
 }
 
-/* Die Zusammenfassung gehört zum Positionsfluss und bleibt auch bei langen
-   Listen direkt nach der letzten gespeicherten Position auffindbar. */
-
-.d2-positions .d2-sumpanel {
-  margin-block-start: 16px;
-}
-
-/* ── Leerzustand ─────────────────────────────────────────────────────────── */
+/* ── Leerzustand (Trefferliste im Katalog-Modal) ─────────────────────────── */
 
 .empty {
   text-align: center;
   color: var(--muted);
   font-size: 14px;
   padding: 40px 20px;
-}
-
-.empty--boxed {
-  border: 1px dashed var(--line);
-  border-radius: var(--r-lg);
-}
-
-.empty-t {
-  font-weight: 650;
-  color: var(--ink);
-  margin-bottom: 4px;
 }
 
 /* ── Katalog-Modal ───────────────────────────────────────────────────────────
