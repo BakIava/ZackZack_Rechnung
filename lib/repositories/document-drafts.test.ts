@@ -25,6 +25,7 @@ describe("document-specific service location", () => {
     const query = {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
       order: vi.fn().mockResolvedValue({ data: [
         { id: "with-location", service_location: { name: "Baustelle" } },
         { id: "empty", service_location: null },
@@ -35,6 +36,19 @@ describe("document-specific service location", () => {
 
     await expect(findReusableDraft("company-1")).resolves.toBe("empty");
     expect(query.select).toHaveBeenCalledWith("id, service_location");
+  });
+
+  it("verwendet eine wieder geöffnete Rechnung (mit Nummer) nie für einen neuen Beleg", async () => {
+    const query = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      is: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [] }),
+    };
+    h.createClient.mockResolvedValue({ from: vi.fn().mockReturnValue(query) });
+
+    await expect(findReusableDraft("company-1")).resolves.toBeNull();
+    expect(query.is).toHaveBeenCalledWith("document_number", null);
   });
 
   it("schreibt den Snapshot nur auf einen eigenen Entwurf", async () => {

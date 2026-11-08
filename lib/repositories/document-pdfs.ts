@@ -39,6 +39,22 @@ export async function uploadDocumentPdf(
   return {};
 }
 
+/**
+ * Verwirft das archivierte PDF einer wieder geöffneten Rechnung (Korrektur:
+ * die alte Fassung wird ersetzt). Nur nach erfolgreichem reopen_invoice
+ * aufrufen — das prüft Firmenzugehörigkeit und Status.
+ */
+export async function deleteDocumentPdf(
+  documentId: string,
+): Promise<{ errorMessage?: string }> {
+  const admin = createAdminClient();
+  const { error } = await admin.storage
+    .from(PDF_BUCKET)
+    .remove([pdfObjectPath(documentId)]);
+  if (error) return { errorMessage: error.message };
+  return {};
+}
+
 /** Holt das archivierte PDF-Blob; null, wenn (noch) keines existiert. */
 export async function downloadDocumentPdf(documentId: string): Promise<Blob | null> {
   const admin = createAdminClient();

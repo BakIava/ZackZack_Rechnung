@@ -25,7 +25,10 @@ export async function isDraftDocument(documentId: string): Promise<boolean> {
   return Boolean(data);
 }
 
-/** Neuesten leeren Entwurf der Firma finden, falls vorhanden. */
+/**
+ * Neuesten leeren Entwurf der Firma finden, falls vorhanden. Wieder geöffnete
+ * Rechnungen (Nummer schon vergeben) sind nie wiederverwendbar.
+ */
 export async function findReusableDraft(companyId: string): Promise<string | null> {
   const supabase = await createClient();
   const { data: drafts } = await supabase
@@ -33,6 +36,7 @@ export async function findReusableDraft(companyId: string): Promise<string | nul
     .select("id, service_location")
     .eq("company_id", companyId)
     .eq("status", "draft")
+    .is("document_number", null)
     .order("created_at", { ascending: false });
   if (!drafts || drafts.length === 0) return null;
 
@@ -246,7 +250,7 @@ export async function updateDraftCustomerSnapshot(
   return {};
 }
 
-/** Entwurf löschen (nur eigener, nur status='draft'). */
+/** Entwurf löschen (nur eigener, nur status='draft', nur ohne Nummer). */
 export async function deleteDraftDocument(documentId: string): Promise<void> {
   const companyId = await getCurrentCompanyId();
   if (!companyId) return;
@@ -258,6 +262,7 @@ export async function deleteDraftDocument(documentId: string): Promise<void> {
     .eq("id", documentId)
     .eq("company_id", companyId)
     .eq("status", "draft")
+    .is("document_number", null)
     .is("service_location", null);
 }
 
