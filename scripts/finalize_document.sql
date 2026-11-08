@@ -18,6 +18,9 @@
 --
 -- Das Jahr stammt aus issue_date (NICHT aus now()), damit die Nummer konsistent
 -- zum ausgewiesenen Rechnungsdatum bleibt.
+--
+-- Korrektur (scripts/reopen_invoice.sql): Eine wieder geöffnete Rechnung trägt
+-- ihre Nummer schon. Dann wird keine neue gezogen; die vorhandene bleibt.
 
 -- Vorlagen-Snapshot (scripts/document-templates.sql muss vorher gelaufen sein):
 -- Die Layoutversion kennt nur der App-Code (lib/pdf/templates/template-catalog.ts).
@@ -60,6 +63,7 @@ DECLARE
   v_valid_until date;
   v_customer_snapshot jsonb;
   v_company_template text;
+  v_existing_number documents.document_number%TYPE;
   v_today       date := timezone('Europe/Berlin', now())::date;
 BEGIN
   v_company_id := get_user_company_id();
@@ -71,8 +75,8 @@ BEGIN
   -- gleichzeitige Aufrufe auf DASSELBE Dokument: der zweite sieht danach
   -- status='finalized', findet die Zeile nicht mehr und schlägt sauber fehl
   -- (verhindert Doppel-Finalisierung).
-  SELECT document_type, issue_date, valid_until, customer_snapshot
-    INTO v_type, v_issue_date, v_valid_until, v_customer_snapshot
+  SELECT document_type, issue_date, valid_until, customer_snapshot, document_number
+    INTO v_type, v_issue_date, v_valid_until, v_customer_snapshot, v_existing_number
   FROM documents
   WHERE id = p_document_id
     AND company_id = v_company_id
@@ -199,24 +203,30 @@ BEGIN
     END IF;
   END IF;
 
-  v_year := EXTRACT(YEAR FROM v_issue_date)::int;
+  IF v_existing_number IS NOT NULL THEN
+    -- Wieder geöffnete Rechnung (reopen_invoice): Die einmal vergebene Nummer
+    -- bleibt. Keine neue Sequenz ziehen, sonst entstünde eine Lücke.
+    v_number := v_existing_number;
+  ELSE
+    v_year := EXTRACT(YEAR FROM v_issue_date)::int;
 
-  SELECT CASE v_type
-           WHEN 'invoice' THEN c.invoice_number_pattern
-           WHEN 'quote'   THEN c.quote_number_pattern
-         END
-    INTO v_pattern
-  FROM companies c
-  WHERE c.id = v_company_id;
+    SELECT CASE v_type
+             WHEN 'invoice' THEN c.invoice_number_pattern
+             WHEN 'quote'   THEN c.quote_number_pattern
+           END
+      INTO v_pattern
+    FROM companies c
+    WHERE c.id = v_company_id;
 
-  IF v_pattern IS NULL THEN
-    RAISE EXCEPTION 'number_pattern_missing';
+    IF v_pattern IS NULL THEN
+      RAISE EXCEPTION 'number_pattern_missing';
+    END IF;
+
+    -- Sequenz erst hier verbrauchen: nie im Entwurf, ausschließlich atomar hier.
+    v_seq := get_next_document_number(v_company_id, v_type, v_year);
+
+    v_number := format_document_number(v_pattern, v_seq, v_year);
   END IF;
-
-  -- Sequenz erst hier verbrauchen: nie im Entwurf, ausschließlich atomar hier.
-  v_seq := get_next_document_number(v_company_id, v_type, v_year);
-
-  v_number := format_document_number(v_pattern, v_seq, v_year);
 
   PERFORM set_config('zackzack.finalizing', 'on', true);
 

@@ -20,6 +20,7 @@ import type { ShareTarget } from "@/components/create/3/use-share-document";
 import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatDateDE, formatMoney } from "@/lib/format";
 import { serviceTimingDisplay } from "@/lib/documents/document-de";
+import { CorrectInvoiceButton } from "./correct-invoice-button";
 import { DocShareRow } from "./doc-share-row";
 import { PositionsList } from "./positions-list";
 import { QuoteActions } from "./quote-actions";
@@ -314,6 +315,14 @@ export function DocDetail({
               <Pencil size={17} strokeWidth={STROKE} />
               {t("aEdit")}
             </button>
+          )}
+          {/* Gleiche Bedingung wie „bezahlt markieren": festgeschrieben, unbezahlt. */}
+          {canMarkPaid && (
+            <CorrectInvoiceButton
+              documentId={doc.id}
+              documentNumber={doc.documentNumber}
+              className="hbtn-ghost"
+            />
           )}
           <a
             className="hbtn-ghost"

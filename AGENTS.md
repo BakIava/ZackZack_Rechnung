@@ -93,6 +93,7 @@ Einkaufspreis (inkl. MwSt) + Aufschlag (`percent` in **Basispunkten**, 1250 = 12
 - §14-Check vor der Finalisierung: `pruefeDokumentPflicht()` (`lib/legal/dokument-pflicht.ts`), rein funktional und Supabase-frei. Empfängerangaben sind **betragsabhängig** (Kleinbetragsrechnung bis 250 € brutto, § 33 UStDV). Finalisieren ist erst möglich, wenn `istFinalisierbar()` grün ist.
 - Nummernvergabe passiert **ausschließlich** in der SQL-Funktion `finalize_document` (SECURITY DEFINER, atomar über `number_sequences`, lückenlos pro Firma/Typ/Jahr) — niemals im Client oder in TypeScript. Format pro Firma über `companies.invoice_number_pattern`/`quote_number_pattern` (Standard `R-{YYYY}-{NNN}` / `A-{YYYY}-{NNN}`, z. B. `R-2026-041`; eigener Kreis z. B. `E/{NN}/{YYYY}` → `E/05/2026`). Muster und Startwert pflegt ausschließlich zackzack_admin (`seed_document_number`, `scripts/document-number-patterns.sql`); in TypeScript ist die Nummer ein opaker String.
 - Finalisierte Dokumente sind eingefroren: Schritt 1+2 leiten bei `status != 'draft'` auf Schritt 3 (Ansichtsmodus) um.
+- **Korrigieren** (nur unbezahlte Rechnungen): `reopen_invoice` (`scripts/reopen_invoice.sql`) setzt eine festgeschriebene Rechnung zurück auf `draft`; die **Nummer bleibt** am Dokument, `finalize_document` übernimmt sie beim erneuten Festschreiben, statt eine neue zu ziehen. Das Archiv-PDF wird dabei verworfen und durch die neue Fassung ersetzt (Produktentscheidung 2026-11-08; der Bestätigungsdialog weist darauf hin, eine bereits verschickte Fassung selbst aufzubewahren). Entwürfe mit Nummer sind nicht löschbar, werden nicht wiederverwendet/aufgeräumt und behalten ihren Typ (Trigger `protect_document_history`).
 
 ### Legacy-Spec-Module — nicht für neuen Code verwenden
 `lib/legal/rechnungsnummer.ts`, `lib/legal/mwst.ts`, `lib/legal/marge.ts`, `lib/legal/pflichtangaben.ts` (+ `components/ui/ampel-check.tsx`) sind frühe Spezifikations-Module ohne Produktions-Importeur; sie leben nur noch mit ihren Tests. Produktive Pendants: SQL-Nummernvergabe, `lib/documents/margin.ts`, `lib/legal/dokument-pflicht.ts`. Bei Arbeiten in diesen Bereichen die produktiven Module ändern; die Legacy-Module dürfen nach Produktentscheidung entfernt werden.
@@ -153,7 +154,7 @@ Diese Punkte sind **nicht verhandelbar** und in Tests abgesichert:
 3. Pflichtangaben-Check (`dokument-pflicht.ts`) muss vor jeder Finalisierung grün sein.
 4. Einkaufspreis/Marge erscheinen **niemals** im Dokument-DTO (`DocumentItem`), in der Vorschau oder im PDF.
 5. Dokumentsprache **immer Deutsch**, unabhängig von der Bediensprache.
-6. Finalisierte Dokumente sind unveränderbar; das archivierte PDF ist der Beleg (Archiv-first bei Abruf).
+6. Finalisierte Dokumente sind unveränderbar — einzige Ausnahme: „Korrigieren" einer unbezahlten Rechnung über `reopen_invoice` (gleiche Nummer, Archiv-PDF wird durch die neue Fassung ersetzt). Das archivierte PDF ist der Beleg der aktuellen Fassung (Archiv-first bei Abruf).
 
 Änderungen an `lib/legal/`, `lib/pdf/`, `lib/documents/margin.ts`, dem Finalisierungspfad (`lib/repositories/documents.ts`) oder `scripts/*.sql` brauchen begleitende Tests.
 
