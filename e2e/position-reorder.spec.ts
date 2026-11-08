@@ -23,7 +23,7 @@ async function clearPositions(page: Page): Promise<void> {
 async function addFreePosition(page: Page, label: string, price: string): Promise<void> {
   const cards = page.locator(".d2card");
   const before = await cards.count();
-  await page.getByRole("button", { name: /Position hinzufügen/ }).click();
+  await page.getByTestId("step2-add-position").click();
   const dialog = page.getByRole("dialog");
   await dialog.locator("#ff-label").fill(label);
   await dialog.locator("#ff-price").fill(price);

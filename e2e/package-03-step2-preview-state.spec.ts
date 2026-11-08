@@ -16,7 +16,7 @@ async function loginWithLocalDevAccount(page: Page): Promise<void> {
 }
 
 async function openCatalog(page: Page): Promise<void> {
-  await page.getByRole("button", { name: /Position hinzufügen/ }).click();
+  await page.getByTestId("step2-add-position").click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("dialog").getByRole("tab", { name: "Aus Katalog" }).click();
 }
@@ -59,11 +59,11 @@ test("Paket 3: Schritt 2 hält Liste, Persistenz und sichere Vorschau synchron",
   const preview = page.getByTestId("step2-document-preview");
   const frame = page.getByTestId("step2-pdf-preview-frame");
   await expect(preview).toBeVisible();
-  await expect(page.getByTestId("step2-preview-company")).not.toHaveText("");
+  await expect(preview).toHaveAttribute("data-preview-company", /\S/);
   // Kundenkarte: „Firma Ansprechpartner" bzw. „Vorname Nachname"; Vorschau: Firma bzw. Name.
-  const recipient = page.getByTestId("step2-preview-recipient");
-  await expect(recipient).not.toHaveText("");
-  expect(recipientName.startsWith((await recipient.innerText()).trim())).toBe(true);
+  await expect(preview).toHaveAttribute("data-preview-recipient", /\S/);
+  const recipient = (await preview.getAttribute("data-preview-recipient")) ?? "";
+  expect(recipientName.startsWith(recipient.trim())).toBe(true);
   await expectPreviewCount(preview, 0);
   await expect(frame).toHaveAttribute("src", /^blob:/);
 

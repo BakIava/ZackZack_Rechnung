@@ -30,7 +30,7 @@ async function openEmptyStep2(page: Page): Promise<void> {
 }
 
 async function openAddModal(page: Page): Promise<Locator> {
-  await page.getByRole("button", { name: /Position hinzufügen/ }).click();
+  await page.getByTestId("step2-add-position").click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   return dialog;

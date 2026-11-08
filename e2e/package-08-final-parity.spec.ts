@@ -37,7 +37,7 @@ async function clearPositions(page: Page): Promise<void> {
 async function addLongDocument(page: Page): Promise<void> {
   const cards = page.locator(".d2card");
   for (let index = 0; index < LONG_ITEM_COUNT; index += 1) {
-    await page.getByRole("button", { name: /Position hinzufügen/ }).click();
+    await page.getByTestId("step2-add-position").click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("tab", { name: "Aus Katalog" }).click();
@@ -113,13 +113,14 @@ test("Paket 8: Vorschau, Download und Archiv nutzen denselben Renderer", async (
     "data-preview-position-count",
     String(LONG_ITEM_COUNT),
   );
-  const companyName = (await page.getByTestId("step2-preview-company").textContent())?.trim();
+  const companyName = (await page.getByTestId("step2-document-preview")
+    .getAttribute("data-preview-company"))?.trim();
   expect(companyName).toBeTruthy();
   const step2Frame = await waitForPdfPreview(page, "step2-pdf-preview");
   await expect.poll(() => countPdfPages(step2Frame)).toBeGreaterThan(1);
   const step2Pages = await countPdfPages(step2Frame);
 
-  await page.locator(".d2-sum-btn").click();
+  await page.getByTestId("step2-summary-bar").getByRole("button", { name: "Weiter" }).click();
   await page.waitForURL(new RegExp(`/de/create/${documentId}/3$`));
   const step3Frame = await waitForPdfPreview(page, "step3-pdf-preview");
   await expect.poll(() => countPdfPages(step3Frame)).toBe(step2Pages);

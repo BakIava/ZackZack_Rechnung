@@ -54,7 +54,7 @@ async function clearPositions(page: Page): Promise<void> {
 async function addCatalogPositions(page: Page): Promise<void> {
   const cards = page.locator(".d2card");
   for (let index = 0; index < MULTI_PAGE_ITEM_COUNT; index += 1) {
-    await page.getByRole("button", { name: /Position hinzufügen/ }).click();
+    await page.getByTestId("step2-add-position").click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await dialog.getByRole("tab", { name: "Aus Katalog" }).click();
@@ -112,15 +112,11 @@ async function readGeometry(page: Page): Promise<LayoutGeometry> {
   });
 }
 
-async function expectSummaryAfterPositions(page: Page): Promise<void> {
-  const summary = page.locator(".d2-sumpanel");
-  const lastCard = page.locator(".d2card").last();
-  await expect(summary).toBeAttached();
-  const followsCards = await summary.evaluate((element, lastCardElement) => {
-    if (!lastCardElement) return false;
-    return Boolean(lastCardElement.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
-  }, await lastCard.elementHandle());
-  expect(followsCards).toBe(true);
+/** Die Summenleiste klebt unten in der Positionsspalte – auch bei langer Liste sichtbar. */
+async function expectSummaryBarVisible(page: Page): Promise<void> {
+  const summary = page.getByTestId("step2-positions-column").getByTestId("step2-summary-bar");
+  await expect(summary).toBeInViewport({ ratio: 1 });
+  await expect(summary.getByRole("button")).toBeInViewport({ ratio: 1 });
 }
 
 async function expectDesktopLayout(page: Page, direction: "ltr" | "rtl"): Promise<void> {
@@ -182,7 +178,7 @@ test("Paket 6: Schritt 2 bleibt bei 1280 px in Deutsch und Arabisch nutzbar", as
     await waitForDocument(page);
     await expect(page.getByTestId("step2-pdf-preview")).toHaveAttribute("dir", "ltr");
     await expect(page.getByTestId("step2-pdf-preview")).toHaveAttribute("lang", "de");
-    await expectSummaryAfterPositions(page);
+    await expectSummaryBarVisible(page);
     await expectDesktopLayout(page, "ltr");
     await page.locator(".d2-positions").evaluate((element) => { element.scrollTop = 0; });
     await expect(page).toHaveScreenshot("package-06-step2-de.png", {
@@ -201,7 +197,7 @@ test("Paket 6: Schritt 2 bleibt bei 1280 px in Deutsch und Arabisch nutzbar", as
     );
     await expect(page.getByTestId("step2-pdf-preview")).toHaveAttribute("dir", "ltr");
     await expect(page.getByTestId("step2-pdf-preview")).toHaveAttribute("lang", "de");
-    await expectSummaryAfterPositions(page);
+    await expectSummaryBarVisible(page);
     await expectDesktopLayout(page, "rtl");
     await page.locator(".d2-positions").evaluate((element) => { element.scrollTop = 0; });
     await expect(page).toHaveScreenshot("package-06-step2-ar.png", {

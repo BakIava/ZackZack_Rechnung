@@ -38,7 +38,7 @@ async function startCustomerlessInvoice(page: Page): Promise<string> {
 }
 
 async function openFreePosition(page: Page): Promise<Locator> {
-  await page.getByRole("button", { name: /Position hinzufügen/ }).click();
+  await page.getByTestId("step2-add-position").click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   await dialog.getByRole("tab", { name: "Freie Position" }).click();
@@ -84,7 +84,7 @@ test("Paket 7: nur Dokumentregeln blockieren und erlauben die Finalisierung", as
   await dialog.getByRole("button", { name: "Hinzufügen", exact: true }).click();
   await expect(page.locator(".d2card")).toHaveCount(1);
   await expect(recipientHint).toBeVisible();
-  await page.locator(".d2-sum-btn").click();
+  await page.getByTestId("step2-summary-bar").getByRole("button", { name: "Weiter" }).click();
   await page.waitForURL(new RegExp(`/de/create/${documentId}/3$`));
 
   const requirements = page.getByTestId("document-requirements");
@@ -102,7 +102,7 @@ test("Paket 7: nur Dokumentregeln blockieren und erlauben die Finalisierung", as
   await page.waitForURL(new RegExp(`/de/create/${documentId}/2$`));
   await expect(recipientHint).toHaveCount(0);
 
-  await page.locator(".d2-sum-btn").click();
+  await page.getByTestId("step2-summary-bar").getByRole("button", { name: "Weiter" }).click();
   await page.waitForURL(new RegExp(`/de/create/${documentId}/3$`));
   await expect(page.getByTestId("document-requirements").locator(".check-row.bad")).toHaveCount(0);
 
