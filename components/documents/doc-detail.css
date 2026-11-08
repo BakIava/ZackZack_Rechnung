@@ -233,6 +233,7 @@
 
 .hsecondary {
   display: flex;
+  flex-wrap: wrap;
   gap: 9px;
 }
 

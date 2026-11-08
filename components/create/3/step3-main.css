@@ -201,6 +201,13 @@
 
 /* „Fertig" ist nach der Finalisierung sekundär (Teilen ist die Hauptaktion). */
 
+.d3-back--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .d3-back--done {
   display: flex;
   align-items: center;
