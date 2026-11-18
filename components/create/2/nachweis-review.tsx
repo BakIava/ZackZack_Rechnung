@@ -1,12 +1,12 @@
 "use client";
 
 import { Check, CircleCheck, Info, RotateCcw, TriangleAlert } from "lucide-react";
+import { useId } from "react";
 import { useTranslations } from "next-intl";
-import type { Locale } from "@/i18n/routing";
 import { formatAmount } from "@/lib/format";
-import { nachweisZeitraumText } from "@/lib/documents/nachweis-positionen";
+import { MAX_NACHWEIS_DESCRIPTION } from "@/lib/documents/nachweis-import";
+import { NACHWEIS_STUNDEN_TEXT, nachweisZeitraumText } from "@/lib/documents/nachweis-positionen";
 import { nachweisBlattGesamt, stimmtMitBlatt } from "@/lib/documents/nachweis-pruefung";
-import type { KatalogEintrag } from "@/types/service";
 import type { NachweisErgebnis, NachweisImportLine } from "@/types/nachweis";
 import { NachweisMaterial } from "./nachweis-material";
 import { NachweisResultLines } from "./nachweis-result-lines";
@@ -57,16 +57,15 @@ function CheckBanner({ ergebnis, gesamtStunden }: CheckBannerProps) {
 }
 
 interface NachweisReviewProps {
-  locale: Locale;
-  services: KatalogEintrag[];
   ergebnis: NachweisErgebnis;
   scan: NachweisScanState;
   onImport: (lines: NachweisImportLine[]) => void;
 }
 
-/** Prüfschritt wie das Papierblatt: Namen, Stunden, Satz korrigieren → übernehmen. */
-export function NachweisReview({ locale, services, ergebnis, scan, onImport }: NachweisReviewProps) {
+/** Prüfschritt wie das Papierblatt: Text, Namen, Stunden, Preise korrigieren → übernehmen. */
+export function NachweisReview({ ergebnis, scan, onImport }: NachweisReviewProps) {
   const t = useTranslations("Step2");
+  const textId = useId();
   const zeitraum = nachweisZeitraumText(ergebnis.zeitraumVon, ergebnis.zeitraumBis);
   const { lines, vollstaendig } = scan.importZeilen;
 
@@ -81,7 +80,20 @@ export function NachweisReview({ locale, services, ergebnis, scan, onImport }: N
 
       <CheckBanner ergebnis={ergebnis} gesamtStunden={scan.gesamtStunden} />
 
-      <NachweisWorkers locale={locale} services={services} scan={scan} />
+      <div className="nachweis-review-text">
+        <label htmlFor={textId}>{t("nachweisTextLabel")}</label>
+        <input
+          id={textId}
+          lang="de"
+          dir="ltr"
+          maxLength={MAX_NACHWEIS_DESCRIPTION}
+          value={scan.beschreibung}
+          placeholder={NACHWEIS_STUNDEN_TEXT}
+          onChange={(event) => scan.setBeschreibung(event.target.value)}
+        />
+      </div>
+
+      <NachweisWorkers scan={scan} />
       {scan.material.length > 0 && <NachweisMaterial scan={scan} />}
       <NachweisResultLines vorschlaege={scan.vorschlaege} />
 

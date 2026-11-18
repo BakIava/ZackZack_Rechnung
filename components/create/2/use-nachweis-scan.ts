@@ -5,11 +5,10 @@ import { readNachweis } from "@/lib/documents/nachweis-actions";
 import {
   nachweisGesamtStunden,
   nachweisImportZeilen,
-  nachweisSatzOptionen,
-  nachweisStartSatz,
+  nachweisPreisSetzen,
+  nachweisStartBeschreibung,
   nachweisStartZeilen,
   nachweisVorschlaege,
-  type NachweisSatz,
 } from "@/lib/documents/nachweis-positionen";
 import { MAX_NACHWEIS_BYTES } from "@/lib/documents/nachweis-service";
 import { downscaleImage } from "@/lib/images/downscale-image";
@@ -20,8 +19,8 @@ import type {
   NachweisZeile,
 } from "@/types/nachweis";
 
-/** Nur Komfort auf diesem Gerät: zuletzt gewählter Stundensatz. */
-const LAST_RATE_KEY = "zz-nachweis-last-rate";
+/** Nur Komfort auf diesem Gerät: zuletzt eingegebener Stundenpreis (Cents). */
+const LAST_PRICE_KEY = "zz-nachweis-last-price";
 
 export type NachweisScanPhase = "upload" | "reading" | "review";
 
@@ -30,49 +29,41 @@ export interface NachweisScanError {
   dailyLimit?: number;
 }
 
-type ZeilenPatch = Partial<Pick<NachweisZeile, "name" | "stunden" | "serviceId">>;
+type ZeilenPatch = Partial<Pick<NachweisZeile, "name" | "stunden">>;
 type MaterialPatch = Partial<Pick<NachweisMaterialZeile, "anzahl" | "unitPrice">>;
 
-interface UseNachweisScanArgs {
-  documentId: string;
-  services: NachweisSatz[];
-}
-
-function readLastRate(): string | null {
+function readLastPrice(): number | null {
   try {
-    return window.localStorage.getItem(LAST_RATE_KEY);
+    const value = Number(window.localStorage.getItem(LAST_PRICE_KEY));
+    return Number.isInteger(value) && value > 0 ? value : null;
   } catch {
     return null;
   }
 }
 
-function writeLastRate(serviceId: string | null): void {
-  if (!serviceId) return;
+function writeLastPrice(cents: number | null): void {
+  if (!cents) return;
   try {
-    window.localStorage.setItem(LAST_RATE_KEY, serviceId);
+    window.localStorage.setItem(LAST_PRICE_KEY, String(cents));
   } catch {
-    // Privater Modus o. Ä. – die Vorauswahl ist nur Komfort.
+    // Privater Modus o. Ä. – die Vorbelegung ist nur Komfort.
   }
 }
 
 /** Ablauf im Reiter „Nachweis“: Datei → Lesen → Zeilen prüfen/korrigieren → übernehmen. */
-export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
+export function useNachweisScan(documentId: string) {
   const [phase, setPhase] = useState<NachweisScanPhase>("upload");
   const [error, setError] = useState<NachweisScanError | null>(null);
   const [ergebnis, setErgebnis] = useState<NachweisErgebnis | null>(null);
+  const [beschreibung, setBeschreibung] = useState("");
   const [zeilen, setZeilen] = useState<NachweisZeile[]>([]);
   const [material, setMaterial] = useState<NachweisMaterialZeile[]>([]);
-  const [eigenerPreis, setEigenerPreis] = useState<number | null>(null);
   const nextKey = useRef(0);
-  // Vorauswahl nur aus den angebotenen Sätzen, sonst zeigt die Auswahl etwas anderes als gilt.
-  const startSatz = () => nachweisStartSatz(nachweisSatzOptionen(services), readLastRate());
 
   const vorschlaege = useMemo(
     () =>
-      ergebnis
-        ? nachweisVorschlaege({ kopf: ergebnis, zeilen, material, services, eigenerPreis })
-        : [],
-    [ergebnis, zeilen, material, services, eigenerPreis],
+      ergebnis ? nachweisVorschlaege({ kopf: ergebnis, beschreibung, zeilen, material }) : [],
+    [ergebnis, beschreibung, zeilen, material],
   );
   const importZeilen = useMemo(() => nachweisImportZeilen(vorschlaege), [vorschlaege]);
   const gesamtStunden = nachweisGesamtStunden(zeilen);
@@ -95,11 +86,11 @@ export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
         setPhase("upload");
         return;
       }
-      const start = nachweisStartZeilen(result.ergebnis, startSatz());
+      const start = nachweisStartZeilen(result.ergebnis, readLastPrice());
       setErgebnis(result.ergebnis);
+      setBeschreibung(nachweisStartBeschreibung(result.ergebnis));
       setZeilen(start.zeilen);
       setMaterial(start.material);
-      setEigenerPreis(null);
       setPhase("review");
     } catch {
       setError({ code: "provider_unavailable" });
@@ -113,7 +104,11 @@ export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
     setZeilen((current) =>
       current.map((zeile) => (zeile.key === key ? { ...zeile, ...patch, ...bestaetigt } : zeile)),
     );
-    if (patch.serviceId !== undefined) writeLastRate(patch.serviceId);
+  }
+
+  function setPreis(key: string, cents: number | null) {
+    setZeilen((current) => nachweisPreisSetzen(current, key, cents));
+    writeLastPrice(cents);
   }
 
   function addZeile() {
@@ -124,7 +119,8 @@ export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
         key: `neu${nextKey.current}`,
         name: "",
         stunden: 0,
-        serviceId: current.at(-1)?.serviceId ?? startSatz(),
+        preis: current.at(-1)?.preis ?? readLastPrice(),
+        preisManuell: false,
         unsicher: false,
       },
     ]);
@@ -154,19 +150,20 @@ export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
     phase,
     error,
     ergebnis,
+    beschreibung,
     zeilen,
     material,
-    eigenerPreis,
     gesamtStunden,
     vorschlaege,
     importZeilen,
     read,
+    setBeschreibung,
     updateZeile,
+    setPreis,
     addZeile,
     removeZeile,
     updateMaterial,
     removeMaterial,
-    setEigenerPreis,
     reset,
   };
 }

@@ -150,8 +150,6 @@ export function CatalogPicker({
       {tab === "nachweis" && (
         <NachweisScan
           documentId={documentId}
-          locale={locale}
-          services={services}
           onImport={onAddNachweis}
           onManual={() => selectTab("frei")}
         />
