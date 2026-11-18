@@ -21,8 +21,6 @@ function antwort(): Record<string, unknown> {
     ],
     gesamt_summe_laut_blatt: 180,
     material: [{ anzahl: 3, einheit: "Sack", bezeichnung: "Kabelmörtel" }],
-    bemerkungen: "EG und 1.06",
-    hinweise: ["Saygili Sa durchgestrichen.", ""],
   };
 }
 
@@ -46,8 +44,6 @@ describe("parseNachweisExtractionJson", () => {
       ],
       gesamtSummeLautBlatt: 180,
       material: [{ anzahl: 3, einheit: "Sack", bezeichnung: "Kabelmörtel" }],
-      bemerkungen: "EG und 1.06",
-      hinweise: ["Saygili Sa durchgestrichen."],
     });
   });
 

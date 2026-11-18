@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { beispielNachweis } from "./nachweis-test-fixtures";
-import { nachweisErgebnis, nachweisMitarbeiter, pruefeNachweis } from "./nachweis-pruefung";
+import {
+  nachweisBlattGesamt,
+  nachweisErgebnis,
+  nachweisMitarbeiter,
+  pruefeNachweis,
+  stimmtMitBlatt,
+} from "./nachweis-pruefung";
 
 describe("pruefeNachweis", () => {
   it("rechnet das Beispielblatt nach und findet keine Abweichung", () => {
@@ -53,6 +59,23 @@ describe("pruefeNachweis", () => {
     extraction.mitarbeiter[0].eintraege[0].stunden = 7.75;
     extraction.mitarbeiter[2].eintraege[0].stunden = 8.25;
     expect(pruefeNachweis(extraction).ok).toBe(true);
+  });
+});
+
+describe("stimmtMitBlatt", () => {
+  it("vergleicht die korrigierten Stunden live mit der Gesamtsumme des Blatts", () => {
+    const pruefung = pruefeNachweis(beispielNachweis());
+    expect(stimmtMitBlatt(pruefung, 180)).toBe(true);
+    expect(stimmtMitBlatt(pruefung, 176)).toBe(false);
+  });
+
+  it("nimmt ohne Gesamtsumme die Tageszeilen und ohne beides gar nichts", () => {
+    const extraction = beispielNachweis();
+    extraction.gesamtSummeLautBlatt = 0;
+    expect(nachweisBlattGesamt(pruefeNachweis(extraction))).toBe(180);
+
+    extraction.tage = extraction.tage.map((tag) => ({ ...tag, gesamtLautBlatt: 0 }));
+    expect(stimmtMitBlatt(pruefeNachweis(extraction), 180)).toBeNull();
   });
 });
 

@@ -35,8 +35,6 @@ export interface NachweisExtraction {
   mitarbeiter: { name: string; eintraege: NachweisEintrag[] }[];
   gesamtSummeLautBlatt: number;
   material: NachweisMaterial[];
-  bemerkungen: string;
-  hinweise: string[];
 }
 
 /** Von uns gerechnete Summen im Vergleich zur handschriftlichen Gesamtzeile. */
@@ -68,8 +66,6 @@ export interface NachweisErgebnis {
   pruefung: NachweisPruefung;
   mitarbeiter: NachweisMitarbeiter[];
   material: NachweisMaterial[];
-  bemerkungen: string;
-  hinweise: string[];
 }
 
 export type NachweisErrorCode =
@@ -86,29 +82,38 @@ export type NachweisReadResult =
   | { status: "success"; ergebnis: NachweisErgebnis }
   | { status: "error"; error: NachweisErrorCode; dailyLimit?: number };
 
-/** Mitarbeiter-Key → gewählter Katalogeintrag (null = ohne Katalog, Preis eingeben). */
-export type NachweisSatzZuordnung = Record<string, string | null>;
+/** Bearbeitbare Mitarbeiterzeile im Prüfschritt – lebt nur im Browser, wird nie gespeichert. */
+export interface NachweisZeile {
+  key: string;
+  name: string;
+  stunden: number;
+  /** Gewählter Katalog-Stundensatz; null = eigener Preis. */
+  serviceId: string | null;
+  unsicher: boolean;
+}
 
-/** Abgeleiteter Positionsvorschlag im Prüfschritt (noch ohne Nutzerkorrekturen). */
+/** Bearbeitbare Materialzeile im Prüfschritt. */
+export interface NachweisMaterialZeile {
+  key: string;
+  bezeichnung: string;
+  anzahl: number;
+  einheit: string;
+  /** Cents; null = noch nicht eingegeben. */
+  unitPrice: number | null;
+}
+
+/** Abgeleitete Position („Auf die Rechnung“) – eine je Stundensatz bzw. Materialzeile. */
 export interface NachweisVorschlag {
-  /** Stabil je Gruppe: `svc:<id>`, `hours` (ohne Katalog) oder `mat:<index>`. */
+  /** Stabil je Gruppe: `svc:<id>`, `hours` (eigener Preis) oder der Key der Materialzeile. */
   key: string;
   quelle: "stunden" | "material";
   serviceId: string | null;
   descriptionDe: string;
   unit: string;
   amount: number;
-  /** Cents; null = muss im Prüfschritt eingegeben werden. */
+  /** Cents; null = Preis fehlt noch. */
   unitPrice: number | null;
   additionalDescriptionDe: string | null;
-}
-
-/** Korrekturen des Nutzers im Prüfschritt, je Vorschlags-Key. */
-export interface NachweisKorrekturen {
-  amounts: Record<string, number>;
-  /** Cents, nur für Vorschläge ohne Katalogpreis. */
-  prices: Record<string, number>;
-  excluded: string[];
 }
 
 /** Bestätigte Zeile, wie sie an `addNachweisItems` geht. */

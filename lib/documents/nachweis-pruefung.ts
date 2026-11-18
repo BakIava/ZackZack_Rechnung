@@ -98,7 +98,18 @@ export function nachweisErgebnis(extraction: NachweisExtraction): NachweisErgebn
     pruefung: pruefeNachweis(extraction),
     mitarbeiter: nachweisMitarbeiter(extraction),
     material: extraction.material.filter((entry) => entry.bezeichnung.length > 0),
-    bemerkungen: extraction.bemerkungen,
-    hinweise: extraction.hinweise,
   };
+}
+
+/** Gesamtstunden laut Blatt (Gesamtsumme, sonst Summe der Tageszeilen); null ohne Gesamtzeile. */
+export function nachweisBlattGesamt(pruefung: NachweisPruefung): number | null {
+  if (pruefung.gesamtLautBlatt > 0) return pruefung.gesamtLautBlatt;
+  const tage = round2(pruefung.tage.reduce((sum, tag) => sum + tag.lautBlatt, 0));
+  return tage > 0 ? tage : null;
+}
+
+/** Live-Abgleich im Prüfschritt: stimmen die (ggf. korrigierten) Stunden mit dem Blatt? */
+export function stimmtMitBlatt(pruefung: NachweisPruefung, aktuell: number): boolean | null {
+  const blatt = nachweisBlattGesamt(pruefung);
+  return blatt === null ? null : gleich(blatt, round2(aktuell));
 }

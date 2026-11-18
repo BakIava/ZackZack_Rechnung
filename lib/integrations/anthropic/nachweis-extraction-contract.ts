@@ -63,8 +63,6 @@ export const NACHWEIS_EXTRACTION_SCHEMA = {
         additionalProperties: false,
       },
     },
-    bemerkungen: { type: "string" },
-    hinweise: { type: "array", items: { type: "string" } },
   },
   required: [
     "nachweis_nummer",
@@ -73,8 +71,6 @@ export const NACHWEIS_EXTRACTION_SCHEMA = {
     "mitarbeiter",
     "gesamt_summe_laut_blatt",
     "material",
-    "bemerkungen",
-    "hinweise",
   ],
   additionalProperties: false,
 } as const;
@@ -99,10 +95,9 @@ Regeln:
   leer); gesamt_summe_laut_blatt ist die Gesamtsumme, falls vorhanden, sonst 0.
 - material enthält nur ausgefüllte Zeilen eines Materialabschnitts, die
   Bezeichnung so wie geschrieben. Preise werden nicht übernommen.
-- Werte können in einem unpassenden Feld stehen. Ordne sie nach Bedeutung zu
-  und nenne das in hinweise.
+- Werte können in einem unpassenden Feld stehen (z. B. eine Nummer im Feld
+  „Datum“). Ordne sie nach Bedeutung zu.
 - Erfinde nichts. Fehlende Textfelder sind leere Strings.
-- hinweise: höchstens acht kurze deutsche Sätze zu allem, was unklar ist.
 `.trim();
 
 const MAX_TEXT = 300;
@@ -185,29 +180,16 @@ export function parseNachweisExtractionJson(raw: string): NachweisExtraction | n
   const mitarbeiter = list(parsed.mitarbeiter, 50, parseMitarbeiter);
   const gesamtSummeLautBlatt = number(parsed.gesamt_summe_laut_blatt, MAX_SUMME);
   const material = list(parsed.material, 30, parseMaterial);
-  const bemerkungen = text(parsed.bemerkungen, 1000);
-  const hinweise = list(parsed.hinweise, 12, (entry) => text(entry));
   if (
     nummer === null ||
     projekt === null ||
     !tage ||
     !mitarbeiter ||
     gesamtSummeLautBlatt === null ||
-    !material ||
-    bemerkungen === null ||
-    !hinweise
+    !material
   ) {
     return null;
   }
 
-  return {
-    nummer,
-    projekt,
-    tage,
-    mitarbeiter,
-    gesamtSummeLautBlatt,
-    material,
-    bemerkungen,
-    hinweise: hinweise.filter(Boolean),
-  };
+  return { nummer, projekt, tage, mitarbeiter, gesamtSummeLautBlatt, material };
 }
