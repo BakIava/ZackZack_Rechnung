@@ -97,9 +97,16 @@ Regeln:
   leer); gesamt_summe_laut_blatt ist die Gesamtsumme, falls vorhanden, sonst 0.
 - material enthält nur ausgefüllte Zeilen eines Materialabschnitts, die
   Bezeichnung so wie geschrieben. Preise werden nicht übernommen.
-- arbeitsleistung ist der Text unter „Arbeitsleistungen“ bzw. „Bemerkungen“ –
-  Zahlen und Kürzel genau so, wie sie dastehen, mehrere Zeilen mit Komma
-  verbunden; leerer String, wenn dort nichts steht.
+- arbeitsleistung ist der Text unter „Arbeitsleistungen“ bzw. „Bemerkungen“,
+  aufbereitet als kurzer, sauberer Positionstext für eine deutsche Rechnung:
+  - korrekte Rechtschreibung und Groß-/Kleinschreibung („Kabelmörtel“,
+    „Arbeiten“), mehrere Zeilen mit Komma verbunden, kein Schlusspunkt;
+  - Geschosse als Baukürzel: EG, UG, KG, DG, 1. OG, 2. OG. Handschriftlich
+    sehen „OG“ und „06“ bzw. „0G“ fast gleich aus – steht die Angabe neben
+    einem anderen Geschoss (z. B. „EG und 1.06“), ist ein Obergeschoss gemeint;
+  - Positions-, Raum- und Leistungsnummern (z. B. 633, 611) unverändert;
+  - nichts hinzufügen, nichts weglassen, keine Erklärungen;
+  - leerer String, wenn dort nichts steht.
 - Werte können in einem unpassenden Feld stehen (z. B. eine Nummer im Feld
   „Datum“). Ordne sie nach Bedeutung zu.
 - Erfinde nichts. Fehlende Textfelder sind leere Strings.
