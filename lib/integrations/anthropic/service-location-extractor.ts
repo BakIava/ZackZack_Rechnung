@@ -13,11 +13,12 @@ export async function extractServiceLocation(text: string): Promise<ServiceLocat
   const model = process.env.ANTHROPIC_MODEL?.trim();
   if (!apiKey || !model) throw new Error("service_location_ai_configuration");
 
-  const client = new Anthropic({ apiKey, maxRetries: 1, timeout: 20_000 });
+  const client = new Anthropic({ apiKey, maxRetries: 1, timeout: 30_000 });
+  // Ohne `temperature` (aktuelle Modelle lehnen sie ab) und mit Platz für das
+  // standardmäßige Mitdenken neuerer Modelle – sonst endet die Antwort vorzeitig.
   const message = await client.messages.create({
     model,
-    max_tokens: 512,
-    temperature: 0,
+    max_tokens: 4096,
     system: SERVICE_LOCATION_EXTRACTION_SYSTEM_PROMPT,
     messages: [{
       role: "user",
