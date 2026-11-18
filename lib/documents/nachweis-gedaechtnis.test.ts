@@ -11,6 +11,7 @@ import {
   mitarbeiterMerken,
   nameSchluessel,
   scanMerken,
+  scanVergessen,
   scanZurDatei,
 } from "./nachweis-gedaechtnis";
 
@@ -87,6 +88,13 @@ describe("Scans merken", () => {
     expect(scans).toHaveLength(MAX_GEMERKTE_SCANS);
     expect(scans.map((s) => s.id)).toEqual(["s6", "s5", "s4", "s3", "s2"]);
     expect(scans[0].beschreibung).toBe("neu");
+  });
+
+  it("vergisst einen einzelnen Scan, damit dieselbe Datei neu gelesen wird", () => {
+    const scans = [scan("a", JETZT, "hash-a"), scan("b", JETZT, "hash-b")];
+    const uebrig = scanVergessen(scans, "a");
+    expect(uebrig.map((s) => s.id)).toEqual(["b"]);
+    expect(scanZurDatei(uebrig, "hash-a", JETZT)).toBeNull();
   });
 
   it("findet einen Scan derselben Datei, solange er gültig ist", () => {

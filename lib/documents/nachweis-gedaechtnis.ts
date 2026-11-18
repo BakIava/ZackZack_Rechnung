@@ -90,6 +90,11 @@ export function scanMerken(
   return gueltigeScans([eintrag, ...scans.filter((scan) => scan.id !== eintrag.id)], jetzt);
 }
 
+/** Gemerktes Ergebnis vergessen, z. B. für „Neu lesen“ ohne vorliegende Datei. */
+export function scanVergessen(scans: NachweisScanEintrag[], id: string): NachweisScanEintrag[] {
+  return scans.filter((scan) => scan.id !== id);
+}
+
 /** Gleiche Datei schon gelesen? Dann ohne neuen KI-Aufruf wiederverwenden. */
 export function scanZurDatei(
   scans: NachweisScanEintrag[],
