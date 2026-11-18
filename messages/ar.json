@@ -424,6 +424,8 @@
     "nachweisNumber": "كشف رقم {number}",
     "nachweisNoNumber": "كشف بدون رقم",
     "nachweisRecentTitle": "آخر ما تمت قراءته",
+    "nachweisFromCache": "تم فتحه من الذاكرة",
+    "nachweisReread": "إعادة القراءة",
     "nachweisAlreadyUsed": "انتبه: الكشف رقم {number} تمت إضافته من قبل – {documents}.",
     "nachweisUsedDraft": "(مسودة)",
     "nachweisUsedHere": "إلى هذا المستند",

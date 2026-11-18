@@ -424,6 +424,8 @@
     "nachweisNumber": "Nachweis {number}",
     "nachweisNoNumber": "Nachweis ohne Nummer",
     "nachweisRecentTitle": "Zuletzt gelesen",
+    "nachweisFromCache": "Aus dem Speicher geöffnet",
+    "nachweisReread": "Neu lesen",
     "nachweisAlreadyUsed": "Achtung: Nachweis {number} wurde schon übernommen – {documents}.",
     "nachweisUsedDraft": "(Entwurf)",
     "nachweisUsedHere": "in dieses Dokument",

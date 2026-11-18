@@ -1,10 +1,13 @@
 import { detectOnboardingDocumentMediaType } from "@/lib/onboarding/extraction-file";
 import type { CustomerAiQuota } from "@/types/customer-intake";
 import type {
+  NachweisAusrichtung,
   NachweisExtraction,
   NachweisMediaType,
   NachweisReadResult,
 } from "@/types/nachweis";
+// Nur Typen: der Service wird auch im Browser importiert (MAX_NACHWEIS_BYTES), sharp nicht.
+import type { NachweisGedreht, NachweisVorlage } from "./nachweis-bild";
 import { nachweisErgebnis } from "./nachweis-pruefung";
 
 /** Unter der Vercel-Grenze von 4,5 MB je Anfrage; Fotos verkleinert der Browser vorher. */
@@ -16,6 +19,12 @@ interface NachweisDependencies {
     bytes: Uint8Array,
     mediaType: NachweisMediaType,
   ) => Promise<NachweisExtraction>;
+  /** Gescanntes PDF als Bild herauslösen; alles andere unverändert. */
+  prepareNachweis: (bytes: Uint8Array, mediaType: NachweisMediaType) => Promise<NachweisVorlage>;
+  /** Günstige Vorprüfung: Wie liegt das Blatt im Bild? */
+  detectOrientation: (bytes: Uint8Array) => Promise<NachweisAusrichtung>;
+  /** Bild drehen, bis der Kopf des Formulars oben liegt. */
+  rotateNachweis: (bytes: Uint8Array, ausrichtung: NachweisGedreht) => Promise<Uint8Array>;
 }
 
 function isBlob(value: unknown): value is Blob {
@@ -29,7 +38,52 @@ function isBlob(value: unknown): value is Blob {
   );
 }
 
-/** Datei prüfen → Kontingent → Claude liest ab → wir rechnen und prüfen. Nichts wird gespeichert. */
+/**
+ * Gedreht liest das Modell Zeilen und Spalten unzuverlässig – und teuer. Die
+ * günstige Vorprüfung richtet das Bild vorher auf, damit das Hauptmodell nur
+ * einmal liest. Scheitert sie, liest das Hauptmodell das Bild wie es ist.
+ */
+async function vorabAufrichten(
+  vorlage: NachweisVorlage,
+  dependencies: NachweisDependencies,
+): Promise<NachweisVorlage> {
+  if (vorlage.mediaType === "application/pdf") return vorlage;
+  try {
+    const ausrichtung = await dependencies.detectOrientation(vorlage.bytes);
+    if (ausrichtung === "aufrecht") return vorlage;
+    return {
+      bytes: await dependencies.rotateNachweis(vorlage.bytes, ausrichtung),
+      mediaType: "image/jpeg",
+    };
+  } catch {
+    return vorlage;
+  }
+}
+
+/**
+ * Netz für den seltenen Fehlgriff der Vorprüfung: Meldet das Hauptmodell das
+ * Blatt trotzdem als gedreht, einmal aufgerichtet neu lesen. Ein PDF lässt sich
+ * nicht drehen. Scheitert der zweite Versuch, bleibt das erste Ergebnis; die
+ * Prüfung warnt dann bei Abweichungen von der Gesamtzeile.
+ */
+async function aufrechtLesen(
+  vorlage: NachweisVorlage,
+  erste: NachweisExtraction,
+  dependencies: NachweisDependencies,
+): Promise<NachweisExtraction> {
+  if (erste.ausrichtung === "aufrecht" || vorlage.mediaType === "application/pdf") return erste;
+  try {
+    const gedreht = await dependencies.rotateNachweis(vorlage.bytes, erste.ausrichtung);
+    return await dependencies.extractNachweis(gedreht, "image/jpeg");
+  } catch {
+    return erste;
+  }
+}
+
+/**
+ * Datei prüfen → Kontingent → Ausrichtung prüfen und aufrichten → Claude liest
+ * ab → wir rechnen und prüfen. Ein Kontingent je Datei. Nichts wird gespeichert.
+ */
 export async function processNachweis(
   file: unknown,
   dependencies: NachweisDependencies,
@@ -53,7 +107,12 @@ export async function processNachweis(
 
   let extraction: NachweisExtraction;
   try {
-    extraction = await dependencies.extractNachweis(bytes, mediaType);
+    const vorlage = await vorabAufrichten(
+      await dependencies.prepareNachweis(bytes, mediaType),
+      dependencies,
+    );
+    const erste = await dependencies.extractNachweis(vorlage.bytes, vorlage.mediaType);
+    extraction = await aufrechtLesen(vorlage, erste, dependencies);
   } catch {
     return { status: "error", error: "provider_unavailable" };
   }

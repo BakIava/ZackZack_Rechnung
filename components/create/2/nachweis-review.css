@@ -22,6 +22,42 @@
   color: var(--muted);
 }
 
+.nachweis-review-cached {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.nachweis-review-cached > svg {
+  flex-shrink: 0;
+}
+
+.nachweis-review-reread {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-inline-start: auto;
+  padding-block: 8px;
+  padding-inline: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.nachweis-review-reread:hover,
+.nachweis-review-reread:focus-visible {
+  border-color: var(--primary);
+  outline: none;
+}
+
 .nachweis-check {
   display: flex;
   align-items: flex-start;

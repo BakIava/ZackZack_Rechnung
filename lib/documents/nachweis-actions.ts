@@ -3,6 +3,7 @@
 import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import {
   NachweisExtractionError,
+  erkenneNachweisAusrichtung,
   extractNachweis,
 } from "@/lib/integrations/anthropic/nachweis-extractor";
 import { consumeCustomerAiQuota } from "@/lib/repositories/ai-usage";
@@ -10,6 +11,7 @@ import { getDraftTaxConfig, isDraftDocument } from "@/lib/repositories/document-
 import { getNextItemPosition, insertDocumentItems } from "@/lib/repositories/document-items";
 import { findDocumentsMentioningNachweis } from "@/lib/repositories/nachweis-usages";
 import type { NachweisReadResult, NachweisVerwendung } from "@/types/nachweis";
+import { nachweisBildAufrichten, nachweisVorlage, nachweisVorschau } from "./nachweis-bild";
 import { nachweisZusatzSuchmuster, zusatzNenntNachweis } from "./nachweis-positionen";
 import { getItemContext, lineValues, recomputeDraftItems, type ItemsResult } from "./item-write";
 import { parseNachweisImportLines } from "./nachweis-import";
@@ -53,6 +55,21 @@ export async function readNachweis(
         });
         throw error;
       }
+    },
+    prepareNachweis: nachweisVorlage,
+    detectOrientation: async (bytes) => {
+      try {
+        return await erkenneNachweisAusrichtung(await nachweisVorschau(bytes));
+      } catch (error) {
+        logNachweis("error", "orientation", {
+          errorCode: error instanceof NachweisExtractionError ? error.code : "unknown",
+        });
+        throw error;
+      }
+    },
+    rotateNachweis: async (bytes, ausrichtung) => {
+      logNachweis("info", "rotate", { ausrichtung, sizeBytes: bytes.byteLength });
+      return nachweisBildAufrichten(bytes, ausrichtung);
     },
   });
 

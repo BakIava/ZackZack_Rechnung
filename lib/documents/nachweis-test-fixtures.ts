@@ -21,6 +21,7 @@ function zeile(werte: (number | "-" | "x")[]): NachweisEintrag[] {
 /** Nachweis 2026-040 (Data Center Mainz), so wie Sonnet ihn gelesen hat. */
 export function beispielNachweis(): NachweisExtraction {
   return {
+    ausrichtung: "aufrecht",
     nummer: "2026-040",
     projekt: "Data Center Mainz",
     tage: [24, 24, 32, 32, 32, 36].map((gesamtLautBlatt, index) => ({
