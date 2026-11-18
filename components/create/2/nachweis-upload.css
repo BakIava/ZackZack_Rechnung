@@ -81,6 +81,56 @@
   min-width: 180px;
 }
 
+.nachweis-upload-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nachweis-upload-recent-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.nachweis-upload-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding-inline: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  text-align: start;
+  cursor: pointer;
+}
+
+.nachweis-upload-recent-item:hover,
+.nachweis-upload-recent-item:focus-visible {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.nachweis-upload-recent-item > svg {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.nachweis-upload-recent-name {
+  font-weight: 650;
+}
+
+.nachweis-upload-recent-meta {
+  margin-inline-start: auto;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
 .nachweis-upload-manual {
   padding-block: 8px;
   padding-inline: 12px;
