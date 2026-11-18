@@ -679,6 +679,8 @@
     "hint": "Wo werden die Arbeiten ausgeführt?",
     "optional": "Optional",
     "add": "Einsatzort hinzufügen",
+    "recentTitle": "Zuletzt bei diesem Kunden",
+    "addOther": "Anderen Einsatzort hinzufügen",
     "edit": "Einsatzort bearbeiten",
     "remove": "Entfernen",
     "new": "Neuer Einsatzort",

@@ -679,6 +679,8 @@
     "hint": "Çalışma nerede yapılacak?",
     "optional": "İsteğe bağlı",
     "add": "İş yeri ekle",
+    "recentTitle": "Bu müşteride son kullanılanlar",
+    "addOther": "Başka iş yeri ekle",
     "edit": "İş yerini düzenle",
     "remove": "Kaldır",
     "new": "Yeni iş yeri",
