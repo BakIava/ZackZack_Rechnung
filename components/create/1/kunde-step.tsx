@@ -25,6 +25,7 @@ import { CustomerPicker } from "./customer-picker";
 import { CustomerStepFooter } from "./customer-step-footer";
 import { ServiceLocationField } from "./service-location-field";
 import { ServiceLocationModal } from "./service-location-modal";
+import { useLocationSuggestions } from "./use-location-suggestions";
 import "./kunde-step.css";
 
 interface KundeStepProps {
@@ -85,6 +86,8 @@ export function KundeStep({
   const [editLoadingId, setEditLoadingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const locationSuggestions = useLocationSuggestions(documentId, selected);
 
   const modalOpen = showNew || editing !== null || showLocation;
   const BackChevron = dir === "rtl" ? ChevronRight : ChevronLeft;
@@ -287,8 +290,9 @@ export function KundeStep({
 
         <CustomerPicker dir={dir} query={query} filtered={filtered} selected={selected}
           onQueryChange={setQuery} onSelect={setSelected} onNew={() => setShowNew(true)} />
-        <ServiceLocationField location={location} onEdit={() => setShowLocation(true)}
-          onRemove={() => void handleLocationRemove()} />
+        <ServiceLocationField location={location} suggestions={locationSuggestions}
+          onEdit={() => setShowLocation(true)} onRemove={() => void handleLocationRemove()}
+          onPick={(picked) => void handleLocationApply({ ...picked, sourceText: "" })} />
         {locationError && !showLocation && (
           <p className="dflow-location-error" role="alert">{locationError}</p>
         )}
