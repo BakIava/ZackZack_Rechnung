@@ -424,6 +424,8 @@
     "nachweisNumber": "Puantaj {number}",
     "nachweisNoNumber": "Numarasız puantaj",
     "nachweisRecentTitle": "Son okunanlar",
+    "nachweisFromCache": "Hafızadan açıldı",
+    "nachweisReread": "Yeniden oku",
     "nachweisAlreadyUsed": "Dikkat: {number} numaralı puantaj zaten eklendi – {documents}.",
     "nachweisUsedDraft": "(taslak)",
     "nachweisUsedHere": "bu belgeye",
