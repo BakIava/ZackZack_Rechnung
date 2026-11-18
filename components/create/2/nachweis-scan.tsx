@@ -7,6 +7,13 @@ import { NachweisReview } from "./nachweis-review";
 import { NachweisUpload } from "./nachweis-upload";
 import { useNachweisScan } from "./use-nachweis-scan";
 
+/**
+ * Takt passend zur echten Lesedauer (~10–20 s). Der letzte Schritt bleibt
+ * aktiv, bis das Ergebnis da ist – es steht nie alles auf grün, solange gewartet wird.
+ */
+const READING_STEP_DONE_AT_MS = [1000, 8000, 13000, null] as const;
+const READING_SLOW_AFTER_MS = 25_000;
+
 interface NachweisScanProps {
   documentId: string;
   onImport: (lines: NachweisImportLine[]) => void;
@@ -24,6 +31,8 @@ export function NachweisScan({ documentId, onImport, onManual }: NachweisScanPro
         title={t("nachweisReadingTitle")}
         subtitle={t("nachweisReadingSub")}
         steps={[t("nachweisStep1"), t("nachweisStep2"), t("nachweisStep3"), t("nachweisStep4")]}
+        stepDoneAtMs={READING_STEP_DONE_AT_MS}
+        slow={{ afterMs: READING_SLOW_AFTER_MS, subtitle: t("nachweisReadingSlow") }}
       />
     );
   }
