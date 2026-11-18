@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Step2Screen } from "@/components/create/2/step2-screen";
 import { getStep2DocumentData } from "@/lib/repositories/document-previews";
 import { getServices } from "@/lib/repositories/services";
+import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { isRtlLocale, type Locale } from "@/i18n/routing";
 import { loadPdfLogo } from "@/lib/pdf/document-logo";
 
@@ -19,9 +20,10 @@ export default async function Step2Page({ params }: Step2PageProps) {
   setRequestLocale(locale);
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
 
-  const [documentData, services] = await Promise.all([
+  const [documentData, services, companyId] = await Promise.all([
     getStep2DocumentData(document_id),
     getServices(),
+    getCurrentCompanyId(),
   ]);
 
   // Layout validiert bereits; dieser Fallback greift nur bei Race-Conditions.
@@ -40,6 +42,7 @@ export default async function Step2Page({ params }: Step2PageProps) {
       initialItems={documentData.draftItems}
       logo={logo}
       services={services}
+      cacheScope={companyId ?? "ohne-firma"}
     />
   );
 }

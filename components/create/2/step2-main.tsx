@@ -39,6 +39,8 @@ interface Step2MainProps {
   initialItems: DraftItem[];
   logo: PdfLogo | null;
   services: KatalogEintrag[];
+  /** Firma – trennt den Browser-Speicher des Nachweis-Reiters. */
+  cacheScope: string;
 }
 
 /** Desktop-Hauptbereich von Schritt 2: Positionen aus dem Draft, live in der DB. */
@@ -46,6 +48,7 @@ export function Step2Main({
   dir,
   locale,
   documentId,
+  cacheScope,
   initialPreview,
   initialItems,
   logo,
@@ -205,6 +208,7 @@ export function Step2Main({
           <div className="dmodal-body">
             <CatalogPicker
               documentId={documentId}
+              nachweisCacheScope={cacheScope}
               initialTab={modalTab}
               locale={locale}
               services={services}

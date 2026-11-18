@@ -1,8 +1,10 @@
 "use client";
 
 import { useRef } from "react";
-import { Camera, TriangleAlert } from "lucide-react";
+import { Camera, History, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { nachweisZeitraumText } from "@/lib/documents/nachweis-positionen";
+import type { NachweisScanEintrag } from "@/types/nachweis";
 import type { NachweisScanError } from "./use-nachweis-scan";
 import "./nachweis-upload.css";
 
@@ -10,12 +12,15 @@ const STROKE = 1.75;
 
 interface NachweisUploadProps {
   error: NachweisScanError | null;
+  /** Zuletzt gelesene Nachweise (nur dieses Gerät) – öffnen ohne neuen KI-Aufruf. */
+  zuletzt: NachweisScanEintrag[];
   onFile: (file: File) => void;
+  onOpen: (eintrag: NachweisScanEintrag) => void;
   onManual: () => void;
 }
 
-/** Foto aufnehmen oder Datei wählen – ein großer Knopf, Fehler direkt darunter. */
-export function NachweisUpload({ error, onFile, onManual }: NachweisUploadProps) {
+/** Foto aufnehmen oder Datei wählen – ein großer Knopf, Fehler und letzte Nachweise darunter. */
+export function NachweisUpload({ error, zuletzt, onFile, onOpen, onManual }: NachweisUploadProps) {
   const t = useTranslations("Step2");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -65,6 +70,30 @@ export function NachweisUpload({ error, onFile, onManual }: NachweisUploadProps)
             {t("nachweisManual")}
           </button>
         </div>
+      )}
+
+      {zuletzt.length > 0 && (
+        <section className="nachweis-upload-recent">
+          <h3 className="nachweis-upload-recent-title">{t("nachweisRecentTitle")}</h3>
+          {zuletzt.map((eintrag) => (
+            <button
+              key={eintrag.id}
+              type="button"
+              className="nachweis-upload-recent-item"
+              onClick={() => onOpen(eintrag)}
+            >
+              <History size={18} strokeWidth={STROKE} aria-hidden />
+              <span className="nachweis-upload-recent-name">
+                {eintrag.ergebnis.nummer
+                  ? t("nachweisNumber", { number: eintrag.ergebnis.nummer })
+                  : t("nachweisNoNumber")}
+              </span>
+              <span className="nachweis-upload-recent-meta" dir="ltr">
+                {nachweisZeitraumText(eintrag.ergebnis.zeitraumVon, eintrag.ergebnis.zeitraumBis)}
+              </span>
+            </button>
+          ))}
+        </section>
       )}
     </div>
   );

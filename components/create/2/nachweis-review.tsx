@@ -7,7 +7,7 @@ import { formatAmount } from "@/lib/format";
 import { MAX_NACHWEIS_DESCRIPTION } from "@/lib/documents/nachweis-import";
 import { NACHWEIS_STUNDEN_TEXT, nachweisZeitraumText } from "@/lib/documents/nachweis-positionen";
 import { nachweisBlattGesamt, stimmtMitBlatt } from "@/lib/documents/nachweis-pruefung";
-import type { NachweisErgebnis, NachweisImportLine } from "@/types/nachweis";
+import type { NachweisErgebnis, NachweisImportLine, NachweisVerwendung } from "@/types/nachweis";
 import { NachweisMaterial } from "./nachweis-material";
 import { NachweisResultLines } from "./nachweis-result-lines";
 import { NachweisWorkers } from "./nachweis-workers";
@@ -39,6 +39,31 @@ function CheckBanner({ ergebnis, gesamtStunden }: CheckBannerProps) {
   );
 }
 
+interface UsedBannerProps {
+  nummer: string;
+  verwendungen: NachweisVerwendung[];
+}
+
+/** Warnung vor Doppelabrechnung: dieselbe Nachweis-Nummer steht schon auf einem Dokument. */
+function UsedBanner({ nummer, verwendungen }: UsedBannerProps) {
+  const t = useTranslations("Step2");
+  if (verwendungen.length === 0) return null;
+  const documents = verwendungen
+    .map((verwendung) =>
+      verwendung.sameDocument
+        ? t("nachweisUsedHere")
+        : `${t(verwendung.docType)} ${verwendung.documentNumber ?? t("nachweisUsedDraft")}`,
+    )
+    .join(", ");
+
+  return (
+    <div className="nachweis-check" role="alert">
+      <TriangleAlert size={20} strokeWidth={STROKE} aria-hidden />
+      <span>{t("nachweisAlreadyUsed", { number: nummer, documents })}</span>
+    </div>
+  );
+}
+
 interface NachweisReviewProps {
   ergebnis: NachweisErgebnis;
   scan: NachweisScanState;
@@ -61,6 +86,7 @@ export function NachweisReview({ ergebnis, scan, onImport }: NachweisReviewProps
         {zeitraum && <span className="nachweis-review-meta" dir="ltr">{zeitraum}</span>}
       </div>
 
+      <UsedBanner nummer={ergebnis.nummer} verwendungen={scan.verwendungen} />
       <CheckBanner ergebnis={ergebnis} gesamtStunden={scan.gesamtStunden} />
 
       <div className="nachweis-review-text">
@@ -89,7 +115,10 @@ export function NachweisReview({ ergebnis, scan, onImport }: NachweisReviewProps
           type="button"
           className="nachweis-review-import"
           disabled={!vollstaendig}
-          onClick={() => onImport(lines)}
+          onClick={() => {
+            scan.mitarbeiterFuerNaechstesMalMerken();
+            onImport(lines);
+          }}
         >
           <Check size={20} strokeWidth={2.4} aria-hidden />
           {t("nachweisImport")}

@@ -29,6 +29,8 @@ type Tab = PickerTab;
 
 interface CatalogPickerProps {
   documentId: string;
+  /** Trennt den Browser-Speicher des Nachweis-Reiters je Firma. */
+  nachweisCacheScope: string;
   /** Reiter beim Öffnen, z. B. „nachweis“ aus dem Leerzustand. */
   initialTab?: PickerTab;
   locale: Locale;
@@ -43,6 +45,7 @@ interface CatalogPickerProps {
 /** Gemeinsamer Picker: Freie Position · Aus Katalog · Fremdleistung · Aus Nachweis. */
 export function CatalogPicker({
   documentId,
+  nachweisCacheScope,
   initialTab = "frei",
   locale,
   services,
@@ -154,6 +157,7 @@ export function CatalogPicker({
       {tab === "nachweis" && (
         <NachweisScan
           documentId={documentId}
+          cacheScope={nachweisCacheScope}
           onImport={onAddNachweis}
           onManual={() => selectTab("frei")}
         />

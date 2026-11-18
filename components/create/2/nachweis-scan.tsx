@@ -16,14 +16,16 @@ const READING_SLOW_AFTER_MS = 25_000;
 
 interface NachweisScanProps {
   documentId: string;
+  /** Trennt den Browser-Speicher je Firma. */
+  cacheScope: string;
   onImport: (lines: NachweisImportLine[]) => void;
   onManual: () => void;
 }
 
 /** Reiter „Nachweis“: Foto/PDF hochladen → lesen lassen → prüfen → Positionen übernehmen. */
-export function NachweisScan({ documentId, onImport, onManual }: NachweisScanProps) {
+export function NachweisScan({ documentId, cacheScope, onImport, onManual }: NachweisScanProps) {
   const t = useTranslations("Step2");
-  const scan = useNachweisScan(documentId);
+  const scan = useNachweisScan(documentId, cacheScope);
 
   if (scan.phase === "reading") {
     return (
@@ -41,5 +43,13 @@ export function NachweisScan({ documentId, onImport, onManual }: NachweisScanPro
     return <NachweisReview ergebnis={scan.ergebnis} scan={scan} onImport={onImport} />;
   }
 
-  return <NachweisUpload error={scan.error} onFile={(file) => void scan.read(file)} onManual={onManual} />;
+  return (
+    <NachweisUpload
+      error={scan.error}
+      zuletzt={scan.zuletzt}
+      onFile={(file) => void scan.read(file)}
+      onOpen={scan.oeffnen}
+      onManual={onManual}
+    />
+  );
 }
