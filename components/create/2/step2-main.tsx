@@ -61,6 +61,7 @@ export function Step2Main({
     pending,
     error,
     modalOpen,
+    modalTab,
     pad,
     activeEditor,
     openModal,
@@ -155,7 +156,11 @@ export function Step2Main({
                 onDelete={remove}
                 onMoveTo={items.length > 1 ? reorder.openPicker : null}
               />
-              <PositionAddEnd empty={items.length === 0} onAdd={openModal} />
+              <PositionAddEnd
+                empty={items.length === 0}
+                onAdd={() => openModal("frei")}
+                onAddNachweis={() => openModal("nachweis")}
+              />
             </div>
             <Step2SummaryBar
               dir={dir}
@@ -200,6 +205,7 @@ export function Step2Main({
           <div className="dmodal-body">
             <CatalogPicker
               documentId={documentId}
+              initialTab={modalTab}
               locale={locale}
               services={services}
               onAddCatalog={addCatalog}

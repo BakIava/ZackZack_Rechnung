@@ -24,10 +24,13 @@ import "./catalog-picker.css";
 
 const STROKE = 1.75;
 
-type Tab = "katalog" | "frei" | "fremd" | "nachweis";
+export type PickerTab = "katalog" | "frei" | "fremd" | "nachweis";
+type Tab = PickerTab;
 
 interface CatalogPickerProps {
   documentId: string;
+  /** Reiter beim Öffnen, z. B. „nachweis“ aus dem Leerzustand. */
+  initialTab?: PickerTab;
   locale: Locale;
   services: KatalogEintrag[];
   onAddCatalog: (serviceId: string) => void;
@@ -40,6 +43,7 @@ interface CatalogPickerProps {
 /** Gemeinsamer Picker: Freie Position · Aus Katalog · Fremdleistung · Aus Nachweis. */
 export function CatalogPicker({
   documentId,
+  initialTab = "frei",
   locale,
   services,
   onAddCatalog,
@@ -49,7 +53,7 @@ export function CatalogPicker({
   onPreviewChange,
 }: CatalogPickerProps) {
   const t = useTranslations("Step2");
-  const [tab, setTab] = useState<Tab>("frei");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [query, setQuery] = useState("");
 
   const tabs: { id: Tab; icon: typeof ClipboardList; label: string }[] = [
