@@ -11,6 +11,8 @@ import {
   updateItem,
   type ItemsResult,
 } from "@/lib/documents/item-actions";
+import { addNachweisItems } from "@/lib/documents/nachweis-actions";
+import type { NachweisImportLine } from "@/types/nachweis";
 import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
 import {
   EMPTY_TEMPORARY_DOCUMENT_ITEM,
@@ -147,6 +149,11 @@ export function useStep2Items({
     setTemporaryItem(null);
     run(() => addFremdItem(documentId, input));
   };
+  const addNachweis = (lines: NachweisImportLine[]) => {
+    setModalOpen(false);
+    setTemporaryItem(null);
+    run(() => addNachweisItems(documentId, lines));
+  };
 
   const updateTemporaryItem = useCallback((input: TemporaryDocumentItemInput) => {
     setTemporaryItem(input);
@@ -237,6 +244,7 @@ export function useStep2Items({
     addCatalog,
     addFree,
     addFremd,
+    addNachweis,
     remove: (id: string) => run(() => deleteItem(id)),
     editDesc: (item: DraftItem) => openEditor(item, "desc"),
     editAdditionalDescription: (item: DraftItem) => openEditor(item, "additionalDescription"),

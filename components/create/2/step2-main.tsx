@@ -71,6 +71,7 @@ export function Step2Main({
     addCatalog,
     addFree,
     addFremd,
+    addNachweis,
     remove,
     editDesc,
     editAdditionalDescription,
@@ -198,11 +199,13 @@ export function Step2Main({
           </div>
           <div className="dmodal-body">
             <CatalogPicker
+              documentId={documentId}
               locale={locale}
               services={services}
               onAddCatalog={addCatalog}
               onAddFree={addFree}
               onAddFremd={addFremd}
+              onAddNachweis={addNachweis}
               onPreviewChange={updateTemporaryItem}
             />
           </div>

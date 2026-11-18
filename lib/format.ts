@@ -25,6 +25,13 @@ export function formatQuantityDecimal(amount: number): string {
   return decimalFormat.format(amount);
 }
 
+const amountFormat = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 2 });
+
+/** Menge ohne überflüssige Nullen („180“, „7,5“). */
+export function formatAmount(amount: number): string {
+  return amountFormat.format(amount);
+}
+
 /** Steuersatz in Prozent mit genau zwei Nachkommastellen („19,00“). */
 export function formatRateDecimal(rate: number): string {
   return decimalFormat.format(rate);
