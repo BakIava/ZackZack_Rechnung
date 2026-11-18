@@ -14,6 +14,8 @@ interface Step2ScreenProps {
   initialItems: DraftItem[];
   logo: PdfLogo | null;
   services: KatalogEintrag[];
+  /** Firma – trennt den Browser-Speicher des Nachweis-Reiters. */
+  cacheScope: string;
 }
 
 /** Desktop-Schritt 2 (Positionen): Sidebar + Hauptbereich, vollflächig.
@@ -26,6 +28,7 @@ export function Step2Screen({
   initialItems,
   logo,
   services,
+  cacheScope,
 }: Step2ScreenProps) {
   return (
     <div className="zz-dash">
@@ -39,6 +42,7 @@ export function Step2Screen({
           initialItems={initialItems}
           logo={logo}
           services={services}
+          cacheScope={cacheScope}
         />
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Brush, ClipboardList, FileText, Pencil, Plus, Search, Truck } from "lucide-react";
+import { Brush, ClipboardList, FileText, Pencil, Plus, ScanLine, Search, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
 import { anzeigeName } from "@/lib/katalog/anzeige";
@@ -11,45 +11,59 @@ import type {
   FremdItemInput,
   TemporaryDocumentItemInput,
 } from "@/types/document";
+import type { NachweisImportLine } from "@/types/nachweis";
 import { formatMoney } from "@/lib/format";
 import {
   EMPTY_TEMPORARY_DOCUMENT_ITEM,
   FREE_TEMPORARY_DOCUMENT_ITEM,
   FREMD_TEMPORARY_DOCUMENT_ITEM,
 } from "@/lib/documents/document-preview-state";
+import { NachweisScan } from "./nachweis-scan";
 import { FreeForm, FremdForm } from "./position-forms";
 import "./catalog-picker.css";
 
 const STROKE = 1.75;
 
-type Tab = "katalog" | "frei" | "fremd";
+export type PickerTab = "katalog" | "frei" | "fremd" | "nachweis";
+type Tab = PickerTab;
 
 interface CatalogPickerProps {
+  documentId: string;
+  /** Trennt den Browser-Speicher des Nachweis-Reiters je Firma. */
+  nachweisCacheScope: string;
+  /** Reiter beim Öffnen, z. B. „nachweis“ aus dem Leerzustand. */
+  initialTab?: PickerTab;
   locale: Locale;
   services: KatalogEintrag[];
   onAddCatalog: (serviceId: string) => void;
   onAddFree: (input: FreeItemInput) => void;
   onAddFremd: (input: FremdItemInput) => void;
+  onAddNachweis: (lines: NachweisImportLine[]) => void;
   onPreviewChange: (input: TemporaryDocumentItemInput) => void;
 }
 
-/** Gemeinsamer Picker: Freie Position · Aus Katalog · Fremdleistung. */
+/** Gemeinsamer Picker: Freie Position · Aus Katalog · Fremdleistung · Aus Nachweis. */
 export function CatalogPicker({
+  documentId,
+  nachweisCacheScope,
+  initialTab = "frei",
   locale,
   services,
   onAddCatalog,
   onAddFree,
   onAddFremd,
+  onAddNachweis,
   onPreviewChange,
 }: CatalogPickerProps) {
   const t = useTranslations("Step2");
-  const [tab, setTab] = useState<Tab>("frei");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [query, setQuery] = useState("");
 
   const tabs: { id: Tab; icon: typeof ClipboardList; label: string }[] = [
     { id: "frei", icon: Pencil, label: t("freePosition") },
     { id: "katalog", icon: ClipboardList, label: t("fromCatalog") },
     { id: "fremd", icon: Truck, label: t("subcontract") },
+    { id: "nachweis", icon: ScanLine, label: t("nachweisTab") },
   ];
 
   const q = query.toLowerCase();
@@ -139,6 +153,14 @@ export function CatalogPicker({
       )}
       {tab === "fremd" && (
         <FremdForm onAdd={onAddFremd} onPreviewChange={onPreviewChange} />
+      )}
+      {tab === "nachweis" && (
+        <NachweisScan
+          documentId={documentId}
+          cacheScope={nachweisCacheScope}
+          onImport={onAddNachweis}
+          onManual={() => selectTab("frei")}
+        />
       )}
     </>
   );

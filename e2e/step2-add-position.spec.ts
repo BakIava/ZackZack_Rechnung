@@ -28,7 +28,7 @@ async function submitFreePosition(page: Page, label: string): Promise<void> {
   await expect(cards).toHaveCount(before + 1);
 }
 
-test("Schritt 2: genau ein „Position hinzufügen“ – Leerzustand bzw. am Listenende", async ({ page }) => {
+test("Schritt 2: Leerzustand mit „Manuell“ oder „Mit Nachweis“, danach genau ein „Position hinzufügen“", async ({ page }) => {
   test.setTimeout(180_000);
   await loginWithLocalDevAccount(page);
   await page.goto("/de/dashboard");
@@ -40,19 +40,25 @@ test("Schritt 2: genau ein „Position hinzufügen“ – Leerzustand bzw. am Li
 
   const column = page.getByTestId("step2-positions-column");
   const add = page.getByTestId("step2-add-position");
+  const addNachweis = page.getByTestId("step2-add-nachweis");
   const anyAdd = column.getByRole("button", { name: /Position hinzufügen/ });
 
   try {
-    // Leer: die leere Fläche selbst ist der einzige Button.
-    await expect(anyAdd).toHaveCount(1);
-    await expect(add).toContainText("Erste Position hinzufügen");
+    // Leer: zwei große Wege – manuell oder direkt in den Reiter „Nachweis“.
+    await expect(column).toContainText("Erste Position hinzufügen");
+    await expect(add).toContainText("Manuell eingeben");
+    await expect(addNachweis).toContainText("Mit Nachweis");
     expect(await add.evaluate((element) => getComputedStyle(element).borderTopStyle)).toBe("solid");
+    await addNachweis.click();
+    await expect(page.getByRole("dialog").getByRole("tab", { name: "Nachweis" })).toHaveAttribute("aria-selected", "true");
+    await page.getByRole("dialog").getByRole("button", { name: "Schließen" }).click();
     await add.click();
     await submitFreePosition(page, "Pos 1");
 
-    // Mit Positionen: weiterhin genau einer, direkt nach der letzten Position.
+    // Mit Positionen: genau ein „Position hinzufügen“ direkt nach der letzten Position.
     await expect(anyAdd).toHaveCount(1);
-    await expect(add).not.toContainText("Erste");
+    await expect(addNachweis).toHaveCount(0);
+    await expect(add).not.toContainText("Manuell");
     const followsLastCard = await add.evaluate((element) => {
       const cards = document.querySelectorAll(".d2card");
       const last = cards[cards.length - 1];

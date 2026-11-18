@@ -39,6 +39,8 @@ interface Step2MainProps {
   initialItems: DraftItem[];
   logo: PdfLogo | null;
   services: KatalogEintrag[];
+  /** Firma – trennt den Browser-Speicher des Nachweis-Reiters. */
+  cacheScope: string;
 }
 
 /** Desktop-Hauptbereich von Schritt 2: Positionen aus dem Draft, live in der DB. */
@@ -46,6 +48,7 @@ export function Step2Main({
   dir,
   locale,
   documentId,
+  cacheScope,
   initialPreview,
   initialItems,
   logo,
@@ -61,6 +64,7 @@ export function Step2Main({
     pending,
     error,
     modalOpen,
+    modalTab,
     pad,
     activeEditor,
     openModal,
@@ -71,6 +75,7 @@ export function Step2Main({
     addCatalog,
     addFree,
     addFremd,
+    addNachweis,
     remove,
     editDesc,
     editAdditionalDescription,
@@ -154,7 +159,11 @@ export function Step2Main({
                 onDelete={remove}
                 onMoveTo={items.length > 1 ? reorder.openPicker : null}
               />
-              <PositionAddEnd empty={items.length === 0} onAdd={openModal} />
+              <PositionAddEnd
+                empty={items.length === 0}
+                onAdd={() => openModal("frei")}
+                onAddNachweis={() => openModal("nachweis")}
+              />
             </div>
             <Step2SummaryBar
               dir={dir}
@@ -198,11 +207,15 @@ export function Step2Main({
           </div>
           <div className="dmodal-body">
             <CatalogPicker
+              documentId={documentId}
+              nachweisCacheScope={cacheScope}
+              initialTab={modalTab}
               locale={locale}
               services={services}
               onAddCatalog={addCatalog}
               onAddFree={addFree}
               onAddFremd={addFremd}
+              onAddNachweis={addNachweis}
               onPreviewChange={updateTemporaryItem}
             />
           </div>

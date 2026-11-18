@@ -1,18 +1,14 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import { isSameItemSet, planReorder } from "./item-order";
 import { fremdUnitPrice } from "./margin";
 import { normalizeAdditionalDescriptionDe } from "./additional-description";
 import {
   getDraftTaxConfig,
   isDraftDocument,
-  setDraftDocumentTotals,
 } from "@/lib/repositories/document-drafts";
 import {
   deleteDocumentItem,
-  getDraftItems,
   getItemDocumentId,
   getItemPricing,
   getNextItemPosition,
@@ -23,27 +19,21 @@ import {
 } from "@/lib/repositories/document-items";
 import { getServiceSnapshot } from "@/lib/repositories/services";
 import type {
-  DraftItem,
   FreeItemInput,
   FremdItemInput,
   ItemPatch,
-  TaxRate,
 } from "@/types/document";
+import { resolveTaxRate } from "./tax";
 import {
-  calculateDocumentTotals,
-  calculateLineAmounts,
-  resolveTaxRate,
-} from "./tax";
+  getItemContext as getCtx,
+  lineValues,
+  recomputeDraftItems as recompute,
+  type ItemsResult as WriteItemsResult,
+} from "./item-write";
 
-export type ItemsResult =
-  | { items: DraftItem[]; totals: ReturnType<typeof calculateDocumentTotals> }
-  | { error: string };
-
-async function getCtx() {
-  const companyId = await getCurrentCompanyId();
-  if (!companyId) return { error: "notAuthenticated" as const };
-  return { companyId };
-}
+// Bewusst als Typ-Alias, nicht als `export type { … }`: Turbopack lässt
+// Re-Exporte in "use server"-Dateien zur Laufzeit stehen (ReferenceError).
+export type ItemsResult = WriteItemsResult;
 
 /** Lücken in der position-Reihenfolge schließen (1..n). */
 async function renumber(companyId: string, documentId: string): Promise<void> {
@@ -53,37 +43,6 @@ async function renumber(companyId: string, documentId: string): Promise<void> {
     if (rows[i].position !== want) {
       await setItemPosition(companyId, rows[i].id, want);
     }
-  }
-}
-
-/** Dokument-Summen aus den serverseitig berechneten Zeilenwerten aktualisieren. */
-async function recompute(
-  companyId: string,
-  documentId: string,
-  persistTotals = true,
-): Promise<ItemsResult> {
-  const items = await getDraftItems(documentId);
-  const totals = calculateDocumentTotals(
-    items.map((item) => ({
-      netAmount: item.totalAmount,
-      taxRate: item.taxRate,
-      taxAmount: item.taxAmount,
-      grossAmount: item.grossAmount,
-    })),
-  );
-  if (persistTotals) await setDraftDocumentTotals(companyId, documentId, totals);
-  // Router-Cache des gesamten Flow-Layouts invalidieren, damit beim Zurück-
-  // navigieren (z. B. Schritt 3 → 2) nicht ein veralteter, positionsloser
-  // Server-Render aus dem Client-Cache ausgeliefert wird.
-  revalidatePath("/[locale]/create/[document_id]", "layout");
-  return { items, totals };
-}
-
-function lineValues(unitPrice: number, amount: number, taxRate: TaxRate) {
-  try {
-    return calculateLineAmounts(unitPrice, amount, taxRate);
-  } catch {
-    return null;
   }
 }
 

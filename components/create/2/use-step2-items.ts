@@ -11,6 +11,8 @@ import {
   updateItem,
   type ItemsResult,
 } from "@/lib/documents/item-actions";
+import { addNachweisItems } from "@/lib/documents/nachweis-actions";
+import type { NachweisImportLine } from "@/types/nachweis";
 import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
 import {
   EMPTY_TEMPORARY_DOCUMENT_ITEM,
@@ -26,6 +28,7 @@ import type {
   ItemPatch,
   TemporaryDocumentItemInput,
 } from "@/types/document";
+import type { PickerTab } from "./catalog-picker";
 import type { PadField } from "./number-pad";
 import type { PositionEditorState, SheetField } from "./position-sheets";
 import { useItemReorder } from "./use-item-reorder";
@@ -80,6 +83,7 @@ export function useStep2Items({
   const [temporaryItem, setTemporaryItem] = useState<TemporaryDocumentItemInput | null>(null);
   const [itemPreviewEdit, setItemPreviewEdit] = useState<ItemPreviewEdit | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<PickerTab>("frei");
   const [pad, setPad] = useState<{
     itemId: string;
     field: PadField;
@@ -147,13 +151,19 @@ export function useStep2Items({
     setTemporaryItem(null);
     run(() => addFremdItem(documentId, input));
   };
+  const addNachweis = (lines: NachweisImportLine[]) => {
+    setModalOpen(false);
+    setTemporaryItem(null);
+    run(() => addNachweisItems(documentId, lines));
+  };
 
   const updateTemporaryItem = useCallback((input: TemporaryDocumentItemInput) => {
     setTemporaryItem(input);
   }, []);
 
-  const openModal = () => {
+  const openModal = (tab: PickerTab = "frei") => {
     setTemporaryItem({ ...EMPTY_TEMPORARY_DOCUMENT_ITEM });
+    setModalTab(tab);
     setModalOpen(true);
   };
 
@@ -227,6 +237,7 @@ export function useStep2Items({
     pending,
     error,
     modalOpen,
+    modalTab,
     pad,
     activeEditor,
     openModal,
@@ -237,6 +248,7 @@ export function useStep2Items({
     addCatalog,
     addFree,
     addFremd,
+    addNachweis,
     remove: (id: string) => run(() => deleteItem(id)),
     editDesc: (item: DraftItem) => openEditor(item, "desc"),
     editAdditionalDescription: (item: DraftItem) => openEditor(item, "additionalDescription"),
