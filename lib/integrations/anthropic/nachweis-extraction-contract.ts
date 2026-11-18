@@ -63,6 +63,7 @@ export const NACHWEIS_EXTRACTION_SCHEMA = {
         additionalProperties: false,
       },
     },
+    arbeitsleistung: { type: "string" },
   },
   required: [
     "nachweis_nummer",
@@ -71,6 +72,7 @@ export const NACHWEIS_EXTRACTION_SCHEMA = {
     "mitarbeiter",
     "gesamt_summe_laut_blatt",
     "material",
+    "arbeitsleistung",
   ],
   additionalProperties: false,
 } as const;
@@ -95,6 +97,9 @@ Regeln:
   leer); gesamt_summe_laut_blatt ist die Gesamtsumme, falls vorhanden, sonst 0.
 - material enthält nur ausgefüllte Zeilen eines Materialabschnitts, die
   Bezeichnung so wie geschrieben. Preise werden nicht übernommen.
+- arbeitsleistung ist der Text unter „Arbeitsleistungen“ bzw. „Bemerkungen“ –
+  Zahlen und Kürzel genau so, wie sie dastehen, mehrere Zeilen mit Komma
+  verbunden; leerer String, wenn dort nichts steht.
 - Werte können in einem unpassenden Feld stehen (z. B. eine Nummer im Feld
   „Datum“). Ordne sie nach Bedeutung zu.
 - Erfinde nichts. Fehlende Textfelder sind leere Strings.
@@ -180,16 +185,18 @@ export function parseNachweisExtractionJson(raw: string): NachweisExtraction | n
   const mitarbeiter = list(parsed.mitarbeiter, 50, parseMitarbeiter);
   const gesamtSummeLautBlatt = number(parsed.gesamt_summe_laut_blatt, MAX_SUMME);
   const material = list(parsed.material, 30, parseMaterial);
+  const arbeitsleistung = text(parsed.arbeitsleistung, 500);
   if (
     nummer === null ||
     projekt === null ||
     !tage ||
     !mitarbeiter ||
     gesamtSummeLautBlatt === null ||
-    !material
+    !material ||
+    arbeitsleistung === null
   ) {
     return null;
   }
 
-  return { nummer, projekt, tage, mitarbeiter, gesamtSummeLautBlatt, material };
+  return { nummer, projekt, tage, mitarbeiter, gesamtSummeLautBlatt, material, arbeitsleistung };
 }

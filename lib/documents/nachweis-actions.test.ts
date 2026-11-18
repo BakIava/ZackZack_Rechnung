@@ -8,7 +8,6 @@ const h = vi.hoisted(() => ({
   getNextItemPosition: vi.fn(),
   insertDocumentItems: vi.fn(),
   getDraftItems: vi.fn(),
-  getServiceSnapshot: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
@@ -29,11 +28,18 @@ vi.mock("@/lib/repositories/document-items", () => ({
   insertDocumentItems: h.insertDocumentItems,
   getDraftItems: h.getDraftItems,
 }));
-vi.mock("@/lib/repositories/services", () => ({ getServiceSnapshot: h.getServiceSnapshot }));
 
 import { addNachweisItems } from "./nachweis-actions";
 
 const ZUSATZ = "lt. Stundennachweis Nr. 2026-040, 07.09.–12.09.2026";
+const line = (amount: number, unitPrice: number) => ({
+  kind: "free",
+  descriptionDe: "633 636 611 Arbeit EG/1.OG",
+  amount,
+  unit: "Std.",
+  unitPrice,
+  additionalDescriptionDe: ZUSATZ,
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -43,73 +49,42 @@ beforeEach(() => {
   h.getNextItemPosition.mockResolvedValue(3);
   h.insertDocumentItems.mockResolvedValue({});
   h.getDraftItems.mockResolvedValue([]);
-  h.getServiceSnapshot.mockResolvedValue({
-    description_de: "Monteurstunde",
-    unit: "Std.",
-    default_price: 4800,
-  });
 });
 
 describe("addNachweisItems", () => {
-  it("legt alle Zeilen in einem Insert an, Katalogpreis und -begriff vom Server", async () => {
-    const result = await addNachweisItems("document-1", [
-      // Ein eingeschmuggelter Preis an einer Katalogzeile wird ignoriert.
-      { kind: "catalog", serviceId: "svc-mo", amount: 88, unitPrice: 1, additionalDescriptionDe: ZUSATZ },
-      {
-        kind: "free",
-        descriptionDe: "Arbeitsstunden",
-        amount: 52,
-        unit: "Std.",
-        unitPrice: 3800,
-        additionalDescriptionDe: ZUSATZ,
-      },
-    ]);
+  it("legt alle Zeilen in einem Insert ab der nächsten freien Position an", async () => {
+    const result = await addNachweisItems("document-1", [line(128, 4800), line(52, 3800)]);
 
     expect("error" in result).toBe(false);
     expect(h.insertDocumentItems).toHaveBeenCalledOnce();
     const [, , rows] = h.insertDocumentItems.mock.calls[0];
     expect(rows).toEqual([
       expect.objectContaining({
-        serviceId: "svc-mo",
-        position: 3,
-        descriptionDe: "Monteurstunde",
-        unit: "Std.",
-        unitPrice: 4800,
-        amount: 88,
-        totalAmount: 422_400,
-        additionalDescriptionDe: ZUSATZ,
-      }),
-      expect.objectContaining({
         serviceId: null,
-        position: 4,
-        descriptionDe: "Arbeitsstunden",
-        unitPrice: 3800,
-        totalAmount: 197_600,
+        position: 3,
+        descriptionDe: "633 636 611 Arbeit EG/1.OG",
+        additionalDescriptionDe: ZUSATZ,
+        amount: 128,
+        unitPrice: 4800,
+        totalAmount: 614_400,
       }),
+      expect.objectContaining({ position: 4, amount: 52, unitPrice: 3800, totalAmount: 197_600 }),
     ]);
     expect(h.setDraftDocumentTotals).toHaveBeenCalledOnce();
   });
 
-  it("verwirft ungültige Zeilen und fremde Katalogeinträge ohne zu schreiben", async () => {
-    await expect(addNachweisItems("document-1", [{ kind: "catalog", amount: 1 }])).resolves.toEqual({
+  it("verwirft ungültige Zeilen ohne zu schreiben", async () => {
+    await expect(addNachweisItems("document-1", [line(1, 0)])).resolves.toEqual({
       error: "linesInvalid",
     });
-    h.getServiceSnapshot.mockResolvedValue(null);
-    await expect(
-      addNachweisItems("document-1", [
-        { kind: "catalog", serviceId: "fremd", amount: 1, additionalDescriptionDe: null },
-      ]),
-    ).resolves.toEqual({ error: "serviceNotFound" });
     expect(h.insertDocumentItems).not.toHaveBeenCalled();
   });
 
   it("schreibt nicht in festgeschriebene Dokumente", async () => {
     h.isDraftDocument.mockResolvedValue(false);
-    await expect(
-      addNachweisItems("document-1", [
-        { kind: "catalog", serviceId: "svc-mo", amount: 1, additionalDescriptionDe: null },
-      ]),
-    ).resolves.toEqual({ error: "draftNotFound" });
+    await expect(addNachweisItems("document-1", [line(1, 4800)])).resolves.toEqual({
+      error: "draftNotFound",
+    });
     expect(h.insertDocumentItems).not.toHaveBeenCalled();
   });
 });

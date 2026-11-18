@@ -5,60 +5,69 @@ import { nachweisErgebnis } from "./nachweis-pruefung";
 import {
   nachweisGesamtStunden,
   nachweisImportZeilen,
-  nachweisSatzOptionen,
-  nachweisStartSatz,
+  nachweisPreisSetzen,
+  nachweisStartBeschreibung,
   nachweisStartZeilen,
   nachweisVorschlaege,
   nachweisZeitraumText,
-  type NachweisSatz,
 } from "./nachweis-positionen";
 
-const VORARBEITER: NachweisSatz = { id: "svc-va", de: "Vorarbeiterstunde", einheit: "Std.", preisCents: 5500 };
-const MONTEUR: NachweisSatz = { id: "svc-mo", de: "Monteurstunde", einheit: "Std.", preisCents: 4800 };
-const HELFER: NachweisSatz = { id: "svc-he", de: "Helferstunde", einheit: "Std.", preisCents: 3800 };
-const PAUSCHALE: NachweisSatz = { id: "svc-pa", de: "Anfahrt", einheit: "Pauschale", preisCents: 3000 };
-const SERVICES = [VORARBEITER, MONTEUR, HELFER, PAUSCHALE];
 const NAMEN = ["Saygili", "Esref", "Nezih", "Talal"];
-
 const ergebnis = nachweisErgebnis(beispielNachweis());
 const ZUSATZ = "lt. Stundennachweis Nr. 2026-040, 07.09.–12.09.2026, Data Center Mainz";
+const TEXT = "633 636 611 Arbeit EG/1.OG";
 
-function zeilenMit(saetze: (string | null)[]): NachweisZeile[] {
+function zeilenMit(preise: (number | null)[]): NachweisZeile[] {
   return nachweisStartZeilen(ergebnis, null).zeilen.map((zeile, index) => ({
     ...zeile,
-    serviceId: saetze[index],
+    preis: preise[index],
   }));
 }
 
-function vorschlaege(
-  zeilen: NachweisZeile[],
-  material: NachweisMaterialZeile[] = [],
-  eigenerPreis: number | null = null,
-) {
-  return nachweisVorschlaege({ kopf: ergebnis, zeilen, material, services: SERVICES, eigenerPreis });
+function vorschlaege(zeilen: NachweisZeile[], material: NachweisMaterialZeile[] = []) {
+  return nachweisVorschlaege({ kopf: ergebnis, beschreibung: TEXT, zeilen, material });
 }
 
-describe("nachweisStartZeilen", () => {
-  it("übernimmt Namen und Stunden und setzt für alle denselben Startsatz", () => {
-    const { zeilen } = nachweisStartZeilen(ergebnis, MONTEUR.id);
-    expect(zeilen.map((z) => [z.name, z.stunden, z.serviceId])).toEqual([
-      ["Saygili", 40, "svc-mo"],
-      ["Esref", 36, "svc-mo"],
-      ["Nezih", 52, "svc-mo"],
-      ["Talal", 52, "svc-mo"],
+describe("Startwerte", () => {
+  it("übernimmt Namen, Stunden und für alle denselben Startpreis", () => {
+    const { zeilen } = nachweisStartZeilen(ergebnis, 4800);
+    expect(zeilen.map((z) => [z.name, z.stunden, z.preis, z.preisManuell])).toEqual([
+      ["Saygili", 40, 4800, false],
+      ["Esref", 36, 4800, false],
+      ["Nezih", 52, 4800, false],
+      ["Talal", 52, 4800, false],
     ]);
     expect(nachweisGesamtStunden(zeilen)).toBe(180);
+  });
+
+  it("schlägt den Text unter „Arbeitsleistungen“ als Beschreibung vor", () => {
+    expect(nachweisStartBeschreibung(ergebnis)).toBe("EG und 1.06 633 arbeit, Kabel mörtel 611");
+    expect(nachweisStartBeschreibung({ arbeitsleistung: "  " })).toBe("Arbeitsstunden");
+  });
+});
+
+describe("nachweisPreisSetzen", () => {
+  it("überträgt den ersten eingetippten Preis auf alle noch nicht geänderten Zeilen", () => {
+    const zeilen = nachweisPreisSetzen(zeilenMit([null, null, null, null]), "m0", 4800);
+    expect(zeilen.map((z) => z.preis)).toEqual([4800, 4800, 4800, 4800]);
+    expect(zeilen.map((z) => z.preisManuell)).toEqual([true, false, false, false]);
+  });
+
+  it("lässt selbst geänderte Zeilen danach in Ruhe", () => {
+    let zeilen = nachweisPreisSetzen(zeilenMit([null, null, null, null]), "m0", 4800);
+    zeilen = nachweisPreisSetzen(zeilen, "m3", 3800);
+    zeilen = nachweisPreisSetzen(zeilen, "m0", 5000);
+    expect(zeilen.map((z) => z.preis)).toEqual([5000, 5000, 5000, 3800]);
   });
 });
 
 describe("nachweisVorschlaege", () => {
-  it("fasst alle Mitarbeiter mit gleichem Satz zu einer Summenzeile zusammen", () => {
-    expect(vorschlaege(zeilenMit(["svc-mo", "svc-mo", "svc-mo", "svc-mo"]))).toEqual([
+  it("macht bei gleichem Preis eine Position mit der Beschreibung des Nutzers", () => {
+    expect(vorschlaege(zeilenMit([4800, 4800, 4800, 4800]))).toEqual([
       {
-        key: "svc:svc-mo",
+        key: "std:4800",
         quelle: "stunden",
-        serviceId: "svc-mo",
-        descriptionDe: "Monteurstunde",
+        descriptionDe: TEXT,
         unit: "Std.",
         amount: 180,
         unitPrice: 4800,
@@ -67,42 +76,35 @@ describe("nachweisVorschlaege", () => {
     ]);
   });
 
-  it("bildet eine Position je Stundensatz in der Reihenfolge des ersten Vorkommens", () => {
-    const result = vorschlaege(zeilenMit(["svc-va", "svc-mo", "svc-mo", "svc-he"]));
-    expect(result.map((v) => [v.descriptionDe, v.amount])).toEqual([
-      ["Vorarbeiterstunde", 40],
-      ["Monteurstunde", 88],
-      ["Helferstunde", 52],
+  it("bildet eine Position je Stundenpreis in der Reihenfolge des ersten Vorkommens", () => {
+    const result = vorschlaege(zeilenMit([5500, 4800, 4800, 3800]));
+    expect(result.map((v) => [v.unitPrice, v.amount])).toEqual([
+      [5500, 40],
+      [4800, 88],
+      [3800, 52],
     ]);
   });
 
+  it("nutzt „Arbeitsstunden“, wenn die Beschreibung leer ist", () => {
+    const result = nachweisVorschlaege({
+      kopf: ergebnis,
+      beschreibung: "   ",
+      zeilen: zeilenMit([4800, 4800, 4800, 4800]),
+      material: [],
+    });
+    expect(result[0].descriptionDe).toBe("Arbeitsstunden");
+  });
+
   it("rechnet mit korrigierten Stunden und ignoriert leere oder gelöschte Zeilen", () => {
-    const zeilen = zeilenMit(["svc-mo", "svc-mo", "svc-mo", "svc-mo"]);
+    const zeilen = zeilenMit([4800, 4800, 4800, 4800]);
     zeilen[0] = { ...zeilen[0], stunden: 38.5 };
     zeilen[1] = { ...zeilen[1], stunden: 0 };
     expect(vorschlaege(zeilen.slice(0, 3))[0].amount).toBe(90.5);
   });
 
   it("schreibt nie Mitarbeiternamen in Positionen", () => {
-    const text = JSON.stringify(vorschlaege(zeilenMit(["svc-va", null, "svc-mo", "svc-he"])));
+    const text = JSON.stringify(vorschlaege(zeilenMit([5500, null, 4800, 3800])));
     for (const name of NAMEN) expect(text).not.toContain(name);
-  });
-
-  it("sammelt Mitarbeiter ohne Katalogsatz als Arbeitsstunden mit eigenem Preis", () => {
-    const [monteur, ohneKatalog] = vorschlaege(
-      zeilenMit(["svc-mo", null, null, "geloescht"]),
-      [],
-      4500,
-    );
-    expect(monteur.amount).toBe(40);
-    expect(ohneKatalog).toMatchObject({
-      key: "hours",
-      serviceId: null,
-      descriptionDe: "Arbeitsstunden",
-      unit: "Std.",
-      amount: 140,
-      unitPrice: 4500,
-    });
   });
 
   it("macht aus Material je Zeile eine Position ohne Zusatztext", () => {
@@ -111,7 +113,6 @@ describe("nachweisVorschlaege", () => {
       {
         key: "mat:0",
         quelle: "material",
-        serviceId: null,
         descriptionDe: "Kabelmörtel",
         unit: "Sack",
         amount: 3,
@@ -124,21 +125,13 @@ describe("nachweisVorschlaege", () => {
 
 describe("nachweisImportZeilen", () => {
   it("ist erst vollständig, wenn jede Position einen Preis hat", () => {
-    const zeilen = zeilenMit(["svc-va", null, null, null]);
-    expect(nachweisImportZeilen(vorschlaege(zeilen)).vollstaendig).toBe(false);
+    expect(nachweisImportZeilen(vorschlaege(zeilenMit([4800, null, null, null]))).vollstaendig).toBe(false);
 
-    const result = nachweisImportZeilen(vorschlaege(zeilen, [], 4500));
+    const result = nachweisImportZeilen(vorschlaege(zeilenMit([5500, 4800, 4800, 4800])));
     expect(result.vollstaendig).toBe(true);
     expect(result.lines).toEqual([
-      { kind: "catalog", serviceId: "svc-va", amount: 40, additionalDescriptionDe: ZUSATZ },
-      {
-        kind: "free",
-        descriptionDe: "Arbeitsstunden",
-        amount: 140,
-        unit: "Std.",
-        unitPrice: 4500,
-        additionalDescriptionDe: ZUSATZ,
-      },
+      { kind: "free", descriptionDe: TEXT, amount: 40, unit: "Std.", unitPrice: 5500, additionalDescriptionDe: ZUSATZ },
+      { kind: "free", descriptionDe: TEXT, amount: 140, unit: "Std.", unitPrice: 4800, additionalDescriptionDe: ZUSATZ },
     ]);
   });
 
@@ -147,22 +140,11 @@ describe("nachweisImportZeilen", () => {
   });
 });
 
-describe("Hilfsfunktionen", () => {
+describe("nachweisZeitraumText", () => {
   it("formatiert Zeiträume ohne Zeitzonenverschiebung", () => {
     expect(nachweisZeitraumText("2026-09-07", "2026-09-12")).toBe("07.09.–12.09.2026");
     expect(nachweisZeitraumText("2026-12-29", "2027-01-02")).toBe("29.12.2026–02.01.2027");
     expect(nachweisZeitraumText("2026-09-07", "2026-09-07")).toBe("07.09.2026");
     expect(nachweisZeitraumText(null, null)).toBe("");
-  });
-
-  it("wählt den zuletzt genutzten, sonst den ersten Stundensatz vor", () => {
-    expect(nachweisStartSatz(SERVICES, HELFER.id)).toBe(HELFER.id);
-    expect(nachweisStartSatz(SERVICES, "geloescht")).toBe(VORARBEITER.id);
-    expect(nachweisStartSatz([PAUSCHALE], null)).toBeNull();
-  });
-
-  it("bietet nur Stundensätze an, solange es welche gibt", () => {
-    expect(nachweisSatzOptionen(SERVICES)).toEqual([VORARBEITER, MONTEUR, HELFER]);
-    expect(nachweisSatzOptionen([PAUSCHALE])).toEqual([PAUSCHALE]);
   });
 });

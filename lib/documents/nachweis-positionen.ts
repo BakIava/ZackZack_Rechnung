@@ -1,4 +1,3 @@
-import type { KatalogEintrag } from "@/types/service";
 import type {
   NachweisErgebnis,
   NachweisImportLine,
@@ -6,14 +5,14 @@ import type {
   NachweisVorschlag,
   NachweisZeile,
 } from "@/types/nachweis";
+import { MAX_NACHWEIS_DESCRIPTION } from "./nachweis-import";
 import { round2 } from "./nachweis-pruefung";
 
 /** Dokumenttexte sind immer Deutsch, unabhängig von der Bediensprache. */
-export const NACHWEIS_STUNDEN_OHNE_KATALOG = "Arbeitsstunden";
+export const NACHWEIS_STUNDEN_TEXT = "Arbeitsstunden";
 export const NACHWEIS_STUNDEN_EINHEIT = "Std.";
 const MATERIAL_EINHEIT = "Stk.";
 
-export type NachweisSatz = Pick<KatalogEintrag, "id" | "de" | "einheit" | "preisCents">;
 type NachweisKopf = Pick<NachweisErgebnis, "nummer" | "projekt" | "zeitraumVon" | "zeitraumBis">;
 
 function deDatum(iso: string, mitJahr: boolean): string {
@@ -38,37 +37,23 @@ export function nachweisZusatztext(kopf: NachweisKopf): string {
   return teile.join(", ");
 }
 
-export function istStundenEinheit(einheit: string): boolean {
-  const normalized = einheit.trim().toLowerCase().replace(/\.$/, "");
-  return ["std", "h", "stunde", "stunden"].includes(normalized);
+/** Vorschlag für den Positionstext: was unter „Arbeitsleistungen“ steht, sonst „Arbeitsstunden“. */
+export function nachweisStartBeschreibung(ergebnis: Pick<NachweisErgebnis, "arbeitsleistung">): string {
+  return ergebnis.arbeitsleistung.trim().slice(0, MAX_NACHWEIS_DESCRIPTION) || NACHWEIS_STUNDEN_TEXT;
 }
 
-/** Auswahl im Prüfschritt: nur Stundensätze – gibt es keine, alle Katalogeinträge. */
-export function nachweisSatzOptionen<T extends NachweisSatz>(services: T[]): T[] {
-  const stunden = services.filter((service) => istStundenEinheit(service.einheit));
-  return stunden.length > 0 ? stunden : services;
-}
-
-/** Vorauswahl: zuletzt genutzter Satz, sonst der erste Stundensatz, sonst eigener Preis. */
-export function nachweisStartSatz(
-  services: NachweisSatz[],
-  zuletzt: string | null,
-): string | null {
-  if (zuletzt && services.some((service) => service.id === zuletzt)) return zuletzt;
-  return services.find((service) => istStundenEinheit(service.einheit))?.id ?? null;
-}
-
-/** Bearbeitbare Zeilen aus dem Leseergebnis; alle Mitarbeiter starten mit demselben Satz. */
+/** Bearbeitbare Zeilen aus dem Leseergebnis; alle starten mit demselben Stundenpreis. */
 export function nachweisStartZeilen(
   ergebnis: NachweisErgebnis,
-  startSatz: string | null,
+  startPreis: number | null,
 ): { zeilen: NachweisZeile[]; material: NachweisMaterialZeile[] } {
   return {
     zeilen: ergebnis.mitarbeiter.map((mitarbeiter) => ({
       key: mitarbeiter.key,
       name: mitarbeiter.name,
       stunden: mitarbeiter.stunden,
-      serviceId: startSatz,
+      preis: startPreis,
+      preisManuell: false,
       unsicher: mitarbeiter.unsicher,
     })),
     material: ergebnis.material.map((entry, index) => ({
@@ -81,39 +66,52 @@ export function nachweisStartZeilen(
   };
 }
 
+/**
+ * Preis in einer Zeile eintippen: Diese Zeile behält ihn fest, alle Zeilen,
+ * die noch nicht selbst geändert wurden, übernehmen ihn mit. So reicht bei
+ * gleichem Satz eine Eingabe, abweichende Sätze bleiben trotzdem möglich.
+ */
+export function nachweisPreisSetzen(
+  zeilen: NachweisZeile[],
+  key: string,
+  preis: number | null,
+): NachweisZeile[] {
+  return zeilen.map((zeile) => {
+    if (zeile.key === key) return { ...zeile, preis, preisManuell: true };
+    return zeile.preisManuell ? zeile : { ...zeile, preis };
+  });
+}
+
 export function nachweisGesamtStunden(zeilen: NachweisZeile[]): number {
   return round2(zeilen.reduce((sum, zeile) => sum + Math.max(0, zeile.stunden), 0));
 }
 
 interface NachweisVorschlagInput {
   kopf: NachweisKopf;
+  /** Positionstext der Stundenpositionen, vom Nutzer änderbar. */
+  beschreibung: string;
   zeilen: NachweisZeile[];
   material: NachweisMaterialZeile[];
-  services: NachweisSatz[];
-  /** Cents für Mitarbeiter ohne Katalogsatz. */
-  eigenerPreis: number | null;
 }
 
 /**
- * Eine Stundenposition je Stundensatz (Reihenfolge = erstes Vorkommen),
- * Mitarbeiter ohne Katalogsatz gemeinsam als „Arbeitsstunden“, Material je Zeile.
- * Preise stammen aus dem Katalog oder vom Nutzer – nie vom Modell.
+ * Eine Stundenposition je Stundenpreis (Reihenfolge = erstes Vorkommen),
+ * Material je Zeile. Preise kommen ausschließlich vom Nutzer – nie vom Modell.
  */
 export function nachweisVorschlaege({
   kopf,
+  beschreibung,
   zeilen,
   material,
-  services,
-  eigenerPreis,
 }: NachweisVorschlagInput): NachweisVorschlag[] {
   const zusatz = nachweisZusatztext(kopf);
-  const byId = new Map(services.map((service) => [service.id, service]));
+  const text = beschreibung.trim() || NACHWEIS_STUNDEN_TEXT;
   const gruppen = new Map<string, NachweisVorschlag>();
 
   for (const zeile of zeilen) {
     if (!(zeile.stunden > 0)) continue;
-    const satz = byId.get(zeile.serviceId ?? "") ?? null;
-    const key = satz ? `svc:${satz.id}` : "hours";
+    const preis = zeile.preis !== null && zeile.preis > 0 ? zeile.preis : null;
+    const key = `std:${preis ?? "offen"}`;
     const vorhanden = gruppen.get(key);
     if (vorhanden) {
       vorhanden.amount = round2(vorhanden.amount + zeile.stunden);
@@ -122,11 +120,10 @@ export function nachweisVorschlaege({
     gruppen.set(key, {
       key,
       quelle: "stunden",
-      serviceId: satz?.id ?? null,
-      descriptionDe: satz?.de ?? NACHWEIS_STUNDEN_OHNE_KATALOG,
-      unit: satz?.einheit || NACHWEIS_STUNDEN_EINHEIT,
+      descriptionDe: text,
+      unit: NACHWEIS_STUNDEN_EINHEIT,
       amount: round2(zeile.stunden),
-      unitPrice: satz ? satz.preisCents : eigenerPreis,
+      unitPrice: preis,
       additionalDescriptionDe: zusatz,
     });
   }
@@ -136,7 +133,6 @@ export function nachweisVorschlaege({
       ? [{
           key: zeile.key,
           quelle: "material",
-          serviceId: null,
           descriptionDe: zeile.bezeichnung.trim(),
           unit: zeile.einheit || MATERIAL_EINHEIT,
           amount: round2(zeile.anzahl),
@@ -153,25 +149,18 @@ export function nachweisVorschlaege({
 export function nachweisImportZeilen(
   vorschlaege: NachweisVorschlag[],
 ): { lines: NachweisImportLine[]; vollstaendig: boolean } {
-  const lines = vorschlaege.flatMap((vorschlag): NachweisImportLine[] => {
-    if (vorschlag.serviceId) {
-      return [{
-        kind: "catalog",
-        serviceId: vorschlag.serviceId,
-        amount: vorschlag.amount,
-        additionalDescriptionDe: vorschlag.additionalDescriptionDe,
-      }];
-    }
-    if (vorschlag.unitPrice === null || vorschlag.unitPrice <= 0) return [];
-    return [{
-      kind: "free",
-      descriptionDe: vorschlag.descriptionDe,
-      amount: vorschlag.amount,
-      unit: vorschlag.unit,
-      unitPrice: vorschlag.unitPrice,
-      additionalDescriptionDe: vorschlag.additionalDescriptionDe,
-    }];
-  });
+  const lines = vorschlaege.flatMap((vorschlag): NachweisImportLine[] =>
+    vorschlag.unitPrice !== null && vorschlag.unitPrice > 0
+      ? [{
+          kind: "free",
+          descriptionDe: vorschlag.descriptionDe,
+          amount: vorschlag.amount,
+          unit: vorschlag.unit,
+          unitPrice: vorschlag.unitPrice,
+          additionalDescriptionDe: vorschlag.additionalDescriptionDe,
+        }]
+      : [],
+  );
   return {
     lines,
     vollstaendig: lines.length > 0 && lines.length === vorschlaege.length,

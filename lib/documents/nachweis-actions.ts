@@ -8,7 +8,6 @@ import {
 import { consumeCustomerAiQuota } from "@/lib/repositories/ai-usage";
 import { getDraftTaxConfig, isDraftDocument } from "@/lib/repositories/document-drafts";
 import { getNextItemPosition, insertDocumentItems } from "@/lib/repositories/document-items";
-import { getServiceSnapshot } from "@/lib/repositories/services";
 import type { NachweisReadResult } from "@/types/nachweis";
 import { getItemContext, lineValues, recomputeDraftItems, type ItemsResult } from "./item-write";
 import { parseNachweisImportLines } from "./nachweis-import";
@@ -63,10 +62,7 @@ export async function readNachweis(
   return result;
 }
 
-/**
- * Bestätigte Zeilen als Positionen anlegen. Katalogzeilen bekommen Preis,
- * Einheit und deutschen Begriff ausschließlich aus dem Katalog.
- */
+/** Bestätigte Zeilen als freie Positionen anlegen – alle in einem Insert. */
 export async function addNachweisItems(
   documentId: string,
   input: unknown,
@@ -86,27 +82,16 @@ export async function addNachweisItems(
 
   const rows = [];
   for (const [index, line] of lines.entries()) {
-    let item = { serviceId: null as string | null, descriptionDe: "", unit: "", unitPrice: 0 };
-    if (line.kind === "catalog") {
-      const service = await getServiceSnapshot(line.serviceId);
-      if (!service) return { error: "serviceNotFound" };
-      item = {
-        serviceId: line.serviceId,
-        descriptionDe: service.description_de,
-        unit: service.unit ?? "",
-        unitPrice: service.default_price ?? 0,
-      };
-    } else {
-      item = { serviceId: null, descriptionDe: line.descriptionDe, unit: line.unit, unitPrice: line.unitPrice };
-    }
-
-    const values = lineValues(item.unitPrice, line.amount, taxRate);
+    const values = lineValues(line.unitPrice, line.amount, taxRate);
     if (!values) return { error: "pricingInvalid" };
     rows.push({
-      ...item,
+      serviceId: null,
       position: firstPosition + index,
+      descriptionDe: line.descriptionDe,
       additionalDescriptionDe: line.additionalDescriptionDe,
       amount: line.amount,
+      unit: line.unit,
+      unitPrice: line.unitPrice,
       totalAmount: values.netAmount,
       taxRate: values.taxRate,
       taxRateOverridden: false,

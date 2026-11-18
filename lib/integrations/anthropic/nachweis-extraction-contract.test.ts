@@ -21,6 +21,7 @@ function antwort(): Record<string, unknown> {
     ],
     gesamt_summe_laut_blatt: 180,
     material: [{ anzahl: 3, einheit: "Sack", bezeichnung: "Kabelmörtel" }],
+    arbeitsleistung: " EG und 1.06 633 arbeit, Kabel mörtel 611 ",
   };
 }
 
@@ -44,6 +45,7 @@ describe("parseNachweisExtractionJson", () => {
       ],
       gesamtSummeLautBlatt: 180,
       material: [{ anzahl: 3, einheit: "Sack", bezeichnung: "Kabelmörtel" }],
+      arbeitsleistung: "EG und 1.06 633 arbeit, Kabel mörtel 611",
     });
   });
 

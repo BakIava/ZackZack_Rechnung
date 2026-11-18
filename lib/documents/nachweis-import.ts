@@ -2,6 +2,7 @@ import type { NachweisImportLine } from "@/types/nachweis";
 import { round2 } from "./nachweis-pruefung";
 
 export const MAX_NACHWEIS_IMPORT_LINES = 20;
+export const MAX_NACHWEIS_DESCRIPTION = 200;
 const MAX_AMOUNT = 100_000;
 const MAX_UNIT_PRICE_CENTS = 100_000_000;
 
@@ -27,40 +28,30 @@ function parseLine(value: unknown): NachweisImportLine | null {
   const additionalDescriptionDe = additionalDescription(value.additionalDescriptionDe);
   if (parsedAmount === null || additionalDescriptionDe === undefined) return null;
 
-  if (value.kind === "catalog") {
-    const serviceId = value.serviceId;
-    if (typeof serviceId !== "string" || serviceId.length === 0 || serviceId.length > 64) {
-      return null;
-    }
-    return { kind: "catalog", serviceId, amount: parsedAmount, additionalDescriptionDe };
+  if (value.kind !== "free") return null;
+  const descriptionDe = typeof value.descriptionDe === "string" ? value.descriptionDe.trim() : "";
+  const unit = typeof value.unit === "string" ? value.unit.trim() : null;
+  const unitPrice = value.unitPrice;
+  if (
+    descriptionDe.length === 0 ||
+    descriptionDe.length > MAX_NACHWEIS_DESCRIPTION ||
+    unit === null ||
+    unit.length > 30 ||
+    typeof unitPrice !== "number" ||
+    !Number.isInteger(unitPrice) ||
+    unitPrice <= 0 ||
+    unitPrice > MAX_UNIT_PRICE_CENTS
+  ) {
+    return null;
   }
-
-  if (value.kind === "free") {
-    const descriptionDe = typeof value.descriptionDe === "string" ? value.descriptionDe.trim() : "";
-    const unit = typeof value.unit === "string" ? value.unit.trim() : null;
-    const unitPrice = value.unitPrice;
-    if (
-      descriptionDe.length === 0 ||
-      descriptionDe.length > 200 ||
-      unit === null ||
-      unit.length > 30 ||
-      typeof unitPrice !== "number" ||
-      !Number.isInteger(unitPrice) ||
-      unitPrice <= 0 ||
-      unitPrice > MAX_UNIT_PRICE_CENTS
-    ) {
-      return null;
-    }
-    return {
-      kind: "free",
-      descriptionDe,
-      amount: parsedAmount,
-      unit,
-      unitPrice,
-      additionalDescriptionDe,
-    };
-  }
-  return null;
+  return {
+    kind: "free",
+    descriptionDe,
+    amount: parsedAmount,
+    unit,
+    unitPrice,
+    additionalDescriptionDe,
+  };
 }
 
 /** Serverseitige Prüfung der vom Client bestätigten Zeilen – eine ungültige Zeile verwirft alles. */

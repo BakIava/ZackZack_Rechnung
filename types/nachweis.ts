@@ -35,6 +35,8 @@ export interface NachweisExtraction {
   mitarbeiter: { name: string; eintraege: NachweisEintrag[] }[];
   gesamtSummeLautBlatt: number;
   material: NachweisMaterial[];
+  /** Text unter „Arbeitsleistungen/Bemerkungen“ – Vorschlag für die Positionsbeschreibung. */
+  arbeitsleistung: string;
 }
 
 /** Von uns gerechnete Summen im Vergleich zur handschriftlichen Gesamtzeile. */
@@ -66,6 +68,7 @@ export interface NachweisErgebnis {
   pruefung: NachweisPruefung;
   mitarbeiter: NachweisMitarbeiter[];
   material: NachweisMaterial[];
+  arbeitsleistung: string;
 }
 
 export type NachweisErrorCode =
@@ -87,8 +90,10 @@ export interface NachweisZeile {
   key: string;
   name: string;
   stunden: number;
-  /** Gewählter Katalog-Stundensatz; null = eigener Preis. */
-  serviceId: string | null;
+  /** Stundenpreis in Cents; null = noch nicht eingegeben. */
+  preis: number | null;
+  /** Preis in dieser Zeile selbst eingetippt – folgt dann nicht mehr anderen Zeilen. */
+  preisManuell: boolean;
   unsicher: boolean;
 }
 
@@ -102,12 +107,11 @@ export interface NachweisMaterialZeile {
   unitPrice: number | null;
 }
 
-/** Abgeleitete Position („Auf die Rechnung“) – eine je Stundensatz bzw. Materialzeile. */
+/** Abgeleitete Position („Das kommt aufs Dokument“) – eine je Stundenpreis bzw. Materialzeile. */
 export interface NachweisVorschlag {
-  /** Stabil je Gruppe: `svc:<id>`, `hours` (eigener Preis) oder der Key der Materialzeile. */
+  /** Stabil je Gruppe: `std:<cents>`, `std:offen` (Preis fehlt) oder der Key der Materialzeile. */
   key: string;
   quelle: "stunden" | "material";
-  serviceId: string | null;
   descriptionDe: string;
   unit: string;
   amount: number;
@@ -116,19 +120,13 @@ export interface NachweisVorschlag {
   additionalDescriptionDe: string | null;
 }
 
-/** Bestätigte Zeile, wie sie an `addNachweisItems` geht. */
-export type NachweisImportLine =
-  | {
-      kind: "catalog";
-      serviceId: string;
-      amount: number;
-      additionalDescriptionDe: string | null;
-    }
-  | {
-      kind: "free";
-      descriptionDe: string;
-      amount: number;
-      unit: string;
-      unitPrice: number;
-      additionalDescriptionDe: string | null;
-    };
+/** Bestätigte Zeile, wie sie an `addNachweisItems` geht (freie Position). */
+export interface NachweisImportLine {
+  kind: "free";
+  descriptionDe: string;
+  amount: number;
+  unit: string;
+  /** Cents, vom Nutzer eingegeben. */
+  unitPrice: number;
+  additionalDescriptionDe: string | null;
+}

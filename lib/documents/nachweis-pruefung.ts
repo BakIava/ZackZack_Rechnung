@@ -98,6 +98,7 @@ export function nachweisErgebnis(extraction: NachweisExtraction): NachweisErgebn
     pruefung: pruefeNachweis(extraction),
     mitarbeiter: nachweisMitarbeiter(extraction),
     material: extraction.material.filter((entry) => entry.bezeichnung.length > 0),
+    arbeitsleistung: extraction.arbeitsleistung,
   };
 }
 

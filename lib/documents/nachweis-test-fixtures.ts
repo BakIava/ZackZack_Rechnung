@@ -35,5 +35,6 @@ export function beispielNachweis(): NachweisExtraction {
     ],
     gesamtSummeLautBlatt: 180,
     material: [],
+    arbeitsleistung: "EG und 1.06 633 arbeit, Kabel mörtel 611",
   };
 }
