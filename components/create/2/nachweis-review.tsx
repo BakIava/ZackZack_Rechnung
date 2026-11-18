@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CircleCheck, Info, RotateCcw, TriangleAlert } from "lucide-react";
+import { Check, RotateCcw, TriangleAlert } from "lucide-react";
 import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { formatAmount } from "@/lib/format";
@@ -21,34 +21,17 @@ interface CheckBannerProps {
   gesamtStunden: number;
 }
 
-/** Live-Abgleich der (korrigierten) Stunden mit der Gesamtzeile des Blatts. */
+/** Warnt nur, wenn die (korrigierten) Stunden nicht zur Gesamtzeile des Zettels passen. */
 function CheckBanner({ ergebnis, gesamtStunden }: CheckBannerProps) {
   const t = useTranslations("Step2");
-  const stimmt = stimmtMitBlatt(ergebnis.pruefung, gesamtStunden);
-  const hours = formatAmount(gesamtStunden);
+  if (stimmtMitBlatt(ergebnis.pruefung, gesamtStunden) !== false) return null;
 
-  if (stimmt === null) {
-    return (
-      <div className="nachweis-check" data-tone="info" role="status">
-        <Info size={20} strokeWidth={STROKE} aria-hidden />
-        <span>{t("nachweisCheckNone", { hours })}</span>
-      </div>
-    );
-  }
-  if (stimmt) {
-    return (
-      <div className="nachweis-check" data-tone="ok" role="status">
-        <CircleCheck size={20} strokeWidth={STROKE} aria-hidden />
-        <span>{t("nachweisCheckOk", { hours })}</span>
-      </div>
-    );
-  }
   return (
-    <div className="nachweis-check" data-tone="warn" role="status">
+    <div className="nachweis-check" role="status">
       <TriangleAlert size={20} strokeWidth={STROKE} aria-hidden />
       <span>
         {t("nachweisCheckMismatch", {
-          hours,
+          hours: formatAmount(gesamtStunden),
           sheet: formatAmount(nachweisBlattGesamt(ergebnis.pruefung) ?? 0),
         })}
       </span>
