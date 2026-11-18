@@ -34,12 +34,37 @@
   outline-offset: 3px;
 }
 
-/* Leerzustand: große Fläche mit Plus, Aktion und Hinweis untereinander. */
+/* Leerzustand: Überschrift und zwei große Wege – manuell oder mit Nachweis. */
+.d2-add-first {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.d2-add-first-t {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+}
+
+.d2-add-first-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .d2-add-first-choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .d2-add-end--empty {
   flex-direction: column;
   gap: 6px;
   margin-block-start: 0;
-  padding-block: 36px;
+  padding-block: 28px;
   border: 2px solid var(--primary);
   background: color-mix(in srgb, var(--primary) 10%, var(--surface));
   box-shadow: 0 10px 22px -16px color-mix(in srgb, var(--primary) 80%, transparent);
@@ -65,12 +90,6 @@
 .d2-add-end-t {
   font-size: 17px;
   font-weight: 700;
-}
-
-.d2-add-end-s {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
 }
 
 @media (prefers-reduced-motion: reduce) {
