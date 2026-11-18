@@ -8,7 +8,9 @@ import {
 import { consumeCustomerAiQuota } from "@/lib/repositories/ai-usage";
 import { getDraftTaxConfig, isDraftDocument } from "@/lib/repositories/document-drafts";
 import { getNextItemPosition, insertDocumentItems } from "@/lib/repositories/document-items";
-import type { NachweisReadResult } from "@/types/nachweis";
+import { findDocumentsMentioningNachweis } from "@/lib/repositories/nachweis-usages";
+import type { NachweisReadResult, NachweisVerwendung } from "@/types/nachweis";
+import { nachweisZusatzSuchmuster, zusatzNenntNachweis } from "./nachweis-positionen";
 import { getItemContext, lineValues, recomputeDraftItems, type ItemsResult } from "./item-write";
 import { parseNachweisImportLines } from "./nachweis-import";
 import { processNachweis } from "./nachweis-service";
@@ -60,6 +62,34 @@ export async function readNachweis(
     sheetMatches: result.status === "success" ? result.ergebnis.pruefung.ok : undefined,
   });
   return result;
+}
+
+/**
+ * Warnung vor Doppelabrechnung: Dokumente, auf denen diese Nachweis-Nummer
+ * schon steht (ohne stornierte). Fehler führen still zu „keine Treffer“.
+ */
+export async function findNachweisUsage(
+  documentId: string,
+  nummer: string,
+): Promise<NachweisVerwendung[]> {
+  const companyId = await getCurrentCompanyId();
+  if (!companyId || typeof nummer !== "string") return [];
+  const trimmed = nummer.trim();
+  if (!trimmed || trimmed.length > 60) return [];
+
+  const rows = await findDocumentsMentioningNachweis(companyId, nachweisZusatzSuchmuster(trimmed));
+  const seen = new Set<string>();
+  return rows.flatMap((row): NachweisVerwendung[] => {
+    if (row.status === "cancelled" || seen.has(row.documentId)) return [];
+    if (!zusatzNenntNachweis(row.additionalDescriptionDe, trimmed)) return [];
+    seen.add(row.documentId);
+    return [{
+      documentId: row.documentId,
+      docType: row.docType,
+      documentNumber: row.documentNumber,
+      sameDocument: row.documentId === documentId,
+    }];
+  });
 }
 
 /** Bestätigte Zeilen als freie Positionen anlegen – alle in einem Insert. */

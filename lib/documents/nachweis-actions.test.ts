@@ -9,6 +9,11 @@ const h = vi.hoisted(() => ({
   insertDocumentItems: vi.fn(),
   getDraftItems: vi.fn(),
   revalidatePath: vi.fn(),
+  findDocumentsMentioningNachweis: vi.fn(),
+}));
+
+vi.mock("@/lib/repositories/nachweis-usages", () => ({
+  findDocumentsMentioningNachweis: h.findDocumentsMentioningNachweis,
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: h.revalidatePath }));
@@ -29,7 +34,7 @@ vi.mock("@/lib/repositories/document-items", () => ({
   getDraftItems: h.getDraftItems,
 }));
 
-import { addNachweisItems } from "./nachweis-actions";
+import { addNachweisItems, findNachweisUsage } from "./nachweis-actions";
 
 const ZUSATZ = "lt. Stundennachweis Nr. 2026-040, 07.09.–12.09.2026";
 const line = (amount: number, unitPrice: number) => ({
@@ -86,5 +91,40 @@ describe("addNachweisItems", () => {
       error: "draftNotFound",
     });
     expect(h.insertDocumentItems).not.toHaveBeenCalled();
+  });
+});
+
+describe("findNachweisUsage", () => {
+  const usage = (documentId: string, zusatz: string, extra: Record<string, unknown> = {}) => ({
+    documentId,
+    additionalDescriptionDe: zusatz,
+    docType: "invoice",
+    documentNumber: "R-2026-041",
+    status: "finalized",
+    ...extra,
+  });
+
+  it("meldet Dokumente mit genau dieser Nummer, ohne Stornos und Doppelte", async () => {
+    h.findDocumentsMentioningNachweis.mockResolvedValue([
+      usage("doc-a", ZUSATZ),
+      usage("doc-a", ZUSATZ),
+      usage("doc-b", "lt. Stundennachweis Nr. 2026-0401, 07.09.–12.09.2026"),
+      usage("doc-c", ZUSATZ, { status: "cancelled" }),
+      usage("document-1", ZUSATZ, { status: "draft", documentNumber: null, docType: "quote" }),
+    ]);
+
+    await expect(findNachweisUsage("document-1", " 2026-040 ")).resolves.toEqual([
+      { documentId: "doc-a", docType: "invoice", documentNumber: "R-2026-041", sameDocument: false },
+      { documentId: "document-1", docType: "quote", documentNumber: null, sameDocument: true },
+    ]);
+    expect(h.findDocumentsMentioningNachweis).toHaveBeenCalledWith(
+      "company-1",
+      "%lt. Stundennachweis Nr. 2026-040%",
+    );
+  });
+
+  it("sucht ohne Nummer gar nicht erst", async () => {
+    await expect(findNachweisUsage("document-1", "  ")).resolves.toEqual([]);
+    expect(h.findDocumentsMentioningNachweis).not.toHaveBeenCalled();
   });
 });
