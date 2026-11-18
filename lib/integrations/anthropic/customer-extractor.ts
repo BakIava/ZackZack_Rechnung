@@ -34,15 +34,16 @@ export async function extractCustomerData(text: string): Promise<CustomerIntakeD
   const client = new Anthropic({
     apiKey,
     maxRetries: 1,
-    timeout: 20_000,
+    timeout: 30_000,
   });
 
   let message: Anthropic.Message;
   try {
+    // Ohne `temperature` (aktuelle Modelle lehnen sie ab) und mit Platz für das
+    // standardmäßige Mitdenken neuerer Modelle – sonst endet die Antwort vorzeitig.
     message = await client.messages.create({
       model,
-      max_tokens: 512,
-      temperature: 0,
+      max_tokens: 4096,
       system: CUSTOMER_EXTRACTION_SYSTEM_PROMPT,
       messages: [
         {

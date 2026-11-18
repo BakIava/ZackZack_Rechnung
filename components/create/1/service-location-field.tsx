@@ -1,22 +1,35 @@
 "use client";
 
-import { MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import { History, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { ServiceLocationInput } from "@/types/service-location";
+import type { DocumentServiceLocation, ServiceLocationInput } from "@/types/service-location";
 import "./service-location-field.css";
 
 interface ServiceLocationFieldProps {
   location: ServiceLocationInput | null;
+  /** Letzte Einsatzorte des gewählten Kunden – nur Vorschlag, nichts wird automatisch gesetzt. */
+  suggestions: DocumentServiceLocation[];
   onEdit: () => void;
   onRemove: () => void;
+  onPick: (location: DocumentServiceLocation) => void;
 }
 
-export function ServiceLocationField({ location, onEdit, onRemove }: ServiceLocationFieldProps) {
-  const t = useTranslations("ServiceLocation");
-  const address = location ? [
+function formatAddress(location: Pick<ServiceLocationInput, "street" | "houseNumber" | "postcode" | "city">) {
+  return [
     [location.street, location.houseNumber].filter(Boolean).join(" "),
     [location.postcode, location.city].filter(Boolean).join(" "),
-  ].filter(Boolean).join(", ") : "";
+  ].filter(Boolean).join(", ");
+}
+
+export function ServiceLocationField({
+  location,
+  suggestions,
+  onEdit,
+  onRemove,
+  onPick,
+}: ServiceLocationFieldProps) {
+  const t = useTranslations("ServiceLocation");
+  const address = location ? formatAddress(location) : "";
 
   return (
     <section className="service-location" aria-labelledby="service-location-title">
@@ -45,9 +58,33 @@ export function ServiceLocationField({ location, onEdit, onRemove }: ServiceLoca
           </div>
         </div>
       ) : (
-        <button className="service-location__add" type="button" onClick={onEdit}>
-          <Plus size={20} aria-hidden />{t("add")}
-        </button>
+        <>
+          {suggestions.length > 0 && (
+            <div className="service-location__recent">
+              <span className="service-location__recent-title">{t("recentTitle")}</span>
+              {suggestions.map((suggestion) => {
+                const suggestionAddress = formatAddress(suggestion);
+                return (
+                  <button
+                    key={`${suggestion.name}|${suggestionAddress}`}
+                    type="button"
+                    className="service-location__recent-item"
+                    onClick={() => onPick(suggestion)}
+                  >
+                    <History size={18} aria-hidden />
+                    <span className="service-location__recent-text" dir="auto">
+                      {suggestion.name && <strong>{suggestion.name}</strong>}
+                      {suggestionAddress && <span>{suggestionAddress}</span>}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <button className="service-location__add" type="button" onClick={onEdit}>
+            <Plus size={20} aria-hidden />{suggestions.length > 0 ? t("addOther") : t("add")}
+          </button>
+        </>
       )}
     </section>
   );

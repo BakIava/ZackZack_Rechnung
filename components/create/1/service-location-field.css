@@ -66,6 +66,40 @@
 .service-location button:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .service-location .service-location__add { justify-self: start; border-style: dashed; border-color: var(--primary); }
 
+.service-location__recent {
+  display: grid;
+  gap: 8px;
+}
+
+.service-location__recent-title {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.service-location .service-location__recent-item {
+  justify-content: flex-start;
+  color: var(--ink);
+  text-align: start;
+}
+
+.service-location__recent-item > svg {
+  flex: 0 0 auto;
+  color: var(--primary);
+}
+
+.service-location__recent-text {
+  display: grid;
+  gap: 2px;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.service-location__recent-text span {
+  color: var(--muted);
+  font-weight: 500;
+}
+
 @media (max-width: 600px) {
   .service-location { padding: 16px; }
   .service-location__selected { align-items: stretch; flex-direction: column; }

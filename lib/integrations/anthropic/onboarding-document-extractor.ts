@@ -91,14 +91,15 @@ export async function extractOnboardingDocument(
   mediaType: OnboardingDocumentMediaType,
 ): Promise<RawOnboardingExtraction> {
   const { apiKey, model } = getAnthropicConfig();
-  const client = new Anthropic({ apiKey, maxRetries: 1, timeout: 30_000 });
+  const client = new Anthropic({ apiKey, maxRetries: 1, timeout: 60_000 });
 
   let message: Anthropic.Message;
   try {
+    // Ohne `temperature` (aktuelle Modelle lehnen sie ab) und mit Platz für das
+    // standardmäßige Mitdenken neuerer Modelle – sonst endet die Antwort vorzeitig.
     message = await client.messages.create({
       model,
-      max_tokens: 2048,
-      temperature: 0,
+      max_tokens: 8192,
       system: ONBOARDING_EXTRACTION_SYSTEM_PROMPT,
       messages: [
         {
