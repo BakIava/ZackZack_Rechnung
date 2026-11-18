@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, RotateCcw, TriangleAlert } from "lucide-react";
+import { Check, History, RefreshCw, RotateCcw, TriangleAlert } from "lucide-react";
 import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { formatAmount } from "@/lib/format";
@@ -85,6 +85,17 @@ export function NachweisReview({ ergebnis, scan, onImport }: NachweisReviewProps
         </span>
         {zeitraum && <span className="nachweis-review-meta" dir="ltr">{zeitraum}</span>}
       </div>
+
+      {scan.ausSpeicher && (
+        <div className="nachweis-review-cached">
+          <History size={17} strokeWidth={STROKE} aria-hidden />
+          <span>{t("nachweisFromCache")}</span>
+          <button type="button" className="nachweis-review-reread" onClick={scan.neuLesen}>
+            <RefreshCw size={16} strokeWidth={STROKE} aria-hidden />
+            {t("nachweisReread")}
+          </button>
+        </div>
+      )}
 
       <UsedBanner nummer={ergebnis.nummer} verwendungen={scan.verwendungen} />
       <CheckBanner ergebnis={ergebnis} gesamtStunden={scan.gesamtStunden} />

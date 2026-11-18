@@ -14,6 +14,7 @@ import {
   gueltigeScans,
   mitarbeiterMerken,
   scanMerken,
+  scanVergessen,
   scanZurDatei,
 } from "@/lib/documents/nachweis-gedaechtnis";
 import {
@@ -87,6 +88,10 @@ export function useNachweisScan(documentId: string, cacheScope: string) {
     gueltigeScans(readScans(cacheScope), Date.now()),
   );
   const [verwendungen, setVerwendungen] = useState<NachweisVerwendung[]>([]);
+  /** Ergebnis stammt aus dem Browser-Speicher (nicht frisch gelesen) – dann gibt es „Neu lesen“. */
+  const [ausSpeicher, setAusSpeicher] = useState(false);
+  /** Zuletzt hochgeladene Datei, damit „Neu lesen“ sie ohne erneutes Auswählen schicken kann. */
+  const letzteDatei = useRef<File | null>(null);
   const nextKey = useRef(0);
 
   // Prüfschritt samt Korrekturen laufend merken – so geht nach versehentlichem Schließen nichts verloren.
@@ -109,7 +114,10 @@ export function useNachweisScan(documentId: string, cacheScope: string) {
     };
   }, [documentId, nummer]);
 
-  function oeffnen(eintrag: NachweisScanEintrag) {
+  /** Gemerkten Nachweis öffnen – aus „Zuletzt gelesen“ (ohne Datei) oder per gleicher Datei. */
+  function oeffnen(eintrag: NachweisScanEintrag, datei: File | null = null) {
+    letzteDatei.current = datei;
+    setAusSpeicher(true);
     setError(null);
     setVerwendungen([]);
     setErgebnis(eintrag.ergebnis);
@@ -128,16 +136,21 @@ export function useNachweisScan(documentId: string, cacheScope: string) {
   const importZeilen = useMemo(() => nachweisImportZeilen(vorschlaege), [vorschlaege]);
   const gesamtStunden = nachweisGesamtStunden(zeilen);
 
-  async function read(file: File) {
+  /**
+   * Datei lesen. `ersetzeId` = „Neu lesen“: gemerktes Ergebnis ignorieren und bei
+   * Erfolg unter derselben ID ersetzen. Scheitert das Lesen, bleibt das alte erhalten.
+   */
+  async function read(file: File, ersetzeId: string | null = null) {
+    letzteDatei.current = file;
     setError(null);
     setVerwendungen([]);
     setPhase("reading");
     try {
       // Gleiche Datei schon gelesen? Dann ohne neuen KI-Aufruf den gemerkten Stand öffnen.
       const hash = await dateiFingerabdruck(file);
-      const gemerkt = scanZurDatei(readScans(cacheScope), hash, Date.now());
+      const gemerkt = ersetzeId ? null : scanZurDatei(readScans(cacheScope), hash, Date.now());
       if (gemerkt) {
-        oeffnen(gemerkt);
+        oeffnen(gemerkt, file);
         return;
       }
 
@@ -160,7 +173,8 @@ export function useNachweisScan(documentId: string, cacheScope: string) {
       setBeschreibung(nachweisStartBeschreibung(result.ergebnis));
       setZeilen(gedaechtnisAnwenden(start.zeilen, readMitarbeiterGedaechtnis(cacheScope)));
       setMaterial(start.material);
-      setScan({ id: neueScanId(), hash });
+      setScan({ id: ersetzeId ?? neueScanId(), hash });
+      setAusSpeicher(false);
       setPhase("review");
     } catch {
       setError({ code: "provider_unavailable" });
@@ -225,6 +239,22 @@ export function useNachweisScan(documentId: string, cacheScope: string) {
     setZuletzt(gueltigeScans(readScans(cacheScope), Date.now()));
   }
 
+  /**
+   * „Neu lesen“ für ein Ergebnis aus dem Speicher: Liegt die Datei vor, wird sie
+   * sofort neu gelesen; sonst wird das gemerkte Ergebnis vergessen und man lädt neu hoch.
+   */
+  function neuLesen() {
+    if (!scan) return;
+    const datei = letzteDatei.current;
+    if (datei) {
+      void read(datei, scan.id);
+      return;
+    }
+    writeScans(cacheScope, scanVergessen(readScans(cacheScope), scan.id));
+    setScan(null);
+    reset();
+  }
+
   return {
     phase,
     error,
@@ -237,8 +267,10 @@ export function useNachweisScan(documentId: string, cacheScope: string) {
     importZeilen,
     zuletzt,
     verwendungen,
+    ausSpeicher,
     read,
     oeffnen,
+    neuLesen,
     mitarbeiterFuerNaechstesMalMerken,
     setBeschreibung,
     updateZeile,
