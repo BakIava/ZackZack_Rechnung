@@ -10,6 +10,9 @@ export type NachweisMediaType =
   | "image/png"
   | "image/webp";
 
+/** Wo der Kopf des Formulars im gesendeten Bild liegt; „aufrecht“ heißt oben. */
+export type NachweisAusrichtung = "aufrecht" | "kopfueber" | "kopf_links" | "kopf_rechts";
+
 /** Zustand einer Stundenzelle, wie sie auf dem Blatt steht. */
 export type NachweisZelle = "zahl" | "leer" | "durchgestrichen" | "unleserlich";
 
@@ -29,6 +32,8 @@ export interface NachweisMaterial {
 
 /** Validiertes Leseergebnis des Modells – nur Abgelesenes, nichts gerechnet. */
 export interface NachweisExtraction {
+  /** Steht das Blatt nicht aufrecht, wird das Bild gedreht und neu gelesen. */
+  ausrichtung: NachweisAusrichtung;
   nummer: string;
   projekt: string;
   tage: { datum: string; gesamtLautBlatt: number }[];

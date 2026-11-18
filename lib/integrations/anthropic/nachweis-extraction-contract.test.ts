@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  NACHWEIS_AUSRICHTUNG_SCHEMA,
   NACHWEIS_EXTRACTION_SCHEMA,
+  parseNachweisAusrichtungJson,
   parseNachweisExtractionJson,
 } from "./nachweis-extraction-contract";
 
 function antwort(): Record<string, unknown> {
   return {
+    ausrichtung: "kopfueber",
     nachweis_nummer: "2026-040",
     projekt: "Data Center Mainz",
     tage: [{ datum: "2026-09-12", gesamt_laut_blatt: 36 }],
@@ -28,6 +31,7 @@ function antwort(): Record<string, unknown> {
 describe("parseNachweisExtractionJson", () => {
   it("übersetzt die Modellantwort in das interne Format", () => {
     expect(parseNachweisExtractionJson(JSON.stringify(antwort()))).toEqual({
+      ausrichtung: "kopfueber",
       nummer: "2026-040",
       projekt: "Data Center Mainz",
       tage: [{ datum: "2026-09-12", gesamtLautBlatt: 36 }],
@@ -52,6 +56,7 @@ describe("parseNachweisExtractionJson", () => {
   it.each([
     ["kein JSON", () => "kein json"],
     ["fehlendes Feld", () => JSON.stringify({ ...antwort(), projekt: undefined })],
+    ["unbekannte Ausrichtung", () => JSON.stringify({ ...antwort(), ausrichtung: "schief" })],
     [
       "unbekannter Zellstatus",
       () => {
@@ -80,9 +85,19 @@ describe("parseNachweisExtractionJson", () => {
   });
 
   it("verlangt im Schema jedes Feld und keine zusätzlichen", () => {
-    expect(NACHWEIS_EXTRACTION_SCHEMA.additionalProperties).toBe(false);
-    expect([...NACHWEIS_EXTRACTION_SCHEMA.required].sort()).toEqual(
-      Object.keys(NACHWEIS_EXTRACTION_SCHEMA.properties).sort(),
-    );
+    for (const schema of [NACHWEIS_EXTRACTION_SCHEMA, NACHWEIS_AUSRICHTUNG_SCHEMA]) {
+      expect(schema.additionalProperties).toBe(false);
+      expect([...schema.required].sort()).toEqual(Object.keys(schema.properties).sort());
+    }
+  });
+});
+
+describe("parseNachweisAusrichtungJson", () => {
+  it("liest die gemeldete Ausrichtung", () => {
+    expect(parseNachweisAusrichtungJson('{"ausrichtung":"kopf_links"}')).toBe("kopf_links");
+  });
+
+  it.each(["kein json", "[]", '{"ausrichtung":"schief"}', "{}"])("verwirft %s", (raw) => {
+    expect(parseNachweisAusrichtungJson(raw)).toBeNull();
   });
 });
