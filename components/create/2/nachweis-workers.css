@@ -1,49 +1,22 @@
 .nachweis-workers {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
-.nachweis-workers-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 14px;
-}
-
-.nachweis-workers-title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--ink);
-}
-
-.nachweis-workers-all {
-  display: flex;
+.nachweis-workers-cols,
+.nachweis-worker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1.3fr) 40px;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  font-weight: 600;
+}
+
+.nachweis-workers-cols {
+  padding-inline: 2px;
+  font-size: 12px;
+  font-weight: 650;
   color: var(--muted);
-}
-
-.nachweis-workers-select {
-  min-width: 0;
-  max-width: 100%;
-  padding-block: 9px;
-  padding-inline: 10px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--ink);
-}
-
-.nachweis-workers-select:focus-visible {
-  outline: none;
-  border-color: var(--primary);
 }
 
 .nachweis-workers-list {
@@ -55,56 +28,134 @@
   list-style: none;
 }
 
-.nachweis-worker {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.3fr);
-  align-items: center;
-  gap: 12px;
-  padding-block: 8px;
+.nachweis-worker-name,
+.nachweis-worker-hours,
+.nachweis-worker-rate {
+  min-width: 0;
+  height: 46px;
   padding-inline: 12px;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line);
   border-radius: var(--r-sm);
   background: var(--surface);
-}
-
-.nachweis-worker-name {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: inherit;
+  font-size: 15px;
   color: var(--ink);
 }
 
-.nachweis-worker-unsure {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding-block: 2px;
-  padding-inline: 6px;
-  border-radius: 999px;
-  background: var(--warn-bg);
-  color: var(--warn);
-  font-size: 11.5px;
+.nachweis-worker-name {
   font-weight: 600;
 }
 
 .nachweis-worker-hours {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.nachweis-worker-hours[data-unsure="1"] {
+  border-color: var(--warn);
+  background: var(--warn-bg);
+}
+
+.nachweis-worker-rate {
+  padding-inline: 10px;
+  font-size: 14px;
+}
+
+.nachweis-worker-name:focus-visible,
+.nachweis-worker-hours:focus-visible,
+.nachweis-worker-rate:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.nachweis-worker-remove {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.nachweis-worker-remove:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.nachweis-workers-add {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  padding-block: 8px;
+  padding-inline: 4px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 650;
-  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.nachweis-workers-own {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding-block: 10px;
+  padding-inline: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 650;
   color: var(--ink);
-  white-space: nowrap;
+}
+
+.nachweis-workers-own[data-missing="1"] {
+  border-color: color-mix(in srgb, var(--warn) 45%, var(--surface));
+  background: var(--warn-bg);
+}
+
+.nachweis-workers-own-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.nachweis-workers-own-field input {
+  width: 110px;
+  height: 42px;
+  padding-inline: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: end;
 }
 
 @media (max-width: 560px) {
-  .nachweis-worker {
-    grid-template-columns: minmax(0, 1fr) auto;
+  .nachweis-workers-cols {
+    display: none;
   }
 
-  .nachweis-worker .nachweis-workers-select {
-    grid-column: 1 / -1;
+  .nachweis-worker {
+    grid-template-columns: minmax(0, 1fr) 84px 40px;
+  }
+
+  .nachweis-worker-rate {
+    grid-column: 1 / 3;
+    grid-row: 2;
   }
 }
