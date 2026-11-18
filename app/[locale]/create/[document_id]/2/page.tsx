@@ -7,6 +7,8 @@ import { isRtlLocale, type Locale } from "@/i18n/routing";
 import { loadPdfLogo } from "@/lib/pdf/document-logo";
 
 export const dynamic = "force-dynamic";
+// Das Lesen eines Nachweises (Server-Action auf dieser Seite) dauert ~10–20 s.
+export const maxDuration = 60;
 
 interface Step2PageProps {
   params: Promise<{ locale: string; document_id: string }>;

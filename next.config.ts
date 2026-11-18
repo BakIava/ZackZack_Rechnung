@@ -21,6 +21,11 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // Nachweis-Upload (Foto/PDF bis 4 MB) geht direkt an eine Server-Action;
+    // Vercel begrenzt Anfragen ohnehin auf 4,5 MB.
+    serverActions: { bodySizeLimit: "5mb" },
+  },
   // Die PDF-Schriften (lib/pdf/fonts) werden zur Renderzeit per fs gelesen und
   // von Next sonst nicht ins Server-Bundle der PDF-Route getract.
   outputFileTracingIncludes: {

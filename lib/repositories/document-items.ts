@@ -74,28 +74,29 @@ export async function getNextItemPosition(
   return ((data?.position as number | undefined) ?? 0) + 1;
 }
 
-/** Neue Positionszeile. Deutscher Begriff wird gespeichert – nie die Übersetzung. */
-export async function insertDocumentItem(
+type NewDocumentItem = {
+  serviceId: string | null;
+  position: number;
+  descriptionDe: string;
+  additionalDescriptionDe?: string | null;
+  amount: number;
+  unit: string;
+  unitPrice: number;
+  totalAmount: number;
+  taxRate: TaxRate;
+  taxRateOverridden: boolean;
+  taxAmount: number;
+  grossAmount: number;
+  purchasePrice?: number;
+  surcharge?: number;
+  surchargeType?: SurchargeType;
+};
+
+function toItemRow(
   companyId: string,
   documentId: string,
-  item: {
-    serviceId: string | null;
-    position: number;
-    descriptionDe: string;
-    amount: number;
-    unit: string;
-    unitPrice: number;
-    totalAmount: number;
-    taxRate: TaxRate;
-    taxRateOverridden: boolean;
-    taxAmount: number;
-    grossAmount: number;
-    purchasePrice?: number;
-    surcharge?: number;
-    surchargeType?: SurchargeType;
-  },
-): Promise<{ error?: string }> {
-  const supabase = await createClient();
+  item: NewDocumentItem,
+): Record<string, unknown> {
   const row: Record<string, unknown> = {
     document_id: documentId,
     company_id: companyId,
@@ -111,11 +112,33 @@ export async function insertDocumentItem(
     tax_amount: item.taxAmount,
     gross_amount: item.grossAmount,
   };
+  if (item.additionalDescriptionDe !== undefined) {
+    row.additional_description_de = item.additionalDescriptionDe;
+  }
   if (item.purchasePrice !== undefined) row.purchase_price = item.purchasePrice;
   if (item.surcharge !== undefined) row.surcharge = item.surcharge;
   if (item.surchargeType !== undefined) row.surcharge_type = item.surchargeType;
+  return row;
+}
 
-  const { error } = await supabase.from("document_items").insert(row);
+/** Neue Positionszeile. Deutscher Begriff wird gespeichert – nie die Übersetzung. */
+export async function insertDocumentItem(
+  companyId: string,
+  documentId: string,
+  item: NewDocumentItem,
+): Promise<{ error?: string }> {
+  return insertDocumentItems(companyId, documentId, [item]);
+}
+
+/** Mehrere Positionszeilen in einem Insert – entweder alle oder keine. */
+export async function insertDocumentItems(
+  companyId: string,
+  documentId: string,
+  items: NewDocumentItem[],
+): Promise<{ error?: string }> {
+  const supabase = await createClient();
+  const rows = items.map((item) => toItemRow(companyId, documentId, item));
+  const { error } = await supabase.from("document_items").insert(rows);
   if (error) return { error: error.message };
   return {};
 }
