@@ -113,7 +113,7 @@ Große Buttons, viel Icon/wenig Text, fehlertolerant, geführte Schritte, echte 
 
 KI-Eingabe (Sprache/Text → Rechnungsentwurf, Preise nur aus Katalog), OCR für Fremdangebote, Angebotsstatus, Abschlags-/Schlussrechnung, **Mahnungen**, §19-Grenzwarnung (25.000 €/100.000 €), ZUGFeRD/XRechnung, SMS-Login, Bankanbindung (PSD2/XS2A), Offline-Schreibpfad mit Sync. **Nicht ohne ausdrückliche Freigabe implementieren.**
 
-Bereits umgesetzt (nicht mehr Phase 2): Zahlungsstatus (bezahlt/überfällig via `paid_at` + Zahlungsziel), PDF-Langzeitarchiv im Storage, **Positionen aus Stundennachweis** (Reiter „Nachweis“ in Schritt 2: Foto/PDF → Claude liest nur die Zellen ab, `lib/documents/nachweis-pruefung.ts` rechnet und prüft gegen die Gesamtzeile des Blatts, der Nutzer ordnet je Mitarbeiter einen Katalog-Stundensatz zu → eine Position je Satz, keine Mitarbeiternamen, Preise nie vom Modell; Datei wird nicht gespeichert; Modell über `ANTHROPIC_NACHWEIS_MODEL`, gemeinsames KI-Tageslimit).
+Bereits umgesetzt (nicht mehr Phase 2): Zahlungsstatus (bezahlt/überfällig via `paid_at` + Zahlungsziel), PDF-Langzeitarchiv im Storage, **Positionen aus Stundennachweis** (Reiter „Nachweis“ in Schritt 2: Foto/PDF → Claude liest nur die Zellen ab, `lib/documents/nachweis-pruefung.ts` rechnet und prüft gegen die Gesamtzeile des Blatts, der Nutzer korrigiert Text, Namen, Stunden und gibt Stundenpreise ein → freie Positionen, eine je Stundenpreis, keine Mitarbeiternamen, Preise nie vom Modell; Datei wird nicht gespeichert; Modell über `ANTHROPIC_NACHWEIS_MODEL`, gemeinsames KI-Tageslimit).
 
 ---
 
