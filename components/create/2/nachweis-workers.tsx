@@ -1,105 +1,127 @@
 "use client";
 
-import { useId } from "react";
-import { CircleHelp } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
-import { formatAmount, formatMoney } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { anzeigeName } from "@/lib/katalog/anzeige";
-import { istStundenEinheit } from "@/lib/documents/nachweis-positionen";
+import { eurosToCents } from "@/lib/money";
+import { nachweisSatzOptionen } from "@/lib/documents/nachweis-positionen";
 import type { KatalogEintrag } from "@/types/service";
-import type { NachweisMitarbeiter, NachweisSatzZuordnung } from "@/types/nachweis";
+import type { NachweisZeile } from "@/types/nachweis";
+import type { NachweisScanState } from "./use-nachweis-scan";
 import "./nachweis-workers.css";
 
-const NONE = "__none";
-const MIXED = "__mixed";
+const STROKE = 2;
+const OWN = "__own";
 
 interface NachweisWorkersProps {
   locale: Locale;
-  mitarbeiter: NachweisMitarbeiter[];
-  zuordnung: NachweisSatzZuordnung;
   services: KatalogEintrag[];
-  onRate: (workerKey: string, serviceId: string | null) => void;
-  onRateForAll: (serviceId: string | null) => void;
+  scan: NachweisScanState;
 }
 
-/** Mitarbeiter mit gelesenen Stunden; je Mitarbeiter ein Stundensatz aus dem Katalog. */
-export function NachweisWorkers({
-  locale,
-  mitarbeiter,
-  zuordnung,
-  services,
-  onRate,
-  onRateForAll,
-}: NachweisWorkersProps) {
-  const t = useTranslations("Step2");
-  const allId = useId();
-  // Stundensätze zuerst, danach alle übrigen Katalogeinträge.
-  const options = [...services].sort(
-    (a, b) => Number(istStundenEinheit(b.einheit)) - Number(istStundenEinheit(a.einheit)),
-  );
-  const values = mitarbeiter.map((entry) => zuordnung[entry.key] ?? NONE);
-  const allValue = values.every((value) => value === values[0]) ? values[0] ?? NONE : MIXED;
+function parseNumber(value: string): number {
+  const parsed = parseFloat(value.replace(",", "."));
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+}
 
-  const optionList = (
-    <>
-      {options.map((service) => (
-        <option key={service.id} value={service.id}>
-          {`${anzeigeName(service, locale)} · ${formatMoney(service.preisCents)}/${service.einheit}`}
-        </option>
-      ))}
-      <option value={NONE}>{t("nachweisNoCatalog")}</option>
-    </>
+/** Mitarbeiter wie auf dem Blatt: Name, Stunden, Stundensatz – alles direkt änderbar. */
+export function NachweisWorkers({ locale, services, scan }: NachweisWorkersProps) {
+  const t = useTranslations("Step2");
+  const options = nachweisSatzOptionen(services);
+  const brauchtEigenenPreis = scan.zeilen.some(
+    (zeile) => zeile.stunden > 0 && !options.some((option) => option.id === zeile.serviceId),
   );
-  const toServiceId = (value: string) => (value === NONE ? null : value);
+  const label = (zeile: NachweisZeile, index: number) => zeile.name || String(index + 1);
 
   return (
-    <section className="nachweis-workers" aria-labelledby={`${allId}-title`}>
-      <div className="nachweis-workers-head">
-        <h3 id={`${allId}-title`} className="nachweis-workers-title">{t("nachweisWorkersTitle")}</h3>
-        {mitarbeiter.length > 1 && (
-          <label className="nachweis-workers-all" htmlFor={allId}>
-            <span>{t("nachweisRateForAll")}</span>
-            <select
-              id={allId}
-              className="nachweis-workers-select"
-              value={allValue}
-              onChange={(event) => onRateForAll(toServiceId(event.target.value))}
-            >
-              {allValue === MIXED && <option value={MIXED} disabled>{t("nachweisRateMixed")}</option>}
-              {optionList}
-            </select>
-          </label>
-        )}
+    <section className="nachweis-workers">
+      <div className="nachweis-workers-cols" aria-hidden>
+        <span>{t("nachweisColName")}</span>
+        <span>{t("nachweisColHours")}</span>
+        <span>{t("nachweisColRate")}</span>
       </div>
 
       <ul className="nachweis-workers-list">
-        {mitarbeiter.map((entry, index) => (
-          <li key={entry.key} className="nachweis-worker">
-            <span className="nachweis-worker-name">
-              <bdi>{entry.name || t("nachweisWorkerUnnamed", { number: index + 1 })}</bdi>
-              {entry.unsicher && (
-                <span className="nachweis-worker-unsure" title={t("nachweisUncertain")}>
-                  <CircleHelp size={14} strokeWidth={2} aria-hidden />
-                  {t("nachweisUncertain")}
-                </span>
-              )}
-            </span>
-            <span className="nachweis-worker-hours">
-              {t("nachweisHours", { hours: formatAmount(entry.stunden) })}
-            </span>
+        {scan.zeilen.map((zeile, index) => (
+          <li key={zeile.key} className="nachweis-worker">
+            <input
+              className="nachweis-worker-name"
+              defaultValue={zeile.name}
+              placeholder={t("nachweisColName")}
+              aria-label={t("nachweisColName")}
+              onChange={(event) => scan.updateZeile(zeile.key, { name: event.target.value })}
+            />
+            <input
+              className="nachweis-worker-hours"
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.5"
+              dir="ltr"
+              defaultValue={zeile.stunden || ""}
+              data-unsure={zeile.unsicher ? "1" : "0"}
+              title={zeile.unsicher ? t("nachweisUncertain") : undefined}
+              aria-label={t("nachweisHoursFor", { name: label(zeile, index) })}
+              onChange={(event) =>
+                scan.updateZeile(zeile.key, { stunden: parseNumber(event.target.value) })
+              }
+            />
             <select
-              className="nachweis-workers-select"
-              aria-label={t("nachweisRateFor", { name: entry.name || String(index + 1) })}
-              value={zuordnung[entry.key] ?? NONE}
-              disabled={entry.stunden <= 0}
-              onChange={(event) => onRate(entry.key, toServiceId(event.target.value))}
+              className="nachweis-worker-rate"
+              value={zeile.serviceId ?? OWN}
+              aria-label={t("nachweisRateFor", { name: label(zeile, index) })}
+              onChange={(event) =>
+                scan.updateZeile(zeile.key, {
+                  serviceId: event.target.value === OWN ? null : event.target.value,
+                })
+              }
             >
-              {optionList}
+              {options.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {`${anzeigeName(service, locale)} · ${formatMoney(service.preisCents)}`}
+                </option>
+              ))}
+              <option value={OWN}>{t("nachweisOwnRate")}</option>
             </select>
+            <button
+              type="button"
+              className="nachweis-worker-remove"
+              aria-label={t("nachweisRemove", { name: label(zeile, index) })}
+              onClick={() => scan.removeZeile(zeile.key)}
+            >
+              <X size={18} strokeWidth={STROKE} aria-hidden />
+            </button>
           </li>
         ))}
       </ul>
+
+      <button type="button" className="nachweis-workers-add" onClick={scan.addZeile}>
+        <Plus size={18} strokeWidth={STROKE} aria-hidden />
+        {t("nachweisAddWorker")}
+      </button>
+
+      {brauchtEigenenPreis && (
+        <label className="nachweis-workers-own" data-missing={scan.eigenerPreis ? "0" : "1"}>
+          <span>{t("nachweisOwnRateLabel")}</span>
+          <span className="nachweis-workers-own-field" dir="ltr">
+            <input
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.01"
+              placeholder="0,00"
+              defaultValue={scan.eigenerPreis ? scan.eigenerPreis / 100 : ""}
+              onChange={(event) => {
+                const cents = eurosToCents(parseNumber(event.target.value));
+                scan.setEigenerPreis(cents > 0 ? cents : null);
+              }}
+            />
+            <span>€</span>
+          </span>
+        </label>
+      )}
     </section>
   );
 }

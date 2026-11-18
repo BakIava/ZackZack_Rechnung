@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { readNachweis } from "@/lib/documents/nachweis-actions";
 import {
+  nachweisGesamtStunden,
   nachweisImportZeilen,
+  nachweisSatzOptionen,
   nachweisStartSatz,
+  nachweisStartZeilen,
   nachweisVorschlaege,
   type NachweisSatz,
 } from "@/lib/documents/nachweis-positionen";
@@ -13,13 +16,12 @@ import { downscaleImage } from "@/lib/images/downscale-image";
 import type {
   NachweisErgebnis,
   NachweisErrorCode,
-  NachweisKorrekturen,
-  NachweisSatzZuordnung,
+  NachweisMaterialZeile,
+  NachweisZeile,
 } from "@/types/nachweis";
 
 /** Nur Komfort auf diesem Gerät: zuletzt gewählter Stundensatz. */
 const LAST_RATE_KEY = "zz-nachweis-last-rate";
-const NO_CORRECTIONS: NachweisKorrekturen = { amounts: {}, prices: {}, excluded: [] };
 
 export type NachweisScanPhase = "upload" | "reading" | "review";
 
@@ -27,6 +29,9 @@ export interface NachweisScanError {
   code: NachweisErrorCode;
   dailyLimit?: number;
 }
+
+type ZeilenPatch = Partial<Pick<NachweisZeile, "name" | "stunden" | "serviceId">>;
+type MaterialPatch = Partial<Pick<NachweisMaterialZeile, "anzahl" | "unitPrice">>;
 
 interface UseNachweisScanArgs {
   documentId: string;
@@ -50,32 +55,27 @@ function writeLastRate(serviceId: string | null): void {
   }
 }
 
-/** Stundenmengen hängen an der Gruppierung; nach einer Satzänderung neu ableiten. */
-function withoutHourAmounts(korrekturen: NachweisKorrekturen): NachweisKorrekturen {
-  return {
-    ...korrekturen,
-    amounts: Object.fromEntries(
-      Object.entries(korrekturen.amounts).filter(([key]) => key.startsWith("mat:")),
-    ),
-  };
-}
-
-/** Ablauf im Reiter „Nachweis“: Datei → Lesen → Prüfen und Stundensätze zuordnen. */
+/** Ablauf im Reiter „Nachweis“: Datei → Lesen → Zeilen prüfen/korrigieren → übernehmen. */
 export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
   const [phase, setPhase] = useState<NachweisScanPhase>("upload");
   const [error, setError] = useState<NachweisScanError | null>(null);
   const [ergebnis, setErgebnis] = useState<NachweisErgebnis | null>(null);
-  const [zuordnung, setZuordnung] = useState<NachweisSatzZuordnung>({});
-  const [korrekturen, setKorrekturen] = useState<NachweisKorrekturen>(NO_CORRECTIONS);
+  const [zeilen, setZeilen] = useState<NachweisZeile[]>([]);
+  const [material, setMaterial] = useState<NachweisMaterialZeile[]>([]);
+  const [eigenerPreis, setEigenerPreis] = useState<number | null>(null);
+  const nextKey = useRef(0);
+  // Vorauswahl nur aus den angebotenen Sätzen, sonst zeigt die Auswahl etwas anderes als gilt.
+  const startSatz = () => nachweisStartSatz(nachweisSatzOptionen(services), readLastRate());
 
   const vorschlaege = useMemo(
-    () => (ergebnis ? nachweisVorschlaege(ergebnis, zuordnung, services) : []),
-    [ergebnis, zuordnung, services],
+    () =>
+      ergebnis
+        ? nachweisVorschlaege({ kopf: ergebnis, zeilen, material, services, eigenerPreis })
+        : [],
+    [ergebnis, zeilen, material, services, eigenerPreis],
   );
-  const importZeilen = useMemo(
-    () => nachweisImportZeilen(vorschlaege, korrekturen),
-    [vorschlaege, korrekturen],
-  );
+  const importZeilen = useMemo(() => nachweisImportZeilen(vorschlaege), [vorschlaege]);
+  const gesamtStunden = nachweisGesamtStunden(zeilen);
 
   async function read(file: File) {
     setError(null);
@@ -95,12 +95,11 @@ export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
         setPhase("upload");
         return;
       }
-      const start = nachweisStartSatz(services, readLastRate());
+      const start = nachweisStartZeilen(result.ergebnis, startSatz());
       setErgebnis(result.ergebnis);
-      setZuordnung(
-        Object.fromEntries(result.ergebnis.mitarbeiter.map((entry) => [entry.key, start])),
-      );
-      setKorrekturen(NO_CORRECTIONS);
+      setZeilen(start.zeilen);
+      setMaterial(start.material);
+      setEigenerPreis(null);
       setPhase("review");
     } catch {
       setError({ code: "provider_unavailable" });
@@ -108,35 +107,41 @@ export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
     }
   }
 
-  function setRate(workerKey: string, serviceId: string | null) {
-    setZuordnung((current) => ({ ...current, [workerKey]: serviceId }));
-    setKorrekturen(withoutHourAmounts);
-    writeLastRate(serviceId);
-  }
-
-  function setRateForAll(serviceId: string | null) {
-    setZuordnung((current) =>
-      Object.fromEntries(Object.keys(current).map((key) => [key, serviceId])),
+  function updateZeile(key: string, patch: ZeilenPatch) {
+    // Selbst eingetippte Stunden gelten als geprüft – die Markierung „unsicher“ entfällt.
+    const bestaetigt = patch.stunden !== undefined ? { unsicher: false } : {};
+    setZeilen((current) =>
+      current.map((zeile) => (zeile.key === key ? { ...zeile, ...patch, ...bestaetigt } : zeile)),
     );
-    setKorrekturen(withoutHourAmounts);
-    writeLastRate(serviceId);
+    if (patch.serviceId !== undefined) writeLastRate(patch.serviceId);
   }
 
-  function setAmount(key: string, amount: number) {
-    setKorrekturen((current) => ({ ...current, amounts: { ...current.amounts, [key]: amount } }));
-  }
-
-  function setPrice(key: string, cents: number) {
-    setKorrekturen((current) => ({ ...current, prices: { ...current.prices, [key]: cents } }));
-  }
-
-  function toggle(key: string) {
-    setKorrekturen((current) => ({
+  function addZeile() {
+    nextKey.current += 1;
+    setZeilen((current) => [
       ...current,
-      excluded: current.excluded.includes(key)
-        ? current.excluded.filter((entry) => entry !== key)
-        : [...current.excluded, key],
-    }));
+      {
+        key: `neu${nextKey.current}`,
+        name: "",
+        stunden: 0,
+        serviceId: current.at(-1)?.serviceId ?? startSatz(),
+        unsicher: false,
+      },
+    ]);
+  }
+
+  function removeZeile(key: string) {
+    setZeilen((current) => current.filter((zeile) => zeile.key !== key));
+  }
+
+  function updateMaterial(key: string, patch: MaterialPatch) {
+    setMaterial((current) =>
+      current.map((zeile) => (zeile.key === key ? { ...zeile, ...patch } : zeile)),
+    );
+  }
+
+  function removeMaterial(key: string) {
+    setMaterial((current) => current.filter((zeile) => zeile.key !== key));
   }
 
   function reset() {
@@ -149,16 +154,19 @@ export function useNachweisScan({ documentId, services }: UseNachweisScanArgs) {
     phase,
     error,
     ergebnis,
-    zuordnung,
-    korrekturen,
+    zeilen,
+    material,
+    eigenerPreis,
+    gesamtStunden,
     vorschlaege,
     importZeilen,
     read,
-    setRate,
-    setRateForAll,
-    setAmount,
-    setPrice,
-    toggle,
+    updateZeile,
+    addZeile,
+    removeZeile,
+    updateMaterial,
+    removeMaterial,
+    setEigenerPreis,
     reset,
   };
 }
