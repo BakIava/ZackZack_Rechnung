@@ -1,0 +1,136 @@
+.nachweis-review {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nachweis-review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.nachweis-review-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.nachweis-review-meta {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.nachweis-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-block: 12px;
+  padding-inline: 14px;
+  border-radius: var(--r);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.nachweis-check > svg {
+  flex-shrink: 0;
+}
+
+.nachweis-check[data-tone="ok"] {
+  border: 1px solid color-mix(in srgb, var(--ok) 32%, var(--surface));
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.nachweis-check[data-tone="info"] {
+  border: 1px solid color-mix(in srgb, var(--info) 32%, var(--surface));
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.nachweis-check[data-tone="warn"] {
+  border: 1px solid color-mix(in srgb, var(--warn) 36%, var(--surface));
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.nachweis-review-notes {
+  padding-block: 10px;
+  padding-inline: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.nachweis-review-notes > summary {
+  font-weight: 650;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.nachweis-review-remark {
+  margin-block: 8px 0;
+  margin-inline: 0;
+  font-style: italic;
+}
+
+.nachweis-review-hints {
+  margin-block: 8px 0;
+  padding-inline-start: 18px;
+  line-height: 1.45;
+}
+
+.nachweis-review-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-block-start: 4px;
+}
+
+.nachweis-review-again {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-block: 12px;
+  padding-inline: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.nachweis-review-import {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 220px;
+  padding: 15px;
+  border: none;
+  border-radius: var(--r);
+  background: var(--primary);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--primary-ink);
+  box-shadow: 0 12px 24px -12px rgba(15, 42, 63, 0.7);
+  cursor: pointer;
+}
+
+.nachweis-review-import:disabled {
+  background: var(--surface-2);
+  color: var(--muted);
+  box-shadow: none;
+  cursor: default;
+}

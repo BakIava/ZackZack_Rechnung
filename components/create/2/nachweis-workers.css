@@ -1,0 +1,110 @@
+.nachweis-workers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nachweis-workers-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+.nachweis-workers-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.nachweis-workers-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.nachweis-workers-select {
+  min-width: 0;
+  max-width: 100%;
+  padding-block: 9px;
+  padding-inline: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.nachweis-workers-select:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.nachweis-workers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nachweis-worker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.3fr);
+  align-items: center;
+  gap: 12px;
+  padding-block: 8px;
+  padding-inline: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+
+.nachweis-worker-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.nachweis-worker-unsure {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding-block: 2px;
+  padding-inline: 6px;
+  border-radius: 999px;
+  background: var(--warn-bg);
+  color: var(--warn);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.nachweis-worker-hours {
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .nachweis-worker {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .nachweis-worker .nachweis-workers-select {
+    grid-column: 1 / -1;
+  }
+}
