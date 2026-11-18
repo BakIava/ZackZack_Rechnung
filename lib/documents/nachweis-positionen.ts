@@ -67,18 +67,19 @@ export function nachweisStartZeilen(
 }
 
 /**
- * Preis in einer Zeile eintippen: Diese Zeile behält ihn fest, alle Zeilen,
- * die noch nicht selbst geändert wurden, übernehmen ihn mit. So reicht bei
- * gleichem Satz eine Eingabe, abweichende Sätze bleiben trotzdem möglich.
+ * Preis eintippen: Der Preis der ersten Zeile gilt für alle Zeilen, die man
+ * nicht selbst geändert hat. Eine Eingabe in jeder anderen Zeile ändert nur
+ * diese Zeile. So reicht bei gleichem Satz eine Eingabe, Ausnahmen bleiben stehen.
  */
 export function nachweisPreisSetzen(
   zeilen: NachweisZeile[],
   key: string,
   preis: number | null,
 ): NachweisZeile[] {
+  const ersteZeile = zeilen[0]?.key === key;
   return zeilen.map((zeile) => {
     if (zeile.key === key) return { ...zeile, preis, preisManuell: true };
-    return zeile.preisManuell ? zeile : { ...zeile, preis };
+    return ersteZeile && !zeile.preisManuell ? { ...zeile, preis } : zeile;
   });
 }
 

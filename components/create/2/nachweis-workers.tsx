@@ -20,7 +20,7 @@ function parseNumber(value: string): number {
 
 /**
  * Mitarbeiter wie auf dem Blatt: Name, Stunden, Stundenpreis – alles direkt änderbar.
- * Der erste eingetippte Preis gilt für alle Zeilen, die noch nicht selbst geändert wurden.
+ * Der Preis der ersten Zeile gilt für alle Zeilen, die noch nicht selbst geändert wurden.
  */
 export function NachweisWorkers({ scan }: NachweisWorkersProps) {
   const t = useTranslations("Step2");

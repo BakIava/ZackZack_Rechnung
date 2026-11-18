@@ -47,17 +47,24 @@ describe("Startwerte", () => {
 });
 
 describe("nachweisPreisSetzen", () => {
-  it("überträgt den ersten eingetippten Preis auf alle noch nicht geänderten Zeilen", () => {
+  it("überträgt den Preis der ersten Zeile auf alle noch nicht geänderten Zeilen", () => {
     const zeilen = nachweisPreisSetzen(zeilenMit([null, null, null, null]), "m0", 4800);
     expect(zeilen.map((z) => z.preis)).toEqual([4800, 4800, 4800, 4800]);
     expect(zeilen.map((z) => z.preisManuell)).toEqual([true, false, false, false]);
   });
 
-  it("lässt selbst geänderte Zeilen danach in Ruhe", () => {
+  it("ändert bei einer Eingabe in einer anderen Zeile nur diese Zeile", () => {
     let zeilen = nachweisPreisSetzen(zeilenMit([null, null, null, null]), "m0", 4800);
     zeilen = nachweisPreisSetzen(zeilen, "m3", 3800);
+    expect(zeilen.map((z) => z.preis)).toEqual([4800, 4800, 4800, 3800]);
+
     zeilen = nachweisPreisSetzen(zeilen, "m0", 5000);
     expect(zeilen.map((z) => z.preis)).toEqual([5000, 5000, 5000, 3800]);
+  });
+
+  it("zieht ohne Eingabe in der ersten Zeile keine anderen Zeilen mit", () => {
+    const zeilen = nachweisPreisSetzen(zeilenMit([null, null, null, null]), "m2", 4000);
+    expect(zeilen.map((z) => z.preis)).toEqual([null, null, 4000, null]);
   });
 });
 
