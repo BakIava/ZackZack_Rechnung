@@ -28,10 +28,12 @@ import {
   getItemContext as getCtx,
   lineValues,
   recomputeDraftItems as recompute,
-  type ItemsResult,
+  type ItemsResult as WriteItemsResult,
 } from "./item-write";
 
-export type { ItemsResult };
+// Bewusst als Typ-Alias, nicht als `export type { … }`: Turbopack lässt
+// Re-Exporte in "use server"-Dateien zur Laufzeit stehen (ReferenceError).
+export type ItemsResult = WriteItemsResult;
 
 /** Lücken in der position-Reihenfolge schließen (1..n). */
 async function renumber(companyId: string, documentId: string): Promise<void> {
