@@ -10,6 +10,8 @@ import {
   nachweisStartZeilen,
   nachweisVorschlaege,
   nachweisZeitraumText,
+  nachweisZusatzSuchmuster,
+  zusatzNenntNachweis,
 } from "./nachweis-positionen";
 
 const NAMEN = ["Saygili", "Esref", "Nezih", "Talal"];
@@ -144,6 +146,19 @@ describe("nachweisImportZeilen", () => {
 
   it("ist ohne Positionen nicht vollständig", () => {
     expect(nachweisImportZeilen([])).toEqual({ lines: [], vollstaendig: false });
+  });
+});
+
+describe("Doppelabrechnung erkennen", () => {
+  it("findet die Nummer nur als ganze Nummer im Zusatztext", () => {
+    expect(zusatzNenntNachweis(ZUSATZ, "2026-040")).toBe(true);
+    expect(zusatzNenntNachweis("lt. Stundennachweis Nr. 2026-040", "2026-040")).toBe(true);
+    expect(zusatzNenntNachweis("lt. Stundennachweis Nr. 2026-0401, 07.09.", "2026-040")).toBe(false);
+    expect(zusatzNenntNachweis("Nachweis 2026-040", "2026-040")).toBe(false);
+  });
+
+  it("maskiert LIKE-Platzhalter in der Nummer", () => {
+    expect(nachweisZusatzSuchmuster("12_3%")).toBe("%lt. Stundennachweis Nr. 12\\_3\\%%");
   });
 });
 

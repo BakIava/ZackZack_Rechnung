@@ -28,13 +28,26 @@ export function nachweisZeitraumText(von: string | null, bis: string | null): st
   return `${deDatum(von, !gleichesJahr)}–${deDatum(bis, true)}`;
 }
 
+const ZUSATZ_PRAEFIX = "lt. Stundennachweis";
+
 /** Zusatztext jeder Stundenposition – deterministisch und ohne Mitarbeiternamen. */
 export function nachweisZusatztext(kopf: NachweisKopf): string {
-  const teile = [kopf.nummer ? `lt. Stundennachweis Nr. ${kopf.nummer}` : "lt. Stundennachweis"];
+  const teile = [kopf.nummer ? `${ZUSATZ_PRAEFIX} Nr. ${kopf.nummer}` : ZUSATZ_PRAEFIX];
   const zeitraum = nachweisZeitraumText(kopf.zeitraumVon, kopf.zeitraumBis);
   if (zeitraum) teile.push(zeitraum);
   if (kopf.projekt) teile.push(kopf.projekt);
   return teile.join(", ");
+}
+
+/** Suchmuster (SQL LIKE) für Positionen, die diese Nachweis-Nummer im Zusatztext tragen. */
+export function nachweisZusatzSuchmuster(nummer: string): string {
+  return `%${ZUSATZ_PRAEFIX} Nr. ${nummer.replace(/[\\%_]/g, "\\$&")}%`;
+}
+
+/** Exakter Treffer: „Nr. 2026-040“ zählt, „Nr. 2026-0401“ nicht. */
+export function zusatzNenntNachweis(zusatz: string, nummer: string): boolean {
+  const escaped = nummer.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`${ZUSATZ_PRAEFIX} Nr\\. ${escaped}(,|$)`).test(zusatz);
 }
 
 /** Vorschlag für den Positionstext: was unter „Arbeitsleistungen“ steht, sonst „Arbeitsstunden“. */
@@ -51,6 +64,7 @@ export function nachweisStartZeilen(
     zeilen: ergebnis.mitarbeiter.map((mitarbeiter) => ({
       key: mitarbeiter.key,
       name: mitarbeiter.name,
+      gelesenName: mitarbeiter.name,
       stunden: mitarbeiter.stunden,
       preis: startPreis,
       preisManuell: false,

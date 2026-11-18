@@ -89,6 +89,8 @@ export type NachweisReadResult =
 export interface NachweisZeile {
   key: string;
   name: string;
+  /** Name, wie die KI ihn gelesen hat – für gemerkte Korrekturen („Hezih“ → „Nezih“). */
+  gelesenName: string;
   stunden: number;
   /** Stundenpreis in Cents; null = noch nicht eingegeben. */
   preis: number | null;
@@ -118,6 +120,35 @@ export interface NachweisVorschlag {
   /** Cents; null = Preis fehlt noch. */
   unitPrice: number | null;
   additionalDescriptionDe: string | null;
+}
+
+/** Im Browser gemerkt (pro Firma, nur dieses Gerät): Mitarbeiter mit Stundenpreis. */
+export interface NachweisMitarbeiterGedaechtnis {
+  /** Normalisierter Name → zuletzt verwendeter Name und Preis. */
+  workers: Record<string, { name: string; preis: number | null; updatedAt: number }>;
+  /** Normalisierter gelesener Name → normalisierter korrigierter Name. */
+  aliases: Record<string, string>;
+}
+
+/** Im Browser gemerkter Prüfschritt eines gelesenen Nachweises – inklusive Korrekturen. */
+export interface NachweisScanEintrag {
+  id: string;
+  /** SHA-256 der Originaldatei; gleiche Datei → kein neuer KI-Aufruf. */
+  hash: string | null;
+  savedAt: number;
+  ergebnis: NachweisErgebnis;
+  beschreibung: string;
+  zeilen: NachweisZeile[];
+  material: NachweisMaterialZeile[];
+}
+
+/** Dokument, auf dem dieselbe Nachweis-Nummer schon steht (Warnung vor Doppelabrechnung). */
+export interface NachweisVerwendung {
+  documentId: string;
+  docType: "invoice" | "quote";
+  /** null = Entwurf ohne Nummer. */
+  documentNumber: string | null;
+  sameDocument: boolean;
 }
 
 /** Bestätigte Zeile, wie sie an `addNachweisItems` geht (freie Position). */
