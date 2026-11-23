@@ -89,7 +89,6 @@ test("Texte prüfen: ein Aufruf, Häkchen und gemeinsame Übernahme", async ({ p
 
   await page.getByRole("button", { name: "Texte prüfen" }).click();
   await expect(dialog.getByText("Texte werden geprüft …")).toBeVisible();
-  await expect(dialog.getByText("2 Positionen lassen sich verbessern")).toBeVisible();
   await expect(harness).toHaveAttribute("data-check-calls", "1");
   const rows = dialog.locator(".text-check-row");
   await expect(rows).toHaveCount(2);
@@ -107,7 +106,8 @@ test("Texte prüfen: ein Aufruf, Häkchen und gemeinsame Übernahme", async ({ p
   await expect(page.getByTestId("item-3")).toContainText("silikon fuge erneuern");
 
   await page.getByRole("button", { name: "Texte prüfen" }).click();
-  await expect(dialog.getByText("1 Position lässt sich verbessern")).toBeVisible();
+  await expect(rows).toHaveCount(1);
+  await expect(rows.nth(0)).toContainText("Silikonfugen erneuern");
   await dialog.getByRole("button", { name: "1 Position übernehmen" }).click();
   await expect(page.getByTestId("item-3")).toContainText("Silikonfugen erneuern");
   await expect(page.getByTestId("item-3")).toContainText("Inkl. Entfernen der alten Fugen");

@@ -76,23 +76,17 @@ export function TextCheckDialog({ dir, result, applying, applyError, onClose, on
           </p>
         )}
         {result?.status === "vorschlaege" && (
-          <>
-            <div className="text-check-dialog-summary">
-              <p className="text-check-dialog-count">{t("checkCount", { count: vorschlaege.length })}</p>
-              <p className="text-check-dialog-intro">{t("checkHint")}</p>
-            </div>
-            <ul className="text-check-dialog-list">
-              {vorschlaege.map((vorschlag) => (
-                <VorschlagZeile
-                  key={vorschlag.itemId}
-                  vorschlag={vorschlag}
-                  checked={!abgewaehlt.has(vorschlag.itemId)}
-                  disabled={applying}
-                  onToggle={toggle}
-                />
-              ))}
-            </ul>
-          </>
+          <ul className="text-check-dialog-list">
+            {vorschlaege.map((vorschlag) => (
+              <VorschlagZeile
+                key={vorschlag.itemId}
+                vorschlag={vorschlag}
+                checked={!abgewaehlt.has(vorschlag.itemId)}
+                disabled={applying}
+                onToggle={toggle}
+              />
+            ))}
+          </ul>
         )}
         {uebersprungen > 0 && (
           <p className="text-check-dialog-note">{t("checkSkipped", { max: MAX_TEXT_CHECK_POSITIONEN })}</p>
