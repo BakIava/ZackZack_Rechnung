@@ -99,6 +99,11 @@ export async function middleware(request: NextRequest) {
 
   const intlResponse = intlMiddleware(request);
   const locale = pathname.split("/")[1];
+  // Isolierte UI-Fixtures, ausschließlich lokal mit next dev.
+  if (process.env.NODE_ENV === "development" && SUPPORTED_LOCALES.includes(locale)
+    && pathname === `/${locale}/nachweis-test`) {
+    return intlResponse;
+  }
   const isSetupPath = SUPPORTED_LOCALES.includes(locale)
     && (pathname === `/${locale}/setup` || pathname.startsWith(`/${locale}/setup/`));
   const isLoginPath = pathname === `/${locale}/login` || pathname === `/${locale}/login/`;

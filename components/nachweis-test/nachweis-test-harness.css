@@ -1,0 +1,15 @@
+.nachweis-test-harness {
+  display: grid;
+  gap: 16px;
+  max-inline-size: 760px;
+  margin-inline: auto;
+  padding: 16px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--ui-font);
+}
+
+.nachweis-test-harness output {
+  overflow-wrap: anywhere;
+}
+
