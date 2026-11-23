@@ -1,0 +1,32 @@
+.text-improve-harness {
+  display: grid;
+  gap: 24px;
+  max-inline-size: 520px;
+  padding: 24px 16px;
+  font-family: var(--ui-font);
+}
+
+.text-improve-harness-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.text-improve-harness-row label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.text-improve-harness-row :is(input, textarea) {
+  box-sizing: border-box;
+  inline-size: 100%;
+  padding: 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  font: inherit;
+  text-align: start;
+}
+
+.text-improve-harness-row textarea {
+  min-block-size: 90px;
+}

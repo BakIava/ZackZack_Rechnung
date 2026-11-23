@@ -5,7 +5,7 @@ const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: ["nachweis-frei.spec.ts", "position-selection.spec.ts"],
+  testMatch: ["nachweis-frei.spec.ts", "position-selection.spec.ts", "text-improve.spec.ts"],
   outputDir: "test-results/nachweis-frei",
   reporter: "line",
   workers: 1,
