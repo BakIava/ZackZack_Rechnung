@@ -35,19 +35,6 @@
   .text-check-dialog-spin { animation: none; }
 }
 
-.text-check-dialog-summary {
-  display: grid;
-  gap: 2px;
-}
-
-.text-check-dialog-count {
-  margin: 0;
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.text-check-dialog-intro,
 .text-check-dialog-note {
   margin: 0;
   color: var(--muted);
