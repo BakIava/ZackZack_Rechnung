@@ -1,6 +1,6 @@
 "use client";
 
-import { AlignLeft, ChevronDown, Truck } from "lucide-react";
+import { AlignLeft, Check, ChevronDown, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { formatMoney } from "@/lib/format";
 import type { DraftItem, TaxRate } from "@/types/document";
@@ -15,7 +15,8 @@ interface PositionRowProps {
   disabled: boolean;
   /** Positionsüberschreibung der MwSt.; `null` = Dokumentstandard. */
   vat: TaxRate | null;
-  onExpand: (id: string) => void;
+  onActivate: (id: string) => void;
+  selected?: boolean;
   onMoveTo?: ((item: DraftItem) => void) | null;
 }
 
@@ -24,7 +25,7 @@ interface PositionRowProps {
  * Summe. Antippen klappt sie zum Bearbeiten auf. Einkauf und Marge einer
  * Fremdleistung erscheinen hier nie – nur der Verkaufspreis.
  */
-export function PositionRow({ item, index, disabled, vat, onExpand, onMoveTo }: PositionRowProps) {
+export function PositionRow({ item, index, disabled, vat, onActivate, selected, onMoveTo }: PositionRowProps) {
   const t = useTranslations("Step2");
   const isFremd = item.purchasePrice != null;
   const hasDescription = Boolean(item.additionalDescriptionDe?.trim());
@@ -36,8 +37,10 @@ export function PositionRow({ item, index, disabled, vat, onExpand, onMoveTo }: 
       <button
         type="button"
         className="d2row-toggle"
-        aria-expanded={false}
-        onClick={() => onExpand(item.id)}
+        aria-expanded={selected === undefined ? false : undefined}
+        aria-pressed={selected}
+        disabled={disabled}
+        onClick={() => onActivate(item.id)}
       >
         <span className="d2row-main">
           <span className="d2row-title">
@@ -48,7 +51,7 @@ export function PositionRow({ item, index, disabled, vat, onExpand, onMoveTo }: 
                 <span className="sr-only">{t("subcontract")}</span>
               </span>
             )}
-            {vat !== null && <span className="d2row-chip">{vat} %</span>}
+            {vat !== null && <span className="d2row-chip" dir="ltr">{vat} %</span>}
             {hasDescription && (
               <span className="d2row-icon" title={t("hasAdditionalDescription")}>
                 <AlignLeft size={14} strokeWidth={STROKE} aria-hidden />
@@ -61,8 +64,14 @@ export function PositionRow({ item, index, disabled, vat, onExpand, onMoveTo }: 
             {quantity} {item.unit} × {formatMoney(item.unitPrice)}
           </span>
         </span>
-        <span className="d2row-sum">{formatMoney(item.totalAmount)}</span>
-        <ChevronDown size={20} strokeWidth={2} className="d2row-chevron" aria-hidden />
+        <span className="d2row-sum" dir="ltr">{formatMoney(item.totalAmount)}</span>
+        {selected === undefined ? (
+          <ChevronDown size={20} strokeWidth={2} className="d2row-chevron" aria-hidden />
+        ) : (
+          <span className="d2row-selection" data-selected={selected} aria-hidden>
+            {selected && <Check size={15} strokeWidth={2.4} />}
+          </span>
+        )}
       </button>
     </div>
   );

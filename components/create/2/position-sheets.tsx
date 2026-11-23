@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { SUPPORTED_TAX_RATES } from "@/lib/documents/tax";
 import { filterUnits, FLOW_UNITS, withCurrentUnit } from "@/lib/documents/units";
 import type { DraftItem, TaxRate } from "@/types/document";
 import { AdditionalDescriptionSheet } from "./additional-description-sheet";
@@ -11,7 +12,6 @@ import "./position-sheets.css";
 const STROKE = 1.75;
 
 /** Persistierbare MwSt.-Sätze je Position. */
-export const FLOW_VAT_RATES = [19, 7, 0] as const satisfies readonly TaxRate[];
 
 /** Feld, das der Direkt-Editor gerade bearbeitet (Nicht-Ziffernfelder). */
 export type SheetField = "desc" | "additionalDescription" | "unit" | "vat";
@@ -148,7 +148,7 @@ function VatSheet({ item, vat, companyVat, onPreview, onCommit, onClose }: VatSh
   const [value, setValue] = useState<TaxRate | null>(vat);
   const options: { key: string; value: TaxRate | null; label: string; sub?: string }[] = [
     { key: "std", value: null, label: t("vatStdOn", { rate: companyVat }), sub: t("vatStd") },
-    ...FLOW_VAT_RATES.map((r) => ({ key: String(r), value: r, label: `${r} %` })),
+    ...SUPPORTED_TAX_RATES.map((r) => ({ key: String(r), value: r, label: `${r} %` })),
   ];
   const current = value == null ? "std" : String(value);
 

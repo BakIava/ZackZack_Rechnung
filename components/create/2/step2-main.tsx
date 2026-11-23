@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   TriangleAlert,
@@ -11,7 +10,8 @@ import type { Locale } from "@/i18n/routing";
 import { PositionPickerModal } from "./position-picker-modal";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { KatalogEintrag } from "@/types/service";
-import type { DocumentPreview, DraftItem } from "@/types/document";
+import type { DocumentPreview, DraftItem, DraftItemBatchChange } from "@/types/document";
+import { changeSelectedDraftItems, type BulkItemsResult } from "@/lib/documents/item-bulk-actions";
 import { shouldShowTaxDetails } from "@/lib/documents/tax";
 import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { getPreviewPflichtChecks } from "@/lib/documents/finalize-validation";
@@ -20,6 +20,9 @@ import { FlowSteps } from "../flow-steps";
 import { NumberPad } from "./number-pad";
 import { PositionAddEnd } from "./position-add-end";
 import { PositionList } from "./position-list";
+import { PositionSelectionBar } from "./position-selection-bar";
+import { PositionSelectionDialog } from "./position-selection-dialog";
+import { usePositionSelection } from "./use-position-selection";
 import { PositionPickerDialog } from "./position-picker";
 import { ReorderSheet } from "./reorder-sheet";
 import { Step2PreviewPanel } from "./step2-preview-panel";
@@ -40,6 +43,7 @@ interface Step2MainProps {
   services: KatalogEintrag[];
   /** Firma – trennt den Browser-Speicher des Nachweis-Reiters. */
   cacheScope: string;
+  bulkItemsAction?: (documentId: string, ids: string[], change: DraftItemBatchChange) => Promise<BulkItemsResult>;
 }
 
 /** Desktop-Hauptbereich von Schritt 2: Positionen aus dem Draft, live in der DB. */
@@ -52,6 +56,7 @@ export function Step2Main({
   initialItems,
   logo,
   services,
+  bulkItemsAction = changeSelectedDraftItems,
 }: Step2MainProps) {
   const t = useTranslations("Step2");
   const router = useRouter();
@@ -93,7 +98,15 @@ export function Step2Main({
     commitUnit,
     commitVat,
     reorder,
+    applyItemsResult,
   } = state;
+
+  const selection = usePositionSelection(items, async (ids, change) => {
+    const result = await bulkItemsAction(documentId, ids, change);
+    if ("items" in result) applyItemsResult(result);
+    return result;
+  });
+  const saving = pending || selection.pending;
 
   const Backward = dir === "rtl" ? ChevronRight : ChevronLeft;
   const docLabel = t(preview.docType);
@@ -138,18 +151,27 @@ export function Step2Main({
 
               {error && <div className="d2-error">{error}</div>}
 
-              {items.length > 1 && (
-                <button type="button" className="d2-reorder-open" disabled={pending} onClick={reorder.open}>
-                  <ArrowUpDown size={18} strokeWidth={STROKE} aria-hidden />
-                  {t("reorderOpen")}
-                </button>
+              {(items.length > 0 || selection.ids !== null) && (
+                <PositionSelectionBar
+                  active={selection.ids !== null}
+                  count={selection.selected.length}
+                  pending={saving}
+                  outcomeUnknown={selection.outcomeUnknown}
+                  showOutcomeError={selection.outcomeUnknown && selection.dialog === null}
+                  onStart={selection.start}
+                  onEnd={selection.end}
+                  onDelete={() => selection.openDialog("delete")}
+                  onVat={() => selection.openDialog("vat")}
+                  onReorder={items.length > 1 ? reorder.open : undefined}
+                />
               )}
 
               {/* Auch leer eingebunden: sonst startet die Liste beim ersten
                   Eintrag neu und erkennt ihn nicht als „neu hinzugefügt". */}
               <PositionList
                 items={visibleItems}
-                disabled={pending}
+                disabled={saving}
+                selection={selection.ids ? { ids: selection.ids, toggle: selection.toggle } : undefined}
                 companyVat={preview.defaultTaxRate}
                 onOpenPad={openPad}
                 onEditDesc={editDesc}
@@ -159,11 +181,13 @@ export function Step2Main({
                 onDelete={remove}
                 onMoveTo={items.length > 1 ? reorder.openPicker : null}
               />
-              <PositionAddEnd
-                empty={items.length === 0}
-                onAdd={() => openModal("frei")}
-                onAddNachweis={() => openModal("nachweis")}
-              />
+              {!selection.ids && (
+                <PositionAddEnd
+                  empty={items.length === 0}
+                  onAdd={() => openModal("frei")}
+                  onAddNachweis={() => openModal("nachweis")}
+                />
+              )}
             </div>
             <Step2SummaryBar
               dir={dir}
@@ -175,7 +199,7 @@ export function Step2Main({
                 taxGroups: savedPreview.taxGroups,
               }}
               showTaxDetails={showTaxDetails}
-              pending={pending}
+              pending={saving}
               onNext={() => router.push(`/create/${documentId}/3`)}
             />
           </section>
@@ -184,11 +208,24 @@ export function Step2Main({
             <Step2PreviewPanel
               preview={preview}
               logo={logo}
-              loading={pending}
+              loading={saving}
             />
           </aside>
         </div>
       </div>
+
+      {selection.dialog && (
+        <PositionSelectionDialog
+          kind={selection.dialog}
+          items={selection.selected}
+          defaultRate={preview.defaultTaxRate}
+          dir={dir}
+          pending={selection.pending}
+          error={selection.error}
+          onClose={selection.closeDialog}
+          onSubmit={(change) => void selection.submit(change)}
+        />
+      )}
 
       {modalOpen && (
         <PositionPickerModal dir={dir} pending={nachweisPending} onClose={closeModal}>
