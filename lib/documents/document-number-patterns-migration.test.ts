@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const migration = readFileSync(
   join(process.cwd(), "scripts", "document-number-patterns.sql"),
   "utf8",
-);
+).replaceAll("\r\n", "\n");
 // finalize_document.sql ist mit CRLF gespeichert.
 const finalizeSql = readFileSync(join(process.cwd(), "scripts", "finalize_document.sql"), "utf8")
   .replace(/\r\n/g, "\n");
