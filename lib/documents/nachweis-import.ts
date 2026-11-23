@@ -3,17 +3,22 @@ import { round2 } from "./nachweis-pruefung";
 
 export const MAX_NACHWEIS_IMPORT_LINES = 20;
 export const MAX_NACHWEIS_DESCRIPTION = 200;
-const MAX_AMOUNT = 100_000;
-const MAX_UNIT_PRICE_CENTS = 100_000_000;
+export const MAX_NACHWEIS_AMOUNT = 100_000;
+export const MAX_NACHWEIS_UNIT_LENGTH = 30;
+export const MAX_NACHWEIS_UNIT_PRICE_CENTS = 100_000_000;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function amount(value: unknown): number | null {
-  if (typeof value !== "number" || !Number.isFinite(value)) return null;
+export function parseNachweisMenge(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value) || value > MAX_NACHWEIS_AMOUNT) return null;
   const rounded = round2(value);
-  return rounded > 0 && rounded <= MAX_AMOUNT ? rounded : null;
+  return rounded > 0 && rounded <= MAX_NACHWEIS_AMOUNT ? rounded : null;
+}
+
+export function istNachweisEinzelpreis(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 && value <= MAX_NACHWEIS_UNIT_PRICE_CENTS;
 }
 
 function additionalDescription(value: unknown): string | null | undefined {
@@ -22,9 +27,9 @@ function additionalDescription(value: unknown): string | null | undefined {
   return value.trim() === "" ? null : value;
 }
 
-function parseLine(value: unknown): NachweisImportLine | null {
+export function parseNachweisImportLine(value: unknown): NachweisImportLine | null {
   if (!isRecord(value)) return null;
-  const parsedAmount = amount(value.amount);
+  const parsedAmount = parseNachweisMenge(value.amount);
   const additionalDescriptionDe = additionalDescription(value.additionalDescriptionDe);
   if (parsedAmount === null || additionalDescriptionDe === undefined) return null;
 
@@ -36,11 +41,9 @@ function parseLine(value: unknown): NachweisImportLine | null {
     descriptionDe.length === 0 ||
     descriptionDe.length > MAX_NACHWEIS_DESCRIPTION ||
     unit === null ||
-    unit.length > 30 ||
-    typeof unitPrice !== "number" ||
-    !Number.isInteger(unitPrice) ||
-    unitPrice <= 0 ||
-    unitPrice > MAX_UNIT_PRICE_CENTS
+    unit.length === 0 ||
+    unit.length > MAX_NACHWEIS_UNIT_LENGTH ||
+    !istNachweisEinzelpreis(unitPrice)
   ) {
     return null;
   }
@@ -61,7 +64,7 @@ export function parseNachweisImportLines(input: unknown): NachweisImportLine[] |
   }
   const lines: NachweisImportLine[] = [];
   for (const entry of input) {
-    const line = parseLine(entry);
+    const line = parseNachweisImportLine(entry);
     if (!line) return null;
     lines.push(line);
   }

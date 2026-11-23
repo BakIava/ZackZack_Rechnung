@@ -1,76 +1,65 @@
-/**
- * Browser-Speicher für den Nachweis (localStorage, pro Firma, nur dieses Gerät).
- * Jeder Zugriff ist abgesichert: privater Modus, volle oder gesperrte Speicher
- * führen nie zu Fehlern – dann wird eben nichts gemerkt.
- */
-
-import type { NachweisMitarbeiterGedaechtnis, NachweisScanEintrag } from "@/types/nachweis";
-import { LEERES_GEDAECHTNIS } from "./nachweis-gedaechtnis";
-
-const VERSION = 1;
+import type { NachweisCacheEintrag, NachweisMitarbeiterGedaechtnis } from "@/types/nachweis";
+import { istObjekt, leseCacheScan, zahl } from "./nachweis-cache-parser";
+import { gueltigeScans, LEERES_GEDAECHTNIS } from "./nachweis-gedaechtnis";
 
 function key(scope: string, name: "workers" | "scans"): string {
   return `zz-nachweis:${scope}:${name}`;
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function read(storageKey: string): unknown {
+function read(storageKey: string): Record<string, unknown> | null {
   try {
     const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    return isRecord(parsed) && parsed.v === VERSION ? parsed.data : null;
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    return istObjekt(parsed) ? parsed : null;
   } catch {
     return null;
   }
 }
 
-function write(storageKey: string, data: unknown): void {
+function write(storageKey: string, v: 1 | 2, data: unknown): void {
   try {
-    window.localStorage.setItem(storageKey, JSON.stringify({ v: VERSION, data }));
+    window.localStorage.setItem(storageKey, JSON.stringify({ v, data }));
   } catch {
     // Speicher voll oder gesperrt – Merken ist nur Komfort.
   }
 }
 
 export function readMitarbeiterGedaechtnis(scope: string): NachweisMitarbeiterGedaechtnis {
-  const data = read(key(scope, "workers"));
-  return isRecord(data) && isRecord(data.workers) && isRecord(data.aliases)
-    ? (data as unknown as NachweisMitarbeiterGedaechtnis)
-    : LEERES_GEDAECHTNIS;
-}
+  const entry = read(key(scope, "workers"));
+  const data = entry?.v === 1 ? entry.data : null;
+  if (!istObjekt(data) || !istObjekt(data.workers) || !istObjekt(data.aliases)) return LEERES_GEDAECHTNIS;
 
-export function writeMitarbeiterGedaechtnis(
-  scope: string,
-  gedaechtnis: NachweisMitarbeiterGedaechtnis,
-): void {
-  write(key(scope, "workers"), gedaechtnis);
-}
-
-function istScan(value: unknown): value is NachweisScanEintrag {
-  return (
-    isRecord(value) &&
-    typeof value.id === "string" &&
-    typeof value.savedAt === "number" &&
-    typeof value.beschreibung === "string" &&
-    Array.isArray(value.zeilen) &&
-    Array.isArray(value.material) &&
-    isRecord(value.ergebnis) &&
-    isRecord(value.ergebnis.pruefung) &&
-    Array.isArray(value.ergebnis.mitarbeiter)
+  const workers: NachweisMitarbeiterGedaechtnis["workers"] = Object.fromEntries(
+    Object.entries(data.workers).flatMap(([id, worker]) => {
+      if (!istObjekt(worker) || typeof worker.name !== "string" || !zahl(worker.updatedAt)) return [];
+      const preis = zahl(worker.preis) && Number.isInteger(worker.preis) && worker.preis > 0 ? worker.preis : null;
+      return [[id, { name: worker.name, preis, updatedAt: worker.updatedAt }]];
+    }),
   );
+  const aliases = Object.fromEntries(
+    Object.entries(data.aliases).flatMap(([id, ziel]) =>
+      typeof ziel === "string" && Object.hasOwn(workers, ziel) ? [[id, ziel]] : []),
+  );
+  return { workers, aliases };
 }
 
-export function readScans(scope: string): NachweisScanEintrag[] {
-  const data = read(key(scope, "scans"));
-  return Array.isArray(data) ? data.filter(istScan) : [];
+export function writeMitarbeiterGedaechtnis(scope: string, gedaechtnis: NachweisMitarbeiterGedaechtnis): void {
+  write(key(scope, "workers"), 1, gedaechtnis);
 }
 
-export function writeScans(scope: string, scans: NachweisScanEintrag[]): void {
-  write(key(scope, "scans"), scans);
+export function readScans(scope: string, jetzt = Date.now()): NachweisCacheEintrag[] {
+  const entry = read(key(scope, "scans"));
+  const version = entry?.v;
+  if ((version !== 1 && version !== 2) || !Array.isArray(entry?.data)) return [];
+  const scans = entry.data.flatMap((value) => {
+    const scan = leseCacheScan(value, version);
+    return scan ? [scan] : [];
+  });
+  return gueltigeScans(scans, jetzt);
+}
+
+export function writeScans(scope: string, scans: NachweisCacheEintrag[], jetzt = Date.now()): void {
+  write(key(scope, "scans"), 2, gueltigeScans(scans, jetzt));
 }
 
 /** SHA-256 der Originaldatei; null, wo der Browser es nicht kann (z. B. ohne HTTPS). */

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
   addCatalogItem,
@@ -11,7 +11,7 @@ import {
   type ItemsResult,
 } from "@/lib/documents/item-actions";
 import { addNachweisItems } from "@/lib/documents/nachweis-actions";
-import type { NachweisImportLine } from "@/types/nachweis";
+import type { NachweisImportAntwort, NachweisImportLine } from "@/types/nachweis";
 import { markupPercent } from "@/lib/documents/margin";
 import {
   EMPTY_TEMPORARY_DOCUMENT_ITEM,
@@ -66,6 +66,8 @@ export function useStep2Items({
   const [editor, setEditor] = useState<{ itemId: string; field: SheetField } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [nachweisPending, setNachweisPending] = useState(false);
+  const nachweisInFlight = useRef(false);
   const reorder = useItemReorder({
     documentId,
     items,
@@ -91,6 +93,13 @@ export function useStep2Items({
       })()
     : null;
 
+  function applyItemsResult(result: Extract<ItemsResult, { items: DraftItem[] }>) {
+    setError(null);
+    setItems(result.items);
+    setSavedPreview((current) => withPersistedDocumentItems(current, result.items, result.totals));
+    setItemPreviewEdit(null);
+  }
+
   function run(action: () => Promise<ItemsResult>) {
     setError(null);
     startTransition(async () => {
@@ -100,11 +109,7 @@ export function useStep2Items({
         setError(t("itemError"));
         return;
       }
-      setItems(result.items);
-      setSavedPreview((current) =>
-        withPersistedDocumentItems(current, result.items, result.totals),
-      );
-      setItemPreviewEdit(null);
+      applyItemsResult(result);
     });
   }
 
@@ -123,10 +128,22 @@ export function useStep2Items({
     setTemporaryItem(null);
     run(() => addFremdItem(documentId, input));
   };
-  const addNachweis = (lines: NachweisImportLine[]) => {
-    setModalOpen(false);
-    setTemporaryItem(null);
-    run(() => addNachweisItems(documentId, lines));
+  const addNachweis = async (lines: NachweisImportLine[]): Promise<NachweisImportAntwort> => {
+    if (nachweisInFlight.current) return "error";
+    nachweisInFlight.current = true;
+    setNachweisPending(true);
+    setError(null);
+    try {
+      const result = await addNachweisItems(documentId, lines);
+      if ("error" in result) return result.error === "nachweisOutcomeUnknown" ? "unknown" : "error";
+      applyItemsResult(result);
+      setTemporaryItem(null);
+      setModalOpen(false);
+      return "success";
+    } finally {
+      nachweisInFlight.current = false;
+      setNachweisPending(false);
+    }
   };
 
   const updateTemporaryItem = useCallback((input: TemporaryDocumentItemInput) => {
@@ -140,6 +157,7 @@ export function useStep2Items({
   };
 
   const closeModal = () => {
+    if (nachweisInFlight.current) return;
     setModalOpen(false);
     setTemporaryItem(null);
   };
@@ -206,7 +224,8 @@ export function useStep2Items({
     items,
     preview,
     savedPreview,
-    pending,
+    pending: pending || nachweisPending,
+    nachweisPending,
     error,
     modalOpen,
     modalTab,
@@ -221,6 +240,7 @@ export function useStep2Items({
     addFree,
     addFremd,
     addNachweis,
+    applyItemsResult,
     remove: (id: string) => run(() => deleteItem(id)),
     editDesc: (item: DraftItem) => openEditor(item, "desc"),
     editAdditionalDescription: (item: DraftItem) => openEditor(item, "additionalDescription"),

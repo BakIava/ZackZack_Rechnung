@@ -1,3 +1,4 @@
+import { istNachweisDatum } from "@/lib/documents/nachweis-datum";
 import type {
   NachweisAusrichtung,
   NachweisEintrag,
@@ -104,7 +105,7 @@ Regeln:
   stunden 0, zelle "durchgestrichen". Nicht lesbar: stunden 0, zelle "unleserlich".
 - unsicher = true, wenn eine Ziffer nicht eindeutig lesbar ist.
 - Daten im Format YYYY-MM-DD. Fehlt bei den Tagen das Jahr, nimm es aus einem
-  anderen Datum auf dem Dokument.
+  anderen Datum auf dem Dokument. Wenn das Datum unbekannt ist, verwende "".
 - tage[].gesamt_laut_blatt ist die handschriftliche Gesamt-Zeile pro Tag (0 wenn
   leer); gesamt_summe_laut_blatt ist die Gesamtsumme, falls vorhanden, sonst 0.
 - material enthält nur ausgefüllte Zeilen eines Materialabschnitts, die
@@ -181,7 +182,7 @@ function list<T>(value: unknown, max: number, parse: (entry: unknown) => T | nul
 
 function parseEintrag(value: unknown): NachweisEintrag | null {
   if (!isRecord(value)) return null;
-  const datum = text(value.datum, 20);
+  const datum = value.datum === "" || istNachweisDatum(value.datum) ? value.datum : null;
   const stunden = number(value.stunden, MAX_STUNDEN_PRO_ZELLE);
   const zelle = ZELLEN.find((entry) => entry === value.zelle);
   if (datum === null || stunden === null || !zelle || typeof value.unsicher !== "boolean") {
@@ -199,7 +200,7 @@ function parseMitarbeiter(value: unknown): NachweisExtraction["mitarbeiter"][num
 
 function parseTag(value: unknown): NachweisExtraction["tage"][number] | null {
   if (!isRecord(value)) return null;
-  const datum = text(value.datum, 20);
+  const datum = value.datum === "" || istNachweisDatum(value.datum) ? value.datum : null;
   const gesamtLautBlatt = number(value.gesamt_laut_blatt, MAX_SUMME);
   return datum === null || gesamtLautBlatt === null ? null : { datum, gesamtLautBlatt };
 }

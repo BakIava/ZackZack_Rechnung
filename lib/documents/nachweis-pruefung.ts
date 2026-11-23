@@ -1,3 +1,4 @@
+import { istNachweisDatum } from "./nachweis-datum";
 import type {
   NachweisEintrag,
   NachweisErgebnis,
@@ -6,7 +7,6 @@ import type {
   NachweisPruefung,
 } from "@/types/nachweis";
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Zwei Nachkommastellen genügen für Stunden und vermeiden Float-Reste (7,5 + 0,25). */
 export function round2(value: number): number {
@@ -80,7 +80,7 @@ export function nachweisZeitraum(
 ): { von: string | null; bis: string | null } {
   const daten = extraction.mitarbeiter
     .flatMap((mitarbeiter) => mitarbeiter.eintraege)
-    .filter((eintrag) => zellenStunden(eintrag) > 0 && ISO_DATE.test(eintrag.datum))
+    .filter((eintrag) => zellenStunden(eintrag) > 0 && istNachweisDatum(eintrag.datum))
     .map((eintrag) => eintrag.datum)
     .sort();
   return daten.length > 0

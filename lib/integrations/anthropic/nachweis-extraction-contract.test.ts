@@ -55,6 +55,7 @@ describe("parseNachweisExtractionJson", () => {
 
   it.each([
     ["kein JSON", () => "kein json"],
+    ["ungültigen Kalendertag", () => JSON.stringify({ ...antwort(), tage: [{ datum: "2026-02-29", gesamt_laut_blatt: 0 }] })],
     ["fehlendes Feld", () => JSON.stringify({ ...antwort(), projekt: undefined })],
     ["unbekannte Ausrichtung", () => JSON.stringify({ ...antwort(), ausrichtung: "schief" })],
     [

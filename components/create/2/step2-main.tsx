@@ -5,11 +5,10 @@ import {
   ChevronLeft,
   ChevronRight,
   TriangleAlert,
-  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
-import { Modal } from "@/components/ui";
+import { PositionPickerModal } from "./position-picker-modal";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { KatalogEintrag } from "@/types/service";
 import type { DocumentPreview, DraftItem } from "@/types/document";
@@ -62,6 +61,7 @@ export function Step2Main({
     preview,
     savedPreview,
     pending,
+    nachweisPending,
     error,
     modalOpen,
     modalTab,
@@ -191,35 +191,20 @@ export function Step2Main({
       </div>
 
       {modalOpen && (
-        <Modal
-          open
-          onClose={closeModal}
-          dir={dir}
-          size="lg"
-          className="zz-modal--positions"
-          ariaLabel={t("addPosition")}
-        >
-          <div className="dmodal-head">
-            <span className="dmodal-title">{t("addPosition")}</span>
-            <button type="button" className="sheet-x" onClick={closeModal} aria-label={t("close")}>
-              <X size={18} strokeWidth={STROKE} aria-hidden />
-            </button>
-          </div>
-          <div className="dmodal-body">
-            <CatalogPicker
-              documentId={documentId}
-              nachweisCacheScope={cacheScope}
-              initialTab={modalTab}
-              locale={locale}
-              services={services}
-              onAddCatalog={addCatalog}
-              onAddFree={addFree}
-              onAddFremd={addFremd}
-              onAddNachweis={addNachweis}
-              onPreviewChange={updateTemporaryItem}
-            />
-          </div>
-        </Modal>
+        <PositionPickerModal dir={dir} pending={nachweisPending} onClose={closeModal}>
+          <CatalogPicker
+            documentId={documentId}
+            nachweisCacheScope={cacheScope}
+            initialTab={modalTab}
+            locale={locale}
+            services={services}
+            onAddCatalog={addCatalog}
+            onAddFree={addFree}
+            onAddFremd={addFremd}
+            onAddNachweis={addNachweis}
+            onPreviewChange={updateTemporaryItem}
+          />
+        </PositionPickerModal>
       )}
 
       {reorder.isOpen && (

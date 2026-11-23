@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { NachweisScanEintrag, NachweisZeile } from "@/types/nachweis";
+import type { NachweisCacheEintrag, NachweisZeile } from "@/types/nachweis";
 import { beispielNachweis } from "./nachweis-test-fixtures";
 import { nachweisErgebnis } from "./nachweis-pruefung";
 import { nachweisStartZeilen } from "./nachweis-positionen";
@@ -22,8 +22,8 @@ function gelesen(): NachweisZeile[] {
   return nachweisStartZeilen(ergebnis, null).zeilen;
 }
 
-function scan(id: string, savedAt: number, hash: string | null = null): NachweisScanEintrag {
-  return { id, hash, savedAt, ergebnis, beschreibung: "", zeilen: [], material: [] };
+function scan(id: string, savedAt: number, hash: string | null = null): NachweisCacheEintrag {
+  return { id, hash, savedAt, review: { variante: "tabelle", ergebnis, beschreibung: "", zeilen: [], material: [] } };
 }
 
 describe("nameSchluessel", () => {
@@ -81,13 +81,16 @@ describe("Mitarbeiter merken", () => {
 
 describe("Scans merken", () => {
   it("ersetzt denselben Scan, behält höchstens fünf und verwirft alte", () => {
-    let scans: NachweisScanEintrag[] = [scan("alt", JETZT - SCAN_GUELTIG_MS - 1)];
+    let scans: NachweisCacheEintrag[] = [scan("alt", JETZT - SCAN_GUELTIG_MS - 1)];
     for (let index = 0; index < 7; index += 1) scans = scanMerken(scans, scan(`s${index}`, JETZT + index), JETZT);
-    scans = scanMerken(scans, { ...scan("s6", JETZT + 10), beschreibung: "neu" }, JETZT);
+    const aktualisiert = scan("s6", JETZT + 10);
+    if (aktualisiert.review.variante !== "tabelle") throw new Error("Tabellen-Fixture erwartet");
+    aktualisiert.review.beschreibung = "neu";
+    scans = scanMerken(scans, aktualisiert, JETZT);
 
     expect(scans).toHaveLength(MAX_GEMERKTE_SCANS);
     expect(scans.map((s) => s.id)).toEqual(["s6", "s5", "s4", "s3", "s2"]);
-    expect(scans[0].beschreibung).toBe("neu");
+    expect(scans[0].review).toMatchObject({ beschreibung: "neu" });
   });
 
   it("vergisst einen einzelnen Scan, damit dieselbe Datei neu gelesen wird", () => {

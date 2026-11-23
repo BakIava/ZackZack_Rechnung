@@ -5,7 +5,7 @@ import type {
   NachweisVorschlag,
   NachweisZeile,
 } from "@/types/nachweis";
-import { MAX_NACHWEIS_DESCRIPTION } from "./nachweis-import";
+import { MAX_NACHWEIS_DESCRIPTION, parseNachweisImportLines } from "./nachweis-import";
 import { round2 } from "./nachweis-pruefung";
 
 /** Dokumenttexte sind immer Deutsch, unabhängig von der Bediensprache. */
@@ -41,13 +41,13 @@ export function nachweisZusatztext(kopf: NachweisKopf): string {
 
 /** Suchmuster (SQL LIKE) für Positionen, die diese Nachweis-Nummer im Zusatztext tragen. */
 export function nachweisZusatzSuchmuster(nummer: string): string {
-  return `%${ZUSATZ_PRAEFIX} Nr. ${nummer.replace(/[\\%_]/g, "\\$&")}%`;
+  return `%lt. %nachweis Nr. ${nummer.replace(/[\\%_]/g, "\\$&")}%`;
 }
 
 /** Exakter Treffer: „Nr. 2026-040“ zählt, „Nr. 2026-0401“ nicht. */
 export function zusatzNenntNachweis(zusatz: string, nummer: string): boolean {
   const escaped = nummer.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`${ZUSATZ_PRAEFIX} Nr\\. ${escaped}(,|$)`).test(zusatz);
+  return new RegExp(`lt\\. (?:Stunden|Arbeits)nachweis Nr\\. ${escaped}(,|$)`).test(zusatz);
 }
 
 /** Vorschlag für den Positionstext: was unter „Arbeitsleistungen“ steht, sonst „Arbeitsstunden“. */
@@ -176,8 +176,6 @@ export function nachweisImportZeilen(
         }]
       : [],
   );
-  return {
-    lines,
-    vollstaendig: lines.length > 0 && lines.length === vorschlaege.length,
-  };
+  const geprueft = lines.length === vorschlaege.length ? parseNachweisImportLines(lines) : null;
+  return { lines: geprueft ?? [], vollstaendig: geprueft !== null };
 }

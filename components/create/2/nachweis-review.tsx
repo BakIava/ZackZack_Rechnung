@@ -1,59 +1,25 @@
 "use client";
 
 import { Check, History, RefreshCw, RotateCcw, TriangleAlert } from "lucide-react";
-import { useId } from "react";
 import { useTranslations } from "next-intl";
-import { formatAmount } from "@/lib/format";
-import { MAX_NACHWEIS_DESCRIPTION } from "@/lib/documents/nachweis-import";
-import { NACHWEIS_STUNDEN_TEXT, nachweisZeitraumText } from "@/lib/documents/nachweis-positionen";
-import { nachweisBlattGesamt, stimmtMitBlatt } from "@/lib/documents/nachweis-pruefung";
-import type { NachweisErgebnis, NachweisImportLine, NachweisVerwendung } from "@/types/nachweis";
-import { NachweisMaterial } from "./nachweis-material";
-import { NachweisResultLines } from "./nachweis-result-lines";
-import { NachweisWorkers } from "./nachweis-workers";
-import type { NachweisScanState } from "./use-nachweis-scan";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { NachweisImportAntwort, NachweisVerwendung } from "@/types/nachweis";
 import "./nachweis-review.css";
 
 const STROKE = 1.9;
 
-interface CheckBannerProps {
-  ergebnis: NachweisErgebnis;
-  gesamtStunden: number;
-}
-
-/** Warnt nur, wenn die (korrigierten) Stunden nicht zur Gesamtzeile des Zettels passen. */
-function CheckBanner({ ergebnis, gesamtStunden }: CheckBannerProps) {
-  const t = useTranslations("Step2");
-  if (stimmtMitBlatt(ergebnis.pruefung, gesamtStunden) !== false) return null;
-
-  return (
-    <div className="nachweis-check" role="status">
-      <TriangleAlert size={20} strokeWidth={STROKE} aria-hidden />
-      <span>
-        {t("nachweisCheckMismatch", {
-          hours: formatAmount(gesamtStunden),
-          sheet: formatAmount(nachweisBlattGesamt(ergebnis.pruefung) ?? 0),
-        })}
-      </span>
-    </div>
-  );
-}
-
-interface UsedBannerProps {
+interface NachweisUsedBannerProps {
   nummer: string;
   verwendungen: NachweisVerwendung[];
 }
 
-/** Warnung vor Doppelabrechnung: dieselbe Nachweis-Nummer steht schon auf einem Dokument. */
-function UsedBanner({ nummer, verwendungen }: UsedBannerProps) {
+function NachweisUsedBanner({ nummer, verwendungen }: NachweisUsedBannerProps) {
   const t = useTranslations("Step2");
   if (verwendungen.length === 0) return null;
   const documents = verwendungen
-    .map((verwendung) =>
-      verwendung.sameDocument
-        ? t("nachweisUsedHere")
-        : `${t(verwendung.docType)} ${verwendung.documentNumber ?? t("nachweisUsedDraft")}`,
-    )
+    .map((verwendung) => verwendung.sameDocument
+      ? t("nachweisUsedHere")
+      : `${t(verwendung.docType)} ${verwendung.documentNumber ?? t("nachweisUsedDraft")}`)
     .join(", ");
 
   return (
@@ -65,74 +31,83 @@ function UsedBanner({ nummer, verwendungen }: UsedBannerProps) {
 }
 
 interface NachweisReviewProps {
-  ergebnis: NachweisErgebnis;
-  scan: NachweisScanState;
-  onImport: (lines: NachweisImportLine[]) => void;
+  nummer: string;
+  zeitraum?: string;
+  verwendungen: NachweisVerwendung[];
+  ausSpeicher: boolean;
+  vollstaendig: boolean;
+  onReread: () => void;
+  onReset: () => void;
+  onImport: () => Promise<NachweisImportAntwort>;
+  children: ReactNode;
 }
 
-/** Prüfschritt wie das Papierblatt: Text, Namen, Stunden, Preise korrigieren → übernehmen. */
-export function NachweisReview({ ergebnis, scan, onImport }: NachweisReviewProps) {
+export function NachweisReview({
+  nummer, zeitraum, verwendungen, ausSpeicher, vollstaendig, onReread, onReset, onImport, children,
+}: NachweisReviewProps) {
   const t = useTranslations("Step2");
-  const textId = useId();
-  const zeitraum = nachweisZeitraumText(ergebnis.zeitraumVon, ergebnis.zeitraumBis);
-  const { lines, vollstaendig } = scan.importZeilen;
+  const [status, setStatus] = useState<NachweisImportAntwort | "idle" | "pending">("idle");
+  const inArbeit = useRef(false);
+  const aktiv = useRef(false);
 
+  useEffect(() => {
+    aktiv.current = true;
+    return () => { aktiv.current = false; };
+  }, []);
+
+  async function importieren() {
+    if (!vollstaendig || inArbeit.current || status === "unknown" || status === "success") return;
+    inArbeit.current = true;
+    setStatus("pending");
+    let antwort: NachweisImportAntwort;
+    try {
+      antwort = await onImport();
+    } catch {
+      antwort = "unknown";
+    }
+    if (!aktiv.current) return;
+    inArbeit.current = antwort === "success";
+    setStatus(antwort);
+  }
+
+  const pending = status === "pending";
   return (
-    <div className="nachweis-review">
+    <div className="nachweis-review" aria-busy={pending || undefined}>
       <div className="nachweis-review-head">
         <span className="nachweis-review-number">
-          {ergebnis.nummer ? t("nachweisNumber", { number: ergebnis.nummer }) : t("nachweisNoNumber")}
+          {nummer ? t("nachweisNumber", { number: nummer }) : t("nachweisNoNumber")}
         </span>
         {zeitraum && <span className="nachweis-review-meta" dir="ltr">{zeitraum}</span>}
       </div>
-
-      {scan.ausSpeicher && (
+      {ausSpeicher && (
         <div className="nachweis-review-cached">
           <History size={17} strokeWidth={STROKE} aria-hidden />
           <span>{t("nachweisFromCache")}</span>
-          <button type="button" className="nachweis-review-reread" onClick={scan.neuLesen}>
+          <button type="button" className="nachweis-review-reread" onClick={onReread} disabled={pending}>
             <RefreshCw size={16} strokeWidth={STROKE} aria-hidden />
             {t("nachweisReread")}
           </button>
         </div>
       )}
-
-      <UsedBanner nummer={ergebnis.nummer} verwendungen={scan.verwendungen} />
-      <CheckBanner ergebnis={ergebnis} gesamtStunden={scan.gesamtStunden} />
-
-      <div className="nachweis-review-text">
-        <label htmlFor={textId}>{t("nachweisTextLabel")}</label>
-        <input
-          id={textId}
-          lang="de"
-          dir="ltr"
-          maxLength={MAX_NACHWEIS_DESCRIPTION}
-          value={scan.beschreibung}
-          placeholder={NACHWEIS_STUNDEN_TEXT}
-          onChange={(event) => scan.setBeschreibung(event.target.value)}
-        />
-      </div>
-
-      <NachweisWorkers scan={scan} />
-      {scan.material.length > 0 && <NachweisMaterial scan={scan} />}
-      <NachweisResultLines vorschlaege={scan.vorschlaege} />
-
+      <NachweisUsedBanner nummer={nummer} verwendungen={verwendungen} />
+      <fieldset className="nachweis-review-content" disabled={pending}>{children}</fieldset>
+      {(status === "error" || status === "unknown") && (
+        <div className="nachweis-check" role="alert">
+          <TriangleAlert size={20} aria-hidden />
+          <span>{t(status === "error" ? "nachweisImportFailed" : "nachweisImportUnknown")}</span>
+        </div>
+      )}
       <div className="nachweis-review-foot">
-        <button type="button" className="nachweis-review-again" onClick={scan.reset}>
+        <button type="button" className="nachweis-review-again" onClick={onReset} disabled={pending}>
           <RotateCcw size={17} strokeWidth={STROKE} aria-hidden />
           {t("nachweisOtherFile")}
         </button>
-        <button
-          type="button"
-          className="nachweis-review-import"
-          disabled={!vollstaendig}
-          onClick={() => {
-            scan.mitarbeiterFuerNaechstesMalMerken();
-            onImport(lines);
-          }}
+        <button type="button" className="nachweis-review-import"
+          disabled={!vollstaendig || pending || status === "unknown" || status === "success"}
+          onClick={() => void importieren()}
         >
           <Check size={20} strokeWidth={2.4} aria-hidden />
-          {t("nachweisImport")}
+          {t(pending ? "nachweisImportPending" : "nachweisImport")}
         </button>
       </div>
     </div>

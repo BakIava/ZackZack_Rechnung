@@ -7,7 +7,7 @@
 
 import type {
   NachweisMitarbeiterGedaechtnis,
-  NachweisScanEintrag,
+  NachweisCacheEintrag,
   NachweisZeile,
 } from "@/types/nachweis";
 
@@ -74,7 +74,7 @@ export function mitarbeiterMerken(
 }
 
 /** Abgelaufene Scans verwerfen, neueste zuerst. */
-export function gueltigeScans(scans: NachweisScanEintrag[], jetzt: number): NachweisScanEintrag[] {
+export function gueltigeScans(scans: NachweisCacheEintrag[], jetzt: number): NachweisCacheEintrag[] {
   return scans
     .filter((scan) => jetzt - scan.savedAt < SCAN_GUELTIG_MS)
     .sort((a, b) => b.savedAt - a.savedAt)
@@ -83,24 +83,24 @@ export function gueltigeScans(scans: NachweisScanEintrag[], jetzt: number): Nach
 
 /** Scan speichern bzw. aktualisieren (gleiche ID), höchstens fünf behalten. */
 export function scanMerken(
-  scans: NachweisScanEintrag[],
-  eintrag: NachweisScanEintrag,
+  scans: NachweisCacheEintrag[],
+  eintrag: NachweisCacheEintrag,
   jetzt: number,
-): NachweisScanEintrag[] {
+): NachweisCacheEintrag[] {
   return gueltigeScans([eintrag, ...scans.filter((scan) => scan.id !== eintrag.id)], jetzt);
 }
 
 /** Gemerktes Ergebnis vergessen, z. B. für „Neu lesen“ ohne vorliegende Datei. */
-export function scanVergessen(scans: NachweisScanEintrag[], id: string): NachweisScanEintrag[] {
+export function scanVergessen(scans: NachweisCacheEintrag[], id: string): NachweisCacheEintrag[] {
   return scans.filter((scan) => scan.id !== id);
 }
 
 /** Gleiche Datei schon gelesen? Dann ohne neuen KI-Aufruf wiederverwenden. */
 export function scanZurDatei(
-  scans: NachweisScanEintrag[],
+  scans: NachweisCacheEintrag[],
   hash: string | null,
   jetzt: number,
-): NachweisScanEintrag | null {
+): NachweisCacheEintrag | null {
   if (!hash) return null;
   return gueltigeScans(scans, jetzt).find((scan) => scan.hash === hash) ?? null;
 }

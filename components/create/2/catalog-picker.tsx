@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Brush, ClipboardList, FileText, Pencil, Plus, ScanLine, Search, Truck } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/routing";
+import type { findNachweisUsage, readNachweis } from "@/lib/documents/nachweis-actions";
 import { anzeigeName } from "@/lib/katalog/anzeige";
 import type { KatalogEintrag } from "@/types/service";
 import type {
@@ -11,7 +12,7 @@ import type {
   FremdItemInput,
   TemporaryDocumentItemInput,
 } from "@/types/document";
-import type { NachweisImportLine } from "@/types/nachweis";
+import type { NachweisImportAntwort, NachweisImportLine } from "@/types/nachweis";
 import { formatMoney } from "@/lib/format";
 import {
   EMPTY_TEMPORARY_DOCUMENT_ITEM,
@@ -38,7 +39,9 @@ interface CatalogPickerProps {
   onAddCatalog: (serviceId: string) => void;
   onAddFree: (input: FreeItemInput) => void;
   onAddFremd: (input: FremdItemInput) => void;
-  onAddNachweis: (lines: NachweisImportLine[]) => void;
+  onAddNachweis: (lines: NachweisImportLine[]) => Promise<NachweisImportAntwort>;
+  nachweisReadAction?: typeof readNachweis;
+  nachweisUsageAction?: typeof findNachweisUsage;
   onPreviewChange: (input: TemporaryDocumentItemInput) => void;
 }
 
@@ -53,11 +56,14 @@ export function CatalogPicker({
   onAddFree,
   onAddFremd,
   onAddNachweis,
+  nachweisReadAction,
+  nachweisUsageAction,
   onPreviewChange,
 }: CatalogPickerProps) {
   const t = useTranslations("Step2");
   const [tab, setTab] = useState<Tab>(initialTab);
   const [query, setQuery] = useState("");
+  const [importing, setImporting] = useState(false);
 
   const tabs: { id: Tab; icon: typeof ClipboardList; label: string }[] = [
     { id: "frei", icon: Pencil, label: t("freePosition") },
@@ -73,7 +79,7 @@ export function CatalogPicker({
 
   function selectTab(nextTab: Tab) {
     // Erneuter Klick auf den aktiven Tab darf die Vorschau nicht vom Formular lösen.
-    if (nextTab === tab) return;
+    if (nextTab === tab || importing) return;
     setTab(nextTab);
     const defaults = nextTab === "frei"
       ? FREE_TEMPORARY_DOCUMENT_ITEM
@@ -94,6 +100,7 @@ export function CatalogPicker({
             data-on={tab === id ? "1" : "0"}
             role="tab"
             aria-selected={tab === id}
+            disabled={importing}
             onClick={() => selectTab(id)}
           >
             <Icon size={18} strokeWidth={STROKE} aria-hidden />
@@ -156,9 +163,19 @@ export function CatalogPicker({
       )}
       {tab === "nachweis" && (
         <NachweisScan
+          key={`${nachweisCacheScope}:${documentId}`}
           documentId={documentId}
           cacheScope={nachweisCacheScope}
-          onImport={onAddNachweis}
+          onImport={async (lines) => {
+            setImporting(true);
+            try {
+              return await onAddNachweis(lines);
+            } finally {
+              setImporting(false);
+            }
+          }}
+          readAction={nachweisReadAction}
+          findUsageAction={nachweisUsageAction}
           onManual={() => selectTab("frei")}
         />
       )}
