@@ -1,0 +1,34 @@
+.position-selection-bar {
+  margin-block: 14px 12px;
+}
+
+.position-selection-bar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.position-selection-bar-controls > button {
+  min-block-size: 44px;
+  padding-inline: 12px;
+  color: var(--primary);
+}
+
+.position-selection-bar-controls > .position-selection-bar-delete {
+  color: var(--danger, #a1180f);
+}
+
+.position-selection-bar-count {
+  margin-inline-end: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.position-selection-bar-error {
+  margin-block: 0 8px;
+  color: var(--warn);
+  font-size: 14px;
+}

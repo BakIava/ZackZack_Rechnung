@@ -1,0 +1,63 @@
+.position-selection-dialog {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.position-selection-dialog h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.position-selection-dialog-rates {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.position-selection-dialog-rates legend {
+  margin-block-end: 8px;
+  color: var(--muted);
+}
+
+.position-selection-dialog-rates label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.position-selection-dialog-rates label:has(:checked) {
+  border-color: var(--primary);
+}
+
+.position-selection-dialog-rates input {
+  accent-color: var(--primary);
+}
+
+.position-selection-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.position-selection-dialog-actions button {
+  min-block-size: 44px;
+}
+
+.position-selection-dialog-error {
+  margin: 0;
+  color: var(--warn);
+}

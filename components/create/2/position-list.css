@@ -24,6 +24,11 @@
   border-color: color-mix(in srgb, var(--primary) 35%, var(--line));
 }
 
+.d2card[data-selected="true"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+
 /* Aufgeklappt: deutlich als die gerade bearbeitete Position erkennbar. */
 .d2card[data-expanded="1"] {
   border-color: color-mix(in srgb, var(--primary) 45%, var(--line));
