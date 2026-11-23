@@ -9,6 +9,8 @@ interface UnitPickerProps {
   id?: string;
   units: readonly string[];
   value: string;
+  placeholder?: string;
+  invalid?: boolean;
   searchPlaceholder: string;
   noResultsLabel: string;
   onChange: (unit: string) => void;
@@ -18,24 +20,29 @@ const STROKE = 1.75;
 const POPOVER_GAP = 6;
 const VIEWPORT_MARGIN = 12;
 const MIN_POPOVER_HEIGHT = 140;
+const MIN_POPOVER_WIDTH = 180;
 
-/**
- * Richtet das Popover (position: fixed) direkt unter dem Auslöser aus. Fixed
- * statt absolute, damit es nicht vom overflow eines Modals abgeschnitten wird;
- * es bleibt im DOM-Baum und erbt so Design-Tokens und Leserichtung.
- */
+/** Positioniert das Menü am Auslöser und klappt es bei wenig Platz nach oben. */
 function placePopover(trigger: HTMLElement, popover: HTMLElement) {
   const rect = trigger.getBoundingClientRect();
   const viewport = document.documentElement;
   // Logische Insets eines fixed-Elements richten sich nach der Leserichtung des Viewports (<html dir>).
-  const start = getComputedStyle(viewport).direction === "rtl"
+  const triggerStart = getComputedStyle(viewport).direction === "rtl"
     ? viewport.clientWidth - rect.right
     : rect.left;
-  const top = rect.bottom + POPOVER_GAP;
-  const maxHeight = Math.max(viewport.clientHeight - top - VIEWPORT_MARGIN, MIN_POPOVER_HEIGHT);
-  popover.style.setProperty("--unit-picker-top", `${top}px`);
+  const width = Math.min(Math.max(rect.width, MIN_POPOVER_WIDTH), viewport.clientWidth - 2 * VIEWPORT_MARGIN);
+  const start = Math.min(Math.max(triggerStart, VIEWPORT_MARGIN), viewport.clientWidth - width - VIEWPORT_MARGIN);
+  const blockStart = rect.bottom + POPOVER_GAP;
+  const blockEnd = viewport.clientHeight - rect.top + POPOVER_GAP;
+  const spaceBelow = viewport.clientHeight - blockStart - VIEWPORT_MARGIN;
+  const spaceAbove = viewport.clientHeight - blockEnd - VIEWPORT_MARGIN;
+  const opensAbove = spaceBelow < MIN_POPOVER_HEIGHT && spaceAbove > spaceBelow;
+  const maxHeight = Math.max(0, opensAbove ? spaceAbove : spaceBelow);
+
+  popover.style.setProperty("--unit-picker-block-start", opensAbove ? "auto" : `${blockStart}px`);
+  popover.style.setProperty("--unit-picker-block-end", opensAbove ? `${blockEnd}px` : "auto");
   popover.style.setProperty("--unit-picker-start", `${start}px`);
-  popover.style.setProperty("--unit-picker-width", `${rect.width}px`);
+  popover.style.setProperty("--unit-picker-width", `${width}px`);
   popover.style.setProperty("--unit-picker-max-height", `${maxHeight}px`);
 }
 
@@ -44,6 +51,8 @@ export function UnitPicker({
   id,
   units,
   value,
+  placeholder,
+  invalid,
   searchPlaceholder,
   noResultsLabel,
   onChange,
@@ -104,6 +113,7 @@ export function UnitPicker({
   function select(unit: string) {
     onChange(unit);
     setOpen(false);
+    triggerRef.current?.focus({ preventScroll: true });
   }
 
   return (
@@ -114,11 +124,12 @@ export function UnitPicker({
         type="button"
         className="unit-picker-trigger"
         aria-expanded={open}
+        data-invalid={invalid || undefined}
         aria-controls={listId}
         aria-haspopup="listbox"
         onClick={() => setOpen((current) => !current)}
       >
-        <span>{value}</span>
+        <span>{value || placeholder}</span>
         <ChevronDown size={17} strokeWidth={STROKE} aria-hidden />
       </button>
 
