@@ -763,6 +763,25 @@
     "notGerman": "Bu sadece Almanca metinlerle çalışır. Lütfen Almanca yaz.",
     "limit": "Günlük sınıra ulaşıldı: günde {limit} düzeltme. Yarın tekrar dene.",
     "failed": "Düzeltme yapılamadı. Metnin değişmeden kalıyor.",
-    "close": "Uyarıyı kapat"
+    "close": "Uyarıyı kapat",
+    "checkAll": "Metinleri kontrol et",
+    "checking": "Metinler kontrol ediliyor …",
+    "checkCount": "{count} kalem düzeltilebilir",
+    "checkHint": "Değiştirmek istemediğin yerlerin işaretini kaldır.",
+    "checkSkipped": "İlk {max} kalem kontrol edildi.",
+    "allGood": "Tüm metinler zaten iyi.",
+    "noPositions": "Kontrol edilecek serbest kalem yok. Katalog terimlerini katalogda düzeltebilirsin.",
+    "position": "Kalem {number}",
+    "fieldDescription": "Açıklama",
+    "fieldAdditional": "Kalem ayrıntısı",
+    "before": "Önce",
+    "after": "Yeni",
+    "applySelected": "{count, plural, =0 {Hiçbiri seçilmedi} other {# kalemi uygula}}",
+    "applying": "Kaydediliyor …",
+    "cancel": "İptal",
+    "done": "Kapat",
+    "checkFailed": "Kontrol yapılamadı. Metinlerin değişmeden kalıyor.",
+    "applyFailed": "Metinler kaydedilemedi. Taslağı yeniden yükle ve kalemleri kontrol et.",
+    "textsChanged": "Kalemler bu arada değişti. Lütfen tekrar kontrol et."
   }
 }

@@ -763,6 +763,25 @@
     "notGerman": "Das klappt nur mit deutschem Text. Bitte auf Deutsch schreiben.",
     "limit": "Tageslimit erreicht: {limit} Verbesserungen pro Tag. Morgen geht es wieder.",
     "failed": "Das hat nicht geklappt. Dein Text bleibt, wie er ist.",
-    "close": "Hinweis schließen"
+    "close": "Hinweis schließen",
+    "checkAll": "Texte prüfen",
+    "checking": "Texte werden geprüft …",
+    "checkCount": "{count, plural, one {# Position lässt sich verbessern} other {# Positionen lassen sich verbessern}}",
+    "checkHint": "Nimm das Häkchen weg, wo du nichts ändern willst.",
+    "checkSkipped": "Geprüft wurden die ersten {max} Positionen.",
+    "allGood": "Alle Texte sind schon gut.",
+    "noPositions": "Es gibt keine freien Positionen zum Prüfen. Katalogbegriffe verbesserst du im Katalog.",
+    "position": "Position {number}",
+    "fieldDescription": "Bezeichnung",
+    "fieldAdditional": "Positionsbeschreibung",
+    "before": "Vorher",
+    "after": "Neu",
+    "applySelected": "{count, plural, =0 {Nichts ausgewählt} one {# Position übernehmen} other {# Positionen übernehmen}}",
+    "applying": "Wird gespeichert …",
+    "cancel": "Abbrechen",
+    "done": "Schließen",
+    "checkFailed": "Das hat nicht geklappt. Deine Texte bleiben, wie sie sind.",
+    "applyFailed": "Die Texte konnten nicht gespeichert werden. Lade den Entwurf neu und prüfe die Positionen.",
+    "textsChanged": "Die Positionen haben sich inzwischen geändert. Bitte noch einmal prüfen."
   }
 }
