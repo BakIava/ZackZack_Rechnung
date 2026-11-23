@@ -766,8 +766,6 @@
     "close": "Uyarıyı kapat",
     "checkAll": "Metinleri kontrol et",
     "checking": "Metinler kontrol ediliyor …",
-    "checkCount": "{count} kalem düzeltilebilir",
-    "checkHint": "Değiştirmek istemediğin yerlerin işaretini kaldır.",
     "checkSkipped": "İlk {max} kalem kontrol edildi.",
     "allGood": "Tüm metinler zaten iyi.",
     "noPositions": "Kontrol edilecek serbest kalem yok. Katalog terimlerini katalogda düzeltebilirsin.",

@@ -766,8 +766,6 @@
     "close": "Hinweis schließen",
     "checkAll": "Texte prüfen",
     "checking": "Texte werden geprüft …",
-    "checkCount": "{count, plural, one {# Position lässt sich verbessern} other {# Positionen lassen sich verbessern}}",
-    "checkHint": "Nimm das Häkchen weg, wo du nichts ändern willst.",
     "checkSkipped": "Geprüft wurden die ersten {max} Positionen.",
     "allGood": "Alle Texte sind schon gut.",
     "noPositions": "Es gibt keine freien Positionen zum Prüfen. Katalogbegriffe verbesserst du im Katalog.",
