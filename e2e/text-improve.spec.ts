@@ -81,3 +81,71 @@ test("Zusatztext behält Zeilen; Arabisch bleibt RTL ohne Überlauf", async ({ p
   await card.getByRole("button", { name: "اعتماد" }).click();
   await expect(page.locator("#text-improve-zusatztext")).toHaveValue("Inkl. Entsorgung des Altmaterials\nUntergrund vorher gereinigt");
 });
+
+test("Texte prüfen: ein Aufruf, Häkchen und gemeinsame Übernahme", async ({ page }, testInfo) => {
+  await page.goto("/de/nachweis-test?view=text-improve");
+  const harness = page.locator(".text-check-harness");
+  const dialog = page.getByRole("dialog", { name: "Texte prüfen" });
+
+  await page.getByRole("button", { name: "Texte prüfen" }).click();
+  await expect(dialog.getByText("Texte werden geprüft …")).toBeVisible();
+  await expect(dialog.getByText("2 Positionen lassen sich verbessern")).toBeVisible();
+  await expect(harness).toHaveAttribute("data-check-calls", "1");
+  const rows = dialog.locator(".text-check-row");
+  await expect(rows).toHaveCount(2);
+  await expect(dialog.getByText("Position 2", { exact: true })).toHaveCount(0);
+  await expect(rows.nth(0)).toContainText("fliesen verlegn bad 12 m2");
+  await expect(rows.nth(0)).toContainText("Fliesen verlegen im Bad, 12 m²");
+  await expect(rows.nth(1)).toContainText("Inkl. Entfernen der alten Fugen");
+  await page.screenshot({ path: testInfo.outputPath("de-texte-pruefen.png"), style: screenshotStyle });
+
+  await rows.nth(1).getByRole("checkbox").uncheck();
+  await dialog.getByRole("button", { name: "1 Position übernehmen" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByTestId("item-1")).toHaveText("Fliesen verlegen im Bad, 12 m²");
+  await expect(page.getByTestId("item-2")).toHaveText("Malerarbeiten Wandfläche");
+  await expect(page.getByTestId("item-3")).toContainText("silikon fuge erneuern");
+
+  await page.getByRole("button", { name: "Texte prüfen" }).click();
+  await expect(dialog.getByText("1 Position lässt sich verbessern")).toBeVisible();
+  await dialog.getByRole("button", { name: "1 Position übernehmen" }).click();
+  await expect(page.getByTestId("item-3")).toContainText("Silikonfugen erneuern");
+  await expect(page.getByTestId("item-3")).toContainText("Inkl. Entfernen der alten Fugen");
+
+  await page.getByRole("button", { name: "Texte prüfen" }).click();
+  await expect(dialog.getByText("Alle Texte sind schon gut.")).toBeVisible();
+  await dialog.getByRole("button", { name: "Schließen" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(harness).toHaveAttribute("data-check-calls", "3");
+});
+
+test("Texte prüfen auf Arabisch bei 360 px ohne Überlauf", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 360, height: 740 });
+  await page.goto("/ar/nachweis-test?view=text-improve");
+  await page.getByRole("button", { name: "فحص النصوص" }).click();
+  const dialog = page.getByRole("dialog", { name: "فحص النصوص" });
+  await expect(dialog.locator(".text-check-row")).toHaveCount(2);
+  await expect(dialog.locator(".text-check-new").first()).toHaveAttribute("dir", "ltr");
+  const overflow = await dialog.locator(".text-check-dialog").evaluate((element) => element.scrollWidth - element.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: testInfo.outputPath("ar-360-texte-pruefen.png"), style: screenshotStyle });
+  await dialog.getByRole("button", { name: "اعتماد بندين" }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByTestId("item-1")).toHaveText("Fliesen verlegen im Bad, 12 m²");
+});
+
+test("Texte prüfen sitzt in der Positionsleiste von Schritt 2", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto("/ar/nachweis-test?view=position-selection");
+  const bar = page.locator(".position-selection-bar");
+  await expect(bar.getByRole("button", { name: "فحص النصوص" })).toBeVisible();
+  expect(await bar.evaluate((element) => element.scrollWidth - element.clientWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: testInfo.outputPath("ar-360-positionsleiste.png"), style: screenshotStyle });
+
+  // Echte Server-Action ohne Anmeldung: sauberer Fehlerhinweis statt Absturz.
+  await bar.getByRole("button", { name: "فحص النصوص" }).click();
+  const dialog = page.getByRole("dialog", { name: "فحص النصوص" });
+  await expect(dialog.getByText("لم ينجح ذلك. تبقى نصوصك كما هي.")).toBeVisible();
+  await dialog.getByRole("button", { name: "إغلاق" }).click();
+  await expect(dialog).toHaveCount(0);
+});

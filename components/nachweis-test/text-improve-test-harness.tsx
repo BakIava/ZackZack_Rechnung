@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { TextImprove } from "@/components/shared/text-improve";
 import { isRtlLocale, type Locale } from "@/i18n/routing";
 import type { TextImproveFeld, TextImproveResult } from "@/types/text-improve";
+import { TextCheckTestHarness } from "./text-check-test-harness";
 import "./text-improve-test-harness.css";
 
 interface TextImproveTestHarnessProps {
@@ -53,6 +54,7 @@ export function TextImproveTestHarness({ locale }: TextImproveTestHarnessProps) 
     <div className="zz-create text-improve-harness" dir={isRtlLocale(locale) ? "rtl" : "ltr"}>
       <Feld feld="bezeichnung" label={t("labelLbl")} />
       <Feld feld="zusatztext" label={t("additionalDescriptionTitle")} />
+      <TextCheckTestHarness dir={isRtlLocale(locale) ? "rtl" : "ltr"} />
     </div>
   );
 }

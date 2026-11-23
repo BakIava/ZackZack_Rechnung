@@ -1,0 +1,25 @@
+.text-check-harness {
+  display: grid;
+  gap: 12px;
+}
+
+.text-check-harness-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.text-check-harness-items {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-inline-start: 20px;
+}
+
+.text-check-harness-items li {
+  display: grid;
+  gap: 2px;
+}
+
+.text-check-harness-items small {
+  color: var(--muted);
+}
