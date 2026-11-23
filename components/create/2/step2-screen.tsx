@@ -4,7 +4,7 @@ import type { KatalogEintrag } from "@/types/service";
 import type { DocumentPreview, DraftItem } from "@/types/document";
 import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { Step2Main } from "./step2-main";
-import "@/components/layout/app-shell.css";
+import { Step2Frame } from "./step2-frame";
 
 interface Step2ScreenProps {
   dir: "ltr" | "rtl";
@@ -31,20 +31,17 @@ export function Step2Screen({
   cacheScope,
 }: Step2ScreenProps) {
   return (
-    <div className="zz-dash">
-      <div className="dapp" dir={dir}>
-        <Sidebar startCollapsed />
-        <Step2Main
-          dir={dir}
-          locale={locale}
-          documentId={documentId}
-          initialPreview={initialPreview}
-          initialItems={initialItems}
-          logo={logo}
-          services={services}
-          cacheScope={cacheScope}
-        />
-      </div>
-    </div>
+    <Step2Frame dir={dir} sidebar={<Sidebar startCollapsed />}>
+      <Step2Main
+        dir={dir}
+        locale={locale}
+        documentId={documentId}
+        initialPreview={initialPreview}
+        initialItems={initialItems}
+        logo={logo}
+        services={services}
+        cacheScope={cacheScope}
+      />
+    </Step2Frame>
   );
 }

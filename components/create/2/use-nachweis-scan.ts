@@ -1,285 +1,180 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { findNachweisUsage, readNachweis } from "@/lib/documents/nachweis-actions";
-import {
-  dateiFingerabdruck,
-  readMitarbeiterGedaechtnis,
-  readScans,
-  writeMitarbeiterGedaechtnis,
-  writeScans,
-} from "@/lib/documents/nachweis-cache";
-import {
-  gedaechtnisAnwenden,
-  gueltigeScans,
-  mitarbeiterMerken,
-  scanMerken,
-  scanVergessen,
-  scanZurDatei,
-} from "@/lib/documents/nachweis-gedaechtnis";
-import {
-  nachweisGesamtStunden,
-  nachweisImportZeilen,
-  nachweisPreisSetzen,
-  nachweisStartBeschreibung,
-  nachweisStartZeilen,
-  nachweisVorschlaege,
-} from "@/lib/documents/nachweis-positionen";
+import { dateiFingerabdruck, readScans, writeScans } from "@/lib/documents/nachweis-cache";
+import { scanMerken, scanZurDatei } from "@/lib/documents/nachweis-gedaechtnis";
+import { leereFreieZeile, nachweisReviewStart } from "@/lib/documents/nachweis-review-zustand";
 import { MAX_NACHWEIS_BYTES } from "@/lib/documents/nachweis-service";
 import { downscaleImage } from "@/lib/images/downscale-image";
 import type {
-  NachweisErgebnis,
-  NachweisErrorCode,
-  NachweisMaterialZeile,
-  NachweisScanEintrag,
-  NachweisVerwendung,
-  NachweisZeile,
+  NachweisCacheEintrag, NachweisErrorCode, NachweisFreieZeile, NachweisReviewDaten, NachweisVerwendung,
 } from "@/types/nachweis";
-
-/** Nur Komfort auf diesem Gerät: zuletzt eingegebener Stundenpreis (Cents). */
-const LAST_PRICE_KEY = "zz-nachweis-last-price";
-
-export type NachweisScanPhase = "upload" | "reading" | "review";
+import { nachweisTabellenSteuerung } from "./use-nachweis-tabelle";
 
 export interface NachweisScanError {
   code: NachweisErrorCode;
   dailyLimit?: number;
 }
 
-type ZeilenPatch = Partial<Pick<NachweisZeile, "name" | "stunden">>;
-type MaterialPatch = Partial<Pick<NachweisMaterialZeile, "anzahl" | "unitPrice">>;
-
-function readLastPrice(): number | null {
-  try {
-    const value = Number(window.localStorage.getItem(LAST_PRICE_KEY));
-    return Number.isInteger(value) && value > 0 ? value : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeLastPrice(cents: number | null): void {
-  if (!cents) return;
-  try {
-    window.localStorage.setItem(LAST_PRICE_KEY, String(cents));
-  } catch {
-    // Privater Modus o. Ä. – die Vorbelegung ist nur Komfort.
-  }
-}
+type FreieZeilenPatch = Partial<Omit<NachweisFreieZeile, "key" | "tage" | "unsicher">>;
 
 function neueScanId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-/**
- * Ablauf im Reiter „Nachweis“: Datei → Lesen → Zeilen prüfen/korrigieren → übernehmen.
- * `cacheScope` (Firma) trennt den Browser-Speicher, falls sich mehrere Firmen ein Gerät teilen.
- * Wird nur nach einem Klick im Browser gerendert – localStorage ist beim ersten Render da.
- */
-export function useNachweisScan(documentId: string, cacheScope: string) {
-  const [phase, setPhase] = useState<NachweisScanPhase>("upload");
+export function useNachweisScan(
+  documentId: string,
+  cacheScope: string,
+  readAction = readNachweis,
+  findUsageAction = findNachweisUsage,
+) {
+  const [phase, setPhase] = useState<"upload" | "reading" | "review">("upload");
   const [error, setError] = useState<NachweisScanError | null>(null);
-  const [ergebnis, setErgebnis] = useState<NachweisErgebnis | null>(null);
-  const [beschreibung, setBeschreibung] = useState("");
-  const [zeilen, setZeilen] = useState<NachweisZeile[]>([]);
-  const [material, setMaterial] = useState<NachweisMaterialZeile[]>([]);
-  const [scan, setScan] = useState<{ id: string; hash: string | null } | null>(null);
-  const [zuletzt, setZuletzt] = useState<NachweisScanEintrag[]>(() =>
-    gueltigeScans(readScans(cacheScope), Date.now()),
-  );
+  const [eintrag, setEintrag] = useState<NachweisCacheEintrag | null>(null);
+  const [zuletzt, setZuletzt] = useState(() => readScans(cacheScope));
   const [verwendungen, setVerwendungen] = useState<NachweisVerwendung[]>([]);
-  /** Ergebnis stammt aus dem Browser-Speicher (nicht frisch gelesen) – dann gibt es „Neu lesen“. */
   const [ausSpeicher, setAusSpeicher] = useState(false);
-  /** Zuletzt hochgeladene Datei, damit „Neu lesen“ sie ohne erneutes Auswählen schicken kann. */
   const letzteDatei = useRef<File | null>(null);
-  const nextKey = useRef(0);
+  const erneut = useRef<NachweisCacheEintrag | null>(null);
+  const request = useRef(0);
 
-  // Prüfschritt samt Korrekturen laufend merken – so geht nach versehentlichem Schließen nichts verloren.
+  useEffect(() => () => { request.current += 1; }, [cacheScope, documentId]);
+
   useEffect(() => {
-    if (phase !== "review" || !ergebnis || !scan) return;
-    const eintrag = { ...scan, savedAt: Date.now(), ergebnis, beschreibung, zeilen, material };
-    writeScans(cacheScope, scanMerken(readScans(cacheScope), eintrag, Date.now()));
-  }, [phase, scan, ergebnis, beschreibung, zeilen, material, cacheScope]);
+    if (phase !== "review" || !eintrag) return;
+    const jetzt = Date.now();
+    writeScans(cacheScope, scanMerken(readScans(cacheScope, jetzt), { ...eintrag, savedAt: jetzt }, jetzt), jetzt);
+  }, [phase, eintrag, cacheScope]);
 
-  // Warnung vor Doppelabrechnung: steht diese Nummer schon auf einem Dokument?
-  const nummer = phase === "review" ? ergebnis?.nummer ?? "" : "";
+  const nummer = phase === "review" ? eintrag?.review.ergebnis.nummer : undefined;
+  const id = eintrag?.id;
   useEffect(() => {
     if (!nummer) return;
     let aktiv = true;
-    findNachweisUsage(documentId, nummer)
-      .then((treffer) => aktiv && setVerwendungen(treffer))
+    const anfrage = request.current;
+    findUsageAction(documentId, nummer)
+      .then((treffer) => {
+        if (aktiv && request.current === anfrage) setVerwendungen(treffer);
+      })
       .catch(() => undefined);
-    return () => {
-      aktiv = false;
-    };
-  }, [documentId, nummer]);
+    return () => { aktiv = false; };
+  }, [documentId, nummer, id, findUsageAction]);
 
-  /** Gemerkten Nachweis öffnen – aus „Zuletzt gelesen“ (ohne Datei) oder per gleicher Datei. */
-  function oeffnen(eintrag: NachweisScanEintrag, datei: File | null = null) {
+  function oeffnen(gespeichert: NachweisCacheEintrag, datei: File | null = null) {
+    request.current += 1;
     letzteDatei.current = datei;
+    erneut.current = null;
     setAusSpeicher(true);
     setError(null);
     setVerwendungen([]);
-    setErgebnis(eintrag.ergebnis);
-    setBeschreibung(eintrag.beschreibung);
-    setZeilen(eintrag.zeilen);
-    setMaterial(eintrag.material);
-    setScan({ id: eintrag.id, hash: eintrag.hash });
+    setEintrag(gespeichert);
     setPhase("review");
   }
 
-  const vorschlaege = useMemo(
-    () =>
-      ergebnis ? nachweisVorschlaege({ kopf: ergebnis, beschreibung, zeilen, material }) : [],
-    [ergebnis, beschreibung, zeilen, material],
-  );
-  const importZeilen = useMemo(() => nachweisImportZeilen(vorschlaege), [vorschlaege]);
-  const gesamtStunden = nachweisGesamtStunden(zeilen);
+  function reset() {
+    request.current += 1;
+    letzteDatei.current = null;
+    erneut.current = null;
+    setPhase("upload");
+    setError(null);
+    setEintrag(null);
+    setVerwendungen([]);
+    setZuletzt(readScans(cacheScope));
+  }
 
-  /**
-   * Datei lesen. `ersetzeId` = „Neu lesen“: gemerktes Ergebnis ignorieren und bei
-   * Erfolg unter derselben ID ersetzen. Scheitert das Lesen, bleibt das alte erhalten.
-   */
   async function read(file: File, ersetzeId: string | null = null) {
+    const anfrage = ++request.current;
     letzteDatei.current = file;
     setError(null);
     setVerwendungen([]);
+    setEintrag(null);
     setPhase("reading");
+
+    function fehler(next: NachweisScanError) {
+      if (request.current !== anfrage) return;
+      setError(next);
+      setZuletzt(readScans(cacheScope));
+      setPhase("upload");
+    }
+
     try {
-      // Gleiche Datei schon gelesen? Dann ohne neuen KI-Aufruf den gemerkten Stand öffnen.
       const hash = await dateiFingerabdruck(file);
-      const gemerkt = ersetzeId ? null : scanZurDatei(readScans(cacheScope), hash, Date.now());
+      if (request.current !== anfrage) return;
+      const angefordert = erneut.current;
+      const gleicheDatei = angefordert && hash !== null && angefordert.hash === hash;
+      const erneuteId = ersetzeId ?? (gleicheDatei ? angefordert.id : null);
+      const gemerkt = erneuteId ? null : scanZurDatei(readScans(cacheScope), hash, Date.now());
       if (gemerkt) {
         oeffnen(gemerkt, file);
         return;
       }
 
       const upload = await downscaleImage(file);
+      if (request.current !== anfrage) return;
       if (upload.size > MAX_NACHWEIS_BYTES) {
-        setError({ code: "file_too_large" });
-        setPhase("upload");
+        fehler({ code: "file_too_large" });
         return;
       }
       const formData = new FormData();
       formData.append("file", upload, file.name);
-      const result = await readNachweis(documentId, formData);
+      const result = await readAction(documentId, formData);
+      if (request.current !== anfrage) return;
       if (result.status === "error") {
-        setError({ code: result.error, dailyLimit: result.dailyLimit });
-        setPhase("upload");
+        fehler({ code: result.error, dailyLimit: result.dailyLimit });
         return;
       }
-      const start = nachweisStartZeilen(result.ergebnis, readLastPrice());
-      setErgebnis(result.ergebnis);
-      setBeschreibung(nachweisStartBeschreibung(result.ergebnis));
-      setZeilen(gedaechtnisAnwenden(start.zeilen, readMitarbeiterGedaechtnis(cacheScope)));
-      setMaterial(start.material);
-      setScan({ id: ersetzeId ?? neueScanId(), hash });
+      erneut.current = null;
+      setEintrag({
+        id: erneuteId ?? neueScanId(),
+        hash,
+        review: nachweisReviewStart(result.ergebnis, cacheScope),
+        savedAt: Date.now(),
+      });
       setAusSpeicher(false);
       setPhase("review");
     } catch {
-      setError({ code: "provider_unavailable" });
-      setPhase("upload");
+      fehler({ code: "provider_unavailable" });
     }
   }
 
-  function updateZeile(key: string, patch: ZeilenPatch) {
-    // Selbst eingetippte Stunden gelten als geprüft – die Markierung „unsicher“ entfällt.
-    const bestaetigt = patch.stunden !== undefined ? { unsicher: false } : {};
-    setZeilen((current) =>
-      current.map((zeile) => (zeile.key === key ? { ...zeile, ...patch, ...bestaetigt } : zeile)),
-    );
-  }
-
-  function setPreis(key: string, cents: number | null) {
-    setZeilen((current) => nachweisPreisSetzen(current, key, cents));
-    writeLastPrice(cents);
-  }
-
-  function addZeile() {
-    nextKey.current += 1;
-    setZeilen((current) => [
-      ...current,
-      {
-        key: `neu${nextKey.current}`,
-        name: "",
-        gelesenName: "",
-        stunden: 0,
-        preis: current.at(-1)?.preis ?? readLastPrice(),
-        preisManuell: false,
-        unsicher: false,
-      },
-    ]);
-  }
-
-  function removeZeile(key: string) {
-    setZeilen((current) => current.filter((zeile) => zeile.key !== key));
-  }
-
-  function updateMaterial(key: string, patch: MaterialPatch) {
-    setMaterial((current) =>
-      current.map((zeile) => (zeile.key === key ? { ...zeile, ...patch } : zeile)),
-    );
-  }
-
-  function removeMaterial(key: string) {
-    setMaterial((current) => current.filter((zeile) => zeile.key !== key));
-  }
-
-  /** Beim Übernehmen: Namen, Korrekturen und Preise für den nächsten Zettel merken. */
-  function mitarbeiterFuerNaechstesMalMerken() {
-    const gedaechtnis = readMitarbeiterGedaechtnis(cacheScope);
-    writeMitarbeiterGedaechtnis(cacheScope, mitarbeiterMerken(gedaechtnis, zeilen, Date.now()));
-  }
-
-  function reset() {
-    setPhase("upload");
-    setError(null);
-    setErgebnis(null);
-    setVerwendungen([]);
-    setZuletzt(gueltigeScans(readScans(cacheScope), Date.now()));
-  }
-
-  /**
-   * „Neu lesen“ für ein Ergebnis aus dem Speicher: Liegt die Datei vor, wird sie
-   * sofort neu gelesen; sonst wird das gemerkte Ergebnis vergessen und man lädt neu hoch.
-   */
   function neuLesen() {
-    if (!scan) return;
-    const datei = letzteDatei.current;
-    if (datei) {
-      void read(datei, scan.id);
+    if (!eintrag) return;
+    if (letzteDatei.current) {
+      erneut.current = eintrag;
+      void read(letzteDatei.current, eintrag.id);
       return;
     }
-    writeScans(cacheScope, scanVergessen(readScans(cacheScope), scan.id));
-    setScan(null);
     reset();
+    erneut.current = eintrag;
   }
 
+  function update(change: (review: NachweisReviewDaten) => NachweisReviewDaten) {
+    setEintrag((current) => current ? { ...current, review: change(current.review) } : null);
+  }
+
+  function updateFreieZeile(key: string, patch: FreieZeilenPatch) {
+    update((review) => review.variante === "frei" ? {
+      ...review,
+      zeilen: review.zeilen.map((zeile) => zeile.key === key ? { ...zeile, ...patch } : zeile),
+    } : review);
+  }
+
+  function addFreieZeile() {
+    update((review) => review.variante === "frei"
+      ? { ...review, zeilen: [...review.zeilen, leereFreieZeile(review.zeilen)] } : review);
+  }
+
+  function removeFreieZeile(key: string) {
+    update((review) => review.variante === "frei"
+      ? { ...review, zeilen: review.zeilen.filter((zeile) => zeile.key !== key) } : review);
+  }
+
+  const review = eintrag?.review ?? null;
   return {
-    phase,
-    error,
-    ergebnis,
-    beschreibung,
-    zeilen,
-    material,
-    gesamtStunden,
-    vorschlaege,
-    importZeilen,
-    zuletzt,
-    verwendungen,
-    ausSpeicher,
-    read,
-    oeffnen,
-    neuLesen,
-    mitarbeiterFuerNaechstesMalMerken,
-    setBeschreibung,
-    updateZeile,
-    setPreis,
-    addZeile,
-    removeZeile,
-    updateMaterial,
-    removeMaterial,
-    reset,
+    ...nachweisTabellenSteuerung(review?.variante === "tabelle" ? review : null, update, cacheScope),
+    phase, error, review, zuletzt, verwendungen, ausSpeicher, read, oeffnen, neuLesen, reset,
+    updateFreieZeile, addFreieZeile, removeFreieZeile,
   };
 }
 

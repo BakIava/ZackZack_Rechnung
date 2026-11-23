@@ -1,0 +1,24 @@
+.nachweis-freier-review-zeilen {
+  display: grid;
+  gap: 14px;
+}
+
+.nachweis-freier-review-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  color: var(--primary);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.nachweis-freier-review-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}

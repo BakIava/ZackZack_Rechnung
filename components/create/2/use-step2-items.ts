@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { eurosToCents } from "@/lib/money";
 import {
   addCatalogItem,
   addFreeItem,
@@ -12,8 +11,8 @@ import {
   type ItemsResult,
 } from "@/lib/documents/item-actions";
 import { addNachweisItems } from "@/lib/documents/nachweis-actions";
-import type { NachweisImportLine } from "@/types/nachweis";
-import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
+import type { NachweisImportAntwort, NachweisImportLine } from "@/types/nachweis";
+import { markupPercent } from "@/lib/documents/margin";
 import {
   EMPTY_TEMPORARY_DOCUMENT_ITEM,
   withEditedDocumentItem,
@@ -30,6 +29,7 @@ import type {
 } from "@/types/document";
 import type { PickerTab } from "./catalog-picker";
 import type { PadField } from "./number-pad";
+import { padPatch } from "./position-pad-patch";
 import type { PositionEditorState, SheetField } from "./position-sheets";
 import { useItemReorder } from "./use-item-reorder";
 
@@ -42,34 +42,6 @@ interface UseStep2ItemsArgs {
 interface ItemPreviewEdit {
   item: DraftItem;
   patch: ItemPatch;
-}
-
-function padPatch(item: DraftItem, field: PadField, value: number): ItemPatch | null {
-  if (field === "qty") {
-    return { amount: Math.max(0, Math.round(value * 100) / 100) || 1 };
-  }
-  // Negativer Preis = Abzug.
-  if (field === "price") return { unitPrice: eurosToCents(value) };
-  if (item.purchasePrice == null) return null;
-  // Fremdleistung: Einkauf und Aufschlag beschreiben immer den positiven Betrag;
-  // das Vorzeichen (Abzug) bleibt erhalten bzw. kommt aus dem Verkaufspreis.
-  if (field === "markup") {
-    return { surcharge: Math.round(value * 100), surchargeType: "percent" };
-  }
-  if (field === "purchase") {
-    const purchasePrice = eurosToCents(value);
-    return {
-      purchasePrice,
-      surcharge: fixedSurchargeForSale(purchasePrice, Math.abs(item.unitPrice)),
-      surchargeType: "fixed",
-    };
-  }
-  const salePrice = eurosToCents(value);
-  return {
-    surcharge: fixedSurchargeForSale(item.purchasePrice, Math.abs(salePrice)),
-    surchargeType: "fixed",
-    deduction: salePrice < 0,
-  };
 }
 
 export function useStep2Items({
@@ -94,6 +66,8 @@ export function useStep2Items({
   const [editor, setEditor] = useState<{ itemId: string; field: SheetField } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [nachweisPending, setNachweisPending] = useState(false);
+  const nachweisInFlight = useRef(false);
   const reorder = useItemReorder({
     documentId,
     items,
@@ -119,6 +93,13 @@ export function useStep2Items({
       })()
     : null;
 
+  function applyItemsResult(result: Extract<ItemsResult, { items: DraftItem[] }>) {
+    setError(null);
+    setItems(result.items);
+    setSavedPreview((current) => withPersistedDocumentItems(current, result.items, result.totals));
+    setItemPreviewEdit(null);
+  }
+
   function run(action: () => Promise<ItemsResult>) {
     setError(null);
     startTransition(async () => {
@@ -128,11 +109,7 @@ export function useStep2Items({
         setError(t("itemError"));
         return;
       }
-      setItems(result.items);
-      setSavedPreview((current) =>
-        withPersistedDocumentItems(current, result.items, result.totals),
-      );
-      setItemPreviewEdit(null);
+      applyItemsResult(result);
     });
   }
 
@@ -151,10 +128,22 @@ export function useStep2Items({
     setTemporaryItem(null);
     run(() => addFremdItem(documentId, input));
   };
-  const addNachweis = (lines: NachweisImportLine[]) => {
-    setModalOpen(false);
-    setTemporaryItem(null);
-    run(() => addNachweisItems(documentId, lines));
+  const addNachweis = async (lines: NachweisImportLine[]): Promise<NachweisImportAntwort> => {
+    if (nachweisInFlight.current) return "error";
+    nachweisInFlight.current = true;
+    setNachweisPending(true);
+    setError(null);
+    try {
+      const result = await addNachweisItems(documentId, lines);
+      if ("error" in result) return result.error === "nachweisOutcomeUnknown" ? "unknown" : "error";
+      applyItemsResult(result);
+      setTemporaryItem(null);
+      setModalOpen(false);
+      return "success";
+    } finally {
+      nachweisInFlight.current = false;
+      setNachweisPending(false);
+    }
   };
 
   const updateTemporaryItem = useCallback((input: TemporaryDocumentItemInput) => {
@@ -168,6 +157,7 @@ export function useStep2Items({
   };
 
   const closeModal = () => {
+    if (nachweisInFlight.current) return;
     setModalOpen(false);
     setTemporaryItem(null);
   };
@@ -234,7 +224,8 @@ export function useStep2Items({
     items,
     preview,
     savedPreview,
-    pending,
+    pending: pending || nachweisPending,
+    nachweisPending,
     error,
     modalOpen,
     modalTab,
@@ -249,6 +240,7 @@ export function useStep2Items({
     addFree,
     addFremd,
     addNachweis,
+    applyItemsResult,
     remove: (id: string) => run(() => deleteItem(id)),
     editDesc: (item: DraftItem) => openEditor(item, "desc"),
     editAdditionalDescription: (item: DraftItem) => openEditor(item, "additionalDescription"),

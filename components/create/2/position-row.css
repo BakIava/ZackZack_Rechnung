@@ -91,6 +91,47 @@
   color: var(--muted);
 }
 
+.d2row-selection {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 21px;
+  block-size: 21px;
+  border: 1.5px solid var(--muted);
+  border-radius: 5px;
+}
+
+.d2row-selection[data-selected="true"] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
 .d2row-toggle:hover .d2row-chevron {
   color: var(--primary);
+}
+
+@media (max-width: 540px) {
+  .d2row-toggle[aria-pressed] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 8px;
+  }
+
+  .d2row-toggle[aria-pressed] .d2row-sum {
+    justify-self: start;
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 14px;
+  }
+
+  .d2row-toggle[aria-pressed] .d2row-selection {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+
+  .d2row-toggle[aria-pressed] :is(.d2row-name, .d2row-calc) {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
 }

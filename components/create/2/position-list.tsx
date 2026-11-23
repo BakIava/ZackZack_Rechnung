@@ -21,6 +21,7 @@ interface PositionListProps {
   onDelete: (id: string) => void;
   /** Nummer antippen → verschieben; null bei nur einer Position. */
   onMoveTo: ((item: DraftItem) => void) | null;
+  selection?: { ids: ReadonlySet<string>; toggle: (id: string) => void };
 }
 
 function prefersReducedMotion(): boolean {
@@ -43,6 +44,7 @@ export function PositionList({
   onEditVat,
   onDelete,
   onMoveTo,
+  selection,
 }: PositionListProps) {
   const { expandedId, toggle, collapse } = usePositionExpansion(items.map((item) => item.id));
   const nodes = useRef(new Map<string, HTMLDivElement>());
@@ -50,19 +52,20 @@ export function PositionList({
   // Die aufgeklappte Position sichtbar halten: oberhalb klappt gleichzeitig eine
   // andere zu, und eine neue Position landet ganz unten.
   useEffect(() => {
-    if (!expandedId) return;
+    if (!expandedId || selection) return;
     nodes.current.get(expandedId)?.scrollIntoView({
       block: "nearest",
       behavior: prefersReducedMotion() ? "auto" : "smooth",
     });
-  }, [expandedId]);
+  }, [expandedId, selection]);
 
   if (items.length === 0) return null;
 
   return (
     <div className="d2cards">
       {items.map((item, index) => {
-        const expanded = item.id === expandedId;
+        const expanded = !selection && item.id === expandedId;
+        const selected = selection?.ids.has(item.id);
         const vat = item.taxRateOverridden ? item.taxRate : null;
         return (
           <div
@@ -73,6 +76,7 @@ export function PositionList({
             }}
             className="d2card"
             data-expanded={expanded ? "1" : "0"}
+            data-selected={selected}
           >
             {expanded ? (
               <PositionCard
@@ -96,8 +100,9 @@ export function PositionList({
                 index={index}
                 disabled={disabled}
                 vat={vat}
-                onExpand={toggle}
-                onMoveTo={onMoveTo}
+                onActivate={selection?.toggle ?? toggle}
+                selected={selected}
+                onMoveTo={selection ? null : onMoveTo}
               />
             )}
           </div>

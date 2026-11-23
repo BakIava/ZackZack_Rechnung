@@ -2,7 +2,12 @@
 
 import { useTranslations } from "next-intl";
 import { AiIntakeLoading } from "@/components/shared/ai-intake/ai-intake-loading";
-import type { NachweisImportLine } from "@/types/nachweis";
+import type { findNachweisUsage, readNachweis } from "@/lib/documents/nachweis-actions";
+import { freieNachweisBereitschaft } from "@/lib/documents/nachweis-frei";
+import { nachweisZeitraumText } from "@/lib/documents/nachweis-positionen";
+import type { NachweisImportAntwort, NachweisImportLine } from "@/types/nachweis";
+import { NachweisFreierReview } from "./nachweis-freier-review";
+import { NachweisTabellenReview } from "./nachweis-tabellen-review";
 import { NachweisReview } from "./nachweis-review";
 import { NachweisUpload } from "./nachweis-upload";
 import { useNachweisScan } from "./use-nachweis-scan";
@@ -18,14 +23,16 @@ interface NachweisScanProps {
   documentId: string;
   /** Trennt den Browser-Speicher je Firma. */
   cacheScope: string;
-  onImport: (lines: NachweisImportLine[]) => void;
+  onImport: (lines: NachweisImportLine[]) => Promise<NachweisImportAntwort>;
   onManual: () => void;
+  readAction?: typeof readNachweis;
+  findUsageAction?: typeof findNachweisUsage;
 }
 
 /** Reiter „Nachweis“: Foto/PDF hochladen → lesen lassen → prüfen → Positionen übernehmen. */
-export function NachweisScan({ documentId, cacheScope, onImport, onManual }: NachweisScanProps) {
+export function NachweisScan({ documentId, cacheScope, onImport, onManual, readAction, findUsageAction }: NachweisScanProps) {
   const t = useTranslations("Step2");
-  const scan = useNachweisScan(documentId, cacheScope);
+  const scan = useNachweisScan(documentId, cacheScope, readAction, findUsageAction);
 
   if (scan.phase === "reading") {
     return (
@@ -39,8 +46,31 @@ export function NachweisScan({ documentId, cacheScope, onImport, onManual }: Nac
     );
   }
 
-  if (scan.phase === "review" && scan.ergebnis) {
-    return <NachweisReview ergebnis={scan.ergebnis} scan={scan} onImport={onImport} />;
+  if (scan.phase === "review" && scan.review) {
+    const { review } = scan;
+    const frei = review.variante === "frei" ? freieNachweisBereitschaft(review.ergebnis.nummer, review.zeilen) : null;
+    const importDaten = frei ?? scan.importZeilen;
+    return (
+      <NachweisReview
+        nummer={review.ergebnis.nummer}
+        zeitraum={review.variante === "tabelle"
+          ? nachweisZeitraumText(review.ergebnis.zeitraumVon, review.ergebnis.zeitraumBis) : undefined}
+        verwendungen={scan.verwendungen}
+        ausSpeicher={scan.ausSpeicher}
+        onReread={scan.neuLesen}
+        onReset={scan.reset}
+        vollstaendig={importDaten.vollstaendig}
+        onImport={async () => {
+          const result = await onImport(importDaten.lines);
+          if (result === "success") scan.mitarbeiterFuerNaechstesMalMerken();
+          return result;
+        }}
+      >
+        {review.variante === "frei" && frei
+          ? <NachweisFreierReview review={review} scan={scan} bereitschaft={frei} />
+          : review.variante === "tabelle" && <NachweisTabellenReview ergebnis={review.ergebnis} scan={scan} />}
+      </NachweisReview>
+    );
   }
 
   return (

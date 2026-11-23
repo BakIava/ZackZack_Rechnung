@@ -5,6 +5,7 @@ import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui";
 import { DeductionToggle } from "@/components/shared/deduction-toggle";
+import { TextImprove } from "@/components/shared/text-improve";
 import { UnitPicker } from "@/components/shared/unit-picker";
 import type { KatalogEintrag } from "@/types/service";
 import { withCurrentUnit } from "@/lib/documents/units";
@@ -115,6 +116,7 @@ export function ServiceModal({ dir, item, units, onClose, onSave }: ServiceModal
               placeholder="z. B. Malerarbeiten Wandfläche"
               autoFocus
             />
+            <TextImprove value={de} feld="bezeichnung" onAccept={setDe} />
           </div>
 
           {/* TR + AR */}

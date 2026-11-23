@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { NachweisAusrichtung, NachweisMediaType } from "@/types/nachweis";
+import { freieLeistung } from "./nachweis-frei-fixtures";
 import { beispielNachweis } from "./nachweis-test-fixtures";
 import { MAX_NACHWEIS_BYTES, processNachweis } from "./nachweis-service";
 
@@ -7,12 +8,13 @@ const PDF = new Blob([new TextEncoder().encode("%PDF-1.7 Nachweis")], {
   type: "application/pdf",
 });
 const SCAN_JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0x01]);
+const tabelle = () => ({ ...beispielNachweis(), variante: "tabelle" as const });
 const GEDREHT = new Uint8Array([0xff, 0xd8, 0xff, 0x02]);
 
 function dependencies() {
   return {
     consumeAiQuota: vi.fn().mockResolvedValue({ allowed: true, remaining: 9, dailyLimit: 10 }),
-    extractNachweis: vi.fn().mockResolvedValue(beispielNachweis()),
+    extractNachweis: vi.fn().mockResolvedValue(tabelle()),
     prepareNachweis: vi.fn(async (bytes: Uint8Array, mediaType: NachweisMediaType) => ({
       bytes,
       mediaType,
@@ -31,15 +33,37 @@ function mitScan() {
   return deps;
 }
 
-const KOPFUEBER = { ...beispielNachweis(), ausrichtung: "kopfueber" as const, mitarbeiter: [] };
+const KOPFUEBER = { ...tabelle(), ausrichtung: "kopfueber" as const, mitarbeiter: [] };
 
 describe("processNachweis", () => {
+  it("liest Material ohne Stunden und lehnt die reine Stundensumme ab", async () => {
+    const deps = dependencies();
+    const frei = { variante: "frei", ausrichtung: "aufrecht", nummer: "", stundenLautBlatt: null };
+    deps.extractNachweis.mockResolvedValueOnce({
+      ...frei, leistungen: [freieLeistung({ art: "material", amount: null, unit: null })],
+    }).mockResolvedValueOnce({ ...frei, leistungen: [], stundenLautBlatt: 6.5 });
+    await expect(processNachweis(PDF, deps)).resolves.toMatchObject({
+      status: "success", ergebnis: { variante: "frei", leistungen: [{ amount: null, key: "frei:0" }] },
+    });
+    await expect(processNachweis(PDF, deps)).resolves.toEqual({ status: "error", error: "no_work_found" });
+  });
+
+  it("behält freie Leistungen, wenn das aufgerichtete Blatt leer gelesen wird", async () => {
+    const deps = mitScan();
+    const frei = { variante: "frei", ausrichtung: "kopf_links", nummer: "", stundenLautBlatt: null };
+    deps.extractNachweis.mockResolvedValueOnce({ ...frei, leistungen: [freieLeistung()] })
+      .mockResolvedValueOnce({ ...frei, ausrichtung: "aufrecht", leistungen: [] });
+    await expect(processNachweis(PDF, deps)).resolves.toMatchObject({
+      status: "success", ergebnis: { variante: "frei", leistungen: [{ amount: 3 }] },
+    });
+    expect(deps.consumeAiQuota).toHaveBeenCalledOnce();
+    expect(deps.extractNachweis).toHaveBeenCalledTimes(2);
+  });
+
   it("liest, rechnet und prüft das Blatt", async () => {
     const deps = dependencies();
     const result = await processNachweis(PDF, deps);
-    expect(result.status).toBe("success");
-    if (result.status !== "success") return;
-    expect(result.ergebnis.pruefung).toMatchObject({ gesamt: 180, ok: true });
+    expect(result).toMatchObject({ status: "success", ergebnis: { variante: "tabelle", pruefung: { gesamt: 180, ok: true } } });
     expect(deps.extractNachweis).toHaveBeenCalledWith(expect.any(Uint8Array), "application/pdf");
   });
 
@@ -130,7 +154,7 @@ describe("processNachweis", () => {
 
   it("dreht ein PDF ohne herauslösbaren Scan nicht", async () => {
     const deps = dependencies();
-    deps.extractNachweis.mockResolvedValue({ ...beispielNachweis(), ausrichtung: "kopfueber" });
+    deps.extractNachweis.mockResolvedValue({ ...tabelle(), ausrichtung: "kopfueber" });
     const result = await processNachweis(PDF, deps);
     expect(deps.detectOrientation).not.toHaveBeenCalled();
     expect(deps.rotateNachweis).not.toHaveBeenCalled();
@@ -140,7 +164,7 @@ describe("processNachweis", () => {
 
   it("behält das erste Ergebnis, wenn das zweite Lesen scheitert", async () => {
     const deps = mitScan();
-    const ersteLesung = { ...beispielNachweis(), ausrichtung: "kopf_links" as const };
+    const ersteLesung = { ...tabelle(), ausrichtung: "kopf_links" as const };
     deps.extractNachweis
       .mockResolvedValueOnce(ersteLesung)
       .mockRejectedValueOnce(new Error("provider"));
@@ -151,7 +175,7 @@ describe("processNachweis", () => {
 
   it("meldet ein Blatt ohne Stunden und ohne Material", async () => {
     const deps = dependencies();
-    deps.extractNachweis.mockResolvedValue({ ...beispielNachweis(), mitarbeiter: [] });
+    deps.extractNachweis.mockResolvedValue({ ...tabelle(), mitarbeiter: [] });
     await expect(processNachweis(PDF, deps)).resolves.toEqual({
       status: "error",
       error: "no_hours_found",

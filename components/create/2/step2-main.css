@@ -76,41 +76,52 @@
   font-weight: 700;
 }
 
+@media (max-width: 880px) {
+  .step2-main__scroll {
+    overflow-y: auto;
+    padding-block: 16px;
+    padding-inline: 12px;
+  }
+
+  .step2-main .dflow-head {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-block-end: 16px;
+  }
+
+  .step2-main .dflow-headings {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .step2-main .dflow-title {
+    white-space: normal;
+  }
+
+  .step2-main .dsteps2 {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-inline-start: 0;
+  }
+
+  .d2-wrap {
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .d2-positions,
+  .d2-document {
+    padding-inline-end: 0;
+    overflow-y: visible;
+  }
+
+  .d2-document {
+    position: static;
+    block-size: auto;
+  }
+}
+
 /* ── Positionskarten (Variante B: Menge × Preis = Summe) ─────────────────── */
-
-/* „Reihenfolge ändern" über den Positionskarten, am Zeilenende. */
-.d2-reorder-open {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  inline-size: fit-content;
-  min-block-size: 44px;
-  margin-block: 14px 12px;
-  margin-inline-start: auto;
-  padding-inline: 16px;
-  border: 1.5px solid var(--line);
-  border-radius: var(--r-sm);
-  background: var(--surface);
-  color: var(--primary);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.d2-reorder-open:hover:not(:disabled) {
-  border-color: var(--primary);
-}
-
-.d2-reorder-open:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.d2-reorder-open:disabled {
-  opacity: 0.5;
-  cursor: wait;
-}
 
 /* ── Ziffernblock-Overlay (Variante B) ───────────────────────────────────── */
 
@@ -143,38 +154,6 @@
 /* ── Katalog-Modal ───────────────────────────────────────────────────────────
    Hülle (Backdrop, Karte, Animation) kommt aus der <Modal>-Primitive
    (components/ui/modal); hier nur der spezifische Inhalt. */
-
-.zz-modal--positions .dmodal-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 22px 12px;
-}
-
-.zz-modal--positions .dmodal-title {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
-.zz-modal--positions .dmodal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 22px 22px;
-}
-
-.zz-modal--positions .sheet-x {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: none;
-  background: var(--surface-2);
-  color: var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
 
 .picker-price {
   font-size: 13px;

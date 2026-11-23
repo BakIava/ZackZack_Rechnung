@@ -4,7 +4,7 @@ import { getCurrentCompanyId } from "@/lib/supabase/auth";
 import {
   NachweisExtractionError,
   erkenneNachweisAusrichtung,
-  extractNachweis,
+  extractNachweisVarianten,
 } from "@/lib/integrations/anthropic/nachweis-extractor";
 import { consumeCustomerAiQuota } from "@/lib/repositories/ai-usage";
 import { getDraftTaxConfig, isDraftDocument } from "@/lib/repositories/document-drafts";
@@ -36,6 +36,7 @@ export async function readNachweis(
   }
 
   const file = formData instanceof FormData ? formData.get("file") : null;
+  const signal = AbortSignal.timeout(54_000);
   const result = await processNachweis(file, {
     // Gemeinsamer Tageszähler mit Kunden- und Einsatzort-Erkennung.
     consumeAiQuota: async () => {
@@ -45,7 +46,7 @@ export async function readNachweis(
     },
     extractNachweis: async (bytes, mediaType) => {
       try {
-        return await extractNachweis(bytes, mediaType);
+        return await extractNachweisVarianten(bytes, mediaType, signal);
       } catch (error) {
         logNachweis("error", "provider_response", {
           errorCode: error instanceof NachweisExtractionError ? error.code : "unknown",
@@ -59,7 +60,7 @@ export async function readNachweis(
     prepareNachweis: nachweisVorlage,
     detectOrientation: async (bytes) => {
       try {
-        return await erkenneNachweisAusrichtung(await nachweisVorschau(bytes));
+        return await erkenneNachweisAusrichtung(await nachweisVorschau(bytes), signal);
       } catch (error) {
         logNachweis("error", "orientation", {
           errorCode: error instanceof NachweisExtractionError ? error.code : "unknown",
@@ -76,7 +77,9 @@ export async function readNachweis(
   logNachweis(result.status === "success" ? "info" : "error", "read_completed", {
     status: result.status,
     errorCode: result.status === "error" ? result.error : undefined,
-    sheetMatches: result.status === "success" ? result.ergebnis.pruefung.ok : undefined,
+    variante: result.status === "success" ? result.ergebnis.variante : undefined,
+    sheetMatches: result.status === "success" && result.ergebnis.variante === "tabelle"
+      ? result.ergebnis.pruefung.ok : undefined,
   });
   return result;
 }
@@ -125,7 +128,12 @@ export async function addNachweisItems(
   const taxConfig = await getDraftTaxConfig(documentId);
   if (!taxConfig) return { error: "draftNotFound" };
   const taxRate = resolveTaxRate(taxConfig.defaultTaxRate, null);
-  const firstPosition = await getNextItemPosition(ctx.companyId, documentId);
+  let firstPosition: number;
+  try {
+    firstPosition = await getNextItemPosition(ctx.companyId, documentId, true);
+  } catch {
+    return { error: "positionUnavailable" };
+  }
 
   const rows = [];
   for (const [index, line] of lines.entries()) {
@@ -147,7 +155,12 @@ export async function addNachweisItems(
     });
   }
 
-  const { error } = await insertDocumentItems(ctx.companyId, documentId, rows);
-  if (error) return { error };
-  return recomputeDraftItems(ctx.companyId, documentId);
+  try {
+    const result = await insertDocumentItems(ctx.companyId, documentId, rows);
+    if (result.error) return { error: result.outcomeUnknown ? "nachweisOutcomeUnknown" : "nachweisInsertFailed" };
+    return await recomputeDraftItems(ctx.companyId, documentId, true, true);
+  } catch {
+    // Auch wenn die Summenberechnung oder das Update scheitern, kann der Insert erfolgt sein.
+    return { error: "nachweisOutcomeUnknown" };
+  }
 }

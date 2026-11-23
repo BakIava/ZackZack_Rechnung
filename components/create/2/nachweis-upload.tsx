@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Camera, History, TriangleAlert } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { nachweisZeitraumText } from "@/lib/documents/nachweis-positionen";
-import type { NachweisScanEintrag } from "@/types/nachweis";
+import type { NachweisCacheEintrag } from "@/types/nachweis";
 import type { NachweisScanError } from "./use-nachweis-scan";
 import "./nachweis-upload.css";
 
@@ -13,9 +13,9 @@ const STROKE = 1.75;
 interface NachweisUploadProps {
   error: NachweisScanError | null;
   /** Zuletzt gelesene Nachweise (nur dieses Gerät) – öffnen ohne neuen KI-Aufruf. */
-  zuletzt: NachweisScanEintrag[];
+  zuletzt: NachweisCacheEintrag[];
   onFile: (file: File) => void;
-  onOpen: (eintrag: NachweisScanEintrag) => void;
+  onOpen: (eintrag: NachweisCacheEintrag) => void;
   onManual: () => void;
 }
 
@@ -32,6 +32,7 @@ export function NachweisUpload({ error, zuletzt, onFile, onOpen, onManual }: Nac
         return t("nachweisErrorTooLarge");
       case "quota_reached":
         return t("nachweisErrorLimit", { limit: scanError.dailyLimit ?? 10 });
+      case "no_work_found":
       case "no_hours_found":
         return t("nachweisErrorEmpty");
       default:
@@ -84,12 +85,14 @@ export function NachweisUpload({ error, zuletzt, onFile, onOpen, onManual }: Nac
             >
               <History size={18} strokeWidth={STROKE} aria-hidden />
               <span className="nachweis-upload-recent-name">
-                {eintrag.ergebnis.nummer
-                  ? t("nachweisNumber", { number: eintrag.ergebnis.nummer })
+                {eintrag.review.ergebnis.nummer
+                  ? t("nachweisNumber", { number: eintrag.review.ergebnis.nummer })
                   : t("nachweisNoNumber")}
               </span>
               <span className="nachweis-upload-recent-meta" dir="ltr">
-                {nachweisZeitraumText(eintrag.ergebnis.zeitraumVon, eintrag.ergebnis.zeitraumBis)}
+                {eintrag.review.variante === "tabelle" && nachweisZeitraumText(
+                  eintrag.review.ergebnis.zeitraumVon, eintrag.review.ergebnis.zeitraumBis,
+                )}
               </span>
             </button>
           ))}

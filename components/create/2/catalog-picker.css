@@ -23,6 +23,18 @@
   cursor: pointer;
 }
 
+@media (max-width: 460px) {
+  .picker-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sheet-tab {
+    min-inline-size: 0;
+    min-block-size: 44px;
+  }
+}
+
 .sheet-tab[data-on="1"] {
   border-color: var(--primary);
   background: color-mix(in srgb, var(--primary) 6%, var(--surface));

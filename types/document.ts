@@ -293,6 +293,10 @@ export interface FremdItemInput {
   deduction?: boolean;
 }
 
+export type DraftItemBatchChange =
+  | { kind: "delete" }
+  | { kind: "vat"; taxRate: TaxRate | null };
+
 export interface ItemPatch {
   descriptionDe?: string;
   /** Nur für bestehende Positionen; null oder reine Leerzeichen entfernen den Text. */

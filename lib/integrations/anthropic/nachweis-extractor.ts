@@ -3,17 +3,16 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import type {
   NachweisAusrichtung,
-  NachweisExtraction,
+  NachweisExtraktion,
   NachweisMediaType,
 } from "@/types/nachweis";
 import {
   NACHWEIS_AUSRICHTUNG_SCHEMA,
   NACHWEIS_AUSRICHTUNG_SYSTEM_PROMPT,
-  NACHWEIS_EXTRACTION_SCHEMA,
-  NACHWEIS_EXTRACTION_SYSTEM_PROMPT,
   parseNachweisAusrichtungJson,
-  parseNachweisExtractionJson,
 } from "./nachweis-extraction-contract";
+import { NACHWEIS_VARIANTEN_SCHEMA, parseNachweisVariantenJson } from "./nachweis-varianten-contract";
+import { NACHWEIS_VARIANTEN_SYSTEM_PROMPT } from "./nachweis-varianten-prompt";
 
 export type NachweisExtractionErrorCode =
   | "configuration"
@@ -65,12 +64,13 @@ async function strukturierteAntwort(
   apiKey: string,
   request: Anthropic.MessageCreateParamsNonStreaming,
   timeout: number,
+  signal?: AbortSignal,
 ): Promise<string> {
   const client = new Anthropic({ apiKey, maxRetries: 1, timeout });
 
   let message: Anthropic.Message;
   try {
-    message = await client.messages.create(request);
+    message = await client.messages.create(request, { signal });
   } catch (error) {
     throw new NachweisExtractionError(
       "request_failed",
@@ -92,35 +92,37 @@ async function strukturierteAntwort(
  * Opus 5.5 nimmt sonst „medium“ und ordnete versetzt geschriebene Stunden im
  * Test seltener der richtigen Zeile zu.
  */
-export async function extractNachweis(
+export async function extractNachweisVarianten(
   bytes: Uint8Array,
   mediaType: NachweisMediaType,
-): Promise<NachweisExtraction> {
+  signal?: AbortSignal,
+): Promise<NachweisExtraktion> {
   const { apiKey, model } = getAnthropicConfig("ANTHROPIC_NACHWEIS_MODEL", "ANTHROPIC_MODEL");
   const text = await strukturierteAntwort(
     apiKey,
     {
       model,
       max_tokens: 16000,
-      system: NACHWEIS_EXTRACTION_SYSTEM_PROMPT,
+      system: NACHWEIS_VARIANTEN_SYSTEM_PROMPT,
       messages: [
         {
           role: "user",
           content: documentContent(
             mediaType,
             Buffer.from(bytes).toString("base64"),
-            "Lies den Stundennachweis gemäß dem vorgegebenen Schema aus.",
+            "Lies den Arbeitsnachweis gemäß dem vorgegebenen Schema aus.",
           ),
         },
       ],
       output_config: {
         effort: "high",
-        format: { type: "json_schema", schema: NACHWEIS_EXTRACTION_SCHEMA },
+        format: { type: "json_schema", schema: NACHWEIS_VARIANTEN_SCHEMA },
       },
     },
-    60_000,
+    42_000,
+    signal,
   );
-  const parsed = parseNachweisExtractionJson(text);
+  const parsed = parseNachweisVariantenJson(text);
   if (!parsed) throw new NachweisExtractionError("invalid_response");
   return parsed;
 }
@@ -130,7 +132,7 @@ export async function extractNachweis(
  * das Blatt liegt (Test: 31 von 32 richtig, ca. 0,02 ct). So liest das teure
  * Modell jedes Blatt nur einmal und aufrecht.
  */
-export async function erkenneNachweisAusrichtung(jpeg: Uint8Array): Promise<NachweisAusrichtung> {
+export async function erkenneNachweisAusrichtung(jpeg: Uint8Array, signal?: AbortSignal): Promise<NachweisAusrichtung> {
   const { apiKey, model } = getAnthropicConfig("ANTHROPIC_MODEL");
   const text = await strukturierteAntwort(
     apiKey,
@@ -150,7 +152,8 @@ export async function erkenneNachweisAusrichtung(jpeg: Uint8Array): Promise<Nach
       ],
       output_config: { format: { type: "json_schema", schema: NACHWEIS_AUSRICHTUNG_SCHEMA } },
     },
-    30_000,
+    8_000,
+    signal,
   );
   const ausrichtung = parseNachweisAusrichtungJson(text);
   if (!ausrichtung) throw new NachweisExtractionError("invalid_response");

@@ -1,6 +1,6 @@
 /**
- * Stundennachweis (Tageslohn-/Regienachweis) → Positionsvorschläge.
- * Das Modell liest nur ab (`NachweisExtraction`); Summen, Prüfung und
+ * Stundentabellen und freie Arbeitsnachweise → Positionsvorschläge.
+ * Das Modell liest nur ab (`NachweisExtraktion`); Summen, Prüfung und
  * Positionen entstehen in `lib/documents/nachweis-*`.
  */
 
@@ -44,6 +44,69 @@ export interface NachweisExtraction {
   arbeitsleistung: string;
 }
 
+export const NACHWEIS_FREIE_ARTEN = ["leistung", "material", "anfahrt"] as const;
+export const NACHWEIS_UNSICHERHEITEN = ["text", "menge", "einheit", "tage"] as const;
+
+export interface NachweisFreieLeistung {
+  art: (typeof NACHWEIS_FREIE_ARTEN)[number];
+  descriptionDe: string;
+  amount: number | null;
+  unit: string | null;
+  tage: string[];
+  unsicher: (typeof NACHWEIS_UNSICHERHEITEN)[number][];
+}
+
+export interface NachweisFreieExtraktion {
+  variante: "frei";
+  ausrichtung: NachweisAusrichtung;
+  nummer: string;
+  leistungen: NachweisFreieLeistung[];
+  stundenLautBlatt: number | null;
+}
+
+export type NachweisExtraktion =
+  | (NachweisExtraction & { variante: "tabelle" })
+  | NachweisFreieExtraktion;
+
+export interface NachweisFreiesErgebnis {
+  variante: "frei";
+  nummer: string;
+  leistungen: (NachweisFreieLeistung & { key: string })[];
+  stundenLautBlatt: number | null;
+}
+
+export type NachweisLeseErgebnis =
+  | (NachweisErgebnis & { variante: "tabelle" })
+  | NachweisFreiesErgebnis;
+
+export interface NachweisFreieZeile extends NachweisFreieLeistung {
+  key: string;
+  unitPrice: number | null;
+  /** Auch einen vorübergehend ungültigen Datumstext beim Wiederöffnen erhalten. */
+  tageEingabe: string;
+}
+
+export type NachweisReviewDaten =
+  | {
+      variante: "tabelle";
+      ergebnis: NachweisErgebnis;
+      beschreibung: string;
+      zeilen: NachweisZeile[];
+      material: NachweisMaterialZeile[];
+    }
+  | {
+      variante: "frei";
+      ergebnis: NachweisFreiesErgebnis;
+      zeilen: NachweisFreieZeile[];
+    };
+
+export interface NachweisCacheEintrag {
+  id: string;
+  hash: string | null;
+  savedAt: number;
+  review: NachweisReviewDaten;
+}
+
 /** Von uns gerechnete Summen im Vergleich zur handschriftlichen Gesamtzeile. */
 export interface NachweisPruefung {
   tage: { datum: string; gerechnet: number; lautBlatt: number }[];
@@ -57,7 +120,7 @@ export interface NachweisPruefung {
   ok: boolean;
 }
 
-/** Mitarbeiter nur für die Anzeige im Prüfschritt – wird nie gespeichert. */
+/** Mitarbeiter im Prüfschritt und lokalen Cache. */
 export interface NachweisMitarbeiter {
   key: string;
   name: string;
@@ -84,13 +147,14 @@ export type NachweisErrorCode =
   | "quota_reached"
   | "quota_unavailable"
   | "provider_unavailable"
-  | "no_hours_found";
+  | "no_hours_found"
+  | "no_work_found";
 
 export type NachweisReadResult =
-  | { status: "success"; ergebnis: NachweisErgebnis }
+  | { status: "success"; ergebnis: NachweisLeseErgebnis }
   | { status: "error"; error: NachweisErrorCode; dailyLimit?: number };
 
-/** Bearbeitbare Mitarbeiterzeile im Prüfschritt – lebt nur im Browser, wird nie gespeichert. */
+/** Bearbeitbare Mitarbeiterzeile im Prüfschritt und lokalen Cache. */
 export interface NachweisZeile {
   key: string;
   name: string;
@@ -135,18 +199,6 @@ export interface NachweisMitarbeiterGedaechtnis {
   aliases: Record<string, string>;
 }
 
-/** Im Browser gemerkter Prüfschritt eines gelesenen Nachweises – inklusive Korrekturen. */
-export interface NachweisScanEintrag {
-  id: string;
-  /** SHA-256 der Originaldatei; gleiche Datei → kein neuer KI-Aufruf. */
-  hash: string | null;
-  savedAt: number;
-  ergebnis: NachweisErgebnis;
-  beschreibung: string;
-  zeilen: NachweisZeile[];
-  material: NachweisMaterialZeile[];
-}
-
 /** Dokument, auf dem dieselbe Nachweis-Nummer schon steht (Warnung vor Doppelabrechnung). */
 export interface NachweisVerwendung {
   documentId: string;
@@ -155,6 +207,8 @@ export interface NachweisVerwendung {
   documentNumber: string | null;
   sameDocument: boolean;
 }
+
+export type NachweisImportAntwort = "success" | "error" | "unknown";
 
 /** Bestätigte Zeile, wie sie an `addNachweisItems` geht (freie Position). */
 export interface NachweisImportLine {

@@ -2,12 +2,14 @@ import { detectOnboardingDocumentMediaType } from "@/lib/onboarding/extraction-f
 import type { CustomerAiQuota } from "@/types/customer-intake";
 import type {
   NachweisAusrichtung,
-  NachweisExtraction,
+  NachweisExtraktion,
+  NachweisLeseErgebnis,
   NachweisMediaType,
   NachweisReadResult,
 } from "@/types/nachweis";
 // Nur Typen: der Service wird auch im Browser importiert (MAX_NACHWEIS_BYTES), sharp nicht.
 import type { NachweisGedreht, NachweisVorlage } from "./nachweis-bild";
+import { freiesNachweisErgebnis } from "./nachweis-frei";
 import { nachweisErgebnis } from "./nachweis-pruefung";
 
 /** Unter der Vercel-Grenze von 4,5 MB je Anfrage; Fotos verkleinert der Browser vorher. */
@@ -18,7 +20,7 @@ interface NachweisDependencies {
   extractNachweis: (
     bytes: Uint8Array,
     mediaType: NachweisMediaType,
-  ) => Promise<NachweisExtraction>;
+  ) => Promise<NachweisExtraktion>;
   /** Gescanntes PDF als Bild herauslösen; alles andere unverändert. */
   prepareNachweis: (bytes: Uint8Array, mediaType: NachweisMediaType) => Promise<NachweisVorlage>;
   /** Günstige Vorprüfung: Wie liegt das Blatt im Bild? */
@@ -68,13 +70,14 @@ async function vorabAufrichten(
  */
 async function aufrechtLesen(
   vorlage: NachweisVorlage,
-  erste: NachweisExtraction,
+  erste: NachweisExtraktion,
   dependencies: NachweisDependencies,
-): Promise<NachweisExtraction> {
+): Promise<NachweisExtraktion> {
   if (erste.ausrichtung === "aufrecht" || vorlage.mediaType === "application/pdf") return erste;
   try {
     const gedreht = await dependencies.rotateNachweis(vorlage.bytes, erste.ausrichtung);
-    return await dependencies.extractNachweis(gedreht, "image/jpeg");
+    const zweite = await dependencies.extractNachweis(gedreht, "image/jpeg");
+    return leseErgebnis(zweite) ? zweite : erste;
   } catch {
     return erste;
   }
@@ -105,7 +108,7 @@ export async function processNachweis(
     return { status: "error", error: "quota_reached", dailyLimit: quota.dailyLimit };
   }
 
-  let extraction: NachweisExtraction;
+  let extraction: NachweisExtraktion;
   try {
     const vorlage = await vorabAufrichten(
       await dependencies.prepareNachweis(bytes, mediaType),
@@ -117,10 +120,18 @@ export async function processNachweis(
     return { status: "error", error: "provider_unavailable" };
   }
 
-  const ergebnis = nachweisErgebnis(extraction);
-  const hatStunden = ergebnis.mitarbeiter.some((mitarbeiter) => mitarbeiter.stunden > 0);
-  if (!hatStunden && ergebnis.material.length === 0) {
-    return { status: "error", error: "no_hours_found" };
+  const ergebnis = leseErgebnis(extraction);
+  if (!ergebnis) {
+    return { status: "error", error: extraction.variante === "tabelle" ? "no_hours_found" : "no_work_found" };
   }
   return { status: "success", ergebnis };
+}
+
+function leseErgebnis(extraction: NachweisExtraktion): NachweisLeseErgebnis | null {
+  if (extraction.variante === "frei") {
+    return extraction.leistungen.length > 0 ? freiesNachweisErgebnis(extraction) : null;
+  }
+  const ergebnis = nachweisErgebnis(extraction);
+  const hatStunden = ergebnis.mitarbeiter.some((mitarbeiter) => mitarbeiter.stunden > 0);
+  return hatStunden || ergebnis.material.length > 0 ? { ...ergebnis, variante: "tabelle" } : null;
 }
