@@ -76,6 +76,51 @@
   font-weight: 700;
 }
 
+@media (max-width: 880px) {
+  .step2-main__scroll {
+    overflow-y: auto;
+    padding-block: 16px;
+    padding-inline: 12px;
+  }
+
+  .step2-main .dflow-head {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-block-end: 16px;
+  }
+
+  .step2-main .dflow-headings {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .step2-main .dflow-title {
+    white-space: normal;
+  }
+
+  .step2-main .dsteps2 {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-inline-start: 0;
+  }
+
+  .d2-wrap {
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .d2-positions,
+  .d2-document {
+    padding-inline-end: 0;
+    overflow-y: visible;
+  }
+
+  .d2-document {
+    position: static;
+    block-size: auto;
+  }
+}
+
 /* ── Positionskarten (Variante B: Menge × Preis = Summe) ─────────────────── */
 
 /* „Reihenfolge ändern" über den Positionskarten, am Zeilenende. */

@@ -1,0 +1,5 @@
+@media (max-width: 880px) {
+  .step2-frame > .dapp {
+    min-inline-size: 0;
+  }
+}
