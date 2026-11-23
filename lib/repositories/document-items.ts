@@ -10,9 +10,12 @@ import type { DraftItem, SurchargeType, TaxRate } from "@/types/document";
 import { toDraftItem } from "./document-item-mappers";
 
 /** Positionen eines Drafts, sortiert nach position. */
-export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
+export async function getDraftItems(documentId: string, requireResult = false): Promise<DraftItem[]> {
   const companyId = await getCurrentCompanyId();
-  if (!companyId) return [];
+  if (!companyId) {
+    if (requireResult) throw new Error("draft_items_auth_missing");
+    return [];
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -24,7 +27,10 @@ export async function getDraftItems(documentId: string): Promise<DraftItem[]> {
     .eq("company_id", companyId)
     .order("position", { ascending: true });
 
-  if (error || !data) return [];
+  if (error || !data) {
+    if (requireResult) throw new Error("draft_items_read_failed");
+    return [];
+  }
 
   return data.map((r) => toDraftItem(r));
 }
@@ -61,9 +67,10 @@ export async function countDocumentItems(documentId: string): Promise<number | n
 export async function getNextItemPosition(
   companyId: string,
   documentId: string,
+  requireResult = false,
 ): Promise<number> {
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("document_items")
     .select("position")
     .eq("document_id", documentId)
@@ -71,6 +78,7 @@ export async function getNextItemPosition(
     .order("position", { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (requireResult && error) throw new Error("draft_item_position_read_failed");
   return ((data?.position as number | undefined) ?? 0) + 1;
 }
 
@@ -135,11 +143,11 @@ export async function insertDocumentItems(
   companyId: string,
   documentId: string,
   items: NewDocumentItem[],
-): Promise<{ error?: string }> {
+): Promise<{ error?: string; outcomeUnknown?: boolean }> {
   const supabase = await createClient();
   const rows = items.map((item) => toItemRow(companyId, documentId, item));
-  const { error } = await supabase.from("document_items").insert(rows);
-  if (error) return { error: error.message };
+  const { error, status } = await supabase.from("document_items").insert(rows);
+  if (error) return { error: error.message, outcomeUnknown: status === 0 || status >= 500 };
   return {};
 }
 

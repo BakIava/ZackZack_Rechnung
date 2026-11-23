@@ -26,8 +26,9 @@ export async function recomputeDraftItems(
   companyId: string,
   documentId: string,
   persistTotals = true,
+  requireSuccess = false,
 ): Promise<ItemsResult> {
-  const items = await getDraftItems(documentId);
+  const items = await getDraftItems(documentId, requireSuccess);
   const totals = calculateDocumentTotals(
     items.map((item) => ({
       netAmount: item.totalAmount,
@@ -36,12 +37,16 @@ export async function recomputeDraftItems(
       grossAmount: item.grossAmount,
     })),
   );
-  if (persistTotals) await setDraftDocumentTotals(companyId, documentId, totals);
+  if (persistTotals) await setDraftDocumentTotals(companyId, documentId, totals, requireSuccess);
   // Router-Cache des gesamten Flow-Layouts invalidieren, damit beim Zurück-
   // navigieren (z. B. Schritt 3 → 2) nicht ein veralteter, positionsloser
   // Server-Render aus dem Client-Cache ausgeliefert wird.
-  revalidatePath("/[locale]/create/[document_id]", "layout");
+  revalidateDraftItems();
   return { items, totals };
+}
+
+export function revalidateDraftItems(): void {
+  revalidatePath("/[locale]/create/[document_id]", "layout");
 }
 
 export function lineValues(unitPrice: number, amount: number, taxRate: TaxRate) {

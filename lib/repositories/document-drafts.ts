@@ -271,9 +271,10 @@ export async function setDraftDocumentTotals(
   companyId: string,
   documentId: string,
   totals: { netAmount: number; taxAmount: number; grossAmount: number },
+  requireUpdate = false,
 ): Promise<void> {
   const supabase = await createClient();
-  await supabase
+  const update = supabase
     .from("documents")
     .update({
       subtotal_amount: totals.netAmount,
@@ -283,6 +284,13 @@ export async function setDraftDocumentTotals(
     .eq("id", documentId)
     .eq("company_id", companyId)
     .eq("status", "draft");
+
+  if (requireUpdate) {
+    const { data, error } = await update.select("id").maybeSingle();
+    if (error || !data) throw new Error("draft_totals_update_failed");
+    return;
+  }
+  await update;
 }
 
 /** Eingefrorene Steuerkonfiguration eines Entwurfs. */
