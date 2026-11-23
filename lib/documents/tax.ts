@@ -60,7 +60,10 @@ function assertLineInput(unitPriceCents: number, amount: number, taxRate: TaxRat
   if (!Number.isFinite(amount) || amount <= 0) {
     throw new RangeError("amount_invalid");
   }
-  if (Math.abs(amount * 100 - Math.round(amount * 100)) > Number.EPSILON * 100) {
+  const hundredths = amount * 100;
+  // Korrekte Dezimalmengen wie 8,04 können beim Skalieren einen binären Rundungsrest haben.
+  const tolerance = Number.EPSILON * Math.max(100, hundredths);
+  if (Math.abs(hundredths - Math.round(hundredths)) > tolerance) {
     throw new RangeError("amount_precision_invalid");
   }
   if (!isTaxRate(taxRate)) {
