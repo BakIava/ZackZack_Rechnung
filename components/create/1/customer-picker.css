@@ -171,3 +171,20 @@
   color: #fff;
 }
 
+/* Eingeklappte Auswahl: nur der gewählte Kunde, Tippen öffnet die Liste wieder */
+
+.customer-picker-chosen {
+  inline-size: 100%;
+}
+
+.customer-picker-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+

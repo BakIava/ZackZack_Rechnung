@@ -1,16 +1,10 @@
 .service-month {
-  display: grid;
-  gap: 12px;
-}
-
-.service-month-year {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 18px;
+  gap: 8px;
 }
 
-.service-month-year button {
+.service-month button {
   display: grid;
   place-items: center;
   inline-size: 44px;
@@ -22,52 +16,14 @@
   cursor: pointer;
 }
 
-.service-month-year button:hover {
+.service-month button:hover {
   border-color: var(--primary);
 }
 
-.service-month-year-value {
-  min-inline-size: 64px;
+.service-month-value {
+  min-inline-size: 10rem;
   color: var(--ink);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 750;
   text-align: center;
-}
-
-.service-month-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.service-month-grid button {
-  min-block-size: 48px;
-  padding-inline: 8px;
-  border: 1.5px solid var(--line);
-  border-radius: 11px;
-  background: var(--surface);
-  color: var(--ink);
-  font: inherit;
-  font-size: 14.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.service-month-grid button:hover {
-  border-color: var(--primary);
-}
-
-.service-month-grid button[data-on="1"] {
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--primary-ink);
-}
-
-.service-month-grid button:disabled {
-  cursor: wait;
-  opacity: 0.65;
-}
-
-@media (max-width: 700px) {
-  .service-month-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
