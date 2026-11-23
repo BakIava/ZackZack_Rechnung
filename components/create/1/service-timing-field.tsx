@@ -142,7 +142,71 @@ export function ServiceTimingField({ dir, documentId, initialTiming }: ServiceTi
           </span>
         </span>
         {saving && <Loader2 size={17} className="service-timing-spinner" aria-hidden />}
-        {mode !== "none" && (
+        <div className="service-timing-modes" role="group" aria-label={t("serviceTimingTitle")}>
+          {MODES.map((option) => (
+            <button
+              key={option.mode}
+              type="button"
+              disabled={saving}
+              aria-pressed={mode === option.mode}
+              data-on={mode === option.mode ? "1" : "0"}
+              onClick={() => chooseMode(option.mode)}
+            >
+              {t(option.labelKey)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {mode !== "none" && (
+        <div className="service-timing-detail">
+          {mode === "date" && (
+            <input
+              type="date"
+              disabled={saving}
+              value={serviceDate}
+              aria-label={t("serviceDate")}
+              aria-invalid={Boolean(error)}
+              onChange={(event) => changeServiceDate(event.target.value)}
+            />
+          )}
+
+          {mode === "period" && (
+            <div className="service-timing-period">
+              <label>
+                <span>{t("servicePeriodFrom")}</span>
+                <input
+                  type="date"
+                  disabled={saving}
+                  value={periodStart}
+                  max={periodEnd || undefined}
+                  aria-invalid={Boolean(error)}
+                  onChange={(event) => changePeriod(event.target.value, periodEnd)}
+                />
+              </label>
+              <label>
+                <span>{t("servicePeriodTo")}</span>
+                <input
+                  type="date"
+                  disabled={saving}
+                  value={periodEnd}
+                  min={periodStart || undefined}
+                  aria-invalid={Boolean(error)}
+                  onChange={(event) => changePeriod(periodStart, event.target.value)}
+                />
+              </label>
+            </div>
+          )}
+
+          {mode === "month" && (
+            <ServiceMonthPicker
+              dir={dir}
+              value={monthStart}
+              disabled={saving}
+              onSelect={selectMonth}
+            />
+          )}
+
           <button
             type="button"
             className="service-timing-clear"
@@ -152,71 +216,7 @@ export function ServiceTimingField({ dir, documentId, initialTiming }: ServiceTi
             <X size={16} strokeWidth={2} aria-hidden />
             {t("serviceTimingClear")}
           </button>
-        )}
-      </div>
-
-      <div className="service-timing-modes" role="group" aria-label={t("serviceTimingTitle")}>
-        {MODES.map((option) => (
-          <button
-            key={option.mode}
-            type="button"
-            disabled={saving}
-            aria-pressed={mode === option.mode}
-            data-on={mode === option.mode ? "1" : "0"}
-            onClick={() => chooseMode(option.mode)}
-          >
-            {t(option.labelKey)}
-          </button>
-        ))}
-      </div>
-
-      {mode === "date" && (
-        <label className="service-timing-date">
-          <span>{t("serviceDate")}</span>
-          <input
-            type="date"
-            disabled={saving}
-            value={serviceDate}
-            aria-invalid={Boolean(error)}
-            onChange={(event) => changeServiceDate(event.target.value)}
-          />
-        </label>
-      )}
-
-      {mode === "period" && (
-        <div className="service-timing-period">
-          <label>
-            <span>{t("servicePeriodFrom")}</span>
-            <input
-              type="date"
-              disabled={saving}
-              value={periodStart}
-              max={periodEnd || undefined}
-              aria-invalid={Boolean(error)}
-              onChange={(event) => changePeriod(event.target.value, periodEnd)}
-            />
-          </label>
-          <label>
-            <span>{t("servicePeriodTo")}</span>
-            <input
-              type="date"
-              disabled={saving}
-              value={periodEnd}
-              min={periodStart || undefined}
-              aria-invalid={Boolean(error)}
-              onChange={(event) => changePeriod(periodStart, event.target.value)}
-            />
-          </label>
         </div>
-      )}
-
-      {mode === "month" && (
-        <ServiceMonthPicker
-          dir={dir}
-          value={monthStart}
-          disabled={saving}
-          onSelect={selectMonth}
-        />
       )}
     </section>
   );
