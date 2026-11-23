@@ -23,6 +23,7 @@ import { PositionList } from "./position-list";
 import { PositionSelectionBar } from "./position-selection-bar";
 import { PositionSelectionDialog } from "./position-selection-dialog";
 import { usePositionSelection } from "./use-position-selection";
+import { TextCheck } from "./text-check";
 import { PositionPickerDialog } from "./position-picker";
 import { ReorderSheet } from "./reorder-sheet";
 import { Step2PreviewPanel } from "./step2-preview-panel";
@@ -163,6 +164,8 @@ export function Step2Main({
                   onDelete={() => selection.openDialog("delete")}
                   onVat={() => selection.openDialog("vat")}
                   onReorder={items.length > 1 ? reorder.open : undefined}
+                  extraActions={<TextCheck documentId={documentId} items={items} dir={dir}
+                    disabled={saving} onApplied={applyItemsResult} />}
                 />
               )}
 

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { ArrowUpDown, ListChecks, Percent, Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui";
@@ -16,10 +17,12 @@ interface PositionSelectionBarProps {
   onDelete: () => void;
   onVat: () => void;
   onReorder?: () => void;
+  /** Weitere Aktionen außerhalb des Auswahlmodus, z. B. „Texte prüfen“. */
+  extraActions?: ReactNode;
 }
 
 export function PositionSelectionBar({
-  active, count, pending, outcomeUnknown, showOutcomeError, onStart, onEnd, onDelete, onVat, onReorder,
+  active, count, pending, outcomeUnknown, showOutcomeError, onStart, onEnd, onDelete, onVat, onReorder, extraActions,
 }: PositionSelectionBarProps) {
   const t = useTranslations("Step2");
   const disabled = pending || outcomeUnknown || count === 0;
@@ -43,6 +46,7 @@ export function PositionSelectionBar({
         </div>
       ) : (
         <div className="position-selection-bar-controls">
+          {extraActions}
           {onReorder && (
             <Button type="button" variant="outline" className="d2-reorder-open" disabled={pending} onClick={onReorder}>
               <ArrowUpDown aria-hidden /> {t("reorderOpen")}
