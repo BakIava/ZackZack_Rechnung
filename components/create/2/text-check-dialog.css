@@ -1,0 +1,166 @@
+.text-check-dialog {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.text-check-dialog h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.text-check-dialog-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.text-check-dialog-spin {
+  flex: none;
+  color: var(--primary);
+  animation: text-check-dialog-spin 0.9s linear infinite;
+}
+
+@keyframes text-check-dialog-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-check-dialog-spin { animation: none; }
+}
+
+.text-check-dialog-summary {
+  display: grid;
+  gap: 2px;
+}
+
+.text-check-dialog-count {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.text-check-dialog-intro,
+.text-check-dialog-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.text-check-dialog-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.text-check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-block: 12px;
+  padding-inline: 12px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.text-check-row[data-checked="true"] {
+  border-color: var(--primary);
+}
+
+.text-check-row input {
+  flex: none;
+  inline-size: 22px;
+  block-size: 22px;
+  margin: 0;
+  accent-color: var(--primary);
+}
+
+.text-check-row-body {
+  display: grid;
+  flex: 1;
+  gap: 8px;
+  min-inline-size: 0;
+}
+
+.text-check-row-pos {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.text-check-change {
+  display: grid;
+  gap: 4px;
+}
+
+.text-check-field {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.text-check-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.text-check-tag {
+  flex: none;
+  min-inline-size: 3.5em;
+  color: var(--muted);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.text-check-tag[data-new="true"] {
+  color: var(--ok);
+}
+
+.text-check-old,
+.text-check-new {
+  min-inline-size: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+
+.text-check-old {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.text-check-new {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.text-check-dialog-error {
+  margin: 0;
+  color: var(--warn);
+}
+
+.text-check-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.text-check-dialog-actions button {
+  min-block-size: 44px;
+}
