@@ -752,5 +752,17 @@
   "Deduction": {
     "label": "Abzug (Minusbetrag)",
     "hint": "z. B. Abschlagsrechnung, Anzahlung oder Rabatt"
+  },
+  "TextImprove": {
+    "improve": "Text verbessern",
+    "loading": "Wird verbessert …",
+    "suggestion": "Vorschlag",
+    "accept": "Übernehmen",
+    "keep": "Behalten",
+    "unchanged": "Dein Text ist schon gut.",
+    "notGerman": "Das klappt nur mit deutschem Text. Bitte auf Deutsch schreiben.",
+    "limit": "Tageslimit erreicht: {limit} Verbesserungen pro Tag. Morgen geht es wieder.",
+    "failed": "Das hat nicht geklappt. Dein Text bleibt, wie er ist.",
+    "close": "Hinweis schließen"
   }
 }

@@ -752,5 +752,17 @@
   "Deduction": {
     "label": "Kesinti (eksi tutar)",
     "hint": "ör. ara fatura, avans veya indirim"
+  },
+  "TextImprove": {
+    "improve": "Metni düzelt",
+    "loading": "Düzeltiliyor …",
+    "suggestion": "Öneri",
+    "accept": "Uygula",
+    "keep": "Benimki kalsın",
+    "unchanged": "Metnin zaten iyi.",
+    "notGerman": "Bu sadece Almanca metinlerle çalışır. Lütfen Almanca yaz.",
+    "limit": "Günlük sınıra ulaşıldı: günde {limit} düzeltme. Yarın tekrar dene.",
+    "failed": "Düzeltme yapılamadı. Metnin değişmeden kalıyor.",
+    "close": "Uyarıyı kapat"
   }
 }
