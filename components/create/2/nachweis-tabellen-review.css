@@ -1,0 +1,28 @@
+.nachweis-review-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nachweis-review-text > label {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--muted);
+}
+
+.nachweis-review-text > input {
+  height: 48px;
+  padding-inline: 14px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.nachweis-review-text > input:focus-visible {
+  outline: none;
+  border-color: var(--primary);
+}
