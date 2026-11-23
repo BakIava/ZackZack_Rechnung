@@ -288,7 +288,7 @@ export function KundeStep({
           />
         )}
 
-        <CustomerPicker dir={dir} query={query} filtered={filtered} selected={selected}
+        <CustomerPicker dir={dir} query={query} filtered={filtered} selectedCustomer={selectedCustomer}
           onQueryChange={setQuery} onSelect={setSelected} onNew={() => setShowNew(true)} />
         <ServiceLocationField location={location} suggestions={locationSuggestions}
           onEdit={() => setShowLocation(true)} onRemove={() => void handleLocationRemove()}

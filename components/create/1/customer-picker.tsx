@@ -2,6 +2,7 @@
 
 import { Check, ChevronLeft, ChevronRight, MapPin, Plus, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import type { CustomerListItem } from "@/types/customer";
 import "./customer-picker.css";
 
@@ -12,15 +13,50 @@ interface CustomerPickerProps {
   dir: "ltr" | "rtl";
   query: string;
   filtered: CustomerListItem[];
-  selected: string | null;
+  selectedCustomer: CustomerListItem | null;
   onQueryChange: (value: string) => void;
   onSelect: (id: string) => void;
   onNew: () => void;
 }
 
-export function CustomerPicker({ dir, query, filtered, selected, onQueryChange, onSelect, onNew }: CustomerPickerProps) {
+/**
+ * Kundenwahl in Schritt 1. Nach der Auswahl klappt die Liste auf eine Karte
+ * des gewählten Kunden zusammen, damit der Einsatzort direkt darunter sichtbar ist.
+ */
+export function CustomerPicker({ dir, query, filtered, selectedCustomer, onQueryChange, onSelect, onNew }: CustomerPickerProps) {
   const t = useTranslations("Create");
   const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
+  const [changing, setChanging] = useState(false);
+  const selectedId = selectedCustomer?.id ?? null;
+
+  function handleSelect(id: string) {
+    onSelect(id);
+    onQueryChange("");
+    setChanging(false);
+  }
+
+  function handleNew() {
+    setChanging(false);
+    onNew();
+  }
+
+  if (selectedCustomer && !changing) {
+    return (
+      <button
+        type="button"
+        className="dcust customer-picker-chosen"
+        data-sel="1"
+        onClick={() => setChanging(true)}
+      >
+        <CustomerCardContent customer={selectedCustomer} />
+        <span className="customer-picker-change">
+          {t("changeCustomer")}
+          <Chevron size={18} strokeWidth={STROKE} aria-hidden />
+        </span>
+      </button>
+    );
+  }
+
   return (
     <>
         <div className="dsearch2">
@@ -55,7 +91,7 @@ export function CustomerPicker({ dir, query, filtered, selected, onQueryChange, 
             <button
               type="button"
               className="dcust dcust--new"
-              onClick={onNew}
+              onClick={handleNew}
             >
               <span className="dcust-av">
                 <Plus
@@ -82,29 +118,12 @@ export function CustomerPicker({ dir, query, filtered, selected, onQueryChange, 
               key={c.id}
               type="button"
               className="dcust"
-              data-sel={selected === c.id ? "1" : "0"}
-              aria-pressed={selected === c.id}
-              onClick={() => onSelect(c.id)}
+              data-sel={selectedId === c.id ? "1" : "0"}
+              aria-pressed={selectedId === c.id}
+              onClick={() => handleSelect(c.id)}
             >
-              <span className="dcust-av">{c.initials}</span>
-              <span className="dcust-body">
-                <span className="dcust-name">
-                  {c.companyName ? c.companyName + " " : ""}
-                  {c.firstname && c.lastname ? c.firstname + " " + c.lastname : ""}
-                  {c.isNew && (
-                    <span className="dcust-badge">
-                      <Check size={11} strokeWidth={STROKE_BOLD} aria-hidden />
-                      {t("ncCreated")}
-                    </span>
-                  )}
-                </span>
-                <span className="dcust-addr">
-                  <MapPin size={13} strokeWidth={STROKE} aria-hidden />
-                  {c.street}
-                  {c.city ? `, ${c.city}` : ""}
-                </span>
-              </span>
-              {selected === c.id && (
+              <CustomerCardContent customer={c} />
+              {selectedId === c.id && (
                 <span className="dcust-check">
                   <Check
                     size={16}
@@ -117,6 +136,37 @@ export function CustomerPicker({ dir, query, filtered, selected, onQueryChange, 
             </button>
           ))}
         </div>
+    </>
+  );
+}
+
+interface CustomerCardContentProps {
+  customer: CustomerListItem;
+}
+
+/** Avatar, Name und Adresse – gemeinsam für Rasterkachel und eingeklappte Karte. */
+function CustomerCardContent({ customer: c }: CustomerCardContentProps) {
+  const t = useTranslations("Create");
+  return (
+    <>
+      <span className="dcust-av">{c.initials}</span>
+      <span className="dcust-body">
+        <span className="dcust-name">
+          {c.companyName ? c.companyName + " " : ""}
+          {c.firstname && c.lastname ? c.firstname + " " + c.lastname : ""}
+          {c.isNew && (
+            <span className="dcust-badge">
+              <Check size={11} strokeWidth={STROKE_BOLD} aria-hidden />
+              {t("ncCreated")}
+            </span>
+          )}
+        </span>
+        <span className="dcust-addr">
+          <MapPin size={13} strokeWidth={STROKE} aria-hidden />
+          {c.street}
+          {c.city ? `, ${c.city}` : ""}
+        </span>
+      </span>
     </>
   );
 }
