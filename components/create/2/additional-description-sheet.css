@@ -30,8 +30,3 @@
 .additional-description-sheet__textarea:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent);
 }
-
-/* „Text verbessern“ zwischen Textfeld und Speichern-Knopf. */
-.additional-description-sheet__improve {
-  margin-block-end: 14px;
-}

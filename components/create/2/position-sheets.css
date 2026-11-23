@@ -89,11 +89,6 @@
   margin-bottom: 14px;
 }
 
-/* „Text verbessern“ zwischen Bezeichnung und Fertig-Knopf. */
-.zz-desc-improve {
-  margin-block-end: 14px;
-}
-
 .zz-done {
   width: 100%;
   display: flex;
