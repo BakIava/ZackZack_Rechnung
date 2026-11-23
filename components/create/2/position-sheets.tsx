@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Search, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { TextImprove } from "@/components/shared/text-improve";
 import { SUPPORTED_TAX_RATES } from "@/lib/documents/tax";
 import { filterUnits, FLOW_UNITS, withCurrentUnit } from "@/lib/documents/units";
 import type { DraftItem, TaxRate } from "@/types/document";
@@ -60,15 +59,6 @@ function DescSheet({ item, onPreview, onCommit, onClose }: DescSheetProps) {
         onKeyDown={(e) => {
           if (e.key === "Enter") commit();
           else if (e.key === "Escape") onClose();
-        }}
-      />
-      <TextImprove
-        className="zz-desc-improve"
-        value={value}
-        feld="bezeichnung"
-        onAccept={(text) => {
-          setValue(text);
-          onPreview(text);
         }}
       />
       <button type="button" className="zz-done" disabled={!ok} onClick={commit}>

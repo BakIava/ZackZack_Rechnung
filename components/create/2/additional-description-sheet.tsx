@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { TextImprove } from "@/components/shared/text-improve";
 import type { DraftItem } from "@/types/document";
 import "./additional-description-sheet.css";
 
@@ -61,15 +60,6 @@ export function AdditionalDescriptionSheet({
             event.preventDefault();
             onCommit(value);
           }
-        }}
-      />
-      <TextImprove
-        className="additional-description-sheet__improve"
-        value={value}
-        feld="zusatztext"
-        onAccept={(text) => {
-          setValue(text);
-          onPreview(text);
         }}
       />
       <button type="button" className="zz-done" onClick={() => onCommit(value)}>

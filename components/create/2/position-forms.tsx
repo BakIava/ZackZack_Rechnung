@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Lock, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DeductionToggle } from "@/components/shared/deduction-toggle";
-import { TextImprove } from "@/components/shared/text-improve";
 import { UnitPicker } from "@/components/shared/unit-picker";
 import { FLOW_UNITS } from "@/lib/documents/units";
 import {
@@ -64,7 +63,6 @@ export function FreeForm({ onAdd, onPreviewChange }: FreeFormProps) {
       <div className="f-row">
         <label className="f-lbl" htmlFor="ff-label">{t("labelLbl")}</label>
         <input id="ff-label" className="f-input" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="z. B. Abdeckarbeiten" />
-        <TextImprove value={label} feld="bezeichnung" onAccept={setLabel} />
       </div>
       <div className="f-row two">
         <div className="f-row">
@@ -179,7 +177,6 @@ export function FremdForm({ onAdd, onPreviewChange }: FremdFormProps) {
       <div className="f-row">
         <label className="f-lbl" htmlFor="fr-label">{t("labelLbl")}</label>
         <input id="fr-label" className="f-input" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="z. B. Gerüststellung" />
-        <TextImprove value={label} feld="bezeichnung" onAccept={setLabel} />
       </div>
       <div className="f-row two">
         <div className="f-row">

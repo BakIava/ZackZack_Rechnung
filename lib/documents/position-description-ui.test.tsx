@@ -1,15 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import de from "@/messages/de.json";
 import ar from "@/messages/ar.json";
 import type { DocumentItem, DraftItem } from "@/types/document";
 import { PositionCard } from "@/components/create/2/position-card";
 import { PositionEditor } from "@/components/create/2/position-sheets";
 import { PositionsList } from "@/components/documents/positions-list";
-
-// Server-Action an der Grenze ersetzen; in Next.js wird sie nie mitgebündelt.
-vi.mock("@/lib/documents/text-improve-actions", () => ({ improveText: vi.fn() }));
 
 const draftItem: DraftItem = {
   id: "item-1",
@@ -114,8 +111,6 @@ describe("Positionsbeschreibung in Schritt 2", () => {
     expect(html).toContain("lang=\"de\"");
     expect(html).toContain(fullText);
     expect(html).not.toContain("maxlength");
-    expect(html).toContain("text-improve-trigger additional-description-sheet__improve");
-    expect(html).toContain(ar.TextImprove.improve);
   });
 });
 
