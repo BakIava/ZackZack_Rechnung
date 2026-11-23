@@ -2,7 +2,6 @@
 
 import { useCallback, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { eurosToCents } from "@/lib/money";
 import {
   addCatalogItem,
   addFreeItem,
@@ -13,7 +12,7 @@ import {
 } from "@/lib/documents/item-actions";
 import { addNachweisItems } from "@/lib/documents/nachweis-actions";
 import type { NachweisImportLine } from "@/types/nachweis";
-import { fixedSurchargeForSale, markupPercent } from "@/lib/documents/margin";
+import { markupPercent } from "@/lib/documents/margin";
 import {
   EMPTY_TEMPORARY_DOCUMENT_ITEM,
   withEditedDocumentItem,
@@ -30,6 +29,7 @@ import type {
 } from "@/types/document";
 import type { PickerTab } from "./catalog-picker";
 import type { PadField } from "./number-pad";
+import { padPatch } from "./position-pad-patch";
 import type { PositionEditorState, SheetField } from "./position-sheets";
 import { useItemReorder } from "./use-item-reorder";
 
@@ -42,34 +42,6 @@ interface UseStep2ItemsArgs {
 interface ItemPreviewEdit {
   item: DraftItem;
   patch: ItemPatch;
-}
-
-function padPatch(item: DraftItem, field: PadField, value: number): ItemPatch | null {
-  if (field === "qty") {
-    return { amount: Math.max(0, Math.round(value * 100) / 100) || 1 };
-  }
-  // Negativer Preis = Abzug.
-  if (field === "price") return { unitPrice: eurosToCents(value) };
-  if (item.purchasePrice == null) return null;
-  // Fremdleistung: Einkauf und Aufschlag beschreiben immer den positiven Betrag;
-  // das Vorzeichen (Abzug) bleibt erhalten bzw. kommt aus dem Verkaufspreis.
-  if (field === "markup") {
-    return { surcharge: Math.round(value * 100), surchargeType: "percent" };
-  }
-  if (field === "purchase") {
-    const purchasePrice = eurosToCents(value);
-    return {
-      purchasePrice,
-      surcharge: fixedSurchargeForSale(purchasePrice, Math.abs(item.unitPrice)),
-      surchargeType: "fixed",
-    };
-  }
-  const salePrice = eurosToCents(value);
-  return {
-    surcharge: fixedSurchargeForSale(item.purchasePrice, Math.abs(salePrice)),
-    surchargeType: "fixed",
-    deduction: salePrice < 0,
-  };
 }
 
 export function useStep2Items({
