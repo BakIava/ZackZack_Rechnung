@@ -1,0 +1,160 @@
+/* „Text verbessern“ – Knopf, Vorschlagskarte und Hinweis unter einem Textfeld.
+   Ohne Außenabstand; den Abstand gibt die einbettende Komponente vor. */
+
+.text-improve-trigger {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  justify-self: start;
+  gap: 6px;
+  inline-size: fit-content;
+  min-block-size: 40px;
+  padding-inline: 12px;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 30%, var(--line));
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  color: var(--primary);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.text-improve-trigger:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.text-improve-trigger:focus-visible,
+.text-improve-card button:focus-visible,
+.text-improve-close:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.text-improve-trigger:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.text-improve-trigger[aria-busy="true"] {
+  opacity: 1;
+  cursor: wait;
+}
+
+.text-improve-spin {
+  animation: text-improve-spin 0.9s linear infinite;
+}
+
+@keyframes text-improve-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .text-improve-spin { animation: none; }
+}
+
+.text-improve-card {
+  display: grid;
+  gap: 8px;
+  padding-block: 12px;
+  padding-inline: 14px;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+
+.text-improve-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+/* Dokumenttext: immer Deutsch und LTR, auch in arabischer Bedienung. */
+.text-improve-text {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+
+.text-improve-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.text-improve-accept,
+.text-improve-keep {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 42px;
+  padding-inline: 14px;
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.text-improve-accept {
+  border: 1.5px solid var(--primary);
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.text-improve-keep {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.text-improve-keep:hover {
+  border-color: var(--primary);
+}
+
+.text-improve-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-block: 8px;
+  padding-inline: 12px;
+  border-radius: var(--r-sm);
+  background: var(--ok-bg);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.text-improve-notice[data-tone="warn"] {
+  background: var(--warn-bg);
+}
+
+.text-improve-notice > span {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.text-improve-close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 32px;
+  block-size: 32px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.text-improve-close:hover {
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
