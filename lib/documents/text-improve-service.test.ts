@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { processTextImprove } from "./text-improve-service";
+import type { DraftItem } from "@/types/document";
+import { processTextImprove, processTextPruefung } from "./text-improve-service";
 
 const ALLOWED = { allowed: true, remaining: 49, dailyLimit: 50 };
 
@@ -49,5 +50,55 @@ describe("processTextImprove", () => {
     await expect(processTextImprove("banyo fayans", "bezeichnung", dependencies({
       improve: vi.fn().mockResolvedValue({ deutsch: false, textDe: "banyo fayans" }),
     }))).resolves.toEqual({ status: "kein_deutsch" });
+  });
+});
+
+describe("processTextPruefung", () => {
+  function draftItem(position: number, descriptionDe: string, serviceId: string | null = null): DraftItem {
+    return {
+      id: `00000000-0000-0000-0000-${String(position).padStart(12, "0")}`,
+      serviceId, position, descriptionDe, additionalDescriptionDe: null,
+      amount: 1, unit: "Stk.", unitPrice: 1000, totalAmount: 1000,
+      taxRate: 19, taxRateOverridden: false, taxAmount: 190, grossAmount: 1190,
+      purchasePrice: null, surcharge: null, surchargeType: null,
+    };
+  }
+
+  function pruefung(overrides: Partial<Parameters<typeof processTextPruefung>[1]> = {}) {
+    return {
+      consumeAiQuota: vi.fn().mockResolvedValue(ALLOWED),
+      improveAll: vi.fn().mockResolvedValue([
+        { id: "p1", deutsch: true, bezeichnung: "Fliesen verlegen", zusatztext: null },
+      ]),
+      ...overrides,
+    };
+  }
+
+  it("prüft alle freien Positionen mit einem Aufruf und einer Einheit", async () => {
+    const deps = pruefung();
+    const result = await processTextPruefung(
+      [draftItem(1, "fliesen verlegn"), draftItem(2, "Malerarbeiten", "katalog-1")],
+      deps,
+    );
+    expect(result).toMatchObject({ status: "vorschlaege", vorschlaege: [{ position: 1 }] });
+    expect(deps.consumeAiQuota).toHaveBeenCalledOnce();
+    expect(deps.improveAll).toHaveBeenCalledOnce();
+    expect(deps.improveAll).toHaveBeenCalledWith([{ id: "p1", bezeichnung: "fliesen verlegn", zusatztext: null }]);
+  });
+
+  it("verbraucht ohne prüfbare Position kein Kontingent", async () => {
+    const deps = pruefung();
+    await expect(processTextPruefung([draftItem(1, "Malerarbeiten", "katalog-1")], deps))
+      .resolves.toEqual({ status: "keine_positionen" });
+    expect(deps.consumeAiQuota).not.toHaveBeenCalled();
+  });
+
+  it("meldet Limit und Fehler ohne Vorschläge", async () => {
+    await expect(processTextPruefung([draftItem(1, "fliesen")], pruefung({
+      consumeAiQuota: vi.fn().mockResolvedValue({ allowed: false, remaining: 0, dailyLimit: 50 }),
+    }))).resolves.toEqual({ status: "limit", dailyLimit: 50 });
+    await expect(processTextPruefung([draftItem(1, "fliesen")], pruefung({
+      improveAll: vi.fn().mockRejectedValue(new Error("request_failed")),
+    }))).resolves.toEqual({ status: "fehler" });
   });
 });

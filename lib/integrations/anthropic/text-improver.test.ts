@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { improveDocumentText } from "./text-improver";
+import { improveDocumentText, improveDocumentTexts } from "./text-improver";
 
 const { create } = vi.hoisted(() => ({ create: vi.fn() }));
 vi.mock("server-only", () => ({}));
@@ -51,5 +51,35 @@ describe("Text-verbessern SDK-Adapter", () => {
   it("meldet Netzwerkfehler als request_failed", async () => {
     create.mockRejectedValue(new Error("offline"));
     await expect(improveDocumentText("fliesen", "bezeichnung")).rejects.toMatchObject({ code: "request_failed" });
+  });
+
+  it("prüft alle Positionen in einem einzigen Aufruf", async () => {
+    const positionen = [
+      { id: "p1", bezeichnung: "fliesen verlegn", zusatztext: null },
+      { id: "p2", bezeichnung: "geruest", zusatztext: "inkl abbau" },
+    ];
+    create.mockResolvedValue({
+      stop_reason: "end_turn",
+      content: [{ type: "text", text: JSON.stringify({ positionen: [
+        { id: "p1", deutsch: true, bezeichnung: "Fliesen verlegen", zusatztext: null },
+        { id: "p2", deutsch: true, bezeichnung: "Gerüst", zusatztext: "Inkl. Abbau" },
+      ] }) }],
+    });
+    await expect(improveDocumentTexts(positionen)).resolves.toHaveLength(2);
+    expect(create).toHaveBeenCalledOnce();
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      model: "text-test",
+      max_tokens: 16_000,
+      messages: [{ role: "user", content: expect.stringContaining(JSON.stringify(positionen)) }],
+    }));
+  });
+
+  it("verwirft eine Sammelantwort mit fremden Positionen", async () => {
+    create.mockResolvedValue({
+      stop_reason: "end_turn",
+      content: [{ type: "text", text: '{"positionen":[{"id":"p7","deutsch":true,"bezeichnung":"A","zusatztext":null}]}' }],
+    });
+    await expect(improveDocumentTexts([{ id: "p1", bezeichnung: "a", zusatztext: null }]))
+      .rejects.toMatchObject({ code: "invalid_response" });
   });
 });
