@@ -19,7 +19,9 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      // Volles Chromium statt Headless-Shell: nur das hat den eingebauten
+      // PDF-Viewer (navigator.pdfViewerEnabled) wie ein echter Desktop-Chrome.
+      use: { ...devices["Desktop Chrome"], channel: "chromium" },
     },
   ],
   webServer: {
