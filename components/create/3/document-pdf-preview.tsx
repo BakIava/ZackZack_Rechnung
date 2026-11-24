@@ -7,6 +7,8 @@ import { DocumentPdf } from "@/lib/pdf/document-pdf";
 import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { registerBrowserPdfFonts } from "@/lib/pdf/browser-fonts";
 import type { DocumentPreview } from "@/types/document";
+import { PdfCanvasPages } from "./pdf-canvas-pages";
+import { useInlinePdfViewer } from "./use-inline-pdf-viewer";
 import "./document-pdf-preview.css";
 
 registerBrowserPdfFonts();
@@ -35,6 +37,8 @@ export function DocumentPdfPreview({
     [renderPreview],
   );
   const [loadedViewerUrl, setLoadedViewerUrl] = useState<string | null>(null);
+  const [failedViewerUrl, setFailedViewerUrl] = useState<string | null>(null);
+  const inlineViewer = useInlinePdfViewer();
   const document = useMemo(
     () => <DocumentPdf preview={renderPreview} logo={logo} />,
     [logo, renderPreview],
@@ -55,8 +59,10 @@ export function DocumentPdfPreview({
   }, [incomingPreviewKey, preview, renderPreviewKey]);
 
   const previewQueued = renderPreviewKey !== incomingPreviewKey;
+  const viewerFailed = Boolean(instance.url && failedViewerUrl === instance.url);
+  const renderFailed = Boolean(instance.error) || viewerFailed;
   const viewerLoading = Boolean(
-    !instance.error
+    !renderFailed
       && (
         instance.loading
         || !instance.url
@@ -65,26 +71,36 @@ export function DocumentPdfPreview({
       ),
   );
   const showLoading = loading || previewQueued || viewerLoading;
+  const markViewerLoaded = () => {
+    setLoadedViewerUrl(instance.url);
+    setLoadedDocument(document);
+  };
 
   return (
     <div
       className="document-pdf-preview"
       data-testid={testId}
-      data-render-state={instance.error ? "error" : showLoading ? "loading" : "ready"}
+      data-render-state={renderFailed ? "error" : showLoading ? "loading" : "ready"}
+      data-viewer={inlineViewer === null ? undefined : inlineViewer ? "inline" : "canvas"}
       aria-busy={showLoading}
       dir="ltr"
       lang="de"
     >
-      {instance.url && (
+      {instance.url && inlineViewer === true && (
         <iframe
           className="document-pdf-preview__frame"
           data-testid={testId ? `${testId}-frame` : undefined}
           src={`${instance.url}${PDF_VIEWER_FRAGMENT}`}
           title={renderPreview.documentNumber ?? renderPreview.docType}
-          onLoad={() => {
-            setLoadedViewerUrl(instance.url);
-            setLoadedDocument(document);
-          }}
+          onLoad={markViewerLoaded}
+        />
+      )}
+      {instance.url && inlineViewer === false && (
+        <PdfCanvasPages
+          src={instance.url}
+          testId={testId ? `${testId}-pages` : undefined}
+          onLoad={markViewerLoaded}
+          onError={() => setFailedViewerUrl(instance.url)}
         />
       )}
       <LoadingOverlay

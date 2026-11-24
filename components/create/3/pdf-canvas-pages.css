@@ -1,0 +1,17 @@
+.pdf-canvas-pages {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #fff;
+}
+
+.pdf-canvas-pages__page {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.pdf-canvas-pages__page + .pdf-canvas-pages__page {
+  border-block-start: 1px solid rgba(15, 42, 63, 0.12);
+}
