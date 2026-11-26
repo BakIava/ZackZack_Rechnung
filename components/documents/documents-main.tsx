@@ -18,6 +18,7 @@ import { startNewDocument } from "@/lib/documents/draft-actions";
 import type { DocumentListItem, DocumentItem } from "@/types/document";
 import { formatMoney } from "@/lib/format";
 import { DocDetail } from "./doc-detail";
+import { DocDetailPanel } from "./doc-detail-panel";
 import { DocumentListRow } from "./document-list-row";
 import "./documents-main.css";
 
@@ -285,16 +286,18 @@ export function DocumentsMain({
             )}
           </div>
 
-          <DocDetail
-            doc={selDoc}
-            items={detailItems}
-            itemsLoading={detailLoading}
-            paymentDays={paymentDays}
-            companyName={companyName}
-            markingPaid={markingPaid}
-            onMarkPaid={handleMarkPaid}
-            dir={dir}
-          />
+          <DocDetailPanel open={selDoc !== null} onClose={() => setSel(null)}>
+            <DocDetail
+              doc={selDoc}
+              items={detailItems}
+              itemsLoading={detailLoading}
+              paymentDays={paymentDays}
+              companyName={companyName}
+              markingPaid={markingPaid}
+              onMarkPaid={handleMarkPaid}
+              dir={dir}
+            />
+          </DocDetailPanel>
         </div>
       </div>
     </main>
