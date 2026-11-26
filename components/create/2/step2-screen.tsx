@@ -16,6 +16,8 @@ interface Step2ScreenProps {
   services: KatalogEintrag[];
   /** Firma – trennt den Browser-Speicher des Nachweis-Reiters. */
   cacheScope: string;
+  /** Entwurf ohne Nummer und ohne Verknüpfung – zeigt „Löschen". */
+  deletable: boolean;
 }
 
 /** Desktop-Schritt 2 (Positionen): Sidebar + Hauptbereich, vollflächig.
@@ -29,6 +31,7 @@ export function Step2Screen({
   logo,
   services,
   cacheScope,
+  deletable,
 }: Step2ScreenProps) {
   return (
     <Step2Frame dir={dir} sidebar={<Sidebar startCollapsed />}>
@@ -41,6 +44,7 @@ export function Step2Screen({
         logo={logo}
         services={services}
         cacheScope={cacheScope}
+        deletable={deletable}
       />
     </Step2Frame>
   );

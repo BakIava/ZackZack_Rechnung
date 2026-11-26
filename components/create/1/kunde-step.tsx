@@ -15,6 +15,7 @@ import {
   updateDraftValidUntil,
 } from "@/lib/documents/draft-actions";
 import { NewCustomerModal } from "@/components/customers/new-customer-modal";
+import { DeleteDraftButton } from "@/components/documents/delete-draft-button";
 import { FlowSteps } from "../flow-steps";
 import type { DocType, ServiceTimingInput } from "@/types/document";
 import type { ServiceLocationInput } from "@/types/service-location";
@@ -39,6 +40,8 @@ interface KundeStepProps {
   initialServiceTiming: ServiceTimingInput;
   initialServiceLocation: ServiceLocationInput | null;
   documentTypeLocked: boolean;
+  /** Entwurf ohne Nummer und ohne Verknüpfung – zeigt „Löschen". */
+  deletable: boolean;
 }
 
 const STROKE = 1.75;
@@ -54,6 +57,7 @@ export function KundeStep({
   initialServiceTiming,
   initialServiceLocation,
   documentTypeLocked,
+  deletable,
 }: KundeStepProps) {
   const t = useTranslations("Create");
   const router = useRouter();
@@ -238,6 +242,10 @@ export function KundeStep({
             <div className="dflow-sub">{t("chooseCustomerAndLocation")}</div>
           </div>
           <FlowSteps current={1} />
+          {deletable && (
+            <DeleteDraftButton documentId={documentId} dir={dir} variant="label"
+              onDeleted={() => router.replace("/documents")} />
+          )}
         </div>
 
         <div className="dflow-bar">

@@ -1,10 +1,7 @@
 "use client";
 
 import {
-  AlertTriangle,
   Check,
-  ChevronLeft,
-  ChevronRight,
   FileText,
   Plus,
   ReceiptText,
@@ -19,12 +16,9 @@ import { getDocumentItems } from "@/lib/repositories/document-items.client";
 import { markDocumentAsPaid } from "@/lib/documents/actions";
 import { startNewDocument } from "@/lib/documents/draft-actions";
 import type { DocumentListItem, DocumentItem } from "@/types/document";
-import { formatDateDE, formatMoney } from "@/lib/format";
+import { formatMoney } from "@/lib/format";
 import { DocDetail } from "./doc-detail";
-import {
-  getDocumentStatusMessageKey,
-  getDocumentUiStatus,
-} from "@/lib/documents/document-display-status";
+import { DocumentListRow } from "./document-list-row";
 import "./documents-main.css";
 
 interface DocumentsMainProps {
@@ -66,7 +60,6 @@ export function DocumentsMain({
   const t = useTranslations("Documents");
   const statusT = useTranslations("DocumentStatus");
   const router = useRouter();
-  const Chevron = dir === "rtl" ? ChevronLeft : ChevronRight;
 
   const [query, setQuery] = useState("");
   const [typeF, setTypeF] = useState<TypeFilter>("all");
@@ -88,6 +81,11 @@ export function DocumentsMain({
       setDetailLoading(false);
     });
   }, [sel]);
+
+  function openDocument(doc: DocumentListItem) {
+    if (doc.status === "draft") router.push(`/create/${doc.id}/2`);
+    else setSel(doc.id);
+  }
 
   async function handleMarkPaid() {
     if (!sel || markingPaid) return;
@@ -273,58 +271,16 @@ export function DocumentsMain({
               </div>
             ) : (
               <div className="hlist">
-                {filtered.map((d) => {
-                  const displayStatus = getDocumentUiStatus(d);
-                  const statusLabel = statusT(
-                    getDocumentStatusMessageKey(displayStatus),
-                  );
-
-                  return (
-                    <button
-                      key={d.id}
-                      className="hrow"
-                      data-sel={sel === d.id ? "1" : "0"}
-                      onClick={() =>
-                        d.status === "draft"
-                          ? router.push(`/create/${d.id}/2`)
-                          : setSel(d.id)
-                      }
-                    >
-                      <span
-                        className={`hrow-ic hrow-ic--${d.type === "invoice" ? "rechnung" : "angebot"}`}
-                      >
-                        {d.type === "invoice" ? (
-                          <ReceiptText size={21} strokeWidth={STROKE} />
-                        ) : (
-                          <FileText size={21} strokeWidth={STROKE} />
-                        )}
-                      </span>
-                      <span className="hrow-body">
-                        <span className="hrow-top">
-                          <span className="hrow-num">{d.documentNumber}</span>
-                          {d.isOverdue && (
-                            <span className="hflag">
-                              <AlertTriangle size={12} strokeWidth={2.5} />
-                              {t("overdue")}
-                            </span>
-                          )}
-                        </span>
-                        <span className="hrow-name">{d.customerName}</span>
-                        <span className="hrow-meta">· {formatDateDE(d.issueDate)}</span>
-                      </span>
-                      <span className="hrow-right">
-                        <span className="hrow-price">{formatMoney(d.totalAmount)}</span>
-                        <span className={`pill pill--${displayStatus}`}>
-                          <i />
-                          {statusLabel}
-                        </span>
-                      </span>
-                      <span className="hrow-chev">
-                        <Chevron size={18} strokeWidth={STROKE} />
-                      </span>
-                    </button>
-                  );
-                })}
+                {filtered.map((d) => (
+                  <DocumentListRow
+                    key={d.id}
+                    doc={d}
+                    selected={sel === d.id}
+                    dir={dir}
+                    onOpen={openDocument}
+                    onDeleted={() => router.refresh()}
+                  />
+                ))}
               </div>
             )}
           </div>

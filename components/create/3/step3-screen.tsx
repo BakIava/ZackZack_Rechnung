@@ -12,16 +12,18 @@ interface Step3ScreenProps {
   preview: DocumentPreview;
   logo: PdfLogo | null;
   checks: PflichtCheck[];
+  /** Entwurf ohne Nummer und ohne Verknüpfung – zeigt „Löschen". */
+  deletable: boolean;
 }
 
 /** Schritt 3 (Vorschau & Finalisierung) — Desktop: Sidebar + Hauptbereich, vollflächig.
  *  Dokumentinhalt bleibt Deutsch/LTR; die Bedienoberfläche folgt der Sprache. */
-export function Step3Screen({ dir, preview, logo, checks }: Step3ScreenProps) {
+export function Step3Screen({ dir, preview, logo, checks, deletable }: Step3ScreenProps) {
   return (
     <div className="zz-create">
       <div className="dapp" dir={dir}>
         <Sidebar startCollapsed />
-        <Step3Main dir={dir} preview={preview} logo={logo} checks={checks} />
+        <Step3Main dir={dir} preview={preview} logo={logo} checks={checks} deletable={deletable} />
       </div>
     </div>
   );

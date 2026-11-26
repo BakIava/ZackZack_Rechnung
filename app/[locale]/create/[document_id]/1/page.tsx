@@ -62,6 +62,7 @@ export default async function Step1Page({ params }: Step1PageProps) {
           initialServiceTiming={initialServiceTiming}
           initialServiceLocation={initialServiceLocation}
           documentTypeLocked={documentTypeLocked}
+          deletable={meta?.deletable ?? false}
         />
       </div>
     </div>

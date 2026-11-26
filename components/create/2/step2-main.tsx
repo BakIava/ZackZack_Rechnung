@@ -17,6 +17,7 @@ import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { getPreviewPflichtChecks } from "@/lib/documents/finalize-validation";
 import { CatalogPicker } from "./catalog-picker";
 import { FlowSteps } from "../flow-steps";
+import { DeleteDraftButton } from "@/components/documents/delete-draft-button";
 import { NumberPad } from "./number-pad";
 import { PositionAddEnd } from "./position-add-end";
 import { PositionList } from "./position-list";
@@ -44,6 +45,8 @@ interface Step2MainProps {
   services: KatalogEintrag[];
   /** Firma – trennt den Browser-Speicher des Nachweis-Reiters. */
   cacheScope: string;
+  /** Entwurf ohne Nummer und ohne Verknüpfung – zeigt „Löschen". */
+  deletable?: boolean;
   bulkItemsAction?: (documentId: string, ids: string[], change: DraftItemBatchChange) => Promise<BulkItemsResult>;
 }
 
@@ -57,6 +60,7 @@ export function Step2Main({
   initialItems,
   logo,
   services,
+  deletable = false,
   bulkItemsAction = changeSelectedDraftItems,
 }: Step2MainProps) {
   const t = useTranslations("Step2");
@@ -135,6 +139,10 @@ export function Step2Main({
             <div className="dflow-sub">{t("stepItems")}</div>
           </div>
           <FlowSteps current={2} />
+          {deletable && (
+            <DeleteDraftButton documentId={documentId} dir={dir} variant="label"
+              onDeleted={() => router.replace("/documents")} />
+          )}
         </div>
 
         <div className="d2-wrap" data-testid="step2-workspace">

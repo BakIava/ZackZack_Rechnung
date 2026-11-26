@@ -22,6 +22,7 @@ import type { DocumentPreview } from "@/types/document";
 import type { PdfLogo } from "@/lib/pdf/pdf-logo";
 import { FlowSteps } from "@/components/create/flow-steps";
 import { CorrectInvoiceButton } from "@/components/documents/correct-invoice-button";
+import { DeleteDraftButton } from "@/components/documents/delete-draft-button";
 import { DocumentPdfPreviewLoader } from "./document-pdf-preview-loader";
 import { FinalizeDialog } from "./finalize-dialog";
 import { PflichtList } from "./pflicht-list";
@@ -37,6 +38,8 @@ interface Step3MainProps {
   preview: DocumentPreview;
   logo: PdfLogo | null;
   checks: PflichtCheck[];
+  /** Entwurf ohne Nummer und ohne Verknüpfung – zeigt „Löschen". */
+  deletable: boolean;
 }
 
 const STROKE = 1.75;
@@ -56,7 +59,7 @@ const ERROR_KEY: Record<FinalizeError, string> = {
  *  Aktions-Sidebar rechts. Dokumentinhalt bleibt Deutsch/LTR; die Bedienung
  *  folgt der UI-Sprache. Entwurf: Pflicht-Check + Finalisieren. Finalisiert:
  *  read-only mit echter Nummer (PDF/Teilen folgt im nächsten Schritt). */
-export function Step3Main({ dir, preview, logo, checks }: Step3MainProps) {
+export function Step3Main({ dir, preview, logo, checks, deletable }: Step3MainProps) {
   const t = useTranslations("Create");
   const router = useRouter();
   const [zoom, setZoom] = useState(false);
@@ -113,6 +116,10 @@ export function Step3Main({ dir, preview, logo, checks }: Step3MainProps) {
             <div className="dflow-sub">{t("previewSend")}</div>
           </div>
           {isDraft && <FlowSteps current={3} />}
+          {isDraft && deletable && (
+            <DeleteDraftButton documentId={preview.id} dir={dir} variant="label"
+              onDeleted={() => router.replace("/documents")} />
+          )}
         </div>
 
         <div className="d2-ctx">
