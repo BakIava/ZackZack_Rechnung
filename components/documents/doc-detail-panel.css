@@ -1,0 +1,58 @@
+/* doc-detail-panel.css — Hülle um das Dokument-Detail.
+   Breit: unsichtbar (display: contents), .hdetail bleibt Grid-Element und sticky.
+   Schmal: Overlay-Panel am Rand (inline-end → in RTL links).
+   Kein transform: sonst richten sich die festen Dialoge im Detail am Panel aus.
+   Logische Properties → RTL automatisch. */
+
+.ddpanel,
+.ddpanel-sheet {
+  display: contents;
+}
+
+.ddpanel-backdrop,
+.ddpanel-bar {
+  display: none;
+}
+
+/* Breakpoint muss mit .hdocs-grid in documents-main.css übereinstimmen. */
+@media (max-width: 1360px) {
+  .ddpanel[data-open="0"] {
+    display: none;
+  }
+
+  .ddpanel[data-open="1"] {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .ddpanel-backdrop {
+    display: block;
+    position: absolute;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    background: rgb(15 42 63 / 45%);
+    cursor: pointer;
+  }
+
+  .ddpanel-sheet {
+    display: block;
+    position: relative;
+    inline-size: min(620px, 100%);
+    block-size: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px;
+    background: var(--bg);
+    box-shadow: 0 0 60px rgb(15 42 63 / 30%);
+  }
+
+  .ddpanel-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-block-end: 12px;
+  }
+}

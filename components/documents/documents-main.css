@@ -224,9 +224,17 @@
 
 .hdocs-grid {
   display: grid;
-  grid-template-columns: 1fr 620px;
+  grid-template-columns: minmax(0, 1fr) 620px;
   gap: 24px;
   align-items: start;
+}
+
+/* Schmal: Liste volle Breite, Detail als Overlay (doc-detail-panel.css,
+   gleicher Breakpoint). */
+@media (max-width: 1360px) {
+  .hdocs-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ── Stat-Icon-Varianten ──────────────────────────────────────────────────── */
