@@ -93,6 +93,8 @@ export interface DocumentListItem {
   basedOnQuoteId: string | null;
   replacementQuoteId: string | null;
   replacementQuoteStatus: DocStatus | null;
+  /** Entwurf ohne Nummer und ohne Verknüpfung – darf gelöscht werden. */
+  deletable: boolean;
 }
 
 /**
@@ -142,6 +144,8 @@ export interface FlowDocMeta {
   id: string;
   status: DocStatus;
   docType: "rechnung" | "angebot";
+  /** Entwurf ohne Nummer und ohne Verknüpfung – darf gelöscht werden. */
+  deletable: boolean;
 }
 
 /** Dokument-Kachel des Dashboards. */

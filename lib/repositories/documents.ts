@@ -6,6 +6,7 @@
 
 import { cache } from "react";
 import { getCustomerName } from "@/lib/customers/utils";
+import { isDeletableDraft } from "@/lib/documents/draft-deletion";
 import { parseDocumentServiceLocation } from "@/lib/documents/service-location";
 import { todayInGermany } from "@/lib/documents/document-dates";
 import { calculateDocumentTotals } from "@/lib/documents/tax";
@@ -150,6 +151,10 @@ export async function fetchDocumentsPageData(): Promise<DocumentsPageData> {
       basedOnQuoteId: basis?.sourceDocumentId ?? null,
       replacementQuoteId: replacement?.targetDocumentId ?? null,
       replacementQuoteStatus: replacement?.targetDocumentStatus ?? null,
+      deletable: isDeletableDraft(
+        { id: document.id, status, documentNumber: document.document_number ?? null },
+        relations,
+      ),
     };
   });
 
@@ -165,16 +170,27 @@ export const getFlowDocMeta = cache(
     const supabase = await createClient();
     const { data } = await supabase
       .from("documents")
-      .select("id, status, document_type")
+      .select("id, status, document_type, document_number")
       .eq("id", documentId)
       .eq("company_id", companyId)
       .maybeSingle();
     if (!data) return null;
 
-    return {
+    const doc = {
       id: data.id as string,
       status: data.status as DocStatus,
+      documentNumber: (data.document_number as string | null) ?? null,
+    };
+    // Verknüpfungen nur dort laden, wo sie die Antwort noch ändern können.
+    const deletable =
+      isDeletableDraft(doc, []) &&
+      isDeletableDraft(doc, await getDocumentRelationsForOne(companyId, doc.id));
+
+    return {
+      id: doc.id,
+      status: doc.status,
       docType: data.document_type === "quote" ? "angebot" : "rechnung",
+      deletable,
     };
   },
 );
