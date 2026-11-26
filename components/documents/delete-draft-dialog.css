@@ -1,0 +1,50 @@
+/* Rückfrage-Dialog „Entwurf löschen". Logische Properties → RTL automatisch. */
+
+.delete-draft-dialog {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 26px 24px 20px;
+  text-align: center;
+}
+
+.delete-draft-dialog-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--destructive) 12%, var(--surface));
+  color: var(--destructive);
+}
+
+.delete-draft-dialog h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.delete-draft-dialog p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.delete-draft-dialog .delete-draft-dialog-error {
+  font-weight: 600;
+  color: var(--destructive);
+}
+
+.delete-draft-dialog-actions {
+  display: flex;
+  gap: 10px;
+  inline-size: 100%;
+  margin-block-start: 12px;
+}
+
+.delete-draft-dialog-actions button {
+  flex: 1;
+}

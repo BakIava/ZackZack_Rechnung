@@ -1,0 +1,141 @@
+/* document-list-row.css — Zeile der Dokumentenliste (aus documents-main.css
+   hierher gezogen). Logische Properties → RTL automatisch. */
+
+/* Zeile + optionaler Papierkorb (Entwurf löschen) nebeneinander */
+
+.hrow-item {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.hrow-item > .hrow {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Dokumentzeile ────────────────────────────────────────────────────────── */
+
+.hrow {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--r);
+  padding: 13px 16px;
+  cursor: pointer;
+  transition: border-color 0.14s, background 0.14s, box-shadow 0.14s;
+  text-align: start;
+  font-family: inherit;
+}
+
+.hrow:hover {
+  border-color: #c3ccd4;
+}
+
+.hrow[data-sel="1"] {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.hrow-ic {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hrow-ic--rechnung {
+  background: var(--primary);
+  color: #fff;
+}
+
+.hrow-ic--angebot {
+  background: var(--info-bg);
+  color: var(--info);
+}
+
+.hrow-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.hrow-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hrow-num {
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.hrow-name {
+  font-size: 15.5px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin-top: 2px;
+  margin-inline-end: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hrow-meta {
+  font-size: 15.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hrow-right {
+  text-align: end;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.hrow-price {
+  font-size: 15.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hrow-chev {
+  color: var(--muted);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.14s;
+  display: flex;
+}
+
+.hrow:hover .hrow-chev,
+.hrow[data-sel="1"] .hrow-chev {
+  opacity: 0.8;
+}
+
+/* Überfällig-Flag */
+
+.hflag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #b23a1e;
+}

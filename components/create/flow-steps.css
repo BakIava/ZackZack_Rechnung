@@ -100,7 +100,8 @@
   .dflow-head { flex-wrap: wrap; gap: 12px; }
   .dflow-head > div:not(.dsteps2) { min-width: 0; flex: 1; }
   .dflow-title, .dflow-sub { white-space: normal; }
-  .dsteps2 { flex-basis: 100%; justify-content: center; margin-inline-start: 0; }
+  /* order: Schrittanzeige in die eigene letzte Zeile, „Löschen" bleibt oben. */
+  .dsteps2 { flex-basis: 100%; justify-content: center; margin-inline-start: 0; order: 1; }
 }
 
 @media (max-width: 500px) {

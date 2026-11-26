@@ -1,0 +1,43 @@
+/* „Entwurf löschen"-Knopf: Papierkorb neben der Listenzeile bzw. Knopf mit
+   Text im Flow-Kopf. Logische Properties → RTL automatisch. */
+
+.ddraft-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.14s, color 0.14s, background 0.14s;
+}
+
+.ddraft-btn:hover {
+  border-color: color-mix(in srgb, var(--destructive) 45%, var(--line));
+  background: color-mix(in srgb, var(--destructive) 6%, var(--surface));
+  color: var(--destructive);
+}
+
+.ddraft-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Liste: so hoch wie die Zeile (Flex-Stretch), quadratische Kante. */
+.ddraft-btn--icon {
+  inline-size: 56px;
+  border-radius: var(--r);
+}
+
+/* Flow-Kopf: gleiche Höhe wie der Zurück-Knopf. */
+.ddraft-btn--label {
+  block-size: 42px;
+  padding-inline: 14px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 650;
+  white-space: nowrap;
+}
